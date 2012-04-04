@@ -119,7 +119,7 @@ trait BaseCrudActivity extends ActivityWithVars with OptionsMenuActivity with Lo
   }
 
   //available to be overridden for testing
-  def openEntityPersistence(): CrudPersistence = crudType.openEntityPersistence(crudContext)
+  def openEntityPersistence(): CrudPersistence = crudContext.openEntityPersistence(entityType)
 
   def withPersistence[T](f: CrudPersistence => T): T = {
     val persistence = openEntityPersistence()

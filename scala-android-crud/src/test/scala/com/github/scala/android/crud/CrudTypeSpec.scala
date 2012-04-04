@@ -35,10 +35,8 @@ class CrudTypeSpec extends Spec with MustMatchers with CrudMockitoSugar {
     val crudType3 = new MyCrudType(new MyEntityType {
       override val valueFields = ParentField(entityType1) +: ParentField(entityType2) +: super.valueFields
     })
-    val crudType1 = new MyCrudType(entityType1)
-    val crudType2 = new MyCrudType(entityType2)
-    val application = MyCrudApplication(crudType1, crudType2, crudType3)
-    crudType3.parentEntities(application) must be (List(crudType1, crudType2))
+    val application = MyCrudApplication(new MyCrudType(entityType1), new MyCrudType(entityType2), crudType3)
+    crudType3.parentEntityTypes(application) must be (List(entityType1, entityType2))
   }
 
   it("must derive parent entities from foreignKey fields") {
@@ -47,10 +45,8 @@ class CrudTypeSpec extends Spec with MustMatchers with CrudMockitoSugar {
     val crudType3 = new MyCrudType(new MyEntityType {
       override val valueFields = foreignKey(entityType1) +: foreignKey(entityType2) +: super.valueFields
     })
-    val crudType1 = new MyCrudType(entityType1)
-    val crudType2 = new MyCrudType(entityType2)
-    val application = MyCrudApplication(crudType1, crudType2, crudType3)
-    crudType3.parentEntities(application) must be (List(crudType1, crudType2))
+    val application = MyCrudApplication(new MyCrudType(entityType1), new MyCrudType(entityType2), crudType3)
+    crudType3.parentEntityTypes(application) must be (List(entityType1, entityType2))
   }
 
   it("must get the correct entity actions with child entities") {

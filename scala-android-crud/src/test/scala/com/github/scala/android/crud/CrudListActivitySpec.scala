@@ -32,17 +32,21 @@ class CrudListActivitySpec extends MustMatchers with CrudMockitoSugar {
   def mustNotCopyFromParentEntityIfUriPathIsInsufficient() {
     val crudType = mock[CrudType]
     val parentCrudType = mock[CrudType]
-    val application = MyCrudApplication(crudType)
+    val parentEntityType = mock[EntityType]
+    val persistenceFactory = mock[PersistenceFactory]
+    val application = MyCrudApplication(crudType, parentCrudType)
     val entityType = mock[EntityType]
     stub(crudType.entityType).toReturn(entityType)
-    stub(crudType.parentEntities(application)).toReturn(List(parentCrudType))
-    stub(crudType.maySpecifyEntityInstance(any())).toReturn(false)
+    stub(parentCrudType.entityType).toReturn(parentEntityType)
+    stub(crudType.parentEntityTypes(application)).toReturn(List(parentEntityType))
+    stub(parentCrudType.persistenceFactory).toReturn(persistenceFactory)
+    stub(persistenceFactory.maySpecifyEntityInstance(eql(entityType), any())).toReturn(false)
 
     val activity = new CrudListActivity {
       override def crudApplication = application
     }
     activity.populateFromParentEntities()
-    verify(crudType, never()).copyFromPersistedEntity(any(), any())
+    verify(persistenceFactory, never()).createEntityPersistence(any(), any())
   }
 
   @Test

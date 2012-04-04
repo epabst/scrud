@@ -96,15 +96,13 @@ class CrudType(val entityType: EntityType, val persistenceFactory: PersistenceFa
 
   def parentEntityTypes(application: CrudApplication): List[EntityType] = parentFields.map(_.entityType)
 
-  def parentEntities(application: CrudApplication): List[CrudType] = parentFields.map(_.entityType).map(application.crudType(_))
-
   def childEntityTypes(application: CrudApplication): List[EntityType] = childEntities(application).map(_.entityType)
 
   /** The list of entities that refer to this one.
     * Those entities should have a ParentField (or foreignKey) in their fields list.
     */
   def childEntities(application: CrudApplication): List[CrudType] = {
-    trace("childEntities: allCrudTypes=" + application.allCrudTypes + " self=" + self)
+    trace("childEntities: allCrudTypes=" + application.allEntityTypes + " self=" + self)
     application.allCrudTypes.filter { entity =>
       val parentEntityTypes = entity.parentEntityTypes(application)
       trace("childEntities: parents of " + entity.entityType + " are " + parentEntityTypes)
@@ -154,17 +152,6 @@ class CrudType(val entityType: EntityType, val persistenceFactory: PersistenceFa
 
   def listActivityClass: Class[_ <: CrudListActivity] = classOf[CrudListActivity]
   def activityClass: Class[_ <: CrudActivity] = classOf[CrudActivity]
-
-  def copyFromPersistedEntity(uriPathWithId: UriPath, crudContext: CrudContext): Option[PortableValue] = {
-    val contextItems = List(uriPathWithId, crudContext, PortableField.UseDefaults)
-    withEntityPersistence(crudContext)(_.find(uriPathWithId).map { readable =>
-      debug("Copying " + entityType.entityName + "#" + entityType.IdField(readable) + " to " + this)
-      entityType.copyFromItem(readable +: contextItems)
-    })
-  }
-
-  /** Returns true if the URI is worth calling EntityPersistence.find to try to get an entity instance. */
-  def maySpecifyEntityInstance(uri: UriPath): Boolean = persistenceFactory.maySpecifyEntityInstance(entityType, uri)
 
   /** Gets the actions that a user can perform from a list of the entities.
     * May be overridden to modify the list of actions.

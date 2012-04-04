@@ -31,14 +31,14 @@ class CrudActivity extends BaseCrudActivity { self =>
     if (savedInstanceState == null) {
       setContentView(crudType.entryLayout)
       val currentPath = currentUriPath
-      if (crudType.maySpecifyEntityInstance(currentPath)) {
+      if (crudApplication.maySpecifyEntityInstance(currentPath, entityType)) {
         populateFromUri(currentPath)
       } else {
         entityType.copyFromItem(PortableField.UseDefaults :: contextItems, this)
       }
     }
     bindNormalActionsToViews()
-    if (crudType.maySpecifyEntityInstance(currentUriPath)) {
+    if (crudApplication.maySpecifyEntityInstance(currentUriPath, entityType)) {
       crudContext.addCachedStateListener(new CachedStateListener {
         def onClearState(stayActive: Boolean) {
           if (stayActive) {
@@ -60,7 +60,7 @@ class CrudActivity extends BaseCrudActivity { self =>
 
   override def onBackPressed() {
     // Save before going back so that the Activity being activated will read the correct data from persistence.
-    val writable = crudType.newWritable
+    val writable = crudApplication.newWritable(entityType)
     withPersistence { persistence =>
       val copyableFields = entityType.copyableTo(writable, contextItemsWithoutUseDefaults)
       val portableValue = copyableFields.copyFromItem(this :: contextItemsWithoutUseDefaults)

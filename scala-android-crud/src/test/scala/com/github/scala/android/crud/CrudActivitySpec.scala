@@ -14,7 +14,6 @@ import java.lang.IllegalStateException
 import common.UriPath
 import org.scalatest.mock.MockitoSugar
 import org.mockito.Mockito._
-import org.mockito.Matchers._
 import actors.Future
 
 /** A test for [[com.github.scala.android.crud.CrudListActivity]].
@@ -25,12 +24,11 @@ class CrudActivitySpec extends MockitoSugar with MustMatchers {
   val persistenceFactory = mock[PersistenceFactory]
   val persistence = mock[CrudPersistence]
   val listAdapter = mock[ListAdapter]
-  val application = mock[CrudApplication]
 
   @Test
   def shouldSupportAddingWithoutEverFinding() {
-    stub(application.actionsForEntity(any())).toReturn(Nil)
     val _crudType = new MyCrudType(persistence)
+    val application = MyCrudApplication(_crudType)
     val entity = Map[String,Any]("name" -> "Bob", "age" -> 25)
     val uri = UriPath(_crudType.entityName)
     val activity = new CrudActivity {
@@ -50,8 +48,8 @@ class CrudActivitySpec extends MockitoSugar with MustMatchers {
 
   @Test
   def shouldAddIfIdNotFound() {
-    stub(application.actionsForEntity(any())).toReturn(Nil)
     val _crudType = new MyCrudType(persistence)
+    val application = MyCrudApplication(_crudType)
     val entity = mutable.Map[String,Any]("name" -> "Bob", "age" -> 25)
     val uri = UriPath(_crudType.entityName)
     val activity = new CrudActivity {
@@ -71,8 +69,8 @@ class CrudActivitySpec extends MockitoSugar with MustMatchers {
 
   @Test
   def shouldAllowUpdating() {
-    stub(application.actionsForEntity(any())).toReturn(Nil)
     val _crudType = new MyCrudType(persistence)
+    val application = MyCrudApplication(_crudType)
     val entity = mutable.Map[String,Any]("name" -> "Bob", "age" -> 25)
     val uri = UriPath(_crudType.entityName, "101")
     stub(persistence.find(uri)).toReturn(Some(entity))
@@ -97,6 +95,7 @@ class CrudActivitySpec extends MockitoSugar with MustMatchers {
   @Test
   def withPersistenceShouldClosePersistence() {
     val _crudType = new MyCrudType(persistence)
+    val application = MyCrudApplication(_crudType)
     val activity = new CrudActivity {
       override lazy val crudType = _crudType
       override def crudApplication = application
@@ -108,6 +107,7 @@ class CrudActivitySpec extends MockitoSugar with MustMatchers {
   @Test
   def withPersistenceShouldClosePersistenceWithFailure() {
     val _crudType = new MyCrudType(persistence)
+    val application = MyCrudApplication(_crudType)
     val activity = new CrudActivity {
       override lazy val crudType = _crudType
       override def crudApplication = application
@@ -123,9 +123,9 @@ class CrudActivitySpec extends MockitoSugar with MustMatchers {
 
   @Test
   def shouldHandleAnyExceptionWhenSaving() {
-    stub(application.defaultContentUri).toReturn(UriPath.EMPTY)
     stub(persistence.save(None, "unsaveable data")).toThrow(new IllegalStateException("intentional"))
     val _crudType = new MyCrudType(persistence)
+    val application = MyCrudApplication(_crudType)
     val activity = new CrudActivity {
       override lazy val crudType = _crudType
       override def crudApplication = application
@@ -136,8 +136,8 @@ class CrudActivitySpec extends MockitoSugar with MustMatchers {
 
   @Test
   def onPauseShouldNotCreateANewIdEveryTime() {
-    stub(application.actionsForEntity(any())).toReturn(Nil)
     val _crudType = new MyCrudType(persistence)
+    val application = MyCrudApplication(_crudType)
     val entity = mutable.Map[String,Any]("name" -> "Bob", "age" -> 25)
     val uri = UriPath(_crudType.entityName)
     when(persistence.find(uri)).thenReturn(None)

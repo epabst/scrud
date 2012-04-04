@@ -8,8 +8,8 @@ import persistence.EntityType
 import java.util.concurrent.CopyOnWriteArraySet
 import collection.JavaConversions._
 import android.os.Bundle
-import com.github.triangle.{Field, Logging}
 import com.github.triangle.PortableField._
+import com.github.triangle.{PortableField, PortableValue, Field, Logging}
 
 /** An Application that works with [[com.github.scala.android.crud.CrudType]]s.
  * @author Eric Pabst (epabst@gmail.com)
@@ -53,13 +53,21 @@ trait CrudApplication extends Logging {
   def crudType(entityType: EntityType): CrudType =
     allCrudTypes.find(_.entityType == entityType).getOrElse(throw new NoSuchElementException(entityType + " not found"))
 
-  def isListable(entityType: EntityType): Boolean = crudType(entityType).persistenceFactory.canList
+  private def persistenceFactory(entityType: EntityType): PersistenceFactory = crudType(entityType).persistenceFactory
 
-  def isSavable(entityType: EntityType): Boolean = crudType(entityType).persistenceFactory.canSave
+  def newWritable(entityType: EntityType): AnyRef = persistenceFactory(entityType).newWritable
+
+  /** Returns true if the URI is worth calling EntityPersistence.find to try to get an entity instance. */
+  def maySpecifyEntityInstance(uri: UriPath, entityType: EntityType): Boolean =
+    persistenceFactory(entityType).maySpecifyEntityInstance(entityType, uri)
+
+  def isListable(entityType: EntityType): Boolean = persistenceFactory(entityType).canList
+
+  def isSavable(entityType: EntityType): Boolean = persistenceFactory(entityType).canSave
 
   def isAddable(entityType: EntityType): Boolean = isDeletable(entityType)
 
-  def isDeletable(entityType: EntityType): Boolean = crudType(entityType).persistenceFactory.canDelete
+  def isDeletable(entityType: EntityType): Boolean = persistenceFactory(entityType).canDelete
 
   def actionsForEntity(entityType: EntityType): Seq[Action] = crudType(entityType).getEntityActions(this)
 
@@ -74,6 +82,14 @@ trait CrudApplication extends Logging {
   def actionToList(entityType: EntityType): Option[Action] = Some(crudType(entityType).listAction)
 
   def actionToDisplay(entityType: EntityType): Option[Action] = Some(crudType(entityType).displayAction)
+
+  def copyFromPersistedEntity(entityType: EntityType, uriPathWithId: UriPath, crudContext: CrudContext): Option[PortableValue] = {
+    val contextItems = List(uriPathWithId, crudContext, PortableField.UseDefaults)
+    crudContext.withEntityPersistence(entityType)(_.find(uriPathWithId).map { readable =>
+      debug("Copying " + entityType.entityName + "#" + entityType.IdField(readable) + " to " + this)
+      entityType.copyFromItem(readable +: contextItems)
+    })
+  }
 }
 
 object CrudContextField extends Field(identityField[CrudContext])
