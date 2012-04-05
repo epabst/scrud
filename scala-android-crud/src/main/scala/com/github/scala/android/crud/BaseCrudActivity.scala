@@ -4,6 +4,7 @@ import action._
 import android.view.MenuItem
 import android.content.Intent
 import common.{UriPath, Common, Timing, PlatformTypes}
+import persistence.EntityType
 import PlatformTypes._
 import com.github.scala.android.crud.view.AndroidConversions._
 import android.os.Bundle
@@ -63,6 +64,8 @@ trait BaseCrudActivity extends ActivityWithVars with OptionsMenuActivity with Lo
     LastUndoable.set(this, undoable)
     optionsMenuCommands = generateOptionsMenu.map(_.command)
   }
+
+  def pickLayout(entityType: EntityType): LayoutKey = crudApplication.crudType(entityType).pickLayout
 
   protected def applicableActions: List[Action] = LastUndoable.get(this).map(_.undoAction).toList ++ normalActions
 

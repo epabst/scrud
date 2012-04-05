@@ -2,10 +2,12 @@ package com.github.scala.android.crud.generate
 
 import com.github.triangle._
 import scala.tools.nsc.io.Path
-import xml._
 import com.github.scala.android.crud.common.Common
 import collection.immutable.List
 import com.github.scala.android.crud.{CrudAndroidApplication, CrudApplication}
+import xml._
+import com.github.scala.android.crud.view.EntityView
+import com.github.scala.android.crud.persistence.EntityType
 
 /** A UI Generator for a CrudTypes.
   * @author Eric Pabst (epabst@gmail.com)
@@ -14,24 +16,27 @@ import com.github.scala.android.crud.{CrudAndroidApplication, CrudApplication}
 object CrudUIGenerator extends Logging {
   protected def logTag = Common.logTag
   private val lineSeparator = System.getProperty("line.separator")
+  private val androidScope: NamespaceBinding = <TextView xmlns:android="http://schemas.android.com/apk/res/android"/>.scope
   private[generate] val prettyPrinter = new PrettyPrinter(80, 2) {
-    override protected def traverse(node: Node, namespace: NamespaceBinding, indent: Int) {
+    override protected def traverse(node: Node, scope: NamespaceBinding, indent: Int) {
       node match {
-        case Text(text) if text.trim().size == 0 => super.traverse(Text(text.trim()), namespace, indent)
-        case n: Elem if n.child.size == 0 => makeBox(indent, leafTag(n))
-        case _ => super.traverse(node, namespace, indent)
+        // Eliminate extra whitespace between elements
+        case Text(text) if text.trim().isEmpty => super.traverse(Text(""), scope, indent)
+        // Collapse end-tags if there are no children unless it is the top-level element
+        case elem: Elem if elem.child.isEmpty && indent > 0 => makeBox(indent, leafTag(elem))
+        case _ => super.traverse(node, scope, indent)
       }
     }
   }
 
-  private def writeXmlToFile(path: Path, xml: Node) {
+  private def writeXmlToFile(path: Path, xml: Elem) {
     val file = path.toFile
     file.parent.createDirectory()
     file.writeAll("""<?xml version="1.0" encoding="utf-8"?>""", lineSeparator, prettyPrinter.format(xml))
     println("Wrote " + file)
   }
 
-  def generateAndroidManifest(application: CrudApplication, androidApplicationClass: Class[_]): Node = {
+  def generateAndroidManifest(application: CrudApplication, androidApplicationClass: Class[_]): Elem = {
     if (!classOf[CrudAndroidApplication].isAssignableFrom(androidApplicationClass)) {
       throw new IllegalArgumentException(androidApplicationClass + " does not extend CrudAndroidApplication")
     }
@@ -76,7 +81,7 @@ object CrudUIGenerator extends Logging {
       case e => debug(e.toString); None
     }
 
-  def generateValueStrings(application: CrudApplication): Node = {
+  def generateValueStrings(application: CrudApplication): Elem = {
     <resources>
       <string name="app_name">{application.name}</string>
       {application.allEntityTypes.flatMap(entityType => generateValueStrings(EntityTypeViewInfo(entityType), application))}
@@ -85,9 +90,12 @@ object CrudUIGenerator extends Logging {
 
   def generateLayouts(application: CrudApplication, androidApplicationClass: Class[_]) {
     val entityTypeInfos = application.allEntityTypes.map(EntityTypeViewInfo(_))
+    val pickedEntityTypes: Seq[EntityType] = application.allEntityTypes.flatMap(_.deepCollect {
+      case EntityView(pickedEntityType) => pickedEntityType
+    })
     entityTypeInfos.foreach(entityInfo => {
       val childViewInfos = application.childEntityTypes(entityInfo.entityType).map(EntityTypeViewInfo(_))
-      generateLayouts(entityInfo, childViewInfos, application)
+      generateLayouts(entityInfo, childViewInfos, application, pickedEntityTypes)
     })
     writeXmlToFile(Path("AndroidManifest.xml"), generateAndroidManifest(application, androidApplicationClass))
     writeXmlToFile(Path("res") / "values" / "strings.xml", generateValueStrings(application))
@@ -113,7 +121,7 @@ object CrudUIGenerator extends Logging {
                                android:layout_height="wrap_content"
                                android:paddingRight="3sp"
                                android:textAppearance={textAppearance}/>.attributes
-    applyAttributesToHead(field.layout.displayXml, attributes)
+    adjustHeadNode(field.layout.displayXml, applyAttributes(_, attributes))
   }
 
   protected def listLayout(entityInfo: EntityTypeViewInfo, childEntityInfos: List[EntityTypeViewInfo], application: CrudApplication) = {
@@ -180,10 +188,23 @@ object CrudUIGenerator extends Logging {
     }
     </LinearLayout>
 
-  private def applyAttributesToHead(xml: NodeSeq, attributes: MetaData): NodeSeq = xml.headOption.map {
+  protected def pickLayout(fields: Seq[ViewIdFieldInfo]): NodeSeq = {
+    fields.headOption.map { field =>
+      val layout = fieldLayoutForRow(field, 0)
+      val adjusted = adjustHeadNode(layout, _ match {
+        case elem: Elem => elem.copy(scope = androidScope)
+        case node => node
+      })
+      adjusted
+    }.getOrElse(NodeSeq.Empty)
+  }
+
+  private def applyAttributes(xml: Node, attributes: MetaData): Node = xml match {
     case e: Elem => e % attributes
     case x => x
-  }.map(_ +: xml.tail).getOrElse(NodeSeq.Empty)
+  }
+
+  private def adjustHeadNode(xml: NodeSeq, f: Node => Node): NodeSeq = xml.headOption.map(f(_) +: xml.tail).getOrElse(xml)
 
   protected def fieldLayoutForEntry(field: ViewIdFieldInfo, position: Int): Elem = {
     val gravity = "right"
@@ -191,7 +212,7 @@ object CrudUIGenerator extends Logging {
     val attributes = <EditText android:id={"@+id/" + field.id}/>.attributes
     <TableRow>
       <TextView android:text={field.displayName + ":"} android:textAppearance={textAppearance} android:gravity={gravity}/>
-      {applyAttributesToHead(field.layout.editXml, attributes)}
+      {adjustHeadNode(field.layout.editXml, applyAttributes(_, attributes))}
     </TableRow>
   }
 
@@ -208,7 +229,17 @@ object CrudUIGenerator extends Logging {
     writeXmlToFile(Path("res") / "layout" / (name + ".xml"), xml)
   }
 
-  def generateLayouts(entityTypeInfo: EntityTypeViewInfo, childTypeInfos: List[EntityTypeViewInfo], application: CrudApplication) {
+  private def writeLayoutFileIfNotEmpty(name: String, xml: NodeSeq) {
+    xml match {
+      case NodeSeq.Empty => // Don't write the file
+      case Seq(headNode) => headNode match {
+        case headElem: Elem => writeLayoutFile(name, headElem)
+      }
+    }
+  }
+
+  def generateLayouts(entityTypeInfo: EntityTypeViewInfo, childTypeInfos: List[EntityTypeViewInfo],
+                      application: CrudApplication, pickedEntityTypes: Seq[EntityType]) {
     println("Generating layout for " + entityTypeInfo.entityType)
     lazy val info = EntityTypeViewInfo(entityTypeInfo.entityType)
     val layoutPrefix = info.layoutPrefix
@@ -216,6 +247,9 @@ object CrudUIGenerator extends Logging {
       writeLayoutFile(layoutPrefix + "_list", listLayout(entityTypeInfo, childTypeInfos, application))
       writeLayoutFile(layoutPrefix + "_header", headerLayout(info.displayableViewIdFieldInfos))
       writeLayoutFile(layoutPrefix + "_row", rowLayout(info.displayableViewIdFieldInfos))
+    }
+    if (pickedEntityTypes.contains(entityTypeInfo.entityType)) {
+      writeLayoutFileIfNotEmpty(layoutPrefix + "_pick", pickLayout(info.displayableViewIdFieldInfos))
     }
     if (info.isUpdateable) writeLayoutFile(layoutPrefix + "_entry", entryLayout(info.updateableViewIdFieldInfos))
   }

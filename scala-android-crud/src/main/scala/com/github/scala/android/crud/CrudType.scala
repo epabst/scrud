@@ -50,6 +50,9 @@ class CrudType(val entityType: EntityType, val persistenceFactory: PersistenceFa
     findResourceIdWithName(rLayoutClassesVal, entityNameLayoutPrefix + "_list").getOrElse(getLayoutKey("entity_list"))
   lazy val rowLayout: LayoutKey = getLayoutKey(entityNameLayoutPrefix + "_row")
   lazy val displayLayout: Option[LayoutKey] = findResourceIdWithName(rLayoutClassesVal, entityNameLayoutPrefix + "_display")
+  /** The layout used for each entity when allowing the user to pick one of them. */
+  lazy val pickLayout: LayoutKey = findResourceIdWithName(rLayoutClassesVal, entityNameLayoutPrefix + "_pick").getOrElse(
+    _root_.android.R.layout.simple_spinner_dropdown_item)
   lazy val entryLayout: LayoutKey = getLayoutKey(entityNameLayoutPrefix + "_entry")
 
   final def hasDisplayPage = displayLayout.isDefined

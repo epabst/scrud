@@ -19,8 +19,6 @@ import com.github.scala.android.crud.{CrudContextField, UriField, BaseCrudActivi
 case class EntityView(entityType: EntityType)
   extends ViewField[ID](FieldLayout(displayXml = NodeSeq.Empty, editXml = <Spinner android:drawSelectorOnTop = "true"/>)) {
 
-  protected val itemViewResourceId = _root_.android.R.layout.simple_spinner_dropdown_item
-
   private object AndroidUIElement {
     def unapply(target: AnyRef): Option[AnyRef] = target match {
       case view: View => Some(view)
@@ -35,7 +33,8 @@ case class EntityView(entityType: EntityType)
         val crudType = crudContext.application.crudType(entityType)
         //don't do it again if already done from a previous time
         if (adapterView.getAdapter == null) {
-          crudType.setListAdapter(adapterView, entityType, uri, crudContext, crudActivity.contextItems, crudActivity, itemViewResourceId)
+          crudType.setListAdapter(adapterView, entityType, uri, crudContext, crudActivity.contextItems, crudActivity,
+            crudActivity.pickLayout(entityType))
         }
         if (idOpt.isDefined) {
           val adapter = adapterView.getAdapter
