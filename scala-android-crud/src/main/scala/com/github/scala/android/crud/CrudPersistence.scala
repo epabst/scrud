@@ -1,7 +1,6 @@
 package com.github.scala.android.crud
 
-import common.UriPath
-import common.Common
+import common._
 import persistence._
 import common.PlatformTypes._
 import com.github.triangle.Logging
@@ -9,7 +8,7 @@ import com.github.triangle.Logging
 /** An EntityPersistence for a CrudType.
   * @author Eric Pabst (epabst@gmail.com)
   */
-trait CrudPersistence extends EntityPersistence with Logging {
+trait CrudPersistence extends EntityPersistence with ListenerHolder[PersistenceListener] with Logging {
   override protected def logTag: String = Common.tryToEvaluate(entityType.logTag).getOrElse(Common.logTag)
 
   def entityType: EntityType

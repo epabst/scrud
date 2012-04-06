@@ -1,7 +1,7 @@
 package com.github.scala.android.crud.persistence
 
 import com.github.scala.android.crud.common.PlatformTypes._
-import com.github.scala.android.crud.common.{Common, ListenerHolder, Timing, UriPath}
+import com.github.scala.android.crud.common._
 
 trait PersistenceListener {
   def onSave(id: ID)
@@ -13,7 +13,7 @@ trait PersistenceListener {
   * @author Eric Pabst (epabst@gmail.com)
   */
 
-trait EntityPersistence extends Timing with ListenerHolder[PersistenceListener] {
+trait EntityPersistence extends Timing with ListenerSet[PersistenceListener] {
   protected def logTag: String = Common.logTag
 
   def toUri(id: ID): UriPath

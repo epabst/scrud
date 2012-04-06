@@ -3,21 +3,20 @@ package com.github.scala.android.crud
 import android.provider.BaseColumns
 import android.database.Cursor
 import android.content.ContentValues
-import common.Common
 import common.PlatformTypes._
+import common.{SimpleListenerHolder, Common, UriPath}
 import persistence._
 import scala.None
 import collection.mutable.SynchronizedQueue
 import android.app.backup.BackupManager
 import android.database.sqlite.{SQLiteOpenHelper, SQLiteDatabase}
-import common.UriPath
 import com.github.triangle.{PortableField, Logging}
 
 /** EntityPersistence for SQLite.
   * @author Eric Pabst (epabst@gmail.com)
   */
 class SQLiteEntityPersistence(val entityType: EntityType, val crudContext: CrudContext)
-  extends CrudPersistence with Logging {
+  extends CrudPersistence with SimpleListenerHolder[PersistenceListener] with Logging {
 
   lazy val tableName = SQLitePersistenceFactory.toTableName(entityType.entityName)
   lazy val databaseSetup = new GeneratedDatabaseSetup(crudContext)

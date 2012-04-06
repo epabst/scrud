@@ -1,10 +1,10 @@
 package com.github.scala.android.crud.persistence
 
 import scala.collection.mutable
-import com.github.scala.android.crud.common.UriPath
 import com.github.triangle.{Setter, Getter, Field}
 import com.github.scala.android.crud.common.PlatformTypes._
 import java.util.concurrent.atomic.AtomicLong
+import com.github.scala.android.crud.common.{SimpleListenerHolder, UnsupportedListenerHolder, UriPath}
 
 /** EntityPersistence for a simple generated Seq.
   * @author Eric Pabst (epabst@gmail.com)
@@ -14,7 +14,7 @@ trait SeqEntityPersistence[T <: AnyRef] extends EntityPersistence {
   def newWritable: T
 }
 
-trait ReadOnlyPersistence extends EntityPersistence {
+trait ReadOnlyPersistence extends EntityPersistence with UnsupportedListenerHolder[PersistenceListener] {
   def newWritable = throw new UnsupportedOperationException("write not supported")
 
   def doSave(id: Option[ID], data: AnyRef): ID = throw new UnsupportedOperationException("write not supported")
@@ -24,7 +24,7 @@ trait ReadOnlyPersistence extends EntityPersistence {
   def close() {}
 }
 
-abstract class ListBufferEntityPersistence[T <: AnyRef](newWritableFunction: => T) extends SeqEntityPersistence[T] {
+abstract class ListBufferEntityPersistence[T <: AnyRef](newWritableFunction: => T) extends SeqEntityPersistence[T] with SimpleListenerHolder[PersistenceListener] {
   private object IdField extends Field[ID](Getter[IdPk,ID](_.id).withTransformer(e => e.id(_)) +
       Setter((e: MutableIdPk) => e.id = _) + CursorField.PersistedId)
   val buffer = mutable.ListBuffer[T]()
