@@ -15,4 +15,8 @@ case class CachedFunction[A,B](function: (A) => B) extends ((A) => B) {
     resultByInput.putIfAbsent(input, result)
     result
   }
+
+  def clear() {
+    resultByInput.clear()
+  }
 }
