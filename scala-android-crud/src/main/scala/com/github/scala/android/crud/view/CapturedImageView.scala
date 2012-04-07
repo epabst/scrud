@@ -24,7 +24,7 @@ object CapturedImageView extends ViewField[Uri](new FieldLayout {
   def displayXml = <ImageView android:adjustViewBounds="true"/>
   def editXml = <ImageView android:adjustViewBounds="true" android:clickable="true"/>
 }) {
-  private object DrawableByUriCache extends ContextVar[CachedFunction[Uri,Drawable]]
+  private object DrawableByUriCache extends StateVar[CachedFunction[Uri,Drawable]]
 
   private def bitmapFactoryOptions = {
     val options = new BitmapFactory.Options
@@ -34,7 +34,7 @@ object CapturedImageView extends ViewField[Uri](new FieldLayout {
     options
   }
 
-  private def setImageUri(imageView: ImageView, uriOpt: Option[Uri], contextVars: ContextVars) {
+  private def setImageUri(imageView: ImageView, uriOpt: Option[Uri], contextVars: State) {
     imageView.setImageBitmap(null)
     uriOpt match {
       case Some(uri) =>
@@ -69,7 +69,7 @@ object CapturedImageView extends ViewField[Uri](new FieldLayout {
       Option(response.intent).map(_.getData).orElse(tagToUri(view.getTag(DefaultValueTagKey)))
   } + Getter((v: ImageView) => imageUri(v)) + SetterUsingItems[Uri] {
     case (ViewExtractor(Some(view: ImageView)), CrudContextField(Some(crudContext))) => uri =>
-      setImageUri(view, uri, crudContext.vars)
+      setImageUri(view, uri, crudContext.activityState)
   } + OnClickOperationSetter(view => StartActivityForResultOperation(view, {
     val intent = new Intent("android.media.action.IMAGE_CAPTURE")
     val imageUri = Uri.fromFile(File.createTempFile("image", ".jpg", dcimDirectory))

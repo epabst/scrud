@@ -1,6 +1,6 @@
 package com.github.scala.android.crud
 
-import action.ContextVars
+import action.State
 import common.UriPath
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
@@ -26,7 +26,7 @@ class DerivedPersistenceFactorySpec extends Spec with MustMatchers with CrudMock
       }
     }
     val crudContext = mock[CrudContext]
-    stub(crudContext.vars).toReturn(new ContextVars {})
+    stub(crudContext.activityState).toReturn(new State {})
     when(crudContext.openEntityPersistence(entityType1)).thenReturn(persistence1)
     when(crudContext.openEntityPersistence(entityType2)).thenReturn(persistence2)
     val persistence = factory.createEntityPersistence(mock[EntityType], crudContext)
@@ -40,7 +40,7 @@ class DerivedPersistenceFactorySpec extends Spec with MustMatchers with CrudMock
       def findAll(entityType: EntityType, uri: UriPath, delegatePersistenceMap: Map[EntityType, CrudPersistence]) = Nil
     }
     val crudContext = mock[CrudContext]
-    stub(crudContext.vars).toReturn(new ContextVars {})
+    stub(crudContext.activityState).toReturn(new State {})
     val persistence1 = mock[CrudPersistence]
     val persistence2 = mock[CrudPersistence]
     when(crudContext.openEntityPersistence(entityType1)).thenReturn(persistence1)

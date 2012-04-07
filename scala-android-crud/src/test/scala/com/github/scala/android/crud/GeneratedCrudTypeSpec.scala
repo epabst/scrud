@@ -1,6 +1,6 @@
 package com.github.scala.android.crud
 
-import action.ContextVars
+import action.State
 import common.UriPath
 import org.junit.runner.RunWith
 import persistence.EntityType
@@ -41,7 +41,7 @@ class GeneratedCrudTypeSpec extends MustMatchers with CrudMockitoSugar {
     }
     stub(activity.getLayoutInflater).toReturn(layoutInflater)
     val generatedCrudType = new CrudType(entityType, factory) with StubCrudType
-    stub(crudContext.vars).toReturn(new ContextVars {})
+    stub(crudContext.activityState).toReturn(new State {})
     when(adapterView.setAdapter(anyObject())).thenAnswer(listAdapterCapture)
     val persistence = mock[CrudPersistence]
     when(crudContext.openEntityPersistence(entityType)).thenReturn(persistence)

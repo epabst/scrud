@@ -29,7 +29,7 @@ case class Command(icon: Option[ImgKey], title: Option[SKey], viewRef: Option[Vi
 /** Represents an operation that a user can initiate. */
 trait Operation {
   /** Runs the operation, given the uri and the current state of the application. */
-  def invoke(uri: UriPath, activity: ActivityWithVars)
+  def invoke(uri: UriPath, activity: ActivityWithState)
 }
 
 object Operation {
@@ -55,7 +55,7 @@ object Operation {
 case class Action(command: Command, operation: Operation) {
   def commandId: CommandId = command.commandId
 
-  def invoke(uri: UriPath, activity: ActivityWithVars) {
+  def invoke(uri: UriPath, activity: ActivityWithState) {
     operation.invoke(uri, activity)
   }
 }
@@ -65,9 +65,9 @@ case class RichIntent(intent: Intent) {
 }
 
 trait StartActivityOperation extends Operation {
-  def determineIntent(uri: UriPath, activity: ActivityWithVars): Intent
+  def determineIntent(uri: UriPath, activity: ActivityWithState): Intent
 
-  def invoke(uri: UriPath, activity: ActivityWithVars) {
+  def invoke(uri: UriPath, activity: ActivityWithState) {
     activity.startActivity(determineIntent(uri, activity))
   }
 }
@@ -77,13 +77,13 @@ trait BaseStartActivityOperation extends StartActivityOperation {
 
   def activityClass: Class[_ <: Activity]
 
-  def determineIntent(uri: UriPath, activity: ActivityWithVars): Intent = Operation.constructIntent(action, uri, activity, activityClass)
+  def determineIntent(uri: UriPath, activity: ActivityWithState): Intent = Operation.constructIntent(action, uri, activity, activityClass)
 }
 
 /** An Operation that starts an Activity using the provided Intent.
   * @param intent the Intent to use to start the Activity.  It is pass-by-name because the SDK's Intent has a "Stub!" error. */
 class StartActivityOperationFromIntent(intent: => Intent) extends StartActivityOperation {
-  def determineIntent(uri: UriPath, activity: ActivityWithVars) = intent
+  def determineIntent(uri: UriPath, activity: ActivityWithState) = intent
 }
 
 //final to guarantee equality is correct
@@ -98,7 +98,7 @@ trait EntityOperation extends Operation {
 final case class StartEntityActivityOperation(entityName: String, action: String, activityClass: Class[_ <: Activity])
   extends BaseStartActivityOperation with EntityOperation {
 
-  override def determineIntent(uri: UriPath, activity: ActivityWithVars): Intent =
+  override def determineIntent(uri: UriPath, activity: ActivityWithState): Intent =
     super.determineIntent(uri.specify(entityName), activity)
 }
 
@@ -106,13 +106,13 @@ final case class StartEntityActivityOperation(entityName: String, action: String
 final case class StartEntityIdActivityOperation(entityName: String, action: String, activityClass: Class[_ <: Activity])
   extends BaseStartActivityOperation with EntityOperation {
 
-  override def determineIntent(uri: UriPath, activity: ActivityWithVars) = super.determineIntent(uri.upToIdOf(entityName), activity)
+  override def determineIntent(uri: UriPath, activity: ActivityWithState) = super.determineIntent(uri.upToIdOf(entityName), activity)
 }
 
 trait StartActivityForResultOperation extends StartActivityOperation {
   def viewIdToRespondTo: ViewKey
 
-  override def invoke(uri: UriPath, activity: ActivityWithVars) {
+  override def invoke(uri: UriPath, activity: ActivityWithState) {
     activity.startActivityForResult(determineIntent(uri, activity), viewIdToRespondTo)
   }
 }

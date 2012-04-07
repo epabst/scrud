@@ -144,7 +144,7 @@ class CrudType(val entityType: EntityType, val persistenceFactory: PersistenceFa
   lazy val deleteAction: Option[Action] =
     if (isDeletable) {
       Some(Action(commandToDeleteItem, new Operation {
-        def invoke(uri: UriPath, activity: ActivityWithVars) {
+        def invoke(uri: UriPath, activity: ActivityWithState) {
           activity match {
             case crudActivity: BaseCrudActivity => startDelete(uri, crudActivity)
           }
@@ -192,15 +192,15 @@ class CrudType(val entityType: EntityType, val persistenceFactory: PersistenceFa
       application.childEntityTypes(entityType).flatMap(application.actionToList(_))
 
   /** Listeners that will listen to any EntityPersistence that is opened. */
-  val persistenceListeners = new InitializedContextVar[mutable.Set[PersistenceListener]](new CopyOnWriteArraySet[PersistenceListener]())
+  val persistenceListeners = new InitializedStateVar[mutable.Set[PersistenceListener]](new CopyOnWriteArraySet[PersistenceListener]())
 
-  def addPersistenceListener(listener: PersistenceListener, context: ContextVars) {
-    persistenceListeners.get(context) += listener
+  def addPersistenceListener(listener: PersistenceListener, state: State) {
+    persistenceListeners.get(state) += listener
   }
 
   def openEntityPersistence(crudContext: CrudContext): CrudPersistence = {
     val persistence = createEntityPersistence(crudContext)
-    persistenceListeners.get(crudContext.vars).foreach(persistence.addListener(_))
+    persistenceListeners.get(crudContext.activityState).foreach(persistence.addListener(_))
     persistence
   }
 
@@ -233,7 +233,7 @@ class CrudType(val entityType: EntityType, val persistenceFactory: PersistenceFa
           def onDelete(uri: UriPath) {
             cursor.requery()
           }
-        }, crudContext.vars)
+        }, crudContext.activityState)
         new ResourceCursorAdapter(activity, itemLayout, cursor) with AdapterCaching {
           def entityType = self.entityType
 
@@ -256,19 +256,19 @@ class CrudType(val entityType: EntityType, val persistenceFactory: PersistenceFa
         trace("Clearing cache in " + adapterView + " of " + entityType + " due to delete")
         AdapterCaching.clearCache(adapterView, "delete")
       }
-    }, crudContext.vars)
+    }, crudContext.activityState)
     def callCreateAdapter(): A = {
       createAdapter(persistence, uriPath, entityType, crudContext, contextItems, activity, itemLayout, adapterView).asInstanceOf[A]
     }
     val adapter = callCreateAdapter()
     adapterView.setAdapter(adapter)
-    crudContext.addCachedStateListener(new AdapterCachingStateListener(adapterView, entityType, adapterFactory = callCreateAdapter()))
+    crudContext.addCachedActivityStateListener(new AdapterCachingStateListener(adapterView, entityType, adapterFactory = callCreateAdapter()))
   }
 
   def setListAdapter[A <: Adapter](adapterView: AdapterView[A], entityType: EntityType, uriPath: UriPath, crudContext: CrudContext, contextItems: scala.List[AnyRef], activity: Activity, itemLayout: LayoutKey) {
     val persistence = crudContext.openEntityPersistence(entityType)
-    crudContext.vars.addListener(new DestroyContextListener {
-      def onDestroyContext() {
+    crudContext.activityState.addListener(new DestroyStateListener {
+      def onDestroyState() {
         persistence.close()
       }
     })
@@ -286,7 +286,7 @@ class CrudType(val entityType: EntityType, val persistenceFactory: PersistenceFa
         }
       }
       //todo delete childEntities recursively
-      val context = persistence.crudContext.context
+      val context = persistence.crudContext.activityContext
       context match {
         case activity: BaseCrudActivity =>
           activity.allowUndo(Undoable(Action(commandToUndoDelete, undoDeleteOperation), None))

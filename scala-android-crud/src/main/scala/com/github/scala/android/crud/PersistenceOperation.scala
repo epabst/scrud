@@ -1,6 +1,6 @@
 package com.github.scala.android.crud
 
-import action.{Operation, ActivityWithVars}
+import action.{Operation, ActivityWithState}
 import common.UriPath
 import persistence.EntityType
 
@@ -11,7 +11,7 @@ import persistence.EntityType
 abstract class PersistenceOperation(entityType: EntityType, val application: CrudApplication) extends Operation {
   def invoke(uri: UriPath, persistence: CrudPersistence)
 
-  def invoke(uri: UriPath, activity: ActivityWithVars) {
+  def invoke(uri: UriPath, activity: ActivityWithState) {
     application.withEntityPersistence(entityType, activity) { persistence => invoke(uri, persistence) }
   }
 }

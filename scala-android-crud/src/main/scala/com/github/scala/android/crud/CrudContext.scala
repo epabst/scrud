@@ -1,6 +1,6 @@
 package com.github.scala.android.crud
 
-import action.{InitializedContextVar, ContextVars, ContextWithVars}
+import action.{InitializedStateVar, State, ContextWithState}
 import com.github.triangle.Field
 import com.github.triangle.PortableField._
 import common.UriPath
@@ -13,8 +13,8 @@ import collection.JavaConversions._
 /** A context which can store data for the duration of a single Activity.
   * @author Eric Pabst (epabst@gmail.com)
   */
-case class CrudContext(context: ContextWithVars, application: CrudApplication) {
-  def vars: ContextVars = context
+case class CrudContext(activityContext: ContextWithState, application: CrudApplication) {
+  def activityState: State = activityContext
 
   def openEntityPersistence(entityType: EntityType): CrudPersistence =
     application.crudType(entityType).openEntityPersistence(this)
@@ -27,20 +27,20 @@ case class CrudContext(context: ContextWithVars, application: CrudApplication) {
   def withEntityPersistence_uncurried[T](entityType: EntityType, f: CrudPersistence => T): T =
     application.crudType(entityType).withEntityPersistence(this)(f)
 
-  def addCachedStateListener(listener: CachedStateListener) {
-    CachedStateListeners.get(context) += listener
+  def addCachedActivityStateListener(listener: CachedStateListener) {
+    CachedStateListeners.get(activityState) += listener
   }
 
-  def onSaveState(context: ContextVars, outState: Bundle) {
-    CachedStateListeners.get(context).foreach(_.onSaveState(outState))
+  def onSaveActivityState(outState: Bundle) {
+    CachedStateListeners.get(activityState).foreach(_.onSaveState(outState))
   }
 
-  def onRestoreState(context: ContextVars, savedState: Bundle) {
-    CachedStateListeners.get(context).foreach(_.onRestoreState(savedState))
+  def onRestoreActivityState(savedState: Bundle) {
+    CachedStateListeners.get(activityState).foreach(_.onRestoreState(savedState))
   }
 
-  def onClearState(context: ContextVars, stayActive: Boolean) {
-    CachedStateListeners.get(context).foreach(_.onClearState(stayActive))
+  def onClearActivityState(stayActive: Boolean) {
+    CachedStateListeners.get(activityState).foreach(_.onClearState(stayActive))
   }
 }
 
@@ -48,12 +48,12 @@ object CrudContextField extends Field(identityField[CrudContext])
 object UriField extends Field(identityField[UriPath])
 
 /** A listener for when a CrudContext is being destroyed and resources should be released. */
-trait DestroyContextListener {
-  def onDestroyContext()
+trait DestroyStateListener {
+  def onDestroyState()
 }
 
 /** Listeners that represent state and will listen to a various events. */
-object CachedStateListeners extends InitializedContextVar[mutable.Set[CachedStateListener]](new CopyOnWriteArraySet[CachedStateListener]())
+object CachedStateListeners extends InitializedStateVar[mutable.Set[CachedStateListener]](new CopyOnWriteArraySet[CachedStateListener]())
 
 trait CachedStateListener {
   /** Save any cached state into the given bundle before switching context. */

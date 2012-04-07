@@ -1,6 +1,6 @@
 package com.github.scala.android.crud
 
-import action.{ContextVars, ContextWithVars}
+import action.{State, ContextWithState}
 import android.provider.BaseColumns
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -67,7 +67,7 @@ class SQLitePersistenceFactorySpec extends MustMatchers with CrudMockitoSugar wi
   @Test
   def shouldCloseCursorsWhenClosing() {
     val crudContext = mock[CrudContext]
-    stub(crudContext.vars).toReturn(new ContextVars {})
+    stub(crudContext.activityState).toReturn(new State {})
     stub(crudContext.application).toReturn(application)
 
     val cursors = Buffer[Cursor]()
@@ -153,4 +153,4 @@ class SQLitePersistenceFactorySpec extends MustMatchers with CrudMockitoSugar wi
   }
 }
 
-class MyContextWithVars extends Activity with ContextWithVars
+class MyContextWithVars extends Activity with ContextWithState

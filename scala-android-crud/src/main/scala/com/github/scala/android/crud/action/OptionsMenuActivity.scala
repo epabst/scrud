@@ -10,11 +10,11 @@ import java.util.concurrent.atomic.AtomicBoolean
   * When the options menu changes, invoke {{{this.optionsMenuCommands = ...}}}
   * @author Eric Pabst (epabst@gmail.com)
   */
-trait OptionsMenuActivity extends ActivityWithVars {
+trait OptionsMenuActivity extends ActivityWithState {
   protected def initialOptionsMenuCommands: List[Command]
 
-  // Use a ContextVar to make it thread-safe
-  private object OptionsMenuCommandsVar extends ContextVar[List[Command]]
+  // Use a StateVar to make it thread-safe
+  private object OptionsMenuCommandsVar extends StateVar[List[Command]]
 
   final def optionsMenuCommands: List[Command] = OptionsMenuCommandsVar.get(this).getOrElse(initialOptionsMenuCommands)
 

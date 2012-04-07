@@ -8,7 +8,7 @@ import org.scalatest.junit.JUnitRunner
 import org.scalatest.mock.MockitoSugar
 import org.mockito.Mockito._
 import com.github.scala.android.crud._
-import action.{ContextWithVars, ContextVars}
+import action.{ContextWithState, State}
 
 /** A behavior specification for [[com.github.scala.android.crud.sample.AuthorEntityType]]
   * within [[com.github.scala.android.crud.sample.SampleApplication]].
@@ -25,10 +25,9 @@ class SampleApplicationSpec extends Spec with MustMatchers with MockitoSugar {
     }
 
     it("must calculate the book count") {
-      val contextVars = new ContextVars {}
       val application = mock[CrudApplication]
-      val crudContext = new CrudContext(mock[ContextWithVars], application) {
-        override def vars = contextVars
+      val crudContext = new CrudContext(mock[ContextWithState], application) {
+        override val activityState = new State {}
       }
       val factory = GeneratedPersistenceFactory(new ListBufferCrudPersistence(Map.empty[String, Any], _, crudContext))
       val bookCrudType = new CrudType(BookEntityType, factory)

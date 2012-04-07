@@ -41,7 +41,7 @@ trait CrudApplication extends Logging {
 
   def childEntityTypes(entityType: EntityType): List[EntityType] = crudType(entityType).childEntityTypes(this)
 
-  final def withEntityPersistence[T](entityType: EntityType, activity: ActivityWithVars)(f: CrudPersistence => T): T = {
+  final def withEntityPersistence[T](entityType: EntityType, activity: ActivityWithState)(f: CrudPersistence => T): T = {
     crudType(entityType).withEntityPersistence(new CrudContext(activity, this))(f)
   }
 

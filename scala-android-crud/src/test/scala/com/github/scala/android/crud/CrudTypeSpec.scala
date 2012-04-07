@@ -1,6 +1,6 @@
 package com.github.scala.android.crud
 
-import action.ContextVars
+import action.State
 import common.UriPath
 import org.junit.runner.RunWith
 import persistence.CursorField
@@ -100,7 +100,7 @@ class CrudTypeSpec extends Spec with MustMatchers with CrudMockitoSugar {
     val persistence = mock[CrudPersistence]
     val activity = mock[CrudActivity]
     val crudContext = mock[CrudContext]
-    stub(crudContext.vars).toReturn(new ContextVars {})
+    stub(crudContext.activityState).toReturn(new State {})
     val entity = new MyCrudType(persistence)
     val readable = mutable.Map[String,Any]()
     val uri = UriPath(entity.entityName) / 345L
@@ -124,9 +124,9 @@ class CrudTypeSpec extends Spec with MustMatchers with CrudMockitoSugar {
     val readable = mutable.Map[String,Any](CursorField.idFieldName -> 345L, "name" -> "George")
     val uri = UriPath(entity.entityName) / 345L
     stub(activity.crudContext).toReturn(crudContext)
-    val vars = new ContextVars {}
-    stub(crudContext.vars).toReturn(vars)
-    stub(crudContext.context).toReturn(activity)
+    val vars = new State {}
+    stub(crudContext.activityState).toReturn(vars)
+    stub(crudContext.activityContext).toReturn(activity)
     stub(crudContext.application).toReturn(MyCrudApplication(entity))
     stub(activity.variables).toReturn(vars.variables)
     stub(persistence.crudContext).toReturn(crudContext)

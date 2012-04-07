@@ -15,7 +15,7 @@ import view.{ViewField, OnClickOperationSetter}
   * @author Eric Pabst (epabst@gmail.com)
   */
 
-trait BaseCrudActivity extends ActivityWithVars with OptionsMenuActivity with Logging with Timing {
+trait BaseCrudActivity extends ActivityWithState with OptionsMenuActivity with Logging with Timing {
   def crudApplication: CrudApplication = super.getApplication.asInstanceOf[CrudAndroidApplication].application
 
   lazy val crudType: CrudType = crudApplication.allCrudTypes.find(crudType => Some(crudType.entityName) == currentUriPath.lastEntityNameOption).getOrElse {
@@ -54,8 +54,8 @@ trait BaseCrudActivity extends ActivityWithVars with OptionsMenuActivity with Lo
   /** This should be a lazy val in subclasses. */
   protected def normalActions: Seq[Action]
 
-  /** A ContextVar that holds an undoable Action if present. */
-  private object LastUndoable extends ContextVar[Undoable]
+  /** A StateVar that holds an undoable Action if present. */
+  private object LastUndoable extends StateVar[Undoable]
 
   def allowUndo(undoable: Undoable) {
     // Finish any prior undoable first.  This could be re-implemented to support a stack of undoable operations.
@@ -101,23 +101,23 @@ trait BaseCrudActivity extends ActivityWithVars with OptionsMenuActivity with Lo
   override def onSaveInstanceState(outState: Bundle) {
     super.onSaveInstanceState(outState)
     // This is after the super call so that outState can be overridden if needed.
-    crudContext.onSaveState(this, outState)
+    crudContext.onSaveActivityState(outState)
   }
 
   override def onRestoreInstanceState(savedInstanceState: Bundle) {
     // This is before the super call to be the opposite order as onSaveInstanceState.
-    crudContext.onRestoreState(this, savedInstanceState)
+    crudContext.onRestoreActivityState(savedInstanceState)
     super.onRestoreInstanceState(savedInstanceState)
   }
 
   override def onResume() {
     trace("onResume")
-    crudContext.onClearState(this, stayActive = true)
+    crudContext.onClearActivityState(stayActive = true)
     super.onResume()
   }
 
   override def onDestroy() {
-    crudContext.vars.onDestroyContext()
+    crudContext.activityState.onDestroyState()
     super.onDestroy()
   }
 

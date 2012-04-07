@@ -1,7 +1,7 @@
 package com.github.scala.android.crud.view
 
 import android.view.View
-import com.github.scala.android.crud.action.{ActivityWithVars, Operation}
+import com.github.scala.android.crud.action.{ActivityWithState, Operation}
 import com.github.triangle.{SetterUsingItems,&&}
 import com.github.scala.android.crud.view.AndroidConversions._
 import com.github.scala.android.crud.{UriField, CrudContextField, CrudContext}
@@ -11,7 +11,7 @@ import com.github.scala.android.crud.{UriField, CrudContextField, CrudContext}
   */
 case class OnClickOperationSetter[T](viewOperation: View => Operation) extends SetterUsingItems[T]  {
   override def setterUsingItems = {
-    case (view: View, CrudContextField(Some(CrudContext(activity: ActivityWithVars, _))) && UriField(Some(uri))) => ignoredValue => {
+    case (view: View, CrudContextField(Some(CrudContext(activity: ActivityWithState, _))) && UriField(Some(uri))) => ignoredValue => {
       if (view.isClickable) {
         view.setOnClickListener { view: View =>
           viewOperation(view).invoke(uri, activity)

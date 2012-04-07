@@ -39,7 +39,7 @@ class CrudActivity extends BaseCrudActivity { self =>
     }
     bindNormalActionsToViews()
     if (crudApplication.maySpecifyEntityInstance(currentUriPath, entityType)) {
-      crudContext.addCachedStateListener(new CachedStateListener {
+      crudContext.addCachedActivityStateListener(new CachedStateListener {
         def onClearState(stayActive: Boolean) {
           if (stayActive) {
             populateFromUri(currentUriPath)

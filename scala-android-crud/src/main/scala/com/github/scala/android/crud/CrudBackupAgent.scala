@@ -1,6 +1,6 @@
 package com.github.scala.android.crud
 
-import action.ContextWithVars
+import action.ContextWithState
 import android.app.backup.{BackupDataOutput, BackupDataInput, BackupAgent}
 import com.github.triangle.Logging
 import common.{UriPath, CalculatedIterator, Common}
@@ -44,7 +44,7 @@ object CrudBackupAgent {
 
 import CrudBackupAgent._
 
-class CrudBackupAgent(application: CrudApplication) extends BackupAgent with ContextWithVars with Logging {
+class CrudBackupAgent(application: CrudApplication) extends BackupAgent with ContextWithState with Logging {
   protected def logTag = Common.tryToEvaluate(application.logTag).getOrElse(Common.logTag)
 
   final def onBackup(oldState: ParcelFileDescriptor, data: BackupDataOutput, newState: ParcelFileDescriptor) {
@@ -167,7 +167,7 @@ object DeletedEntityIdCrudType extends CrudType(DeletedEntityIdEntityType, SQLit
     * it will be restored independent of this support, and it will then be re-added to the Backup Service later
     * just like any new entity being added.
     */
-  def recordDeletion(entityType: EntityType, id: ID, context: ContextWithVars) {
+  def recordDeletion(entityType: EntityType, id: ID, context: ContextWithState) {
     val crudContext = new CrudContext(context, application)
     val writable = DeletedEntityIdEntityType.copyAndTransform(
       Map(DeletedEntityIdEntityType.entityNameField.name -> entityType.entityName,
@@ -175,7 +175,7 @@ object DeletedEntityIdCrudType extends CrudType(DeletedEntityIdEntityType, SQLit
     withEntityPersistence(crudContext) { _.save(None, writable) }
   }
 
-  def writeEntityRemovals(data: BackupTarget, context: ContextWithVars) {
+  def writeEntityRemovals(data: BackupTarget, context: ContextWithState) {
     val crudContext = new CrudContext(context, application)
     withEntityPersistence(crudContext) { persistence =>
       persistence.findAll(UriPath.EMPTY).foreach { entity =>
