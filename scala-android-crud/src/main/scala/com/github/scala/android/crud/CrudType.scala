@@ -194,8 +194,8 @@ class CrudType(val entityType: EntityType, val persistenceFactory: PersistenceFa
   /** Listeners that will listen to any EntityPersistence that is opened. */
   val persistenceListeners = new InitializedStateVar[mutable.Set[PersistenceListener]](new CopyOnWriteArraySet[PersistenceListener]())
 
-  def addPersistenceListener(listener: PersistenceListener, state: State) {
-    persistenceListeners.get(state) += listener
+  def addPersistenceListener(listener: PersistenceListener, crudContext: CrudContext) {
+    persistenceListeners.get(crudContext.activityState) += listener
   }
 
   def openEntityPersistence(crudContext: CrudContext): CrudPersistence = {
@@ -233,7 +233,7 @@ class CrudType(val entityType: EntityType, val persistenceFactory: PersistenceFa
           def onDelete(uri: UriPath) {
             cursor.requery()
           }
-        }, crudContext.activityState)
+        }, crudContext)
         new ResourceCursorAdapter(activity, itemLayout, cursor) with AdapterCaching {
           def entityType = self.entityType
 
@@ -256,7 +256,7 @@ class CrudType(val entityType: EntityType, val persistenceFactory: PersistenceFa
         trace("Clearing cache in " + adapterView + " of " + entityType + " due to delete")
         AdapterCaching.clearCache(adapterView, "delete")
       }
-    }, crudContext.activityState)
+    }, crudContext)
     def callCreateAdapter(): A = {
       createAdapter(persistence, uriPath, entityType, crudContext, contextItems, activity, itemLayout, adapterView).asInstanceOf[A]
     }

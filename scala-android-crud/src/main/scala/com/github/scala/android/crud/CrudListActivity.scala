@@ -41,7 +41,7 @@ class CrudListActivity extends ListActivity with BaseCrudActivity {
           //Some of the parent fields may be calculated from the children
           populateFromParentEntities()
         }
-      }, this)
+      }, crudContext)
     }
   }
 
