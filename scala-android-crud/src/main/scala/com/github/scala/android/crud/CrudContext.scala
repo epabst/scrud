@@ -15,6 +15,7 @@ import collection.JavaConversions._
   */
 case class CrudContext(activityContext: ContextWithState, application: CrudApplication) {
   def activityState: State = activityContext
+  lazy val applicationState: State = activityContext.applicationState
 
   def openEntityPersistence(entityType: EntityType): CrudPersistence =
     application.crudType(entityType).openEntityPersistence(this)
@@ -78,8 +79,7 @@ class ActivityVar[T] extends CrudContextVar[T] {
 
 /** A variable whose value is stored on a per-application basis in CrudContext. */
 class ApplicationVar[T] extends CrudContextVar[T] {
-  // todo use state that is shared for the whole application
-  protected def state(crudContext: CrudContext) = crudContext.activityState
+  protected def state(crudContext: CrudContext) = crudContext.applicationState
 }
 
 /** Similar to ActivityVar but allows specifying an initial value, evaluated when first accessed. */

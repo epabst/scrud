@@ -6,7 +6,7 @@ import android.content.Context
 import collection.JavaConversions._
 import android.app.Activity
 import com.github.scala.android.crud.common.SimpleListenerHolder
-import com.github.scala.android.crud.DestroyStateListener
+import com.github.scala.android.crud.{CrudAndroidApplication, DestroyStateListener}
 
 /** A container for values of [[com.github.scala.android.crud.action.StateVar]]'s */
 trait State extends SimpleListenerHolder[DestroyStateListener] {
@@ -72,7 +72,11 @@ class LazyStateVal[T](lazyExpression: => T) {
 /** A State that has been mixed with a Context.
   * @author Eric Pabst (epabst@gmail.com)
   */
-trait ContextWithState extends Context with State
+trait ContextWithState extends Context with State {
+  def applicationState: State
+}
 
 /** A State that has been mixed with an Activity. */
-trait ActivityWithState extends Activity with ContextWithState
+trait ActivityWithState extends Activity with ContextWithState {
+  def applicationState: State = getApplication.asInstanceOf[CrudAndroidApplication]
+}

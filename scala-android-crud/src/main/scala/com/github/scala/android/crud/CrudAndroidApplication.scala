@@ -1,5 +1,6 @@
 package com.github.scala.android.crud
 
+import action.State
 import android.app.Application
 
 /**
@@ -14,4 +15,4 @@ import android.app.Application
  * Date: 3/2/12
  * Time: 5:07 PM
  */
-abstract class CrudAndroidApplication(val application: CrudApplication) extends Application
+abstract class CrudAndroidApplication(val application: CrudApplication) extends Application with State

@@ -1,6 +1,6 @@
 package com.github.scala.android.crud
 
-import action.ContextWithState
+import action.{State, ContextWithState}
 import android.app.backup.{BackupDataOutput, BackupDataInput, BackupAgent}
 import com.github.triangle.Logging
 import common.{UriPath, CalculatedIterator, Common}
@@ -46,6 +46,8 @@ import CrudBackupAgent._
 
 class CrudBackupAgent(application: CrudApplication) extends BackupAgent with ContextWithState with Logging {
   protected def logTag = Common.tryToEvaluate(application.logTag).getOrElse(Common.logTag)
+
+  def applicationState: State = getApplicationContext.asInstanceOf[CrudAndroidApplication]
 
   final def onBackup(oldState: ParcelFileDescriptor, data: BackupDataOutput, newState: ParcelFileDescriptor) {
     onBackup(oldState, new BackupTarget {

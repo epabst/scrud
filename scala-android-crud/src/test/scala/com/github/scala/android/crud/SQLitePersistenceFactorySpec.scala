@@ -153,4 +153,6 @@ class SQLitePersistenceFactorySpec extends MustMatchers with CrudMockitoSugar wi
   }
 }
 
-class MyContextWithVars extends Activity with ContextWithState
+class MyContextWithVars extends Activity with ContextWithState{
+  val applicationState = new State {}
+}
