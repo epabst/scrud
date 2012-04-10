@@ -192,7 +192,7 @@ class CrudType(val entityType: EntityType, val persistenceFactory: PersistenceFa
       application.childEntityTypes(entityType).flatMap(application.actionToList(_))
 
   /** Listeners that will listen to any EntityPersistence that is opened. */
-  val persistenceListeners = new InitializedStateVar[mutable.Set[PersistenceListener]](new CopyOnWriteArraySet[PersistenceListener]())
+  val persistenceListeners = new LazyStateVal[mutable.Set[PersistenceListener]](new CopyOnWriteArraySet[PersistenceListener]())
 
   def addPersistenceListener(listener: PersistenceListener, crudContext: CrudContext) {
     persistenceListeners.get(crudContext.activityState) += listener

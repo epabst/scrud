@@ -1,6 +1,6 @@
 package com.github.scala.android.crud
 
-import action.{StateVar, InitializedStateVar, State, ContextWithState}
+import action.{StateVar, State, ContextWithState}
 import com.github.triangle.Field
 import com.github.triangle.PortableField._
 import common.UriPath
@@ -28,19 +28,19 @@ case class CrudContext(activityContext: ContextWithState, application: CrudAppli
     application.crudType(entityType).withEntityPersistence(this)(f)
 
   def addCachedActivityStateListener(listener: CachedStateListener) {
-    CachedStateListeners.get(activityState) += listener
+    CachedStateListeners.get(this) += listener
   }
 
   def onSaveActivityState(outState: Bundle) {
-    CachedStateListeners.get(activityState).foreach(_.onSaveState(outState))
+    CachedStateListeners.get(this).foreach(_.onSaveState(outState))
   }
 
   def onRestoreActivityState(savedState: Bundle) {
-    CachedStateListeners.get(activityState).foreach(_.onRestoreState(savedState))
+    CachedStateListeners.get(this).foreach(_.onRestoreState(savedState))
   }
 
   def onClearActivityState(stayActive: Boolean) {
-    CachedStateListeners.get(activityState).foreach(_.onClearState(stayActive))
+    CachedStateListeners.get(this).foreach(_.onClearState(stayActive))
   }
 }
 
@@ -82,13 +82,26 @@ class ApplicationVar[T] extends CrudContextVar[T] {
   protected def state(crudContext: CrudContext) = crudContext.activityState
 }
 
+/** Similar to ActivityVar but allows specifying an initial value, evaluated when first accessed. */
+class LazyActivityVal[T](lazyExpression: => T) {
+  private val activityVar = new ActivityVar[T]
+
+  /** Gets the value, evaluating if needed.
+    * @param crudContext the CrudContext where the value is stored
+    * @return the value
+    */
+  def get(crudContext: CrudContext): T = {
+    activityVar.getOrSet(crudContext, lazyExpression)
+  }
+}
+
 /** A listener for when a CrudContext is being destroyed and resources should be released. */
 trait DestroyStateListener {
   def onDestroyState()
 }
 
 /** Listeners that represent state and will listen to a various events. */
-object CachedStateListeners extends InitializedStateVar[mutable.Set[CachedStateListener]](new CopyOnWriteArraySet[CachedStateListener]())
+object CachedStateListeners extends LazyActivityVal[mutable.Set[CachedStateListener]](new CopyOnWriteArraySet[CachedStateListener]())
 
 trait CachedStateListener {
   /** Save any cached state into the given bundle before switching context. */

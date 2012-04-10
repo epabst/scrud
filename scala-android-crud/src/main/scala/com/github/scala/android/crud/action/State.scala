@@ -57,15 +57,15 @@ class StateVar[T] {
 }
 
 /** Similar to StateVar but allows specifying an initial value, evaluated when first accessed. */
-class InitializedStateVar[T](initialValue: => T) {
+class LazyStateVal[T](lazyExpression: => T) {
   private val stateVar = new StateVar[T]
 
-  /** Gets the value or None if not set.
+  /** Gets the value, evaluating if needed.
     * @param state the State where the value is stored
-    * @return Some(value) if set, otherwise None
+    * @return the value
     */
   def get(state: State): T = {
-    stateVar.getOrSet(state, initialValue)
+    stateVar.getOrSet(state, lazyExpression)
   }
 }
 
