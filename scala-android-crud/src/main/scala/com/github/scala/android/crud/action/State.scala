@@ -6,7 +6,7 @@ import android.content.Context
 import collection.JavaConversions._
 import android.app.Activity
 import com.github.scala.android.crud.common.SimpleListenerHolder
-import com.github.scala.android.crud.{CrudContext, DestroyStateListener}
+import com.github.scala.android.crud.DestroyStateListener
 
 /** A container for values of [[com.github.scala.android.crud.action.StateVar]]'s */
 trait State extends SimpleListenerHolder[DestroyStateListener] {
@@ -67,39 +67,6 @@ class InitializedStateVar[T](initialValue: => T) {
   def get(state: State): T = {
     stateVar.getOrSet(state, initialValue)
   }
-}
-
-abstract class CrudContextVar[T] {
-  private val stateVar: StateVar[T] = new StateVar[T]
-
-  protected def state(crudContext: CrudContext): State
-
-  def get(crudContext: CrudContext): Option[T] = stateVar.get(state(crudContext))
-
-  /** Tries to set the value in {{{crudContext}}}.
-    * @param crudContext the CrudContext where the value is stored
-    * @param value the value to set in the CrudContext.
-    */
-  def set(crudContext: CrudContext, value: T) {
-    stateVar.set(state(crudContext), value)
-  }
-
-  def clear(crudContext: CrudContext): Option[T] = {
-    stateVar.clear(state(crudContext))
-  }
-
-  def getOrSet(crudContext: CrudContext, initialValue: => T): T = {
-    stateVar.getOrSet(state(crudContext), initialValue)
-  }
-}
-
-class ActivityStateVar[T] extends CrudContextVar[T] {
-  protected def state(crudContext: CrudContext) = crudContext.activityState
-}
-
-class ApplicationStateVar[T] extends CrudContextVar[T] {
-  // todo use state that is shared for the whole application
-  protected def state(crudContext: CrudContext) = crudContext.activityState
 }
 
 /** A State that has been mixed with a Context.

@@ -13,7 +13,7 @@ import com.github.scala.android.crud.common.Common.withCloseable
 import android.graphics.BitmapFactory
 import android.graphics.drawable.{BitmapDrawable, Drawable}
 import com.github.scala.android.crud.action._
-import com.github.scala.android.crud.{CrudContext, CrudContextField}
+import com.github.scala.android.crud.{ApplicationVar, CrudContext, CrudContextField}
 
 /** A ViewField for an image that can be captured using the camera.
   * It currently puts the image into external storage, which requires the following in the AndroidManifest.xml:
@@ -24,7 +24,7 @@ object CapturedImageView extends ViewField[Uri](new FieldLayout {
   def displayXml = <ImageView android:adjustViewBounds="true"/>
   def editXml = <ImageView android:adjustViewBounds="true" android:clickable="true"/>
 }) {
-  private object DrawableByUriCache extends ApplicationStateVar[CachedFunction[Uri,Drawable]]
+  private object DrawableByUriCache extends ApplicationVar[CachedFunction[Uri,Drawable]]
 
   private def bitmapFactoryOptions = {
     val options = new BitmapFactory.Options

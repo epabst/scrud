@@ -1,6 +1,6 @@
 package com.github.scala.android.crud
 
-import action.{InitializedStateVar, State, ContextWithState}
+import action.{StateVar, InitializedStateVar, State, ContextWithState}
 import com.github.triangle.Field
 import com.github.triangle.PortableField._
 import common.UriPath
@@ -46,6 +46,41 @@ case class CrudContext(activityContext: ContextWithState, application: CrudAppli
 
 object CrudContextField extends Field(identityField[CrudContext])
 object UriField extends Field(identityField[UriPath])
+
+abstract class CrudContextVar[T] {
+  private val stateVar: StateVar[T] = new StateVar[T]
+
+  protected def state(crudContext: CrudContext): State
+
+  def get(crudContext: CrudContext): Option[T] = stateVar.get(state(crudContext))
+
+  /** Tries to set the value in {{{crudContext}}}.
+    * @param crudContext the CrudContext where the value is stored
+    * @param value the value to set in the CrudContext.
+    */
+  def set(crudContext: CrudContext, value: T) {
+    stateVar.set(state(crudContext), value)
+  }
+
+  def clear(crudContext: CrudContext): Option[T] = {
+    stateVar.clear(state(crudContext))
+  }
+
+  def getOrSet(crudContext: CrudContext, initialValue: => T): T = {
+    stateVar.getOrSet(state(crudContext), initialValue)
+  }
+}
+
+/** A variable whose value is stored on a per-activity basis in CrudContext. */
+class ActivityVar[T] extends CrudContextVar[T] {
+  protected def state(crudContext: CrudContext) = crudContext.activityState
+}
+
+/** A variable whose value is stored on a per-application basis in CrudContext. */
+class ApplicationVar[T] extends CrudContextVar[T] {
+  // todo use state that is shared for the whole application
+  protected def state(crudContext: CrudContext) = crudContext.activityState
+}
 
 /** A listener for when a CrudContext is being destroyed and resources should be released. */
 trait DestroyStateListener {
