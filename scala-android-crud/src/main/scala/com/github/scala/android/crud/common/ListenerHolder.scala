@@ -23,6 +23,12 @@ trait ListenerHolder[L] {
   def removeListener(listener: L)
 }
 
+trait DelegatingListenerSet[L] extends ListenerSet[L] {
+  protected def listenerSet: ListenerSet[L]
+
+  def listeners: Set[L] = listenerSet.listeners
+}
+
 trait DelegatingListenerHolder[L] extends ListenerHolder[L] {
   protected def listenerHolder: ListenerHolder[L]
 
@@ -37,24 +43,8 @@ trait DelegatingListenerHolder[L] extends ListenerHolder[L] {
   }
 }
 
-private object UnsupportedListenerSet {
-  def apply[L](): ListenerSet[L] = new ListenerSet[L] {
-    def listeners: Set[L] = {
-      throw new UnsupportedOperationException("listeners are not supported for " + this)
-    }
-  }
-}
-
-trait UnsupportedListenerHolder[L] extends ListenerHolder[L] with ListenerSet[L] {
-  protected def listenerSet = UnsupportedListenerSet()
-
-  def addListener(listener: L) {
-    throw new UnsupportedOperationException("listeners are not supported for " + this)
-  }
-
-  def removeListener(listener: L) {
-    throw new UnsupportedOperationException("listeners are not supported for " + this)
-  }
+trait UnsupportedListenerHolder[L] extends ListenerSet[L] {
+  def listeners = throw new UnsupportedOperationException("listeners are not supported for " + this)
 }
 
 class MutableListenerSet[L] extends ListenerSet[L] with ListenerHolder[L] {

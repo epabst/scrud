@@ -2,13 +2,14 @@ package com.github.scala.android.crud
 
 import action.{State, ContextWithState}
 import android.provider.BaseColumns
+import common.ListenerSet
 import org.junit.Test
 import org.junit.runner.RunWith
 import com.xtremelabs.robolectric.RobolectricTestRunner
 import org.scalatest.matchers.MustMatchers
 import com.github.triangle._
 import persistence.CursorField._
-import persistence.{EntityType, CursorStream, SQLiteCriteria}
+import persistence.{PersistenceListener, EntityType, CursorStream, SQLiteCriteria}
 import PortableField._
 import scala.collection._
 import mutable.Buffer
@@ -53,13 +54,15 @@ class SQLitePersistenceFactorySpec extends MustMatchers with CrudMockitoSugar wi
     def dataVersion = 1
   }
   val application = TestApplication
+  val listenerSet = mock[ListenerSet[PersistenceListener]]
+  when(listenerSet.listeners).thenReturn(Set.empty[PersistenceListener])
 
   @Test
   def shouldUseCorrectColumnNamesForFindAll() {
     val crudContext = mock[CrudContext]
     stub(crudContext.application).toReturn(application)
 
-    val persistence = new SQLiteEntityPersistence(TestEntityType, crudContext)
+    val persistence = new SQLiteEntityPersistence(TestEntityType, crudContext, listenerSet)
     persistence.entityTypePersistedInfo.queryFieldNames must contain(BaseColumns._ID)
     persistence.entityTypePersistedInfo.queryFieldNames must contain("age")
   }
@@ -71,7 +74,7 @@ class SQLitePersistenceFactorySpec extends MustMatchers with CrudMockitoSugar wi
     stub(crudContext.application).toReturn(application)
 
     val cursors = Buffer[Cursor]()
-    val persistence = new SQLiteEntityPersistence(TestEntityType, crudContext) {
+    val persistence = new SQLiteEntityPersistence(TestEntityType, crudContext, listenerSet) {
       override def findAll(criteria: SQLiteCriteria) = {
         val result = super.findAll(criteria)
         val CursorStream(cursor, _) = result
@@ -95,6 +98,7 @@ class SQLitePersistenceFactorySpec extends MustMatchers with CrudMockitoSugar wi
   @Test
   def shouldRefreshCursorWhenDeletingAndSaving() {
     val activity = new CrudListActivity {
+      override val applicationState = new State {}
       override def crudApplication = application
       override val getListView: ListView = new ListView(this)
     }

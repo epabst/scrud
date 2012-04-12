@@ -1,7 +1,7 @@
 package com.github.scala.android.crud
 
 import common.UriPath
-import persistence.EntityType
+import persistence.{PersistenceListener, EntityType}
 
 /** A factory for EntityPersistence specific to a storage type such as SQLite.
   * @author Eric Pabst (epabst@gmail.com)
@@ -29,4 +29,6 @@ trait PersistenceFactory {
     */
   def maySpecifyEntityInstance(entityType: EntityType, uri: UriPath): Boolean =
     entityType.IdField.getter(uri).isDefined
+
+  def addListener(listener: PersistenceListener, entityType: EntityType, crudContext: CrudContext)
 }

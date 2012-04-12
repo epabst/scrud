@@ -1,6 +1,7 @@
 package com.github.scala.android.crud
 
 import _root_.android.content.Intent
+import action.State
 import org.junit.Test
 import org.junit.runner.RunWith
 import com.xtremelabs.robolectric.RobolectricTestRunner
@@ -57,6 +58,8 @@ class CrudListActivitySpec extends MustMatchers with CrudMockitoSugar {
     val application = MyCrudApplication(crudType)
     when(persistence.findAll(any())).thenReturn(Seq(Map[String,Any]("name" -> "Bob", "age" -> 25)))
     val activity = new CrudListActivity {
+      override val applicationState = new State {}
+
       override def crudApplication = application
     }
     activity.setIntent(new Intent(Intent.ACTION_MAIN))

@@ -191,18 +191,11 @@ class CrudType(val entityType: EntityType, val persistenceFactory: PersistenceFa
     displayLayout.flatMap(_ => application.actionToDisplay(entityType)).toList :::
       application.childEntityTypes(entityType).flatMap(application.actionToList(_))
 
-  /** Listeners that will listen to any EntityPersistence that is opened. */
-  val persistenceListeners = new LazyStateVal[mutable.Set[PersistenceListener]](new CopyOnWriteArraySet[PersistenceListener]())
-
   def addPersistenceListener(listener: PersistenceListener, crudContext: CrudContext) {
-    persistenceListeners.get(crudContext.activityState) += listener
+    persistenceFactory.addListener(listener, entityType, crudContext)
   }
 
-  def openEntityPersistence(crudContext: CrudContext): CrudPersistence = {
-    val persistence = createEntityPersistence(crudContext)
-    persistenceListeners.get(crudContext.activityState).foreach(persistence.addListener(_))
-    persistence
-  }
+  def openEntityPersistence(crudContext: CrudContext): CrudPersistence = createEntityPersistence(crudContext)
 
   /** Instantiates a data buffer which can be saved by EntityPersistence.
     * The fields must support copying into this object.

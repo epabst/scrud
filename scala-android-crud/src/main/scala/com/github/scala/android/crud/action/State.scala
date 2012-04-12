@@ -6,7 +6,7 @@ import android.content.Context
 import collection.JavaConversions._
 import android.app.Activity
 import com.github.scala.android.crud.common.SimpleListenerHolder
-import com.github.scala.android.crud.{CrudAndroidApplication, DestroyStateListener}
+import com.github.scala.android.crud.DestroyStateListener
 
 /** A container for values of [[com.github.scala.android.crud.action.StateVar]]'s */
 trait State extends SimpleListenerHolder[DestroyStateListener] {
@@ -78,5 +78,6 @@ trait ContextWithState extends Context with State {
 
 /** A State that has been mixed with an Activity. */
 trait ActivityWithState extends Activity with ContextWithState {
-  def applicationState: State = getApplication.asInstanceOf[CrudAndroidApplication]
+  // getApplication gets the Android application, which should extend CrudAndroidApplication, which already extends State.
+  def applicationState: State = getApplication.asInstanceOf[State]
 }

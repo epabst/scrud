@@ -4,7 +4,7 @@ import scala.collection.mutable
 import com.github.triangle.{Setter, Getter, Field}
 import com.github.scala.android.crud.common.PlatformTypes._
 import java.util.concurrent.atomic.AtomicLong
-import com.github.scala.android.crud.common.{SimpleListenerHolder, UnsupportedListenerHolder, UriPath}
+import com.github.scala.android.crud.common._
 
 /** EntityPersistence for a simple generated Seq.
   * @author Eric Pabst (epabst@gmail.com)
@@ -24,10 +24,12 @@ trait ReadOnlyPersistence extends EntityPersistence with UnsupportedListenerHold
   def close() {}
 }
 
-abstract class ListBufferEntityPersistence[T <: AnyRef](newWritableFunction: => T) extends SeqEntityPersistence[T] with SimpleListenerHolder[PersistenceListener] {
+abstract class ListBufferEntityPersistence[T <: AnyRef](newWritableFunction: => T, listenerSet: ListenerSet[PersistenceListener]) extends SeqEntityPersistence[T] {
   private object IdField extends Field[ID](Getter[IdPk,ID](_.id).withTransformer(e => e.id(_)) +
       Setter((e: MutableIdPk) => e.id = _) + CursorField.PersistedId)
   val buffer = mutable.ListBuffer[T]()
+
+  def listeners = listenerSet.listeners
 
   val nextId = new AtomicLong(10000L)
 

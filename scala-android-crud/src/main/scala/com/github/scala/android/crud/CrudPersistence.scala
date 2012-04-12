@@ -8,7 +8,7 @@ import com.github.triangle.Logging
 /** An EntityPersistence for a CrudType.
   * @author Eric Pabst (epabst@gmail.com)
   */
-trait CrudPersistence extends EntityPersistence with ListenerHolder[PersistenceListener] with Logging {
+trait CrudPersistence extends EntityPersistence with ListenerSet[PersistenceListener] with Logging {
   override protected def logTag: String = Common.tryToEvaluate(entityType.logTag).getOrElse(Common.logTag)
 
   def entityType: EntityType
@@ -41,5 +41,7 @@ trait CrudPersistence extends EntityPersistence with ListenerHolder[PersistenceL
 
 trait SeqCrudPersistence[T <: AnyRef] extends SeqEntityPersistence[T] with CrudPersistence
 
-class ListBufferCrudPersistence[T <: AnyRef](newWritableFunction: => T, val entityType: EntityType, val crudContext: CrudContext)
-        extends ListBufferEntityPersistence[T](newWritableFunction) with SeqCrudPersistence[T]
+class ListBufferCrudPersistence[T <: AnyRef](newWritableFunction: => T, val entityType: EntityType,
+                                             val crudContext: CrudContext,
+                                             listenerSet: ListenerSet[PersistenceListener] = new MutableListenerSet[PersistenceListener])
+        extends ListBufferEntityPersistence[T](newWritableFunction, listenerSet) with SeqCrudPersistence[T]

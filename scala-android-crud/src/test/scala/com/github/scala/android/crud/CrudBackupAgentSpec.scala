@@ -1,5 +1,6 @@
 package com.github.scala.android.crud
 
+import action.State
 import common.CalculatedIterator
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -82,7 +83,9 @@ class CrudBackupAgentSpec extends MustMatchers with CrudEasyMockSugar {
       call(applicationB.allCrudTypes).andReturn(List[CrudType](entityTypeB, entityType2B))
     }
     whenExecuting(application, applicationB, listAdapter, backupTarget, state1, state1b) {
-      val backupAgent = new CrudBackupAgent(application)
+      val backupAgent = new CrudBackupAgent(application) {
+        override val applicationState = new State {}
+      }
       backupAgent.onCreate()
       backupAgent.onBackup(state0, backupTarget, state1)
       backupAgent.onDestroy()
@@ -131,7 +134,9 @@ class CrudBackupAgentSpec extends MustMatchers with CrudEasyMockSugar {
       //shouldn't call any methods on generatedPersistence
     }
     whenExecuting(application, listAdapter, backupTarget, state1) {
-      val backupAgent = new CrudBackupAgent(application)
+      val backupAgent = new CrudBackupAgent(application) {
+        override val applicationState = new State {}
+      }
       backupAgent.onCreate()
       //shouldn't fail even though one is generated
       backupAgent.onBackup(state0, backupTarget, state1)

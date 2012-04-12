@@ -1,7 +1,7 @@
 package com.github.scala.android.crud
 
 import org.mockito.Mockito
-import persistence.EntityType
+import persistence.{PersistenceListener, EntityType}
 
 /** A simple CrudType for testing.
   * @author Eric Pabst (epabst@gmail.com)
@@ -24,12 +24,16 @@ case class MyCrudType(override val entityType: EntityType, override val persiste
 
 object MyCrudType extends MyCrudType(Mockito.mock(classOf[CrudPersistence]))
 
-class MyPersistenceFactory(persistence: CrudPersistence) extends PersistenceFactory {
+class MyPersistenceFactory(persistence: CrudPersistence) extends PersistenceFactory with PersistenceListenerSetValHolder {
   def canSave = true
 
   override def newWritable = Map.empty[String,Any]
 
   def createEntityPersistence(entityType: EntityType, crudContext: CrudContext) = persistence
+
+  def addListener(listener: PersistenceListener, entityType: EntityType, crudContext: CrudContext) {
+    listenerSet(entityType, crudContext).addListener(listener)
+  }
 }
 
 trait StubCrudType extends CrudType {
