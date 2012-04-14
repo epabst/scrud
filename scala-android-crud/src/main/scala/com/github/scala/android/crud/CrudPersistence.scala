@@ -38,10 +38,3 @@ trait CrudPersistence extends EntityPersistence with ListenerSet[PersistenceList
     save(modelEntity.id, entityType.copyAndTransform(modelEntity, writable))
   }
 }
-
-trait SeqCrudPersistence[T <: AnyRef] extends SeqEntityPersistence[T] with CrudPersistence
-
-class ListBufferCrudPersistence[T <: AnyRef](newWritableFunction: => T, val entityType: EntityType,
-                                             val crudContext: CrudContext,
-                                             listenerSet: ListenerSet[PersistenceListener] = new MutableListenerSet[PersistenceListener])
-        extends ListBufferEntityPersistence[T](newWritableFunction, listenerSet) with SeqCrudPersistence[T]
