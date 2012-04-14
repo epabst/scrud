@@ -24,8 +24,4 @@ class ListBufferPersistenceFactory[T <: AnyRef](instantiateItem: => T) extends P
       //make the listBuffer last more than one openEntityPersistence
       override val buffer = listBuffer(entityType)
     }
-
-  def addListener(listener: PersistenceListener, entityType: EntityType, crudContext: CrudContext) {
-    listenerSet(entityType, crudContext).addListener(listener)
-  }
 }

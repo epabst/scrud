@@ -16,10 +16,6 @@ object SQLitePersistenceFactory extends PersistenceFactory with PersistenceListe
     new SQLiteEntityPersistence(entityType, crudContext, listenerSet(entityType, crudContext))
 
 
-  def addListener(listener: PersistenceListener, entityType: EntityType, crudContext: CrudContext) {
-    listenerSet(entityType, crudContext).addListener(listener)
-  }
-
   def toTableName(entityName: String): String = SQLiteUtil.toNonReservedWord(entityName)
 }
 
@@ -29,5 +25,8 @@ trait PersistenceListenerSetValHolder {
       CachedFunction[EntityType, MutableListenerSet[PersistenceListener]](_ => new MutableListenerSet[PersistenceListener]))
 
   def listenerSet(entityType: EntityType, crudContext: CrudContext): MutableListenerSet[PersistenceListener] =
+    ListenersByEntityType.get(crudContext).apply(entityType)
+
+  def listenerHolder(entityType: EntityType, crudContext: CrudContext): MutableListenerSet[PersistenceListener] =
     ListenersByEntityType.get(crudContext).apply(entityType)
 }

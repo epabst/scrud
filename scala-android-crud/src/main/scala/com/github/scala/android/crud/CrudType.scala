@@ -14,9 +14,6 @@ import android.view.View
 import android.content.Context
 import android.database.Cursor
 import android.widget._
-import java.util.concurrent.CopyOnWriteArraySet
-import scala.collection.JavaConversions._
-import collection.mutable
 import view.{ViewRef, AdapterCachingStateListener, AdapterCaching, EntityAdapter}
 
 /** An entity configuration that provides all custom information needed to

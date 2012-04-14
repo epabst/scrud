@@ -3,19 +3,34 @@ package com.github.scala.android.crud
 import common._
 import persistence.{PersistenceListener, EntityType}
 
-/**A CrudPersistence that wraps another one, but only returning the first one,
+/**
+ * A CrudPersistence that wraps another one, but only returning the first one,
  * and creating a new instance instead of updating an existing instance.
  */
-case class SingletonWithChangeLogCrudPersistence(manyPersistence: CrudPersistence) extends CrudPersistence
+case class SingletonWithChangeLogCrudPersistence(manyPersistence: CrudPersistence,
+                                                 listenerHolder: ListenerHolder[PersistenceListener]) extends CrudPersistence
     with DelegatingListenerSet[PersistenceListener] {
 
-  protected def listenerSet = manyPersistence
+  protected def listenerSet: ListenerSet[PersistenceListener] = manyPersistence
 
   def entityType = manyPersistence.entityType
 
   def crudContext = manyPersistence.crudContext
 
-  def findAll(uri: UriPath) = manyPersistence.findAll(uri).take(1)
+  private lazy val cacheClearingListener = new PersistenceListener {
+    def onDelete(uri: UriPath) { cachedFindAll.clear() }
+    def onSave(id: PlatformTypes.ID) { cachedFindAll.clear() }
+  }
+
+  def crudType = manyPersistence.crudContext.application.crudType(entityType)
+
+  private lazy val cachedFindAll: CachedFunction[UriPath,Seq[AnyRef]] = {
+    val function = CachedFunction((uri: UriPath) => manyPersistence.findAll(uri).take(1))
+    listenerHolder.addListener(cacheClearingListener)
+    function
+  }
+
+  def findAll(uri: UriPath) = cachedFindAll(uri)
 
   def newWritable = manyPersistence.newWritable
 
@@ -31,10 +46,12 @@ case class SingletonWithChangeLogCrudPersistence(manyPersistence: CrudPersistenc
 
   def close() {
     manyPersistence.close()
+    listenerHolder.removeListener(cacheClearingListener)
   }
 }
 
-/**A PersistenceFactory where only the first entity instance is read, and a new instance is saved each time.
+/**
+ * A PersistenceFactory where only the first entity instance is read, and a new instance is saved each time.
  * @author Eric Pabst (epabst@gmail.com)
  */
 class SingletonWithChangeLogPersistenceFactory(delegate: PersistenceFactory) extends PersistenceFactory {
@@ -47,12 +64,11 @@ class SingletonWithChangeLogPersistenceFactory(delegate: PersistenceFactory) ext
   def newWritable = delegate.newWritable
 
   def createEntityPersistence(entityType: EntityType, crudContext: CrudContext) =
-    new SingletonWithChangeLogCrudPersistence(delegate.createEntityPersistence(entityType, crudContext))
+    new SingletonWithChangeLogCrudPersistence(delegate.createEntityPersistence(entityType, crudContext),
+      delegate.listenerHolder(entityType, crudContext))
 
-  /**Since the first is used, no ID is required to find one. */
+  /** Since the first is used, no ID is required to find one. */
   override def maySpecifyEntityInstance(entityType: EntityType, uri: UriPath) = true
 
-  def addListener(listener: PersistenceListener, entityType: EntityType, crudContext: CrudContext) {
-    delegate.addListener(listener, entityType, crudContext)
-  }
+  def listenerHolder(entityType: EntityType, crudContext: CrudContext) = delegate.listenerHolder(entityType, crudContext)
 }
