@@ -192,14 +192,13 @@ class CrudType(val entityType: EntityType, val persistenceFactory: PersistenceFa
     persistenceFactory.addListener(listener, entityType, crudContext)
   }
 
-  def openEntityPersistence(crudContext: CrudContext): CrudPersistence = createEntityPersistence(crudContext)
+  def openEntityPersistence(crudContext: CrudContext): CrudPersistence =
+    persistenceFactory.createEntityPersistence(entityType, crudContext)
 
   /** Instantiates a data buffer which can be saved by EntityPersistence.
     * The fields must support copying into this object.
     */
   def newWritable = persistenceFactory.newWritable
-
-  protected def createEntityPersistence(crudContext: CrudContext) = persistenceFactory.createEntityPersistence(entityType, crudContext)
 
   final def withEntityPersistence[T](crudContext: CrudContext)(f: CrudPersistence => T): T = {
     val persistence = openEntityPersistence(crudContext)
