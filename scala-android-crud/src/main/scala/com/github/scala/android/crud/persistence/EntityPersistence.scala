@@ -3,17 +3,15 @@ package com.github.scala.android.crud.persistence
 import com.github.scala.android.crud.common.PlatformTypes._
 import com.github.scala.android.crud.common._
 
-trait PersistenceListener {
-  def onSave(id: ID)
-
-  def onDelete(uri: UriPath)
+trait DataListener {
+  def onChanged(uri: UriPath)
 }
 
 /** Persistence support for an entity.
   * @author Eric Pabst (epabst@gmail.com)
   */
 
-trait EntityPersistence extends Timing with ListenerSet[PersistenceListener] {
+trait EntityPersistence extends Timing with ListenerSet[DataListener] {
   protected def logTag: String = Common.logTag
 
   def toUri(id: ID): UriPath
@@ -35,7 +33,7 @@ trait EntityPersistence extends Timing with ListenerSet[PersistenceListener] {
   /** Save a created or updated entity. */
   final def save(idOption: Option[ID], writable: AnyRef): ID = {
     val id = doSave(idOption, writable)
-    listeners.foreach(_.onSave(id))
+    listeners.foreach(_.onChanged(toUri(id)))
     id
   }
 
@@ -47,7 +45,7 @@ trait EntityPersistence extends Timing with ListenerSet[PersistenceListener] {
     */
   final def delete(uri: UriPath) {
     doDelete(uri)
-    listeners.foreach(_.onDelete(uri))
+    listeners.foreach(_.onChanged(uri))
   }
 
   def doDelete(uri: UriPath)

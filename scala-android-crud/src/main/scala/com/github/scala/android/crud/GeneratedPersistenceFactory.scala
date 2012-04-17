@@ -1,7 +1,7 @@
 package com.github.scala.android.crud
 
 import common.{ListenerHolder, NoopListenerHolder, CachedFunction}
-import persistence.{PersistenceListener, EntityType}
+import persistence.{DataListener, EntityType}
 
 trait GeneratedPersistenceFactory[T <: AnyRef] extends PersistenceFactory {
   def canSave = false
@@ -10,11 +10,11 @@ trait GeneratedPersistenceFactory[T <: AnyRef] extends PersistenceFactory {
 
   def createEntityPersistence(entityType: EntityType, crudContext: CrudContext): SeqCrudPersistence[T]
 
-  def listenerHolder(entityType: EntityType, crudContext: CrudContext): ListenerHolder[PersistenceListener] =
-    NoopPersistenceListenerHolder
+  def listenerHolder(entityType: EntityType, crudContext: CrudContext): ListenerHolder[DataListener] =
+    NoopDataListenerHolder
 }
 
-private object NoopPersistenceListenerHolder extends NoopListenerHolder[PersistenceListener]
+private object NoopDataListenerHolder extends NoopListenerHolder[DataListener]
 
 object GeneratedPersistenceFactory {
   /** Creates a GeneratedPersistenceFactory given a way to create a SeqCrudPersistence.  The instances are cached by EntityType. */

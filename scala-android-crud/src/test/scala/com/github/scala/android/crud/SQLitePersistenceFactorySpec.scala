@@ -9,7 +9,7 @@ import com.xtremelabs.robolectric.RobolectricTestRunner
 import org.scalatest.matchers.MustMatchers
 import com.github.triangle._
 import persistence.CursorField._
-import persistence.{PersistenceListener, EntityType, CursorStream, SQLiteCriteria}
+import persistence.{DataListener, EntityType, CursorStream, SQLiteCriteria}
 import PortableField._
 import scala.collection._
 import mutable.Buffer
@@ -54,8 +54,8 @@ class SQLitePersistenceFactorySpec extends MustMatchers with CrudMockitoSugar wi
     def dataVersion = 1
   }
   val application = TestApplication
-  val listenerSet = mock[ListenerSet[PersistenceListener]]
-  when(listenerSet.listeners).thenReturn(Set.empty[PersistenceListener])
+  val listenerSet = mock[ListenerSet[DataListener]]
+  when(listenerSet.listeners).thenReturn(Set.empty[DataListener])
 
   @Test
   def shouldUseCorrectColumnNamesForFindAll() {

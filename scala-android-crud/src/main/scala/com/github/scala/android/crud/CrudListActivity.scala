@@ -9,7 +9,7 @@ import android.view.ContextMenu.ContextMenuInfo
 import android.widget.AdapterView.AdapterContextMenuInfo
 import com.github.triangle.PortableValue
 import common.UriPath
-import persistence.PersistenceListener
+import persistence.DataListener
 import common.PlatformTypes._
 
 /** A generic ListActivity for CRUD operations
@@ -31,13 +31,8 @@ class CrudListActivity extends ListActivity with BaseCrudActivity {
     crudType.setListAdapterUsingUri(crudContext, this)
     future {
       populateFromParentEntities()
-      crudType.addPersistenceListener(new PersistenceListener {
-        def onDelete(uri: UriPath) {
-          //Some of the parent fields may be calculated from the children
-          populateFromParentEntities()
-        }
-
-        def onSave(id: ID) {
+      crudType.addDataListener(new DataListener {
+        def onChanged(uri: UriPath) {
           //Some of the parent fields may be calculated from the children
           populateFromParentEntities()
         }

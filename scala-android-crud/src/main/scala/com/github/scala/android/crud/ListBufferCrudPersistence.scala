@@ -1,17 +1,17 @@
 package com.github.scala.android.crud
 
 import common.{CachedFunction, MutableListenerSet, ListenerSet}
-import persistence.{ListBufferEntityPersistence, PersistenceListener, EntityType, SeqEntityPersistence}
+import persistence.{ListBufferEntityPersistence, DataListener, EntityType, SeqEntityPersistence}
 import collection.mutable
 
 trait SeqCrudPersistence[T <: AnyRef] extends SeqEntityPersistence[T] with CrudPersistence
 
 class ListBufferCrudPersistence[T <: AnyRef](newWritableFunction: => T, val entityType: EntityType,
                                              val crudContext: CrudContext,
-                                             listenerSet: ListenerSet[PersistenceListener] = new MutableListenerSet[PersistenceListener])
+                                             listenerSet: ListenerSet[DataListener] = new MutableListenerSet[DataListener])
         extends ListBufferEntityPersistence[T](newWritableFunction, listenerSet) with SeqCrudPersistence[T]
 
-class ListBufferPersistenceFactory[T <: AnyRef](instantiateItem: => T) extends PersistenceFactory with PersistenceListenerSetValHolder {
+class ListBufferPersistenceFactory[T <: AnyRef](instantiateItem: => T) extends PersistenceFactory with DataListenerSetValHolder {
   def canSave = true
 
   private val cachedListBuffers = new CachedFunction[EntityType,mutable.ListBuffer[T]](entityType => mutable.ListBuffer[T]())

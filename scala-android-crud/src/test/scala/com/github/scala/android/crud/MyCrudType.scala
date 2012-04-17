@@ -24,7 +24,7 @@ case class MyCrudType(override val entityType: EntityType, override val persiste
 
 object MyCrudType extends MyCrudType(Mockito.mock(classOf[CrudPersistence]))
 
-class MyPersistenceFactory(persistence: CrudPersistence) extends PersistenceFactory with PersistenceListenerSetValHolder {
+class MyPersistenceFactory(persistence: CrudPersistence) extends PersistenceFactory with DataListenerSetValHolder {
   def canSave = true
 
   override def newWritable = Map.empty[String,Any]

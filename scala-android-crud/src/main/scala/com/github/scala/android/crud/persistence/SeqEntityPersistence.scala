@@ -14,7 +14,7 @@ trait SeqEntityPersistence[T <: AnyRef] extends EntityPersistence {
   def newWritable: T
 }
 
-trait ReadOnlyPersistence extends EntityPersistence with EmptyListenerSet[PersistenceListener] {
+trait ReadOnlyPersistence extends EntityPersistence with EmptyListenerSet[DataListener] {
   def newWritable = throw new UnsupportedOperationException("write not supported")
 
   def doSave(id: Option[ID], data: AnyRef): ID = throw new UnsupportedOperationException("write not supported")
@@ -24,7 +24,7 @@ trait ReadOnlyPersistence extends EntityPersistence with EmptyListenerSet[Persis
   def close() {}
 }
 
-abstract class ListBufferEntityPersistence[T <: AnyRef](newWritableFunction: => T, listenerSet: ListenerSet[PersistenceListener]) extends SeqEntityPersistence[T] {
+abstract class ListBufferEntityPersistence[T <: AnyRef](newWritableFunction: => T, listenerSet: ListenerSet[DataListener]) extends SeqEntityPersistence[T] {
   private object IdField extends Field[ID](Getter[IdPk,ID](_.id).withTransformer(e => e.id(_)) +
       Setter((e: MutableIdPk) => e.id = _) + CursorField.PersistedId)
   val buffer = mutable.ListBuffer[T]()

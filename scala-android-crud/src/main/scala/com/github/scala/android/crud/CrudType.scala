@@ -6,7 +6,7 @@ import Operation._
 import android.app.Activity
 import com.github.triangle._
 import common.PlatformTypes._
-import persistence.{EntityTypePersistedInfo, CursorStream, EntityType, PersistenceListener}
+import persistence.{EntityTypePersistedInfo, CursorStream, EntityType, DataListener}
 import PortableField.toSome
 import view.AndroidResourceAnalyzer._
 import java.lang.IllegalStateException
@@ -188,7 +188,7 @@ class CrudType(val entityType: EntityType, val persistenceFactory: PersistenceFa
     displayLayout.flatMap(_ => application.actionToDisplay(entityType)).toList :::
       application.childEntityTypes(entityType).flatMap(application.actionToList(_))
 
-  def addPersistenceListener(listener: PersistenceListener, crudContext: CrudContext) {
+  def addDataListener(listener: DataListener, crudContext: CrudContext) {
     persistenceFactory.addListener(listener, entityType, crudContext)
   }
 
@@ -215,11 +215,8 @@ class CrudType(val entityType: EntityType, val persistenceFactory: PersistenceFa
     findAllResult match {
       case CursorStream(cursor, _) =>
         activity.startManagingCursor(cursor)
-        addPersistenceListener(new PersistenceListener {
-          def onSave(id: ID) {
-            cursor.requery()
-          }
-          def onDelete(uri: UriPath) {
+        addDataListener(new DataListener {
+          def onChanged(uri: UriPath) {
             cursor.requery()
           }
         }, crudContext)
@@ -236,14 +233,9 @@ class CrudType(val entityType: EntityType, val persistenceFactory: PersistenceFa
   }
 
   private def setListAdapter[A <: Adapter](adapterView: AdapterView[A], persistence: CrudPersistence, uriPath: UriPath, entityType: EntityType, crudContext: CrudContext, contextItems: scala.List[AnyRef], activity: Activity, itemLayout: LayoutKey) {
-    addPersistenceListener(new PersistenceListener {
-      def onSave(id: ID) {
-        AdapterCaching.clearCache(adapterView, "save")
-      }
-
-      def onDelete(uri: UriPath) {
-        trace("Clearing cache in " + adapterView + " of " + entityType + " due to delete")
-        AdapterCaching.clearCache(adapterView, "delete")
+    addDataListener(new DataListener {
+      def onChanged(uri: UriPath) {
+        AdapterCaching.clearCache(adapterView, "changed")
       }
     }, crudContext)
     def callCreateAdapter(): A = {

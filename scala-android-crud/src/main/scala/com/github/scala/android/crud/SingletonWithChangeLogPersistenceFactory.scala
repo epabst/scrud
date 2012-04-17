@@ -1,25 +1,24 @@
 package com.github.scala.android.crud
 
 import common._
-import persistence.{PersistenceListener, EntityType}
+import persistence.{DataListener, EntityType}
 
 /**
  * A CrudPersistence that wraps another one, but only returning the first one,
  * and creating a new instance instead of updating an existing instance.
  */
 case class SingletonWithChangeLogCrudPersistence(manyPersistence: CrudPersistence,
-                                                 listenerHolder: ListenerHolder[PersistenceListener]) extends CrudPersistence
-    with DelegatingListenerSet[PersistenceListener] {
+                                                 listenerHolder: ListenerHolder[DataListener]) extends CrudPersistence
+    with DelegatingListenerSet[DataListener] {
 
-  protected def listenerSet: ListenerSet[PersistenceListener] = manyPersistence
+  protected def listenerSet: ListenerSet[DataListener] = manyPersistence
 
   def entityType = manyPersistence.entityType
 
   def crudContext = manyPersistence.crudContext
 
-  private lazy val cacheClearingListener = new PersistenceListener {
-    def onDelete(uri: UriPath) { cachedFindAll.clear() }
-    def onSave(id: PlatformTypes.ID) { cachedFindAll.clear() }
+  private lazy val cacheClearingListener = new DataListener {
+    def onChanged(uri: UriPath) { cachedFindAll.clear() }
   }
 
   def crudType = manyPersistence.crudContext.application.crudType(entityType)
