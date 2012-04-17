@@ -1,9 +1,8 @@
 package com.github.scala.android.crud
 
 import action.State
-import common.UriPath
+import common.{ListenerHolder, UriPath}
 import org.junit.runner.RunWith
-import persistence.EntityType
 import org.scalatest.matchers.MustMatchers
 import com.xtremelabs.robolectric.RobolectricTestRunner
 import org.junit.Test
@@ -14,6 +13,7 @@ import common.PlatformTypes._
 import android.app.Activity
 import android.view.LayoutInflater
 import android.widget.{BaseAdapter, AdapterView, ListAdapter}
+import persistence.{DataListener, EntityType}
 
 /** A behavior specification for [[com.github.scala.android.crud.GeneratedPersistenceFactory]].
   * @author Eric Pabst (epabst@gmail.com)
@@ -28,6 +28,7 @@ class GeneratedCrudTypeSpec extends MustMatchers with CrudMockitoSugar {
   val generatedEntityName = "Generated"
   val crudContext = mock[CrudContext]
   val layoutInflater = mock[LayoutInflater]
+  val dataListenerHolder = mock[ListenerHolder[DataListener]]
 
   @Test
   def itsListAdapterMustGetTheItemIdUsingTheIdField() {
@@ -42,6 +43,8 @@ class GeneratedCrudTypeSpec extends MustMatchers with CrudMockitoSugar {
     stub(activity.getLayoutInflater).toReturn(layoutInflater)
     val generatedCrudType = new CrudType(entityType, factory) with StubCrudType
     stub(crudContext.activityState).toReturn(new State {})
+    stub(crudContext.applicationState).toReturn(new State {})
+    stub(crudContext.dataListenerHolder(entityType)).toReturn(dataListenerHolder)
     when(adapterView.setAdapter(anyObject())).thenAnswer(listAdapterCapture)
     val persistence = mock[CrudPersistence]
     when(crudContext.openEntityPersistence(entityType)).thenReturn(persistence)

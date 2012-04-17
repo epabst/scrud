@@ -20,6 +20,7 @@ class CrudPersistenceSpec extends Spec with MustMatchers {
     def entityType = MyEntityType
     def crudContext = null
     def findAll(uri: UriPath) = Seq(new MyEntity(entityType.UriPathId.getter(uri)))
+    def listeners = Set.empty
   }
 
   it("find must set IdPk.id") {

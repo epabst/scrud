@@ -14,7 +14,7 @@ trait SeqEntityPersistence[T <: AnyRef] extends EntityPersistence {
   def newWritable: T
 }
 
-trait ReadOnlyPersistence extends EntityPersistence with EmptyListenerSet[DataListener] {
+trait ReadOnlyPersistence extends EntityPersistence {
   def newWritable = throw new UnsupportedOperationException("write not supported")
 
   def doSave(id: Option[ID], data: AnyRef): ID = throw new UnsupportedOperationException("write not supported")

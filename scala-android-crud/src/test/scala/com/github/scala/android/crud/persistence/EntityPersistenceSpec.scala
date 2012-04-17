@@ -16,8 +16,8 @@ class EntityPersistenceSpec extends Spec with MustMatchers {
     it("must delegate to findAll and return the first result") {
       val persistence = new SeqEntityPersistence[String] with ReadOnlyPersistence {
         def findAll(uri: UriPath) = Seq("the result")
-
         def toUri(id: ID) = throw new UnsupportedOperationException
+        def listeners = Set.empty
       }
       val uri = UriPath()
       persistence.find(uri) must be (Some("the result"))
@@ -26,8 +26,8 @@ class EntityPersistenceSpec extends Spec with MustMatchers {
     it("must handle no results") {
       val persistence = new SeqEntityPersistence[String] with ReadOnlyPersistence {
         def findAll(uri: UriPath) = Nil
-
         def toUri(id: ID) = throw new UnsupportedOperationException
+        def listeners = Set.empty
       }
       val uri = UriPath()
       persistence.find(uri) must be (None)
@@ -36,8 +36,8 @@ class EntityPersistenceSpec extends Spec with MustMatchers {
     it("must fail if multiple matches are found") {
       val persistence = new SeqEntityPersistence[String] with ReadOnlyPersistence {
         def findAll(uri: UriPath) = Seq("one", "two")
-
         def toUri(id: ID) = throw new UnsupportedOperationException
+        def listeners = Set.empty
       }
       val uri = UriPath()
       intercept[IllegalStateException] {

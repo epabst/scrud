@@ -17,6 +17,9 @@ case class CrudContext(activityContext: ContextWithState, application: CrudAppli
   def activityState: State = activityContext
   lazy val applicationState: State = activityContext.applicationState
 
+  def dataListenerHolder(entityType: EntityType) =
+    application.crudType(entityType).persistenceFactory.listenerHolder(entityType, this)
+
   def openEntityPersistence(entityType: EntityType): CrudPersistence =
     application.crudType(entityType).openEntityPersistence(this)
 

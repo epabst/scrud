@@ -20,6 +20,13 @@ trait ListenerHolder[L] extends ListenerSet[L] {
 
   def addListener(listener: L)
 
+  def addListenerIfNotPresent(listener: L): Boolean = {
+    if (!listeners.contains(listener)) {
+      addListener(listener)
+      true
+    } else false
+  }
+
   def removeListener(listener: L)
 }
 
@@ -40,22 +47,6 @@ trait DelegatingListenerHolder[L] extends ListenerHolder[L] {
 
   def removeListener(listener: L) {
     listenerHolder.removeListener(listener)
-  }
-}
-
-trait EmptyListenerSet[L] extends ListenerSet[L] {
-  override def listeners = Set.empty
-}
-
-trait NoopListenerHolder[L] extends ListenerHolder[L] with EmptyListenerSet[L] {
-  protected def listenerSet = this
-
-  def addListener(listener: L) {
-    // do nothing since no events will ever notify a listener
-  }
-
-  def removeListener(listener: L) {
-    // do nothing since no events will ever notify a listener
   }
 }
 
