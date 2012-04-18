@@ -30,3 +30,9 @@ Here are some topics that will be added soon to the Wiki:
    * Customizing Navigation
 * Future Features
    * Buttons and Links - For now these must be handled by customizing the app.
+
+
+Todo
+---------------------------------
+Add a test to each application that verifies it meets contract:
+  - For each Persistence: it's find must be able to correctly find each item returned by findAll.
