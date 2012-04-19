@@ -17,8 +17,8 @@ import org.mockito.{Mockito, Matchers}
 import Mockito._
 import android.app.Activity
 import android.database.{Cursor, DataSetObserver}
-import android.database.sqlite.SQLiteDatabase
 import android.widget.ListView
+import android.database.sqlite.{SQLiteOpenHelper, SQLiteDatabase}
 
 /** A test for [[com.github.scala.android.crud.SQLitePersistenceFactorySpec]].
   * @author Eric Pabst (epabst@gmail.com)
@@ -62,7 +62,7 @@ class SQLitePersistenceFactorySpec extends MustMatchers with CrudMockitoSugar wi
     val crudContext = mock[CrudContext]
     stub(crudContext.application).toReturn(application)
 
-    val persistence = new SQLiteEntityPersistence(TestEntityType, crudContext, listenerSet)
+    val persistence = new SQLiteEntityPersistence(TestEntityType, crudContext, mock[SQLiteOpenHelper], listenerSet)
     persistence.entityTypePersistedInfo.queryFieldNames must contain(BaseColumns._ID)
     persistence.entityTypePersistedInfo.queryFieldNames must contain("age")
   }
@@ -72,9 +72,12 @@ class SQLitePersistenceFactorySpec extends MustMatchers with CrudMockitoSugar wi
     val crudContext = mock[CrudContext]
     stub(crudContext.activityState).toReturn(new State {})
     stub(crudContext.application).toReturn(application)
+    val sqliteOpenHelper = mock[SQLiteOpenHelper]
+    val database = mock[SQLiteDatabase]
+    when(sqliteOpenHelper.getWritableDatabase).thenReturn(database)
 
     val cursors = Buffer[Cursor]()
-    val persistence = new SQLiteEntityPersistence(TestEntityType, crudContext, listenerSet) {
+    val persistence = new SQLiteEntityPersistence(TestEntityType, crudContext, sqliteOpenHelper, listenerSet) {
       override def findAll(criteria: SQLiteCriteria) = {
         val result = super.findAll(criteria)
         val CursorStream(cursor, _) = result

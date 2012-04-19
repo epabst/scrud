@@ -7,17 +7,19 @@ import persistence.{DataListener, SQLiteUtil, EntityType}
 /** A PersistenceFactory for SQLite.
   * @author Eric Pabst (epabst@gmail.com)
   */
-object SQLitePersistenceFactory extends PersistenceFactory with DataListenerSetValHolder {
+class SQLitePersistenceFactory extends PersistenceFactory with DataListenerSetValHolder {
   def canSave = true
 
   def newWritable = new ContentValues
 
   def createEntityPersistence(entityType: EntityType, crudContext: CrudContext) =
-    new SQLiteEntityPersistence(entityType, crudContext, listenerSet(entityType, crudContext))
-
+    new SQLiteEntityPersistence(entityType, crudContext, new GeneratedDatabaseSetup(crudContext),
+      listenerSet(entityType, crudContext))
 
   def toTableName(entityName: String): String = SQLiteUtil.toNonReservedWord(entityName)
 }
+
+object SQLitePersistenceFactory extends SQLitePersistenceFactory
 
 trait DataListenerSetValHolder {
   private object ListenersByEntityType

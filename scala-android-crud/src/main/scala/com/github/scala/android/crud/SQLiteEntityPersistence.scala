@@ -15,12 +15,11 @@ import com.github.triangle.{PortableField, Logging}
 /** EntityPersistence for SQLite.
   * @author Eric Pabst (epabst@gmail.com)
   */
-class SQLiteEntityPersistence(val entityType: EntityType, val crudContext: CrudContext,
+class SQLiteEntityPersistence(val entityType: EntityType, val crudContext: CrudContext, databaseSetup: SQLiteOpenHelper,
                               protected val listenerSet: ListenerSet[DataListener])
   extends CrudPersistence with DelegatingListenerSet[DataListener] with Logging {
 
   lazy val tableName = SQLitePersistenceFactory.toTableName(entityType.entityName)
-  lazy val databaseSetup = new GeneratedDatabaseSetup(crudContext)
   lazy val database: SQLiteDatabase = databaseSetup.getWritableDatabase
   lazy val entityTypePersistedInfo = EntityTypePersistedInfo(entityType)
   private lazy val backupManager = new BackupManager(crudContext.activityContext)
