@@ -3,6 +3,7 @@ package com.github.scala.android.crud
 import android.content.ContentValues
 import common.{CachedFunction, MutableListenerSet}
 import persistence.{DataListener, SQLiteUtil, EntityType}
+import android.database.sqlite.SQLiteDatabase
 
 /** A PersistenceFactory for SQLite.
   * @author Eric Pabst (epabst@gmail.com)
@@ -12,9 +13,26 @@ class SQLitePersistenceFactory extends PersistenceFactory with DataListenerSetVa
 
   def newWritable = new ContentValues
 
-  def createEntityPersistence(entityType: EntityType, crudContext: CrudContext) =
-    new SQLiteEntityPersistence(entityType, crudContext, new GeneratedDatabaseSetup(crudContext),
-      listenerSet(entityType, crudContext))
+  def createEntityPersistence(entityType: EntityType, crudContext: CrudContext) = {
+    var initialCreate = false
+    val databaseSetup = new GeneratedDatabaseSetup(crudContext) {
+      override def onCreate(db: SQLiteDatabase) {
+        super.onCreate(db)
+        initialCreate = true
+      }
+    }
+    val persistence = new SQLiteEntityPersistence(entityType, crudContext, databaseSetup, listenerSet(entityType, crudContext))
+    if (initialCreate) {
+      onCreateDatabase(persistence)
+    }
+    persistence
+  }
+
+  /**
+   * Available to be overridden as needed by applications.
+   * This is especially useful to create any initial data.
+   */
+  protected def onCreateDatabase(persistence: SQLiteEntityPersistence) {}
 
   def toTableName(entityName: String): String = SQLiteUtil.toNonReservedWord(entityName)
 }

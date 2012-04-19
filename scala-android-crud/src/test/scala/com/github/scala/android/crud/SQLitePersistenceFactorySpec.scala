@@ -72,12 +72,9 @@ class SQLitePersistenceFactorySpec extends MustMatchers with CrudMockitoSugar wi
     val crudContext = mock[CrudContext]
     stub(crudContext.activityState).toReturn(new State {})
     stub(crudContext.application).toReturn(application)
-    val sqliteOpenHelper = mock[SQLiteOpenHelper]
-    val database = mock[SQLiteDatabase]
-    when(sqliteOpenHelper.getWritableDatabase).thenReturn(database)
 
     val cursors = Buffer[Cursor]()
-    val persistence = new SQLiteEntityPersistence(TestEntityType, crudContext, sqliteOpenHelper, listenerSet) {
+    val persistence = new SQLiteEntityPersistence(TestEntityType, crudContext, new GeneratedDatabaseSetup(crudContext), listenerSet) {
       override def findAll(criteria: SQLiteCriteria) = {
         val result = super.findAll(criteria)
         val CursorStream(cursor, _) = result
