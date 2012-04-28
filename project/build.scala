@@ -31,13 +31,13 @@ object General {
 object AndroidBuild extends Build {
   lazy val main = Project (
     "Scrud Android",
-    file("."),
+    file("scrud-android"),
     settings = General.fullAndroidSettings
   )
 
   lazy val tests = Project (
     "tests",
-    file("tests"),
+    file("scrud-android/tests"),
     settings = General.settings ++
                AndroidTest.settings ++
                General.proguardSettings ++ Seq (
