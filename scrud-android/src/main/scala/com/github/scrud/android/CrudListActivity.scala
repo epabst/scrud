@@ -40,7 +40,7 @@ class CrudListActivity extends ListActivity with BaseCrudActivity {
     }
   }
 
-  private[crud] def populateFromParentEntities() {
+  private[scrud] def populateFromParentEntities() {
     val uriPath = currentUriPath
     //copy each parent Entity's data to the Activity if identified in the currentUriPath
     val portableValues: List[PortableValue] = crudType.parentEntityTypes(crudApplication).flatMap { parentType =>

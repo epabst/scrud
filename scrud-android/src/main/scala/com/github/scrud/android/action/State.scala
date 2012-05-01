@@ -11,7 +11,7 @@ import com.github.scrud.android.DestroyStateListener
 /** A container for values of [[com.github.scrud.android.action.StateVar]]'s */
 trait State extends SimpleListenerHolder[DestroyStateListener] {
   //for some reason, making this lazy results in it being null during testing, even though lazy would be preferrable.
-  private[crud] val variables: ConcurrentMap[StateVar[_], Any] = new ConcurrentHashMap[StateVar[_], Any]()
+  private[scrud] val variables: ConcurrentMap[StateVar[_], Any] = new ConcurrentHashMap[StateVar[_], Any]()
 
   def onDestroyState() {
     listeners.foreach(_.onDestroyState())

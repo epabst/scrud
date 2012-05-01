@@ -1,4 +1,4 @@
-package com.github.scrud.android
+package com.github.scrud.android.res
 
 import _root_.android.app.Activity
 import _root_.android.os.Bundle

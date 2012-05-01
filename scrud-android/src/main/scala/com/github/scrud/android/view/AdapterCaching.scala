@@ -87,7 +87,7 @@ object AdapterCaching extends Timing {
   protected def logTag = Common.logTag
 
   /** This should be run on the UI Thread. */
-  private[crud] def findCacheActor(adapterView: ViewGroup): Option[CacheActor] =
+  private[scrud] def findCacheActor(adapterView: ViewGroup): Option[CacheActor] =
     Option(adapterView.getTag.asInstanceOf[CacheActor])
 
   def clearCache(adapterView: ViewGroup, reason: String) {
@@ -115,7 +115,7 @@ trait AdapterCaching extends Logging with Timing { self: BaseAdapter =>
     }
   }
 
-  protected[crud] def bindViewFromCacheOrItems(view: View, entityData: AnyRef, contextItems: List[AnyRef], position: Long, adapterView: ViewGroup) {
+  protected[scrud] def bindViewFromCacheOrItems(view: View, entityData: AnyRef, contextItems: List[AnyRef], position: Long, adapterView: ViewGroup) {
     view.setTag(position)
     // notifyDataSetChanged() should cause bindViewFromCacheOrItems to be requested again once the real value is cached
     (cacheActor(adapterView) !? GetValueAtPosition(position, entityData, contextItems, portableValue => {

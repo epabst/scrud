@@ -74,7 +74,7 @@ class CrudActivity extends BaseCrudActivity { self =>
     super.onBackPressed()
   }
 
-  private[crud] def saveBasedOnUserAction(persistence: CrudPersistence, writable: AnyRef) {
+  private[scrud] def saveBasedOnUserAction(persistence: CrudPersistence, writable: AnyRef) {
     try {
       val id = entityType.IdField.getter(currentUriPath)
       val newId = persistence.save(id, writable)

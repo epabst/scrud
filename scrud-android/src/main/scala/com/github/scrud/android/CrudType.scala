@@ -256,7 +256,7 @@ class CrudType(val entityType: EntityType, val persistenceFactory: PersistenceFa
     setListAdapter(adapterView, persistence, uriPath, entityType, crudContext, contextItems, activity, itemLayout)
   }
 
-  private[crud] def undoableDelete(uri: UriPath)(persistence: CrudPersistence) {
+  private[scrud] def undoableDelete(uri: UriPath)(persistence: CrudPersistence) {
     persistence.find(uri).foreach { readable =>
       val id = entityType.IdField.getter(readable)
       val writable = entityType.copyAndTransform(readable, newWritable)

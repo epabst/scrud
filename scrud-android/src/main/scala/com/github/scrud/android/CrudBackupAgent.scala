@@ -15,7 +15,7 @@ import common.PlatformTypes._
 object CrudBackupAgent {
   private val backupStrategyVersion: Int = 1
 
-  private[crud] def marshall(map: Map[String,Any]): Array[Byte] = {
+  private[scrud] def marshall(map: Map[String,Any]): Array[Byte] = {
     val out = new ByteArrayOutputStream
     try {
       val objectStream = new ObjectOutputStream(out)
@@ -27,7 +27,7 @@ object CrudBackupAgent {
     } finally out.close()
   }
 
-  private[crud] def unmarshall(bytes: Array[Byte]): Map[String,Any] = {
+  private[scrud] def unmarshall(bytes: Array[Byte]): Map[String,Any] = {
     val objectStream = new ObjectInputStream(new ByteArrayInputStream(bytes))
     try {
       val strategyVersion = objectStream.readInt()

@@ -50,7 +50,7 @@ object FieldLayout {
   }
   lazy val dateTextLayout = textLayout("date")
 
-  private[crud] def toDisplayName(id: String): String = {
+  private[scrud] def toDisplayName(id: String): String = {
     var makeUpperCase = true
     val displayName = id.collect {
       case c if Character.isUpperCase(c) =>

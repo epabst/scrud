@@ -3,7 +3,7 @@ package com.github.scrud.android.common
 /** An Iterator whose items are calculated lazily.
   * @author Eric Pabst (epabst@gmail.com)
   */
-private[crud] trait CalculatedIterator[T] extends BufferedIterator[T] {
+private[scrud] trait CalculatedIterator[T] extends BufferedIterator[T] {
   private var calculatedNextValue: Option[Option[T]] = None
 
   def calculateNextValue(): Option[T]
