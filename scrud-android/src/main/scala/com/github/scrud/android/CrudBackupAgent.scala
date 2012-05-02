@@ -153,7 +153,7 @@ object DeletedEntityIdEntityType extends EntityType {
   * It only contains the entityName and ID since it is not intended as a recycle bin,
   * but to delete data in the Backup Service.
   * This entity is in its own CrudApplication by itself, separate from any other CrudApplication.
-  * It is intended to be in a separate database owned by the scala-android-crud framework.
+  * It is intended to be in a separate database owned by the scrud-android framework.
   */
 object DeletedEntityIdCrudType extends CrudType(DeletedEntityIdEntityType, SQLitePersistenceFactory) {
   private val application = new CrudApplication {

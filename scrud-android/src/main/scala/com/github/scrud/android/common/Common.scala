@@ -1,11 +1,11 @@
 package com.github.scrud.android.common
 
-/** Common functionality that are use throughout scala-android-crud.
+/** Common functionality that is used throughout scrud.
   * @author Eric Pabst (epabst@gmail.com)
   */
 
 object Common {
-  val logTag = "scala-android-crud"
+  val logTag = "scrud"
 
   /** Evaluates the given function and returns the result.  If it throws an exception, it returns None. */
   def tryToEvaluate[T](f: => T): Option[T] = {
