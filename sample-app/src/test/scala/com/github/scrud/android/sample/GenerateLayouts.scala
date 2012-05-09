@@ -1,6 +1,6 @@
-package com.github.scala.android.crud.sample
+package com.github.scrud.android.sample
 
-import com.github.scala.android.crud.generate.CrudUIGenerator
+import com.github.scrud.android.generate.CrudUIGenerator
 
 /** A layout generator for the application.
   * @author Eric Pabst (epabst@gmail.com)

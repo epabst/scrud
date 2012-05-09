@@ -1,17 +1,17 @@
-package com.github.scala.android.crud.sample
+package com.github.scrud.android.sample
 
 import org.scalatest.Spec
 import org.scalatest.matchers.MustMatchers
-import com.github.scala.android.crud.persistence.CursorField._
+import com.github.scrud.android.persistence.CursorField._
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import org.scalatest.mock.MockitoSugar
 import org.mockito.Mockito._
-import com.github.scala.android.crud._
+import com.github.scrud.android._
 import action.{ContextWithState, State}
 
-/** A behavior specification for [[com.github.scala.android.crud.sample.AuthorEntityType]]
-  * within [[com.github.scala.android.crud.sample.SampleApplication]].
+/** A behavior specification for [[com.github.scrud.android.sample.AuthorEntityType]]
+  * within [[com.github.scrud.android.sample.SampleApplication]].
   * @author Eric Pabst (epabst@gmail.com)
   */
 @RunWith(classOf[JUnitRunner])

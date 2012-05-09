@@ -1,14 +1,14 @@
-package com.github.scala.android.crud.sample
+package com.github.scrud.android.sample
 
-import com.github.scala.android.crud._
+import com.github.scrud.android._
 import persistence.CursorField._
 import persistence.EntityType
 import persistence.PersistedType._
 import java.util.Date
-import com.github.scala.android.crud.ParentField._
+import com.github.scrud.android.ParentField._
 import view.ViewField._
 import view.{EntityView, EnumerationView}
-import com.github.scala.android.crud.validate.Validation._
+import com.github.scrud.android.validate.Validation._
 
 object BookEntityType extends EntityType {
   def entityName = "Book"

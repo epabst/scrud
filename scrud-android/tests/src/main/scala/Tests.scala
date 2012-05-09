@@ -1,6 +1,6 @@
 package com.github.scrud.android.tests
 
-import com.github.scrud.android._
+import com.github.scrud.android.res._
 import junit.framework.Assert._
 import _root_.android.test.AndroidTestCase
 import _root_.android.test.ActivityInstrumentationTestCase2

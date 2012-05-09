@@ -1,11 +1,11 @@
-package com.github.scala.android.crud.sample
+package com.github.scrud.android.sample
 
-import com.github.scala.android.crud._
+import com.github.scrud.android._
 import persistence.CursorField._
 import persistence.EntityType
 import view.ViewField._
 import com.github.triangle._
-import com.github.scala.android.crud.validate.Validation._
+import com.github.scrud.android.validate.Validation._
 
 object AuthorEntityType extends EntityType {
   def entityName = "Author"

@@ -1,4 +1,4 @@
-package com.github.scala.android.crud.sample
+package com.github.scrud.android.sample
 
 /** A Book Genre.
   * @author pabstec

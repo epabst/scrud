@@ -1,12 +1,12 @@
-package com.github.scala.android.crud.sample
+package com.github.scrud.android.sample
 
-import com.github.scala.android.crud
-import crud._
-import crud.persistence.CursorField._
-import crud.persistence.EntityType
-import crud.view.ViewField._
+import com.github.scrud
+import scrud.android._
+import scrud.android.persistence.CursorField._
+import scrud.android.persistence.EntityType
+import scrud.android.view.ViewField._
 import com.github.triangle._
-import com.github.scala.android.crud.validate.Validation._
+import scrud.android.validate.Validation._
 
 object PublisherEntityType extends EntityType {
   def entityName = "Publisher"

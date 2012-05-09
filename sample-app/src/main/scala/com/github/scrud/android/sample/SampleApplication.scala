@@ -1,6 +1,6 @@
-package com.github.scala.android.crud.sample
+package com.github.scrud.android.sample
 
-import com.github.scala.android.crud._
+import com.github.scrud.android._
 
 
 /** The sample application
