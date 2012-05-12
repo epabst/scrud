@@ -4,13 +4,14 @@ import Keys._
 import AndroidKeys._
 
 object General {
-  val settings = Defaults.defaultSettings ++ Seq (
-    version := "0.1",
+  val projectVersion = "0.3-alpha7-SNAPSHOT"
+  val settings = Defaults.defaultSettings ++ Seq(
+    organization := "com.github.epabst.scrud",
+    version := projectVersion,
     versionCode := 0,
     scalaVersion := "2.8.1",
     platformName in Android := "android-10",
-    resolvers += "Local Maven Repository" at "file://"+Path.userHome.absolutePath+"/.m2/repository"
-  )
+    resolvers += "Local Maven Repository" at "file://" + Path.userHome.absolutePath + "/.m2/repository")
 
   val proguardSettings = Seq (
     useProguard in Android := true
@@ -29,7 +30,7 @@ object General {
 }
 
 object AndroidBuild extends Build {
-  lazy val main = Project("scrud-android-parent", file(".")).aggregate(scrud, sample, tests)
+  lazy val main = Project("scrud-android-parent", file("."), settings = General.settings).aggregate(scrud, sample, tests)
 
   lazy val scrud = Project (
     "scrud-android",
@@ -54,7 +55,10 @@ object AndroidBuild extends Build {
       libraryDependencies += "org.mockito" % "mockito-core" % "1.8.5" % "test",
       libraryDependencies += "junit" % "junit" % "4.8.2" % "test",
       //todo eliminate easymock as a dependency
-      libraryDependencies += "org.easymock" % "easymock" % "2.5.2" % "test"
+      libraryDependencies += "org.easymock" % "easymock" % "2.5.2" % "test",
+      libraryDependencies += "com.github.epabst.triangle" % "triangle" % "0.6-SNAPSHOT",
+      libraryDependencies += "com.github.epabst.scrud" %% "scrud-android" % General.projectVersion artifacts(
+        Artifact("scrud-android", "apklib", "apklib"))
     )
   ).dependsOn(scrud)
 
