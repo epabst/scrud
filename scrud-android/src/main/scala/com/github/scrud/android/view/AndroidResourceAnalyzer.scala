@@ -2,7 +2,8 @@ package com.github.scrud.android.view
 
 import java.lang.reflect.{Modifier, Field}
 import com.github.triangle.Logging
-import com.github.scrud.android.common.Common
+import com.github.scrud
+import scrud.android.common.Common
 
 /** An "R" analyzer.
   * @author Eric Pabst (epabst@gmail.com)
@@ -33,6 +34,8 @@ object AndroidResourceAnalyzer extends Logging {
   def detectRIdClasses(clazz: Class[_]): Seq[Class[_]] = {
     findRInnerClass(clazz, "id").toSeq ++ Seq(classOf[android.R.id], classOf[com.github.scrud.android.res.R.id])
   }
+
+  private val preserveForProguard = Seq(scrud.android.res.R.layout.entity_list, scrud.android.res.R.layout.simple_spinner_item)
 
   def detectRLayoutClasses(clazz: Class[_]): Seq[Class[_]] = {
     findRInnerClass(clazz, "layout").toSeq ++ Seq(classOf[android.R.layout], classOf[com.github.scrud.android.res.R.layout])
