@@ -35,8 +35,10 @@ object AndroidBuild extends Build {
   lazy val scrud = Project (
     "scrud-android",
     file("scrud-android"),
-    settings = General.fullAndroidSettings ++ Seq(
+    settings = General.settings ++ AndroidBase.settings ++ Seq(
       libraryDependencies += "com.github.epabst.triangle" % "triangle" % "0.6-SNAPSHOT",
+      libraryDependencies += "com.github.epabst.scrud" % "scrud-android-res" % General.projectVersion artifacts(
+        Artifact("scrud-android-res", "apklib", "apklib")),
       libraryDependencies += "org.slf4j" % "slf4j-jdk14" % "1.6.1" % "test",
       libraryDependencies += "org.slf4j" % "slf4j-android" % "1.6.1-RC1",
       libraryDependencies += "org.mockito" % "mockito-core" % "1.8.5" % "test",
@@ -55,10 +57,7 @@ object AndroidBuild extends Build {
       libraryDependencies += "org.mockito" % "mockito-core" % "1.8.5" % "test",
       libraryDependencies += "junit" % "junit" % "4.8.2" % "test",
       //todo eliminate easymock as a dependency
-      libraryDependencies += "org.easymock" % "easymock" % "2.5.2" % "test",
-      libraryDependencies += "com.github.epabst.triangle" % "triangle" % "0.6-SNAPSHOT",
-      libraryDependencies += "com.github.epabst.scrud" %% "scrud-android" % General.projectVersion artifacts(
-        Artifact("scrud-android", "apklib", "apklib"))
+      libraryDependencies += "org.easymock" % "easymock" % "2.5.2" % "test"
     )
   ).dependsOn(scrud)
 
