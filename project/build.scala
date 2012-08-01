@@ -4,7 +4,7 @@ import Keys._
 import AndroidKeys._
 
 object General {
-  val projectVersion = "0.3-alpha7-SNAPSHOT"
+  val projectVersion = "0.3-alpha8-SNAPSHOT"
   val settings = Defaults.defaultSettings ++ Seq(
     organization := "com.github.epabst.scrud",
     version := projectVersion,
@@ -38,7 +38,7 @@ object AndroidBuild extends Build {
     settings = General.settings ++ AndroidBase.settings ++ Seq(
       libraryDependencies += "com.github.epabst.triangle" % "triangle" % "0.6-SNAPSHOT",
       libraryDependencies += "com.github.epabst.scrud" % "scrud-android-res" % General.projectVersion artifacts(
-        Artifact("scrud-android-res", "apklib", "apklib")),
+        Artifact("scrud-android-res"), Artifact("scrud-android-res", "apklib", "apklib")),
       libraryDependencies += "org.slf4j" % "slf4j-jdk14" % "1.6.1" % "test",
       libraryDependencies += "org.slf4j" % "slf4j-android" % "1.6.1-RC1",
       libraryDependencies += "org.mockito" % "mockito-core" % "1.8.5" % "test",
