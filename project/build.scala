@@ -4,8 +4,9 @@ import Keys._
 import AndroidKeys._
 
 object General {
-  val projectVersion = "0.3-alpha8-SNAPSHOT"
-  val settings = Defaults.defaultSettings ++ Seq(
+  val scrudVersion = "0.3-alpha8-SNAPSHOT"
+  val projectVersion = scrudVersion
+  val settings = Seq(
     organization := "com.github.epabst.scrud",
     version := projectVersion,
     versionCode := 0,
@@ -17,25 +18,31 @@ object General {
     useProguard in Android := true
   )
 
-  lazy val fullAndroidSettings =
-    General.settings ++
+  lazy val minimalAndroidSettings =
+    Defaults.defaultSettings ++
     AndroidProject.androidSettings ++
     TypedResources.settings ++
-    proguardSettings ++
     AndroidManifestGenerator.settings ++
-    AndroidMarketPublish.settings ++ Seq (
+    AndroidMarketPublish.settings ++
+    Nil
+
+  lazy val fullAndroidSettings = minimalAndroidSettings ++
+    General.settings ++
+    proguardSettings ++
+    Seq (
       keyalias in Android := "change-me",
       libraryDependencies += "org.scalatest" %% "scalatest" % "1.7.RC1" % "test"
     )
 }
 
 object AndroidBuild extends Build {
-  lazy val main = Project("scrud-android-parent", file("."), settings = General.settings).aggregate(scrud, sample, tests)
+  lazy val main = Project("scrud-android-parent", file("."), settings =
+      Defaults.defaultSettings ++ General.settings).aggregate(scrud, sample, tests)
 
   lazy val scrud = Project (
     "scrud-android",
     file("scrud-android"),
-    settings = General.settings ++ AndroidBase.settings ++ Seq(
+    settings = Defaults.defaultSettings ++ General.settings ++ AndroidBase.settings ++ Seq(
       libraryDependencies += "com.github.epabst.triangle" % "triangle" % "0.6-SNAPSHOT",
       libraryDependencies += "com.github.epabst.scrud" % "scrud-android-res" % General.projectVersion artifacts(
         Artifact("scrud-android-res"), Artifact("scrud-android-res", "apklib", "apklib")),
@@ -52,19 +59,14 @@ object AndroidBuild extends Build {
   lazy val sample: Project = Project (
     "scrud-android-sample",
     file("sample-app"),
-    settings = General.fullAndroidSettings ++ Seq(
-      libraryDependencies += "org.slf4j" % "slf4j-jdk14" % "1.6.1" % "test",
-      libraryDependencies += "org.mockito" % "mockito-core" % "1.8.5" % "test",
-      libraryDependencies += "junit" % "junit" % "4.8.2" % "test",
-      //todo eliminate easymock as a dependency
-      libraryDependencies += "org.easymock" % "easymock" % "2.5.2" % "test"
-    )
+    settings = General.minimalAndroidSettings
   ).dependsOn(scrud)
 
   lazy val tests: Project = Project (
     "scrud-android-tests",
     file("scrud-android/tests"),
-    settings = General.settings ++
+    settings = Defaults.defaultSettings ++
+               General.settings ++
                AndroidTest.settings ++
                General.proguardSettings ++ Seq (
       name := "Scrud Android Tests"
