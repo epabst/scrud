@@ -27,14 +27,6 @@ object General {
     AndroidManifestGenerator.settings ++
     AndroidMarketPublish.settings ++
     Nil
-
-  lazy val fullAndroidSettings = minimalAndroidSettings ++
-    General.settings ++
-    proguardSettings ++
-    Seq (
-      keyalias in Android := "change-me",
-      libraryDependencies += "org.scalatest" %% "scalatest" % "1.7.RC1" % "test"
-    )
 }
 
 object AndroidBuild extends Build {
@@ -56,11 +48,6 @@ object AndroidBuild extends Build {
   lazy val tests: Project = Project (
     "scrud-android-tests",
     file("scrud-android/tests"),
-    settings = Defaults.defaultSettings ++
-               General.settings ++
-               AndroidTest.settings ++
-               General.proguardSettings ++ Seq (
-      name := "Scrud Android Tests"
-    )
+    settings = Defaults.defaultSettings ++ AndroidTest.settings
   ) dependsOn(scrud)
 }
