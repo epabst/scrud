@@ -18,6 +18,8 @@ object General {
     useProguard in Android := true
   )
 
+  lazy val minimalAndroidLibrarySettings = Defaults.defaultSettings ++ AndroidBase.settings
+
   lazy val minimalAndroidSettings =
     Defaults.defaultSettings ++
     AndroidProject.androidSettings ++
@@ -42,7 +44,7 @@ object AndroidBuild extends Build {
   lazy val scrud = Project (
     "scrud-android",
     file("scrud-android"),
-    settings = Defaults.defaultSettings ++ General.settings ++ AndroidBase.settings
+    settings = General.minimalAndroidLibrarySettings
   )
 
   lazy val sample: Project = Project (
