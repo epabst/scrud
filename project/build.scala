@@ -1,26 +1,12 @@
 import sbt._
 
-import Keys._
-import AndroidKeys._
-
 object General {
   val scrudVersion = "0.3-alpha8-SNAPSHOT"
   val projectVersion = scrudVersion
-  val settings = Seq(
-    organization := "com.github.epabst.scrud",
-    version := projectVersion,
-    versionCode := 0,
-    scalaVersion := "2.8.1",
-    platformName in Android := "android-10",
-    resolvers += "Local Maven Repository" at "file://" + Path.userHome.absolutePath + "/.m2/repository")
 
-  val proguardSettings = Seq (
-    useProguard in Android := true
-  )
+  lazy val androidLibrarySettings = Defaults.defaultSettings ++ AndroidBase.settings
 
-  lazy val minimalAndroidLibrarySettings = Defaults.defaultSettings ++ AndroidBase.settings
-
-  lazy val minimalAndroidSettings =
+  lazy val androidAppSettings =
     Defaults.defaultSettings ++
     AndroidProject.androidSettings ++
     TypedResources.settings ++
@@ -29,20 +15,20 @@ object General {
     Nil
 }
 
-object AndroidBuild extends Build {
+object build extends Build {
   lazy val main = Project("scrud-android-parent", file("."), settings =
-      Defaults.defaultSettings ++ General.settings).aggregate(scrud, sample, tests)
+      Defaults.defaultSettings).aggregate(scrud, sample, tests)
 
   lazy val scrud = Project (
     "scrud-android",
     file("scrud-android"),
-    settings = General.minimalAndroidLibrarySettings
+    settings = General.androidLibrarySettings
   )
 
   lazy val sample: Project = Project (
     "scrud-android-sample",
     file("sample-app"),
-    settings = General.minimalAndroidSettings
+    settings = General.androidAppSettings
   ).dependsOn(scrud)
 
   lazy val tests: Project = Project (
