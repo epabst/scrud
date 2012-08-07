@@ -1,9 +1,10 @@
 package com.github.scrud.android.tests
 
-import com.github.scrud.android.res._
 import junit.framework.Assert._
 import _root_.android.test.AndroidTestCase
 import _root_.android.test.ActivityInstrumentationTestCase2
+import com.github.scrud.android.CrudActivity
+import com.github.scrud.android.sample.TR
 
 class AndroidTests extends AndroidTestCase {
   def testPackageIsCorrect() {
@@ -11,10 +12,10 @@ class AndroidTests extends AndroidTestCase {
   }
 }
 
-class ActivityTests extends ActivityInstrumentationTestCase2(classOf[MainActivity]) {
+class ActivityTests extends ActivityInstrumentationTestCase2(classOf[CrudActivity]) {
    def testHelloWorldIsShown() {
       val activity = getActivity
-      val textview = activity.findView(TR.textview)
-      assertEquals(textview.getText, "hello, world!")
+      val textview = activity.findView(TR.edition)
+      assertEquals(textview.getText, "Edition")
     }
 }
