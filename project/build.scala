@@ -13,11 +13,13 @@ object General {
     AndroidManifestGenerator.settings ++
     AndroidMarketPublish.settings ++
     Nil
+
+  lazy val androidTestSettings = Defaults.defaultSettings ++ AndroidTest.settings
 }
 
 object build extends Build {
-  lazy val main = Project("scrud-android-parent", file("."), settings =
-      Defaults.defaultSettings).aggregate(scrud, sample, tests)
+  lazy val main = Project("scrud-android-parent", file("."),
+    settings = Defaults.defaultSettings).aggregate(scrud, sample, tests)
 
   lazy val scrud = Project ("scrud-android", file("scrud-android"),
     settings = General.androidLibrarySettings)
@@ -26,5 +28,5 @@ object build extends Build {
     settings = General.androidAppSettings).dependsOn(scrud)
 
   lazy val tests: Project = Project ("scrud-android-tests", file("scrud-android/tests"),
-    settings = Defaults.defaultSettings ++ AndroidTest.settings) dependsOn(scrud)
+    settings = General.androidTestSettings) dependsOn(scrud)
 }
