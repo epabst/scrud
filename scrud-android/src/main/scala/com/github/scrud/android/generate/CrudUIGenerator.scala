@@ -1,13 +1,14 @@
 package com.github.scrud.android.generate
 
 import com.github.triangle._
-import scala.tools.nsc.io.Path
 import com.github.scrud.android.common.Common
 import collection.immutable.List
-import com.github.scrud.android.{CrudAndroidApplication, CrudApplication}
+import com.github.scrud.android.{Path, CrudAndroidApplication, CrudApplication}
 import xml._
 import com.github.scrud.android.view.EntityView
 import com.github.scrud.android.persistence.EntityType
+import com.github.scrud.android.FileConversions._
+import java.io.File
 
 /** A UI Generator for a CrudTypes.
   * @author Eric Pabst (epabst@gmail.com)
@@ -29,9 +30,8 @@ object CrudUIGenerator extends Logging {
     }
   }
 
-  private def writeXmlToFile(path: Path, xml: Elem) {
-    val file = path.toFile
-    file.parent.createDirectory()
+  private def writeXmlToFile(file: File, xml: Elem) {
+    file.getParentFile.mkdirs()
     file.writeAll("""<?xml version="1.0" encoding="utf-8"?>""", lineSeparator, prettyPrinter.format(xml))
     println("Wrote " + file)
   }
