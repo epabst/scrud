@@ -2,7 +2,6 @@ import sbt._
 
 object General {
   val scrudVersion = "0.3-alpha8-SNAPSHOT"
-  val projectVersion = scrudVersion
 
   lazy val androidLibrarySettings = Defaults.defaultSettings ++ AndroidBase.settings
 

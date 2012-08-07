@@ -12,7 +12,7 @@ resolvers += "Local Maven Repository" at "file://"+Path.userHome.absolutePath+"/
 
 libraryDependencies += "com.github.epabst.triangle" % "triangle" % "0.6-SNAPSHOT"
 
-libraryDependencies += "com.github.epabst.scrud" % "scrud-android-res" % General.projectVersion artifacts(
+libraryDependencies += "com.github.epabst.scrud" % "scrud-android-res" % General.scrudVersion artifacts(
   Artifact("scrud-android-res"), Artifact("scrud-android-res", "apklib", "apklib"))
 
 libraryDependencies += "org.slf4j" % "slf4j-jdk14" % "1.6.1" % "test"
