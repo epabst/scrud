@@ -8,7 +8,7 @@ AndroidKeys.keyalias in AndroidKeys.Android := "change-me"
 
 AndroidKeys.versionCode := 0
 
-scalaVersion := "2.8.1"
+scalaVersion := "2.9.2"
 
 AndroidKeys.platformName in AndroidKeys.Android := "android-10"
 
@@ -18,4 +18,4 @@ resolvers += "Local Maven Repository" at "file://"+Path.userHome.absolutePath+"/
 
 libraryDependencies += "junit" % "junit" % "4.5" % "test"
 
-libraryDependencies += "org.scalatest" %% "scalatest" % "1.7.RC1" % "test"
+libraryDependencies += "org.scalatest" %% "scalatest" % "1.8" % "test"

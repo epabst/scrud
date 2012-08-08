@@ -8,7 +8,7 @@ AndroidKeys.keyalias in AndroidKeys.Android := "change-me"
 
 AndroidKeys.versionCode := 0
 
-scalaVersion := "2.8.1"
+scalaVersion := "2.9.2"
 
 AndroidKeys.platformName in AndroidKeys.Android := "android-10"
 
@@ -16,7 +16,7 @@ AndroidKeys.useProguard in AndroidKeys.Android := true
 
 resolvers += "Local Maven Repository" at "file://"+Path.userHome.absolutePath+"/.m2/repository"
 
-libraryDependencies += "org.scalatest" %% "scalatest" % "1.7.RC1" % "test"
+libraryDependencies += "org.scalatest" %% "scalatest" % "1.8" % "test"
 
 libraryDependencies += "org.slf4j" % "slf4j-jdk14" % "1.6.1" % "test"
 
