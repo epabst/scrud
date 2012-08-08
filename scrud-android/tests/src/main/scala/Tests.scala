@@ -4,7 +4,8 @@ import junit.framework.Assert._
 import _root_.android.test.AndroidTestCase
 import _root_.android.test.ActivityInstrumentationTestCase2
 import com.github.scrud.android.CrudActivity
-import com.github.scrud.android.sample.TR
+import com.github.scrud.android.sample.{TypedResource, TR}
+import TypedResource._
 
 class AndroidTests extends AndroidTestCase {
   def testPackageIsCorrect() {
