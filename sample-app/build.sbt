@@ -8,7 +8,7 @@ AndroidKeys.keyalias in AndroidKeys.Android := "change-me"
 
 AndroidKeys.versionCode := 0
 
-scalaVersion := "2.9.2"
+scalaVersion := "2.9.1"
 
 AndroidKeys.platformName in AndroidKeys.Android := "android-10"
 
