@@ -1,4 +1,5 @@
 import sbt._
+import Keys._
 
 object General {
   val scrudVersion = "0.3-alpha8-SNAPSHOT"
@@ -21,7 +22,9 @@ object build extends Build {
     settings = Defaults.defaultSettings).aggregate(scrud, sample, tests)
 
   lazy val scrud = Project ("scrud-android", file("scrud-android"),
-    settings = General.androidLibrarySettings)
+    settings = General.androidLibrarySettings ++ List(
+      libraryDependencies += "com.github.epabst.triangle" % "triangle" % "0.6-SNAPSHOT"
+    )
 
   lazy val sample: Project = Project ("scrud-android-sample", file("sample-app"),
     settings = General.androidAppSettings).dependsOn(scrud)

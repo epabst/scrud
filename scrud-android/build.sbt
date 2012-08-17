@@ -10,8 +10,6 @@ AndroidKeys.platformName in AndroidKeys.Android := "android-10"
 
 resolvers += "Local Maven Repository" at "file://"+Path.userHome.absolutePath+"/.m2/repository"
 
-libraryDependencies += "com.github.epabst.triangle" % "triangle" % "0.6-SNAPSHOT"
-
 libraryDependencies += "com.github.epabst.scrud" % "scrud-android-res" % General.scrudVersion artifacts(
   Artifact("scrud-android-res"), Artifact("scrud-android-res", "apklib", "apklib"))
 
