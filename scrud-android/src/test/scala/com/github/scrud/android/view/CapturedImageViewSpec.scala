@@ -12,6 +12,7 @@ import com.github.scrud.android.action.OperationResponse
 import android.net.Uri
 import android.content.Intent
 import android.widget.ImageView
+import com.github.triangle.GetterInput
 
 /** A behavior specification for [[com.github.scrud.android.view.ViewField]].
   * @author Eric Pabst (epabst@gmail.com)
@@ -30,7 +31,7 @@ class CapturedImageViewSpec extends MustMatchers with MockitoSugar {
     stub(outerView.getId).toReturn(TheViewId)
     stub(outerView.findViewById(TheViewId)).toReturn(view)
     stub(intent.getData).toReturn(uri)
-    field.getterFromItem(List(OperationResponse(TheViewId, intent), outerView)) must be (Some(uri))
+    field.getterFromItem(GetterInput(OperationResponse(TheViewId, intent), outerView)) must be (Some(uri))
     verify(view, never()).getTag(CapturedImageView.DefaultValueTagKey)
   }
 
@@ -47,7 +48,7 @@ class CapturedImageViewSpec extends MustMatchers with MockitoSugar {
     stub(outerView.findViewById(TheViewId)).toReturn(view)
     stub(intent.getData).toReturn(uri2)
     stub(view.getTag).toReturn(uri.toString)
-    field.getterFromItem(List(OperationResponse(TheViewId, intent), outerView)) must be (Some(uri2))
+    field.getterFromItem(GetterInput(OperationResponse(TheViewId, intent), outerView)) must be (Some(uri2))
   }
 
   @Test
@@ -59,6 +60,6 @@ class CapturedImageViewSpec extends MustMatchers with MockitoSugar {
     stub(outerView.getId).toReturn(TheViewId)
     stub(outerView.findViewById(TheViewId)).toReturn(view)
     stub(view.getTag(CapturedImageView.DefaultValueTagKey)).toReturn("file://foo/bar.jpg")
-    field.getterFromItem(List(OperationResponse(TheViewId, null), outerView)) must be (Some(Uri.parse("file://foo/bar.jpg")))
+    field.getterFromItem(GetterInput(OperationResponse(TheViewId, null), outerView)) must be (Some(Uri.parse("file://foo/bar.jpg")))
   }
 }

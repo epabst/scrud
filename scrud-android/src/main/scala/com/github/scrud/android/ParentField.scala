@@ -18,7 +18,7 @@ case class ParentField(entityType: EntityType) extends DelegatingPortableField[I
 }
 
 object ParentField {
-  def parentFields(field: BaseField): List[ParentField] = field.deepCollect {
+  def parentFields(field: BaseField): Seq[ParentField] = field.deepCollect {
     case parentField: ParentField => parentField
   }
 

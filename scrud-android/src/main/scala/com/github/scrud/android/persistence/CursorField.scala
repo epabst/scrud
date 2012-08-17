@@ -37,18 +37,18 @@ object CursorField {
 
   object PersistedId extends Field[ID](persisted[ID](idFieldName) + sqliteCriteria(idFieldName))
 
-  def persistedFields(field: BaseField): List[CursorField[_]] = {
+  def persistedFields(field: BaseField): Seq[CursorField[_]] = {
     field.deepCollect[CursorField[_]] {
       case cursorField: CursorField[_] => cursorField
     }
   }
 
-  def updateablePersistedFields(field: BaseField, rIdClasses: Seq[Class[_]]): List[CursorField[_]] = {
+  def updateablePersistedFields(field: BaseField, rIdClasses: Seq[Class[_]]): Seq[CursorField[_]] = {
     val parentFieldNames = ParentField.parentFields(field).map(_.fieldName)
     persistedFields(field).filterNot(_.name == idFieldName).filterNot(parentFieldNames.contains(_))
   }
 
-  def queryFieldNames(fields: FieldList): List[String] = persistedFields(fields).map(_.columnName)
+  def queryFieldNames(fields: FieldList): Seq[String] = persistedFields(fields).map(_.columnName)
 
   def sqliteCriteria[T](name: String): PortableField[T] =
     Transformer((criteria: SQLiteCriteria) => (v: T) => {

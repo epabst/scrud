@@ -3,9 +3,9 @@ package com.github.scrud.android.persistence
 import android.database.Cursor
 import com.github.triangle.FieldList
 
-case class EntityTypePersistedInfo(persistedFields: List[CursorField[_]]) {
+case class EntityTypePersistedInfo(persistedFields: Seq[CursorField[_]]) {
   private val persistedFieldList = FieldList(persistedFields: _*)
-  lazy val queryFieldNames: List[String] = persistedFields.map(_.columnName)
+  lazy val queryFieldNames: Seq[String] = persistedFields.map(_.columnName)
 
   /** Copies the current row of the given cursor to a Map.  This allows the Cursor to then move to a different position right after this. */
   def copyRowToMap(cursor: Cursor): Map[String,Any] =

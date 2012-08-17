@@ -19,7 +19,7 @@ class CrudActivity extends BaseCrudActivity { self =>
     future {
       withPersistence { persistence =>
         val readableOrUnit: AnyRef = persistence.find(uri).getOrElse(PortableField.UseDefaults)
-        val portableValue = entityType.copyFromItem(readableOrUnit :: contextItems)
+        val portableValue = entityType.copyFromItem(readableOrUnit +: contextItems)
         runOnUiThread(this) { portableValue.copyTo(this, contextItems) }
       }
     }
@@ -34,7 +34,7 @@ class CrudActivity extends BaseCrudActivity { self =>
       if (crudApplication.maySpecifyEntityInstance(currentPath, entityType)) {
         populateFromUri(currentPath)
       } else {
-        entityType.copyFromItem(PortableField.UseDefaults :: contextItems, this)
+        entityType.copyFromItem(PortableField.UseDefaults +: contextItems, this)
       }
     }
     bindNormalActionsToViews()
@@ -63,7 +63,7 @@ class CrudActivity extends BaseCrudActivity { self =>
     val writable = crudApplication.newWritable(entityType)
     withPersistence { persistence =>
       val copyableFields = entityType.copyableTo(writable, contextItemsWithoutUseDefaults)
-      val portableValue = copyableFields.copyFromItem(this :: contextItemsWithoutUseDefaults)
+      val portableValue = copyableFields.copyFromItem(this +: contextItemsWithoutUseDefaults)
       if (portableValue.transform(ValidationResult.Valid).isValid) {
         val transformedWritable = portableValue.transform(writable)
         saveBasedOnUserAction(persistence, transformedWritable)

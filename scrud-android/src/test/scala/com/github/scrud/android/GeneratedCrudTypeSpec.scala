@@ -14,6 +14,7 @@ import android.app.Activity
 import android.view.LayoutInflater
 import android.widget.{BaseAdapter, AdapterView, ListAdapter}
 import persistence.{DataListener, EntityType}
+import com.github.triangle.GetterInput
 
 /** A behavior specification for [[com.github.scrud.android.GeneratedPersistenceFactory]].
   * @author Eric Pabst (epabst@gmail.com)
@@ -50,7 +51,7 @@ class GeneratedCrudTypeSpec extends MustMatchers with CrudMockitoSugar {
     when(crudContext.openEntityPersistence(entityType)).thenReturn(persistence)
     val uri = UriPath.EMPTY
     when(persistence.findAll(uri)).thenReturn(List(Map("longId" -> 456L)))
-    generatedCrudType.setListAdapter(adapterView, entityType, uri, crudContext, Nil, activity, 123)
+    generatedCrudType.setListAdapter(adapterView, entityType, uri, crudContext, GetterInput.empty, activity, 123)
     verify(adapterView).setAdapter(anyObject())
     val listAdapter = listAdapterCapture.params(0).asInstanceOf[ListAdapter]
     listAdapter.getItemId(0) must be (456L)

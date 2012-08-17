@@ -8,7 +8,7 @@ import persistence.EntityType
 import PlatformTypes._
 import com.github.scrud.android.view.AndroidConversions._
 import android.os.Bundle
-import com.github.triangle.{FieldList, PortableField, Logging}
+import com.github.triangle.{GetterInput, FieldList, PortableField, Logging}
 import view.{ViewField, OnClickOperationSetter}
 
 /** Support for the different Crud Activity's.
@@ -45,9 +45,9 @@ trait BaseCrudActivity extends ActivityWithState with OptionsMenuActivity with L
 
   lazy val crudContext = new CrudContext(this, crudApplication)
 
-  def contextItems = List(currentUriPath, crudContext, PortableField.UseDefaults)
+  def contextItems = GetterInput(currentUriPath, crudContext, PortableField.UseDefaults)
 
-  def contextItemsWithoutUseDefaults = List(currentUriPath, crudContext)
+  def contextItemsWithoutUseDefaults = GetterInput(currentUriPath, crudContext)
 
   protected lazy val logTag = Common.tryToEvaluate(entityType.entityName).getOrElse(Common.logTag)
 

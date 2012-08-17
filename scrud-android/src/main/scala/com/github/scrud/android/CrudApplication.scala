@@ -29,8 +29,8 @@ trait CrudApplication extends Logging {
   def packageName: String = getClass.getPackage.getName
 
   /** All entities in the application, in priority order of most interesting first. */
-  def allCrudTypes: List[CrudType]
-  def allEntityTypes: List[EntityType] = allCrudTypes.map(_.entityType)
+  def allCrudTypes: Seq[CrudType]
+  def allEntityTypes: Seq[EntityType] = allCrudTypes.map(_.entityType)
 
   /** The EntityType for the first page of the App. */
   def primaryEntityType: EntityType = allEntityTypes.head
@@ -39,7 +39,7 @@ trait CrudApplication extends Logging {
   // The first EntityType is used as the default starting point.
   lazy val defaultContentUri = UriPath("content://" + contentProviderAuthority) / primaryEntityType.entityName
 
-  def childEntityTypes(entityType: EntityType): List[EntityType] = crudType(entityType).childEntityTypes(this)
+  def childEntityTypes(entityType: EntityType): Seq[EntityType] = crudType(entityType).childEntityTypes(this)
 
   final def withEntityPersistence[T](entityType: EntityType, activity: ActivityWithState)(f: CrudPersistence => T): T = {
     crudType(entityType).withEntityPersistence(new CrudContext(activity, this))(f)

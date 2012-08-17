@@ -90,18 +90,18 @@ class CrudType(val entityType: EntityType, val persistenceFactory: PersistenceFa
 
   lazy val commandToUndoDelete = Command(None, Some(res.R.string.undo_delete), None)
 
-  lazy val parentFields: List[ParentField] = entityType.deepCollect {
+  lazy val parentFields: Seq[ParentField] = entityType.deepCollect {
     case parentField: ParentField => parentField
   }
 
-  def parentEntityTypes(application: CrudApplication): List[EntityType] = parentFields.map(_.entityType)
+  def parentEntityTypes(application: CrudApplication): Seq[EntityType] = parentFields.map(_.entityType)
 
-  def childEntityTypes(application: CrudApplication): List[EntityType] = childEntities(application).map(_.entityType)
+  def childEntityTypes(application: CrudApplication): Seq[EntityType] = childEntities(application).map(_.entityType)
 
   /** The list of entities that refer to this one.
     * Those entities should have a ParentField (or foreignKey) in their fields list.
     */
-  def childEntities(application: CrudApplication): List[CrudType] = {
+  def childEntities(application: CrudApplication): Seq[CrudType] = {
     trace("childEntities: allCrudTypes=" + application.allEntityTypes + " self=" + self)
     application.allCrudTypes.filter { entity =>
       val parentEntityTypes = entity.parentEntityTypes(application)
@@ -157,18 +157,18 @@ class CrudType(val entityType: EntityType, val persistenceFactory: PersistenceFa
     * May be overridden to modify the list of actions.
     */
   @deprecated("use CrudApplication.actionsForList")
-  def getListActions(application: CrudApplication): List[Action] =
-    getReadOnlyListActions(application) ::: application.actionToCreate(entityType).toList
+  def getListActions(application: CrudApplication): Seq[Action] =
+    getReadOnlyListActions(application) ++ application.actionToCreate(entityType).toSeq
 
-  protected def getReadOnlyListActions(application: CrudApplication): List[Action] = {
-    val thisEntity = this.entityType;
+  protected def getReadOnlyListActions(application: CrudApplication): Seq[Action] = {
+    val thisEntity = this.entityType
     (parentFields match {
       //exactly one parent w/o a display page
       case parentField :: Nil if !application.crudType(parentField.entityType).hasDisplayPage => {
         val parentEntityType = parentField.entityType
         //the parent's actionToUpdate should be shown since clicking on the parent entity brought the user
         //to the list of child entities instead of to a display page for the parent entity.
-        application.actionToUpdate(parentEntityType).toList :::
+        application.actionToUpdate(parentEntityType).toSeq ++
           application.childEntityTypes(parentEntityType).filter(_ != thisEntity).flatMap(application.actionToList(_))
       }
       case _ => Nil
@@ -180,12 +180,12 @@ class CrudType(val entityType: EntityType, val persistenceFactory: PersistenceFa
     * May be overridden to modify the list of actions.
     */
   @deprecated("use CrudApplication.actionsForEntity")
-  def getEntityActions(application: CrudApplication): List[Action] =
-    getReadOnlyEntityActions(application) ::: application.actionToUpdate(entityType).toList :::
-      application.actionToDelete(entityType).toList
+  def getEntityActions(application: CrudApplication): Seq[Action] =
+    getReadOnlyEntityActions(application) ++ application.actionToUpdate(entityType).toSeq ++
+      application.actionToDelete(entityType).toSeq
 
-  protected def getReadOnlyEntityActions(application: CrudApplication): List[Action] =
-    displayLayout.flatMap(_ => application.actionToDisplay(entityType)).toList :::
+  protected def getReadOnlyEntityActions(application: CrudApplication): Seq[Action] =
+    displayLayout.flatMap(_ => application.actionToDisplay(entityType)).toSeq ++
       application.childEntityTypes(entityType).flatMap(application.actionToList(_))
 
   def addDataListener(listener: DataListener, crudContext: CrudContext) {
@@ -210,7 +210,7 @@ class CrudType(val entityType: EntityType, val persistenceFactory: PersistenceFa
     setListAdapter(activity.getListView, entityType, activity.currentUriPath, crudContext, activity.contextItems, activity, self.rowLayout)
   }
 
-  private def createAdapter[A <: Adapter](persistence: CrudPersistence, uriPath: UriPath, entityType: EntityType, crudContext: CrudContext, contextItems: scala.List[AnyRef], activity: Activity, itemLayout: LayoutKey, adapterView: AdapterView[A]): AdapterCaching = {
+  private def createAdapter[A <: Adapter](persistence: CrudPersistence, uriPath: UriPath, entityType: EntityType, crudContext: CrudContext, contextItems: GetterInput, activity: Activity, itemLayout: LayoutKey, adapterView: AdapterView[A]): AdapterCaching = {
     val findAllResult = persistence.findAll(uriPath)
     findAllResult match {
       case CursorStream(cursor, _) =>
@@ -232,7 +232,7 @@ class CrudType(val entityType: EntityType, val persistenceFactory: PersistenceFa
     }
   }
 
-  private def setListAdapter[A <: Adapter](adapterView: AdapterView[A], persistence: CrudPersistence, uriPath: UriPath, entityType: EntityType, crudContext: CrudContext, contextItems: scala.List[AnyRef], activity: Activity, itemLayout: LayoutKey) {
+  private def setListAdapter[A <: Adapter](adapterView: AdapterView[A], persistence: CrudPersistence, uriPath: UriPath, entityType: EntityType, crudContext: CrudContext, contextItems: GetterInput, activity: Activity, itemLayout: LayoutKey) {
     addDataListener(new DataListener {
       def onChanged(uri: UriPath) {
         AdapterCaching.clearCache(adapterView, "changed")
@@ -246,7 +246,7 @@ class CrudType(val entityType: EntityType, val persistenceFactory: PersistenceFa
     crudContext.addCachedActivityStateListener(new AdapterCachingStateListener(adapterView, entityType, adapterFactory = callCreateAdapter()))
   }
 
-  def setListAdapter[A <: Adapter](adapterView: AdapterView[A], entityType: EntityType, uriPath: UriPath, crudContext: CrudContext, contextItems: scala.List[AnyRef], activity: Activity, itemLayout: LayoutKey) {
+  def setListAdapter[A <: Adapter](adapterView: AdapterView[A], entityType: EntityType, uriPath: UriPath, crudContext: CrudContext, contextItems: GetterInput, activity: Activity, itemLayout: LayoutKey) {
     val persistence = crudContext.openEntityPersistence(entityType)
     crudContext.activityState.addListener(new DestroyStateListener {
       def onDestroyState() {

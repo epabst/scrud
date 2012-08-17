@@ -3,8 +3,7 @@ package com.github.scrud.android.view
 import com.github.scrud.android.persistence.EntityType
 import com.github.scrud.android.common.PlatformTypes.ID
 import com.github.triangle.PortableField._
-import com.github.triangle.{SetterUsingItems, Getter}
-import com.github.triangle.&&
+import com.github.triangle.{GetterInput, SetterUsingItems, Getter, &&}
 import android.widget._
 import android.view.View
 import android.app.Activity
@@ -42,9 +41,9 @@ case class EntityView(entityType: EntityType)
           adapterView.setSelection(position)
         }
       }
-    case (AndroidUIElement(uiElement), items @ UriField(Some(baseUri)) && CrudContextField(Some(crudContext))) => idOpt: Option[ID] =>
+    case (AndroidUIElement(uiElement), input @ UriField(Some(baseUri)) && CrudContextField(Some(crudContext))) => idOpt: Option[ID] =>
       val entityOpt = idOpt.flatMap(id => crudContext.withEntityPersistence(entityType)(_.find(id, baseUri)))
-      entityType.copyFromItem(entityOpt.getOrElse(UseDefaults) +: items, uiElement)
+      entityType.copyFromItem(GetterInput(entityOpt.getOrElse(UseDefaults) +: input.items), uiElement)
   }
 
   override def toString = "EntityView(" + entityType.entityName + ")"

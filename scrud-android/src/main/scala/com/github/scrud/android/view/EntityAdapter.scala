@@ -5,12 +5,13 @@ import com.github.scrud.android.common.PlatformTypes._
 import scala.Predef._
 import com.github.scrud.android.persistence.EntityType
 import android.view.{LayoutInflater, ViewGroup, View}
+import com.github.triangle.GetterInput
 
 /** An Android Adapter for an EntityType with the result of EntityPersistence.findAll.
   * @author Eric Pabst (epabst@gmail.com)
   */
 class EntityAdapter(val entityType: EntityType, values: Seq[AnyRef], rowLayout: ViewKey,
-                    contextItems: List[AnyRef], layoutInflater: LayoutInflater) extends BaseAdapter with AdapterCaching {
+                    contextItems: GetterInput, layoutInflater: LayoutInflater) extends BaseAdapter with AdapterCaching {
   def getCount: Int = values.size
 
   def getItemId(position: Int): ID = getItem(position) match {

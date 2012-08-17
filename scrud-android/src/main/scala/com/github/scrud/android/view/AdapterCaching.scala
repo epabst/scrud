@@ -1,6 +1,6 @@
 package com.github.scrud.android.view
 
-import com.github.triangle.{PortableValue, Logging}
+import com.github.triangle.{GetterInput, PortableValue, Logging}
 import com.github.scrud.android.persistence.EntityType
 import android.view.{ViewGroup, View}
 import com.github.scrud.android.CachedStateListener
@@ -11,7 +11,7 @@ import collection.mutable
 import com.github.scrud.android.common.{Common, Timing}
 import actors.Actor
 
-case class GetValueAtPosition(position: Long, entityData: AnyRef, contextItems: scala.List[AnyRef], onCached: PortableValue => Unit)
+case class GetValueAtPosition(position: Long, entityData: AnyRef, contextItems: GetterInput, onCached: PortableValue => Unit)
 case class CacheValue(position: Long, portableValue: PortableValue, onCached: PortableValue => Unit)
 case class ClearCache(reason: String)
 object RetrieveCachedState
@@ -40,7 +40,7 @@ class CacheActor(adapterView: ViewGroup, adapter: BaseAdapter, entityType: Entit
               // This prevents duplication of calculating the value in the background.
               cache += position -> entityType.DefaultPortableValue
               future {
-                val positionItems: List[AnyRef] = entityData +: contextItems
+                val positionItems: GetterInput = entityData +: contextItems
                 val portableValue = entityType.copyFromItem(positionItems)
                 // onCached should cause bindViewFromCacheOrItems to be requested again
                 this ! CacheValue(position, portableValue, onCached)
@@ -115,7 +115,7 @@ trait AdapterCaching extends Logging with Timing { self: BaseAdapter =>
     }
   }
 
-  protected[scrud] def bindViewFromCacheOrItems(view: View, entityData: AnyRef, contextItems: List[AnyRef], position: Long, adapterView: ViewGroup) {
+  protected[scrud] def bindViewFromCacheOrItems(view: View, entityData: AnyRef, contextItems: GetterInput, position: Long, adapterView: ViewGroup) {
     view.setTag(position)
     // notifyDataSetChanged() should cause bindViewFromCacheOrItems to be requested again once the real value is cached
     (cacheActor(adapterView) !? GetValueAtPosition(position, entityData, contextItems, portableValue => {

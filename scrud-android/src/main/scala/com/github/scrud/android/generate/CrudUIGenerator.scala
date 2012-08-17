@@ -78,7 +78,7 @@ object CrudUIGenerator extends Logging {
     try {
       Some(f)
     } catch {
-      case e => debug(e.toString); None
+      case e: Throwable => debug(e.toString); None
     }
 
   def generateValueStrings(application: CrudApplication): Elem = {
@@ -124,7 +124,7 @@ object CrudUIGenerator extends Logging {
     adjustHeadNode(field.layout.displayXml, applyAttributes(_, attributes))
   }
 
-  protected def listLayout(entityInfo: EntityTypeViewInfo, childEntityInfos: List[EntityTypeViewInfo], application: CrudApplication) = {
+  protected def listLayout(entityInfo: EntityTypeViewInfo, childEntityInfos: Seq[EntityTypeViewInfo], application: CrudApplication) = {
     val addableEntityTypeInfos = if (application.isAddable(entityInfo.entityType)) List(entityInfo) else childEntityInfos.filter(childInfo => application.isAddable(childInfo.entityType))
     <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
                   android:orientation="vertical"
@@ -238,7 +238,7 @@ object CrudUIGenerator extends Logging {
     }
   }
 
-  def generateLayouts(entityTypeInfo: EntityTypeViewInfo, childTypeInfos: List[EntityTypeViewInfo],
+  def generateLayouts(entityTypeInfo: EntityTypeViewInfo, childTypeInfos: Seq[EntityTypeViewInfo],
                       application: CrudApplication, pickedEntityTypes: Seq[EntityType]) {
     println("Generating layout for " + entityTypeInfo.entityType)
     lazy val info = EntityTypeViewInfo(entityTypeInfo.entityType)

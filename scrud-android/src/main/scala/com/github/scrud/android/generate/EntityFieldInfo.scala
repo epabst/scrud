@@ -10,11 +10,11 @@ import com.github.scrud.android.NamingConventions
 case class EntityFieldInfo(field: BaseField, rIdClasses: Seq[Class[_]]) {
   private lazy val updateablePersistedFields = CursorField.updateablePersistedFields(field, rIdClasses)
 
-  private def viewFields(field: BaseField): List[ViewField[_]] = field.deepCollect {
+  private def viewFields(field: BaseField): Seq[ViewField[_]] = field.deepCollect {
     case matchingField: ViewField[_] => matchingField
   }
 
-  lazy val viewIdFieldInfos: List[ViewIdFieldInfo] = field.deepCollect {
+  lazy val viewIdFieldInfos: Seq[ViewIdFieldInfo] = field.deepCollect {
     case viewIdField: ViewIdField[_] => ViewIdFieldInfo(viewIdField.viewRef.fieldName(rIdClasses), viewIdField)
   }
 
@@ -22,14 +22,14 @@ case class EntityFieldInfo(field: BaseField, rIdClasses: Seq[Class[_]]) {
   def isPersisted: Boolean = !updateablePersistedFields.isEmpty
   def isUpdateable: Boolean = isDisplayable && isPersisted
 
-  lazy val nestedEntityTypeViewInfos: List[EntityTypeViewInfo] = field.deepCollect {
+  lazy val nestedEntityTypeViewInfos: Seq[EntityTypeViewInfo] = field.deepCollect {
     case entityView: EntityView => EntityTypeViewInfo(entityView.entityType)
   }
 
-  lazy val displayableViewIdFieldInfos: List[ViewIdFieldInfo] =
+  lazy val displayableViewIdFieldInfos: Seq[ViewIdFieldInfo] =
     viewIdFieldInfos.filter(_.layout.displayXml != NodeSeq.Empty) ++ nestedEntityTypeViewInfos.flatMap(_.displayableViewIdFieldInfos)
 
-  lazy val updateableViewIdFieldInfos: List[ViewIdFieldInfo] =
+  lazy val updateableViewIdFieldInfos: Seq[ViewIdFieldInfo] =
     if (isPersisted) viewIdFieldInfos.filter(_.layout.editXml != NodeSeq.Empty) else Nil
 
   lazy val otherViewFields = {
@@ -39,7 +39,7 @@ case class EntityFieldInfo(field: BaseField, rIdClasses: Seq[Class[_]]) {
 }
 
 case class ViewIdFieldInfo(id: String, displayName: String, field: PortableField[_]) {
-  lazy val viewFields: List[ViewField[_]] = field.deepCollect {
+  lazy val viewFields: Seq[ViewField[_]] = field.deepCollect {
     case matchingField: ViewField[_] => matchingField
   }
 
