@@ -4,7 +4,7 @@ organization := "com.github.epabst.scrud"
 
 version := General.scrudVersion
 
-scalaVersion := "2.9.1"
+scalaVersion := "2.8.1"
 
 AndroidKeys.platformName in AndroidKeys.Android := "android-10"
 
