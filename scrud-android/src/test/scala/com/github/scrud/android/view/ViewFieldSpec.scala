@@ -102,7 +102,7 @@ class ViewFieldSpec extends MustMatchers with MockitoSugar {
     val intField = intView + Getter[MyEntity,Int](e => e.number).withSetter(e => e.number = _, noSetterForEmpty)
     val view = new TextView(context)
     view.setText("twenty")
-    intField.getter(view) must be (None)
+    intField.getValue(view) must be (None)
 
     val entity = new MyEntity("my1", 30)
     intField.copy(view, entity)
@@ -133,10 +133,10 @@ class ViewFieldSpec extends MustMatchers with MockitoSugar {
     val field = textView
     val view = new TextView(context)
     view.setText(null)
-    field.getter(view) must be (None)
+    field.getValue(view) must be (None)
 
     view.setText("")
-    field.getter(view) must be (None)
+    field.getValue(view) must be (None)
   }
 
   @Test
@@ -144,10 +144,10 @@ class ViewFieldSpec extends MustMatchers with MockitoSugar {
     val field = textView
     val view = new TextView(context)
     view.setText("  ")
-    field.getter(view) must be (None)
+    field.getValue(view) must be (None)
 
     view.setText(" hello world ")
-    field.getter(view) must be (Some("hello world"))
+    field.getValue(view) must be (Some("hello world"))
   }
 
   @Test
@@ -205,6 +205,6 @@ class ViewFieldSpec extends MustMatchers with MockitoSugar {
       (s: String) => Some("parsed " + s), nameLayout)
     val textView = mock[TextView]
     stub(textView.getText).toReturn("  given text   ")
-    viewField.getter.apply(textView) must be (Some("parsed given text"))
+    viewField.getValue(textView) must be (Some("parsed given text"))
   }
 }
