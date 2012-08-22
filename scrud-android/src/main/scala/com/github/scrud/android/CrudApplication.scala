@@ -4,7 +4,7 @@ import action._
 import common.{UriPath, Common}
 import java.util.NoSuchElementException
 import persistence.EntityType
-import com.github.triangle.{PortableField, PortableValue, Logging}
+import com.github.triangle.{GetterInput, PortableField, PortableValue, Logging}
 
 /** An Application that works with [[com.github.scrud.android.CrudType]]s.
  * @author Eric Pabst (epabst@gmail.com)
@@ -79,7 +79,7 @@ trait CrudApplication extends Logging {
   def actionToDisplay(entityType: EntityType): Option[Action] = Some(crudType(entityType).displayAction)
 
   def copyFromPersistedEntity(entityType: EntityType, uriPathWithId: UriPath, crudContext: CrudContext): Option[PortableValue] = {
-    val contextItems = List(uriPathWithId, crudContext, PortableField.UseDefaults)
+    val contextItems = GetterInput(uriPathWithId, crudContext, PortableField.UseDefaults)
     crudContext.withEntityPersistence(entityType)(_.find(uriPathWithId).map { readable =>
       debug("Copying " + entityType.entityName + "#" + entityType.IdField(readable) + " to " + this)
       entityType.copyFromItem(readable +: contextItems)
