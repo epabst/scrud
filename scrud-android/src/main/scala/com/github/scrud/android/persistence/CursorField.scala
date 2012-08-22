@@ -16,7 +16,7 @@ case class SQLiteCriteria(selection: List[String] = Nil, selectionArgs: List[Str
 
 object CursorField {
   def bundleField[T](name: String)(implicit persistedType: PersistedType[T]) =
-    Getter[Bundle,T](b => persistedType.getValue(b, name)).withSetter(b => v => persistedType.putValue(b, name, v), noSetterForEmpty) +
+    Getter[Bundle,T](b => persistedType.getValue(b, name)).withSetter(b => persistedType.putValue(b, name, _), noSetterForEmpty) +
     mapField[T](name)
 
   def persisted[T](name: String)(implicit persistedType: PersistedType[T]): CursorField[T] = {
