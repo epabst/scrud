@@ -2,9 +2,20 @@ package com.github.scrud.android.persistence
 
 import com.github.scrud.android.common.PlatformTypes._
 import com.github.scrud.android.common._
+import concurrent.ops
 
 trait DataListener {
   def onChanged(uri: UriPath)
+}
+
+trait AsyncDataListener extends DataListener {
+  def onChanged(uri: UriPath) {
+    ops.future {
+      onChangedAsync(uri)
+    }
+  }
+
+  def onChangedAsync(uri: UriPath)
 }
 
 /** Persistence support for an entity.

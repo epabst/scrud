@@ -1,12 +1,17 @@
 package com.github.scrud.android
 
 import action._
+import action.Action
+import action.Command
+import action.StartEntityActivityOperation
+import action.StartEntityIdActivityOperation
 import common.{UriPath, Timing}
 import Operation._
 import android.app.Activity
 import com.github.triangle._
 import common.PlatformTypes._
-import persistence.{EntityTypePersistedInfo, CursorStream, EntityType, DataListener}
+import persistence._
+import persistence.CursorStream
 import PortableField.toSome
 import view.AndroidResourceAnalyzer._
 import java.lang.IllegalStateException
@@ -15,6 +20,7 @@ import android.content.Context
 import android.database.Cursor
 import android.widget._
 import view.{ViewRef, AdapterCachingStateListener, AdapterCaching, EntityAdapter}
+import scala.Some
 
 /** An entity configuration that provides all custom information needed to
   * implement CRUD on the entity.  This shouldn't depend on the platform (e.g. android).
@@ -215,8 +221,8 @@ class CrudType(val entityType: EntityType, val persistenceFactory: PersistenceFa
     findAllResult match {
       case CursorStream(cursor, _) =>
         activity.startManagingCursor(cursor)
-        addDataListener(new DataListener {
-          def onChanged(uri: UriPath) {
+        addDataListener(new AsyncDataListener {
+          def onChangedAsync(uri: UriPath) {
             cursor.requery()
           }
         }, crudContext)
