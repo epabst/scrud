@@ -1,6 +1,5 @@
 package com.github.scrud.android.common
 
-import actors.Futures
 import android.view.View
 import android.app.Activity
 import com.github.triangle.Logging
@@ -14,14 +13,15 @@ trait Timing extends Logging {
     try {
       body
     } catch {
-      case e =>
+      case e: Throwable =>
         logError("Error in non-UI Thread", e)
         throw e
     }
   }
 
-  def future[T](body: => T): scala.actors.Future[T] = {
-    Futures.future(withExceptionLogging(body))
+  def future[T](body: => T): () => T = {
+    // Use this instead of scala.actors.Futures.future because it preserves exceptions
+    scala.concurrent.ops.future(withExceptionLogging(body))
   }
 
   def runOnUiThread[T](view: View)(body: => T) {
