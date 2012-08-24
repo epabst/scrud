@@ -19,7 +19,7 @@ class CrudActivity extends BaseCrudActivity { self =>
     future {
       withPersistence { persistence =>
         val readableOrUnit: AnyRef = persistence.find(uri).getOrElse(PortableField.UseDefaults)
-        val portableValue = entityType.copyFromItem(readableOrUnit +: contextItems)
+        val portableValue = entityType.copyFrom(readableOrUnit +: contextItems)
         runOnUiThread(this) { portableValue.copyTo(this, contextItems) }
       }
     }
@@ -34,7 +34,7 @@ class CrudActivity extends BaseCrudActivity { self =>
       if (crudApplication.maySpecifyEntityInstance(currentPath, entityType)) {
         populateFromUri(currentPath)
       } else {
-        entityType.copyFromItem(PortableField.UseDefaults +: contextItems, this)
+        entityType.copy(PortableField.UseDefaults +: contextItems, this)
       }
     }
     bindNormalActionsToViews()
@@ -63,9 +63,9 @@ class CrudActivity extends BaseCrudActivity { self =>
     val writable = crudApplication.newWritable(entityType)
     withPersistence { persistence =>
       val copyableFields = entityType.copyableTo(writable, contextItemsWithoutUseDefaults)
-      val portableValue = copyableFields.copyFromItem(this +: contextItemsWithoutUseDefaults)
-      if (portableValue.transform(ValidationResult.Valid).isValid) {
-        val transformedWritable = portableValue.transform(writable)
+      val portableValue = copyableFields.copyFrom(this +: contextItemsWithoutUseDefaults)
+      if (portableValue.update(ValidationResult.Valid).isValid) {
+        val transformedWritable = portableValue.update(writable)
         saveBasedOnUserAction(persistence, transformedWritable)
       } else {
         Toast.makeText(this, res.R.string.data_not_saved_since_invalid_notification, Toast.LENGTH_SHORT).show()

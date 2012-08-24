@@ -41,7 +41,7 @@ class CacheActor(adapterView: ViewGroup, adapter: BaseAdapter, entityType: Entit
               cache += position -> entityType.DefaultPortableValue
               future {
                 val positionItems: GetterInput = entityData +: contextItems
-                val portableValue = entityType.copyFromItem(positionItems)
+                val portableValue = entityType.copyFrom(positionItems)
                 // onCached should cause bindViewFromCacheOrItems to be requested again
                 this ! CacheValue(position, portableValue, onCached)
               }
@@ -61,7 +61,7 @@ class CacheActor(adapterView: ViewGroup, adapter: BaseAdapter, entityType: Entit
         case RetrieveCachedState =>
           val state: Map[Long,Bundle] = for ((position, portableValue) <- cache) yield {
             // If entityType doesn't support setting every field (including generated ones) into a Bundle, then the data will be incomplete.
-            (position, portableValue.transform[Bundle](new Bundle()))
+            (position, portableValue.update[Bundle](new Bundle()))
           }
           self.reply(CachedState(state))
         case CachedState(state) =>
