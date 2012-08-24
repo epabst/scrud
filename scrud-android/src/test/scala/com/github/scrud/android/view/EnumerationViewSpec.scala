@@ -30,7 +30,7 @@ class EnumerationViewSpec extends MustMatchers with MockitoSugar {
   @Test
   def itMustSetTheAdapterForAnAdapterView() {
     val adapterView = new Spinner(context)
-    enumerationView.setValue(adapterView, Some(MyEnum.C))
+    enumerationView.updateWithValue(adapterView, Some(MyEnum.C))
     val adapter = adapterView.getAdapter
     (0 to (adapter.getCount - 1)).toList.map(adapter.getItem(_)) must be (List(MyEnum.A, MyEnum.B, MyEnum.C))
   }
@@ -38,7 +38,7 @@ class EnumerationViewSpec extends MustMatchers with MockitoSugar {
   @Test
   def itMustSetTheAdapterForAnAdapterViewEvenIfTheValueIsNotSet() {
     val adapterView = new Spinner(context)
-    enumerationView.setValue(adapterView, None)
+    enumerationView.updateWithValue(adapterView, None)
     val adapter = adapterView.getAdapter
     (0 to (adapter.getCount - 1)).toList.map(adapter.getItem(_)) must be (List(MyEnum.A, MyEnum.B, MyEnum.C))
   }
@@ -46,7 +46,7 @@ class EnumerationViewSpec extends MustMatchers with MockitoSugar {
   @Test
   def itMustSetThePositionCorrectly() {
     val adapterView = new Spinner(context)
-    enumerationView.setValue(adapterView, MyEnum.C)
+    enumerationView.updateWithValue(adapterView, MyEnum.C)
     adapterView.getSelectedItemPosition must be (2)
   }
 
@@ -54,7 +54,7 @@ class EnumerationViewSpec extends MustMatchers with MockitoSugar {
   def itMustHandleInvalidValueForAnAdapterView() {
     val field = enumerationView
     val adapterView = new Spinner(context)
-    field.setValue(adapterView, None)
+    field.updateWithValue(adapterView, None)
     adapterView.getSelectedItemPosition must be (AdapterView.INVALID_POSITION)
   }
 }

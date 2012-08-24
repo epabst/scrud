@@ -61,12 +61,12 @@ class ViewFieldSpec extends MustMatchers with MockitoSugar {
     val stringField =
       viewId(101, textView) +
       viewId(102, Getter[TextView,String](v => Option(v.getText.toString)).withSetter(v => v.setText(_), _.setText("Please Fill")))
-    stringField.setValue(viewGroup, None)
+    stringField.updateWithValue(viewGroup, None)
     verify(view1).setText("")
     verify(view2).setText("Please Fill")
 
     val intField = viewId(103, intView)
-    intField.setValue(viewGroup, None)
+    intField.updateWithValue(viewGroup, None)
     verify(view3).setText("")
   }
 
@@ -154,7 +154,7 @@ class ViewFieldSpec extends MustMatchers with MockitoSugar {
   def itMustFormatDatesForEditInShortFormat() {
     val field = dateView
     val view = new EditText(context)
-    field.setValue(view, Some(new GregorianCalendar(2020, Calendar.JANUARY, 20).getTime))
+    field.updateWithValue(view, Some(new GregorianCalendar(2020, Calendar.JANUARY, 20).getTime))
     view.getText.toString must not(include ("Jan"))
     view.getText.toString must include ("1")
   }
@@ -163,7 +163,7 @@ class ViewFieldSpec extends MustMatchers with MockitoSugar {
   def itMustFormatDatesForDisplayInDefaultFormat() {
     val field = dateView
     val view = new TextView(context)
-    field.setValue(view, Some(new GregorianCalendar(2020, Calendar.JANUARY, 20).getTime))
+    field.updateWithValue(view, Some(new GregorianCalendar(2020, Calendar.JANUARY, 20).getTime))
     view.getText.toString must include ("Jan")
   }
 
@@ -186,7 +186,7 @@ class ViewFieldSpec extends MustMatchers with MockitoSugar {
     val viewField = formattedTextView((s: String) => Some(s + " on display"), (s: String) => Some(s + " to edit"),
       (s: String) => Some(s), nameLayout)
     val editView = mock[EditText]
-    viewField.setter.apply(editView)(Some("marbles"))
+    viewField.updateWithValue(editView, Some("marbles"))
     verify(editView).setText("marbles to edit")
   }
 
@@ -195,7 +195,7 @@ class ViewFieldSpec extends MustMatchers with MockitoSugar {
     val viewField = formattedTextView((s: String) => Some(s + " on display"), (s: String) => Some(s + " to edit"),
       (s: String) => Some(s), nameLayout)
     val textView = mock[TextView]
-    viewField.setter.apply(textView)(Some("marbles"))
+    viewField.updateWithValue(textView, Some("marbles"))
     verify(textView).setText("marbles on display")
   }
 
