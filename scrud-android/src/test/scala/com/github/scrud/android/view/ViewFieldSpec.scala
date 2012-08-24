@@ -113,19 +113,19 @@ class ViewFieldSpec extends MustMatchers with MockitoSugar {
   def itMustGetTheIdForAnEntityNameFromTheUriPath() {
     val field = uriIdField("foo")
     val uripath = UriPath("hello", "1", "foo", "4", "bar", "3")
-    field.getter(uripath) must be (Some(4))
+    field.singleGetter(uripath) must be (Some(4))
 
     val uripath2 = UriPath("hello", "1", "foo")
-    field.getter(uripath2) must be (None)
+    field.singleGetter(uripath2) must be (None)
 
     val uripath3 = UriPath("hello")
-    field.getter(uripath3) must be (None)
+    field.singleGetter(uripath3) must be (None)
 
     val uripath4 = UriPath()
-    field.getter(uripath4) must be (None)
+    field.singleGetter(uripath4) must be (None)
 
     val uripath5 = UriPath("4")
-    field.getter(uripath5) must be (None)
+    field.singleGetter(uripath5) must be (None)
   }
 
   @Test

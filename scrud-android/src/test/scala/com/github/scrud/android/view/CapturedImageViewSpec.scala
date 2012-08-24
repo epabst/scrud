@@ -31,7 +31,7 @@ class CapturedImageViewSpec extends MustMatchers with MockitoSugar {
     stub(outerView.getId).toReturn(TheViewId)
     stub(outerView.findViewById(TheViewId)).toReturn(view)
     stub(intent.getData).toReturn(uri)
-    field.getterFromItem(GetterInput(OperationResponse(TheViewId, intent), outerView)) must be (Some(uri))
+    field.getter(GetterInput(OperationResponse(TheViewId, intent), outerView)) must be (Some(uri))
     verify(view, never()).getTag(CapturedImageView.DefaultValueTagKey)
   }
 
@@ -48,7 +48,7 @@ class CapturedImageViewSpec extends MustMatchers with MockitoSugar {
     stub(outerView.findViewById(TheViewId)).toReturn(view)
     stub(intent.getData).toReturn(uri2)
     stub(view.getTag).toReturn(uri.toString)
-    field.getterFromItem(GetterInput(OperationResponse(TheViewId, intent), outerView)) must be (Some(uri2))
+    field.getter(GetterInput(OperationResponse(TheViewId, intent), outerView)) must be (Some(uri2))
   }
 
   @Test
@@ -60,6 +60,6 @@ class CapturedImageViewSpec extends MustMatchers with MockitoSugar {
     stub(outerView.getId).toReturn(TheViewId)
     stub(outerView.findViewById(TheViewId)).toReturn(view)
     stub(view.getTag(CapturedImageView.DefaultValueTagKey)).toReturn("file://foo/bar.jpg")
-    field.getterFromItem(GetterInput(OperationResponse(TheViewId, null), outerView)) must be (Some(Uri.parse("file://foo/bar.jpg")))
+    field.getter(GetterInput(OperationResponse(TheViewId, null), outerView)) must be (Some(Uri.parse("file://foo/bar.jpg")))
   }
 }
