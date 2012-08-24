@@ -80,7 +80,7 @@ class CrudActivity extends BaseCrudActivity { self =>
       val newId = persistence.save(id, writable)
       Toast.makeText(this, res.R.string.data_saved_notification, Toast.LENGTH_SHORT).show()
       if (id.isEmpty) setIntent(getIntent.setData(uriWithId(newId)))
-    } catch { case e => logError("onPause: Unable to store " + writable, e) }
+    } catch { case e: Throwable => logError("onPause: Unable to store " + writable, e) }
   }
 
   protected lazy val normalActions = crudApplication.actionsForEntity(entityType).filter {

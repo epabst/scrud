@@ -80,7 +80,7 @@ class CrudBackupAgent(application: CrudApplication) extends BackupAgent with Con
     withEntityPersistence[Unit](crudContext) { persistence =>
       persistence.findAll(UriPath.EMPTY).foreach { entity =>
         val map = entityType.copyAndTransform(entity, Map[String,Any]())
-        val id = PersistedId(entity)
+        val id = PersistedId.getRequired(entity)
         data.writeEntity(entityType.entityName + "#" + id, Some(map))
       }
     }
@@ -181,8 +181,8 @@ object DeletedEntityIdCrudType extends CrudType(DeletedEntityIdEntityType, SQLit
     val crudContext = new CrudContext(context, application)
     withEntityPersistence(crudContext) { persistence =>
       persistence.findAll(UriPath.EMPTY).foreach { entity =>
-        val deletedEntityName: String = DeletedEntityIdEntityType.entityNameField(entity)
-        val deletedId: ID = DeletedEntityIdEntityType.entityIdField(entity)
+        val deletedEntityName: String = DeletedEntityIdEntityType.entityNameField.getRequired(entity)
+        val deletedId: ID = DeletedEntityIdEntityType.entityIdField.getRequired(entity)
         data.writeEntity(deletedEntityName + "#" + deletedId, None)
       }
     }

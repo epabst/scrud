@@ -81,7 +81,7 @@ trait CrudApplication extends Logging {
   def copyFromPersistedEntity(entityType: EntityType, uriPathWithId: UriPath, crudContext: CrudContext): Option[PortableValue] = {
     val contextItems = GetterInput(uriPathWithId, crudContext, PortableField.UseDefaults)
     crudContext.withEntityPersistence(entityType)(_.find(uriPathWithId).map { readable =>
-      debug("Copying " + entityType.entityName + "#" + entityType.IdField(readable) + " to " + this)
+      debug("Copying " + entityType.entityName + "#" + entityType.IdField.getRequired(readable) + " to " + this)
       entityType.copyFromItem(readable +: contextItems)
     })
   }

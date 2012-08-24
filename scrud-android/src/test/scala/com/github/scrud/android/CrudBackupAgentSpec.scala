@@ -100,11 +100,11 @@ class CrudBackupAgentSpec extends MustMatchers with CrudEasyMockSugar {
 
       val allB = persistenceB.findAll(UriPath.EMPTY)
       allB.size must be (2)
-      allB.map(PersistedId(_)) must be (List(100L, 101L))
+      allB.map(PersistedId.getRequired(_)) must be (List(100L, 101L))
 
       val all2B = persistence2B.findAll(UriPath.EMPTY)
       all2B.size must be (2)
-      all2B.map(PersistedId(_)) must be (List(101L, 104L))
+      all2B.map(PersistedId.getRequired(_)) must be (List(101L, 104L))
     }
   }
 

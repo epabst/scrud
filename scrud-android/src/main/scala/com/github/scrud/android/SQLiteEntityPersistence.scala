@@ -80,7 +80,7 @@ class SQLiteEntityPersistence(val entityType: EntityType, val crudContext: CrudC
 
   def doDelete(uri: UriPath) {
     val ids = findAll(uri).map { readable =>
-      val id = entityType.IdField(readable)
+      val id = entityType.IdField.getRequired(readable)
       database.delete(tableName, BaseColumns._ID + "=" + id, Nil.toArray)
       id
     }

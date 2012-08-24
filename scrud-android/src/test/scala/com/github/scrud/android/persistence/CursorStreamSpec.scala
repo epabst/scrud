@@ -33,7 +33,7 @@ class CursorStreamSpec extends Spec with MustMatchers with MockitoSugar {
 
     val stream = CursorStream(cursor, EntityTypePersistedInfo(List(field)))
     val second = stream.tail.head
-    field(second) must be ("Bryce")
+    field.getRequired(second) must be ("Bryce")
   }
 
   it("must have correct number of elements") {
@@ -68,7 +68,7 @@ class CursorStreamSpec extends Spec with MustMatchers with MockitoSugar {
     val stream = CursorStream(cursor, EntityTypePersistedInfo(List(field)))
     val second = stream.tail.head
     val first = stream.head
-    field(second) must be ("Bryce")
-    field(first) must be ("Allen")
+    field.getRequired(second) must be ("Bryce")
+    field.getRequired(first) must be ("Allen")
   }
 }
