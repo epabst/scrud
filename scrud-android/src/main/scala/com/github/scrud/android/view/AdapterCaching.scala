@@ -122,7 +122,7 @@ trait AdapterCaching extends Logging with Timing { self: BaseAdapter =>
       runOnUiThread(adapterView) {
         // Don't copy if the View has been re-used for a different position.
         if (view.getTag == position) {
-          portableValue.copyTo(view, contextItems)
+          portableValue.update(view, contextItems)
         } else {
           notifyDataSetChanged()
         }
@@ -130,7 +130,7 @@ trait AdapterCaching extends Logging with Timing { self: BaseAdapter =>
     })) match {
       case portableValue: PortableValue =>
         //set the cached or default values immediately.  Default values is better than leaving as-is because the view might have other unrelated data.
-        portableValue.copyTo(view, contextItems)
+        portableValue.update(view, contextItems)
     }
   }
 }

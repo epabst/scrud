@@ -20,7 +20,7 @@ class CrudActivity extends BaseCrudActivity { self =>
       withPersistence { persistence =>
         val readableOrUnit: AnyRef = persistence.find(uri).getOrElse(PortableField.UseDefaults)
         val portableValue = entityType.copyFrom(readableOrUnit +: contextItems)
-        runOnUiThread(this) { portableValue.copyTo(this, contextItems) }
+        runOnUiThread(this) { portableValue.update(this, contextItems) }
       }
     }
   }
@@ -52,7 +52,7 @@ class CrudActivity extends BaseCrudActivity { self =>
 
         def onRestoreState(savedInstanceState: Bundle) {
           val portableValue = entityType.copyFrom(savedInstanceState)
-          runOnUiThread(self) { portableValue.copyTo(this, contextItems) }
+          runOnUiThread(self) { portableValue.update(this, contextItems) }
         }
       })
     }

@@ -76,7 +76,7 @@ trait BaseCrudActivity extends ActivityWithState with OptionsMenuActivity with L
   }
 
   protected def bindNormalActionsToViews() {
-    normalOperationSetters.defaultValue.copyTo(this, contextItems)
+    normalOperationSetters.defaultValue.update(this, contextItems)
   }
 
   protected def generateOptionsMenu: List[Action] =

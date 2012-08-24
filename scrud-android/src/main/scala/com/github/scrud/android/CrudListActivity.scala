@@ -51,7 +51,7 @@ class CrudListActivity extends ListActivity with BaseCrudActivity {
       }
     }
     runOnUiThread(this) {
-      portableValues.foreach(_.copyTo(this, GetterInput.single(crudContext)))
+      portableValues.foreach(_.update(this, GetterInput.single(crudContext)))
     }
   }
 
