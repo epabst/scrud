@@ -44,7 +44,7 @@ abstract class ListBufferEntityPersistence[T <: AnyRef](newWritableFunction: => 
       nextId.incrementAndGet()
     }
     // Prepend so that the newest ones come out first in results
-    buffer.prepend(IdField.transformer[T](item.asInstanceOf[T])(Some(newId)))
+    buffer.prepend(IdField.updateWithValue(item.asInstanceOf[T], Some(newId)))
     newId
   }
 
