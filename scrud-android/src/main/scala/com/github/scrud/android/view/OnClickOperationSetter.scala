@@ -11,7 +11,7 @@ import com.github.scrud.android.{UriField, CrudContextField, CrudContext}
   */
 case class OnClickOperationSetter[T](viewOperation: View => Operation) extends Setter[T] {
   /**A setter.  It is identical to updater but doesn't have to return the modified subject. */
-  def setterUsingInput[S <: AnyRef]: PartialFunction[UpdaterInput[S,T],Unit] = {
+  def setter[S <: AnyRef]: PartialFunction[UpdaterInput[S,T],Unit] = {
     case UpdaterInput(view: View, _, CrudContextField(Some(CrudContext(activity: ActivityWithState, _))) && UriField(Some(uri))) =>
       if (view.isClickable) {
         view.setOnClickListener { view: View =>

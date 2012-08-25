@@ -67,8 +67,8 @@ object ViewField {
     new ViewField[T](defaultLayout) {
       val delegate = Getter[TextView,T](view => toOption(view.getText.toString.trim).flatMap(fromString.convert(_))) +
         Setter[T] {
-          case view: EditText => value => view.setText(value.flatMap(toEditString.convert(_)).getOrElse(""))
-          case view: TextView => value => view.setText(value.flatMap(toDisplayString.convert(_)).getOrElse(""))
+          case UpdaterInput(view: EditText, valueOpt, _) => view.setText(valueOpt.flatMap(toEditString.convert(_)).getOrElse(""))
+          case UpdaterInput(view: TextView, valueOpt, _) => view.setText(valueOpt.flatMap(toDisplayString.convert(_)).getOrElse(""))
         }
 
       override def toString = "formattedTextView"
@@ -84,7 +84,7 @@ object ViewField {
   private def toOption(string: String): Option[String] = if (string == "") None else Some(string)
 
   private val calendarPickerField = Setter[Calendar] {
-    case picker: DatePicker => valueOpt =>
+    case UpdaterInput(picker: DatePicker, valueOpt, _) =>
       val calendar = valueOpt.getOrElse(Calendar.getInstance())
       picker.updateDate(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH))
   } + Getter((p: DatePicker) => Some(new GregorianCalendar(p.getYear, p.getMonth, p.getDayOfMonth)))

@@ -3,12 +3,14 @@ package com.github.scrud.android.view
 import com.github.scrud.android.persistence.EntityType
 import com.github.scrud.android.common.PlatformTypes.ID
 import com.github.triangle.PortableField._
-import com.github.triangle.{GetterInput, SetterUsingItems, Getter, &&}
+import com.github.triangle._
 import android.widget._
 import android.view.View
 import android.app.Activity
 import xml.NodeSeq
-import com.github.scrud.android.{CrudContextField, UriField, BaseCrudActivity, CrudContext}
+import com.github.scrud.android.{CrudContextField, UriField, BaseCrudActivity}
+import com.github.scrud.android.CrudContext
+import scala.Some
 
 /** A ViewField that allows choosing a specific entity of a given EntityType or displaying its fields' values.
   * The layout for the EntityType that contains this EntityView may refer to fields of this view's EntityType
@@ -26,8 +28,8 @@ case class EntityView(entityType: EntityType)
     }
   }
 
-  protected val delegate = Getter[AdapterView[BaseAdapter], ID](v => Option(v.getSelectedItemId)) + SetterUsingItems[ID] {
-    case (adapterView: AdapterView[BaseAdapter], UriField(Some(uri)) && CrudContextField(Some(crudContext @ CrudContext(crudActivity: BaseCrudActivity, _)))) => idOpt: Option[ID] =>
+  protected val delegate = Getter[AdapterView[BaseAdapter], ID](v => Option(v.getSelectedItemId)) + Setter[ID] {
+    case UpdaterInput(adapterView: AdapterView[BaseAdapter], idOpt, UriField(Some(uri)) && CrudContextField(Some(crudContext @ CrudContext(crudActivity: BaseCrudActivity, _)))) =>
       if (idOpt.isDefined || adapterView.getAdapter == null) {
         val crudType = crudContext.application.crudType(entityType)
         //don't do it again if already done from a previous time
@@ -41,7 +43,7 @@ case class EntityView(entityType: EntityType)
           adapterView.setSelection(position)
         }
       }
-    case (AndroidUIElement(uiElement), input @ UriField(Some(baseUri)) && CrudContextField(Some(crudContext))) => idOpt: Option[ID] =>
+    case UpdaterInput(AndroidUIElement(uiElement), idOpt, input @ UriField(Some(baseUri)) && CrudContextField(Some(crudContext))) =>
       val entityOpt = idOpt.flatMap(id => crudContext.withEntityPersistence(entityType)(_.find(id, baseUri)))
       entityType.copy(GetterInput(entityOpt.getOrElse(UseDefaults) +: input.items), uiElement)
   }
