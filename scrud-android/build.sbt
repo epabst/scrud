@@ -15,7 +15,7 @@ libraryDependencies += "com.github.epabst.scrud" % "scrud-android-res" % General
 
 libraryDependencies += "org.slf4j" % "slf4j-jdk14" % "1.6.1" % "test"
 
-libraryDependencies += "org.slf4j" % "slf4j-android" % "1.6.1-RC1"
+libraryDependencies in AndroidKeys.Android += "org.slf4j" % "slf4j-android" % "1.6.1-RC1"
 
 libraryDependencies += "org.mockito" % "mockito-core" % "1.8.5" % "test"
 
