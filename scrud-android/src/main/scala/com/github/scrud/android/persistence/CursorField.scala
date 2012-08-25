@@ -51,7 +51,7 @@ object CursorField {
   def queryFieldNames(fields: FieldList): Seq[String] = persistedFields(fields).map(_.columnName)
 
   def sqliteCriteria[T](name: String): PortableField[T] =
-    SubjectUpdater((criteria: SQLiteCriteria) => (v: T) => {
+    Updater((criteria: SQLiteCriteria) => (v: T) => {
       val formattedValue = v match {
         case s: String => "\"" + s + "\""
         case n => n.toString

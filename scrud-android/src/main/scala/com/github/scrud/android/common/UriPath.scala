@@ -2,7 +2,7 @@ package com.github.scrud.android.common
 
 import PlatformTypes._
 import com.github.triangle.ValueFormat._
-import com.github.triangle.{Getter, FieldGetter}
+import com.github.triangle.{Getter, TargetedGetter}
 
 /** A convenience wrapper for UriPath.
   * It helps in that UriPath.EMPTY is null when running unit tests, and helps prepare for multi-platform support.
@@ -43,5 +43,5 @@ object UriPath {
     UriPath(path: _*)
   }
 
-  def uriIdField(entityName: String): FieldGetter[UriPath,ID] = Getter[UriPath,ID](_.findId(entityName))
+  def uriIdField(entityName: String): TargetedGetter[UriPath,ID] = Getter[UriPath,ID](_.findId(entityName))
 }
