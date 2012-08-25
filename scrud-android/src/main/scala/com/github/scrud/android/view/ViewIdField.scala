@@ -10,7 +10,7 @@ import com.github.scrud.android.action.OperationResponse
 class ViewIdField[T](val viewRef: ViewRef, childViewField: PortableField[T]) extends PartialDelegatingField[T] {
   private lazy val viewKeyMapField: PortableField[T] =
     viewRef.viewKeyOpt.map { key =>
-      Getter[ViewKeyMap,T](_.get(key).map(_.asInstanceOf[T])).withTransformer(map => value => map + (key -> value), _ - key)
+      Getter[ViewKeyMap,T](_.get(key).map(_.asInstanceOf[T])).withUpdater(map => value => map + (key -> value), _ - key)
     }.getOrElse(emptyField)
 
   def withViewKeyMapField: PortableField[T] = this + viewKeyMapField

@@ -1,6 +1,6 @@
 package com.github.scrud.android.validate
 
-import com.github.triangle.{UpdaterInput, Transformer}
+import com.github.triangle.{Updater, UpdaterInput}
 import scala.{PartialFunction, AnyRef}
 
 case class ValidationResult(numInvalid: Int) {
@@ -17,7 +17,7 @@ object ValidationResult {
 /** A PortableField for validating data.  It transforms a ValidationResult using a value.
   * @author Eric Pabst (epabst@gmail.com)
   */
-class Validation[T](isValid: Option[T] => Boolean) extends Transformer[T] {
+class Validation[T](isValid: Option[T] => Boolean) extends Updater[T] {
   def updater[S <: AnyRef]: PartialFunction[UpdaterInput[S,T],S] = {
     case UpdaterInput(result: ValidationResult, valueOpt, _) => (result + isValid(valueOpt)).asInstanceOf[S]
   }

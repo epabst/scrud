@@ -51,13 +51,13 @@ object CursorField {
   def queryFieldNames(fields: FieldList): Seq[String] = persistedFields(fields).map(_.columnName)
 
   def sqliteCriteria[T](name: String): PortableField[T] =
-    Transformer((criteria: SQLiteCriteria) => (v: T) => {
+    SubjectUpdater((criteria: SQLiteCriteria) => (v: T) => {
       val formattedValue = v match {
         case s: String => "\"" + s + "\""
         case n => n.toString
       }
       criteria.copy(selection = (name + "=" + formattedValue) +: criteria.selection)
-    }, noTransformerForEmpty[SQLiteCriteria])
+    }, noUpdaterForEmpty[SQLiteCriteria])
 
 }
 
