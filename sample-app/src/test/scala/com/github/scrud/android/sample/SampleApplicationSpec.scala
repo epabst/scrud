@@ -9,6 +9,7 @@ import org.scalatest.mock.MockitoSugar
 import org.mockito.Mockito._
 import com.github.scrud.android._
 import action.{ContextWithState, State}
+import com.github.triangle.GetterInput
 
 /** A behavior specification for [[com.github.scrud.android.sample.AuthorEntityType]]
   * within [[com.github.scrud.android.sample.SampleApplication]].
@@ -35,7 +36,7 @@ class SampleApplicationSpec extends Spec with MustMatchers with MockitoSugar {
       bookPersistence.buffer += Map.empty[String,Any] += Map.empty[String,Any]
 
       stub(application.crudType(BookEntityType)).toReturn(bookCrudType)
-      val authorData = AuthorEntityType.copyAndTransformWithItem(List(AuthorEntityType.toUri(100L), crudContext), Map.empty[String,Any])
+      val authorData = AuthorEntityType.copyAndUpdate(GetterInput(AuthorEntityType.toUri(100L), crudContext), Map.empty[String,Any])
       authorData must be (Map[String,Any](idFieldName -> 100L, "bookCount" -> 2))
     }
   }

@@ -10,7 +10,7 @@ import scala.None
 import collection.mutable.SynchronizedQueue
 import android.app.backup.BackupManager
 import android.database.sqlite.{SQLiteOpenHelper, SQLiteDatabase}
-import com.github.triangle.{PortableField, Logging}
+import com.github.triangle.{GetterInput, PortableField, Logging}
 
 /** EntityPersistence for SQLite.
   * @author Eric Pabst (epabst@gmail.com)
@@ -40,7 +40,7 @@ class SQLiteEntityPersistence(val entityType: EntityType, val crudContext: CrudC
   //UseDefaults is provided here in the item list for the sake of PortableField.adjustment[SQLiteCriteria] fields
   def findAll(uri: UriPath): CursorStream =
     // The default orderBy is Some("_id desc")
-    findAll(entityType.copyAndTransformWithItem(List(uri, PortableField.UseDefaults), new SQLiteCriteria(orderBy = Some(CursorField.idFieldName + " desc"))))
+    findAll(entityType.copyAndUpdate(GetterInput(uri, PortableField.UseDefaults), new SQLiteCriteria(orderBy = Some(CursorField.idFieldName + " desc"))))
 
   private def notifyDataChanged() {
     backupManager.dataChanged()
@@ -72,7 +72,7 @@ class SQLiteEntityPersistence(val entityType: EntityType, val crudContext: CrudC
       }
     }
     notifyDataChanged()
-    val map = entityType.copyAndTransform(contentValues, Map[String,Any]())
+    val map = entityType.copyAndUpdate(contentValues, Map[String,Any]())
     val bytes = CrudBackupAgent.marshall(map)
     debug("Scheduled backup which will include " + entityType.entityName + "#" + id + ": size " + bytes.size + " bytes")
     id

@@ -14,7 +14,7 @@ object ValidationResult {
   val Valid: ValidationResult = ValidationResult(0)
 }
 
-/** A PortableField for validating data.  It transforms a ValidationResult using a value.
+/** A PortableField for validating data.  It updates a ValidationResult using a value.
   * @author Eric Pabst (epabst@gmail.com)
   */
 class Validation[T](isValid: Option[T] => Boolean) extends Updater[T] {

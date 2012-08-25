@@ -79,7 +79,7 @@ class CrudBackupAgent(application: CrudApplication) extends BackupAgent with Con
     import crudType._
     withEntityPersistence[Unit](crudContext) { persistence =>
       persistence.findAll(UriPath.EMPTY).foreach { entity =>
-        val map = entityType.copyAndTransform(entity, Map[String,Any]())
+        val map = entityType.copyAndUpdate(entity, Map[String,Any]())
         val id = PersistedId.getRequired(entity)
         data.writeEntity(entityType.entityName + "#" + id, Some(map))
       }
@@ -129,7 +129,7 @@ class CrudBackupAgent(application: CrudApplication) extends BackupAgent with Con
     debug("Restoring " + restoreItem.key + " <- " + restoreItem.map)
     import crudType._
     val id = restoreItem.key.substring(restoreItem.key.lastIndexOf("#") + 1).toLong
-    val writable = entityType.copyAndTransform(restoreItem.map, newWritable)
+    val writable = entityType.copyAndUpdate(restoreItem.map, newWritable)
     withEntityPersistence(crudContext) { _.save(Some(id), writable) }
     Unit
   }
@@ -171,7 +171,7 @@ object DeletedEntityIdCrudType extends CrudType(DeletedEntityIdEntityType, SQLit
     */
   def recordDeletion(entityType: EntityType, id: ID, context: ContextWithState) {
     val crudContext = new CrudContext(context, application)
-    val writable = DeletedEntityIdEntityType.copyAndTransform(
+    val writable = DeletedEntityIdEntityType.copyAndUpdate(
       Map(DeletedEntityIdEntityType.entityNameField.name -> entityType.entityName,
         DeletedEntityIdEntityType.entityIdField.name -> id), newWritable)
     withEntityPersistence(crudContext) { _.save(None, writable) }

@@ -65,8 +65,8 @@ class CrudActivity extends BaseCrudActivity { self =>
       val copyableFields = entityType.copyableTo(writable, contextItemsWithoutUseDefaults)
       val portableValue = copyableFields.copyFrom(this +: contextItemsWithoutUseDefaults)
       if (portableValue.update(ValidationResult.Valid).isValid) {
-        val transformedWritable = portableValue.update(writable)
-        saveBasedOnUserAction(persistence, transformedWritable)
+        val updatedWritable = portableValue.update(writable)
+        saveBasedOnUserAction(persistence, updatedWritable)
       } else {
         Toast.makeText(this, res.R.string.data_not_saved_since_invalid_notification, Toast.LENGTH_SHORT).show()
       }

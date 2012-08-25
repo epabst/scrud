@@ -9,7 +9,7 @@ case class EntityTypePersistedInfo(persistedFields: Seq[CursorField[_]]) {
 
   /** Copies the current row of the given cursor to a Map.  This allows the Cursor to then move to a different position right after this. */
   def copyRowToMap(cursor: Cursor): Map[String,Any] =
-    persistedFieldList.copyAndTransform(cursor, Map.empty[String,Any])
+    persistedFieldList.copyAndUpdate(cursor, Map.empty[String,Any])
 }
 
 object EntityTypePersistedInfo {
