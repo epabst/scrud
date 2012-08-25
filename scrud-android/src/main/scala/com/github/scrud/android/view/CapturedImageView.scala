@@ -64,7 +64,7 @@ object CapturedImageView extends ViewField[Uri](new FieldLayout {
     dir
   }
 
-  protected val delegate = GetterFromItem {
+  protected val delegate = Getter[Uri] {
     case OperationResponseExtractor(Some(response)) && ViewExtractor(Some(view)) =>
       Option(response.intent).map(_.getData).orElse(tagToUri(view.getTag(DefaultValueTagKey)))
   } + Getter((v: ImageView) => imageUri(v)) + Setter[Uri] {

@@ -2,7 +2,7 @@ package com.github.scrud.android
 
 import action.{OperationResponse, EntityOperation}
 import android.os.Bundle
-import com.github.triangle.PortableField
+import com.github.triangle.{GetterInput, PortableField}
 import android.content.Intent
 import android.app.Activity
 import com.github.scrud.android.view.AndroidConversions._
@@ -92,7 +92,7 @@ class CrudActivity extends BaseCrudActivity { self =>
     super.onActivityResult(requestCode, resultCode, data)
     if (resultCode == Activity.RESULT_OK) {
       //"this" is included in the list so that existing data isn't cleared.
-      entityType.copyFromItem(List(OperationResponse(requestCode, data), crudContext, this), this)
+      entityType.copy(GetterInput(OperationResponse(requestCode, data), crudContext, this), this)
     } else {
       debug("onActivityResult received resultCode of " + resultCode + " and data " + data + " for request " + requestCode)
     }

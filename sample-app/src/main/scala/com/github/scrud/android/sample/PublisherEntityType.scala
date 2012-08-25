@@ -14,7 +14,7 @@ object PublisherEntityType extends EntityType {
   def valueFields = List(
     persisted[String]("name") + viewId(classOf[R], "publisher_name", textView) + requiredString,
 
-    viewId(classOf[R], "bookCount", intView) + bundleField[Int]("bookCount") + GetterFromItem[Int] {
+    viewId(classOf[R], "bookCount", intView) + bundleField[Int]("bookCount") + Getter[Int] {
       case UriField(Some(uri)) && CrudContextField(Some(crudContext)) => {
         println("calculating bookCount for " + uri + " and " + crudContext)
         crudContext.withEntityPersistence(BookEntityType) { persistence =>
