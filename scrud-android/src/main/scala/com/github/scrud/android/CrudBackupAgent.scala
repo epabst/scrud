@@ -3,7 +3,7 @@ package com.github.scrud.android
 import action.{State, ContextWithState}
 import android.app.backup.{BackupDataOutput, BackupDataInput, BackupAgent}
 import com.github.triangle.Logging
-import common.{UriPath, CalculatedIterator, Common}
+import common.{Timing, UriPath, CalculatedIterator, Common}
 import persistence.CursorField._
 import android.os.ParcelFileDescriptor
 import java.io.{ObjectInputStream, ByteArrayInputStream, ObjectOutputStream, ByteArrayOutputStream}
@@ -44,25 +44,29 @@ object CrudBackupAgent {
 
 import CrudBackupAgent._
 
-class CrudBackupAgent(application: CrudApplication) extends BackupAgent with ContextWithState with Logging {
+class CrudBackupAgent(application: CrudApplication) extends BackupAgent with ContextWithState with Logging with Timing {
+  lazy val platformDriver = new AndroidPlatformDriver(this, logTag)
+
   protected def logTag = Common.tryToEvaluate(application.logTag).getOrElse(Common.logTag)
 
   def applicationState: State = getApplicationContext.asInstanceOf[CrudAndroidApplication]
 
   final def onBackup(oldState: ParcelFileDescriptor, data: BackupDataOutput, newState: ParcelFileDescriptor) {
-    onBackup(oldState, new BackupTarget {
-      def writeEntity(key: String, mapOpt: Option[Map[String,Any]]) {
-        debug("Backing up " + key + " <- " + mapOpt)
-        mapOpt match {
-          case Some(map) =>
-            val bytes = marshall(map)
-            data.writeEntityHeader(key, bytes.length)
-            data.writeEntityData(bytes, bytes.length)
-            debug("Backed up " + key + " with " + bytes.length + " bytes")
-          case None => data.writeEntityHeader(key, -1)
+    withExceptionReporting {
+      onBackup(oldState, new BackupTarget {
+        def writeEntity(key: String, mapOpt: Option[Map[String,Any]]) {
+          debug("Backing up " + key + " <- " + mapOpt)
+          mapOpt match {
+            case Some(map) =>
+              val bytes = marshall(map)
+              data.writeEntityHeader(key, bytes.length)
+              data.writeEntityData(bytes, bytes.length)
+              debug("Backed up " + key + " with " + bytes.length + " bytes")
+            case None => data.writeEntityHeader(key, -1)
+          }
         }
-      }
-    }, newState)
+      }, newState)
+    }
   }
 
   def onBackup(oldState: ParcelFileDescriptor, data: BackupTarget, newState: ParcelFileDescriptor) {
@@ -87,30 +91,32 @@ class CrudBackupAgent(application: CrudApplication) extends BackupAgent with Con
   }
 
   final def onRestore(data: BackupDataInput, appVersionCode: Int, newState: ParcelFileDescriptor) {
-    onRestore(new CalculatedIterator[RestoreItem] {
-      def calculateNextValue(): Option[RestoreItem] = {
-        if (data.readNextHeader) {
-          val key = data.getKey
-          val size = data.getDataSize
-          val bytes = new Array[Byte](size)
-          val actualSize = data.readEntityData(bytes, 0, size)
-          debug("Restoring " + key + ": expected " + size + " bytes, read " + actualSize + " bytes")
-          if (actualSize != size) throw new IllegalStateException("readEntityData returned " + actualSize + " instead of " + size)
-          try {
-            val map = unmarshall(bytes)
-            debug("Restoring " + key + ": read Map: " + map)
-            Some(RestoreItem(key, map))
-          } catch {
-            case e: Exception =>
-              logError("Unable to restore " + key, e)
-              //skip this one and do the next
-              calculateNextValue()
+    withExceptionReporting {
+      onRestore(new CalculatedIterator[RestoreItem] {
+        def calculateNextValue(): Option[RestoreItem] = {
+          if (data.readNextHeader) {
+            val key = data.getKey
+            val size = data.getDataSize
+            val bytes = new Array[Byte](size)
+            val actualSize = data.readEntityData(bytes, 0, size)
+            debug("Restoring " + key + ": expected " + size + " bytes, read " + actualSize + " bytes")
+            if (actualSize != size) throw new IllegalStateException("readEntityData returned " + actualSize + " instead of " + size)
+            try {
+              val map = unmarshall(bytes)
+              debug("Restoring " + key + ": read Map: " + map)
+              Some(RestoreItem(key, map))
+            } catch {
+              case e: Exception =>
+                logError("Unable to restore " + key, e)
+                //skip this one and do the next
+                calculateNextValue()
+            }
+          } else {
+            None
           }
-        } else {
-          None
         }
-      }
-    }, appVersionCode, newState)
+      }, appVersionCode, newState)
+    }
   }
 
   def onRestore(data: Iterator[RestoreItem], appVersionCode: Int, newState: ParcelFileDescriptor) {

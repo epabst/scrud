@@ -8,7 +8,7 @@ import com.github.triangle.Logging
 /** An EntityPersistence for a CrudType.
   * @author Eric Pabst (epabst@gmail.com)
   */
-trait CrudPersistence extends EntityPersistence with ListenerSet[DataListener] with Logging {
+trait CrudPersistence extends EntityPersistence with ListenerSet[DataListener] with Logging with Timing {
   override protected def logTag: String = Common.tryToEvaluate(entityType.logTag).getOrElse(Common.logTag)
 
   def platformDriver = crudContext.platformDriver

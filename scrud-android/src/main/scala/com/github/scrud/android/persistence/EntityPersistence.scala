@@ -22,7 +22,7 @@ trait AsyncDataListener extends DataListener {
   * @author Eric Pabst (epabst@gmail.com)
   */
 
-trait EntityPersistence extends Timing with ListenerSet[DataListener] {
+trait EntityPersistence extends ListenerSet[DataListener] {
   protected def logTag: String = Common.logTag
 
   def toUri(id: ID): UriPath

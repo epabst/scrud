@@ -9,6 +9,7 @@ import org.scalatest.mock.MockitoSugar
 import org.mockito.Mockito._
 import org.mockito.Matchers.{eq => eql, _}
 import android.view.{MenuItem, Menu}
+import com.github.scrud.android.common.StubPlatformDriver
 
 /** A behavior specification for [[com.github.scrud.android.action.OptionsMenuActivity]].
   * @author Eric Pabst (epabst@gmail.com)
@@ -17,6 +18,7 @@ import android.view.{MenuItem, Menu}
 class OptionsMenuActivitySpec extends MustMatchers with MockitoSugar {
   class StubOptionsMenuActivity extends Activity with OptionsMenuActivity {
     protected def initialOptionsMenuCommands = Nil
+    def platformDriver = StubPlatformDriver
   }
 
   @Test

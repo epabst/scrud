@@ -19,24 +19,25 @@ class CrudListActivity extends ListActivity with BaseCrudActivity {
 
   override def onCreate(savedInstanceState: Bundle) {
     super.onCreate(savedInstanceState)
+    withExceptionReporting {
+      setContentView(crudType.listLayout)
 
-    setContentView(crudType.listLayout)
+      val view = getListView
+  		view.setHeaderDividersEnabled(true)
+  		view.addHeaderView(getLayoutInflater.inflate(crudType.headerLayout, null))
+      bindNormalActionsToViews()
+      registerForContextMenu(getListView)
 
-    val view = getListView
-		view.setHeaderDividersEnabled(true)
-		view.addHeaderView(getLayoutInflater.inflate(crudType.headerLayout, null))
-    bindNormalActionsToViews()
-    registerForContextMenu(getListView)
-
-    crudType.setListAdapterUsingUri(crudContext, this)
-    future {
-      populateFromParentEntities()
-      crudType.addDataListener(new AsyncDataListener {
-        def onChangedAsync(uri: UriPath) {
-          //Some of the parent fields may be calculated from the children
-          populateFromParentEntities()
-        }
-      }, crudContext)
+      crudType.setListAdapterUsingUri(crudContext, this)
+      future {
+        populateFromParentEntities()
+        crudType.addDataListener(new AsyncDataListener {
+          def onChangedAsync(uri: UriPath) {
+            //Some of the parent fields may be calculated from the children
+            populateFromParentEntities()
+          }
+        }, crudContext)
+      }
     }
   }
 
@@ -62,29 +63,35 @@ class CrudListActivity extends ListActivity with BaseCrudActivity {
 
   override def onCreateContextMenu(menu: ContextMenu, v: View, menuInfo: ContextMenuInfo) {
     super.onCreateContextMenu(menu, v, menuInfo)
-    val commands = contextMenuActions.map(_.command)
-    for ((command, index) <- commands.zip(Stream.from(0)))
-      menu.add(0, command.commandId, index, command.title.get)
+    withExceptionReporting {
+      val commands = contextMenuActions.map(_.command)
+      for ((command, index) <- commands.zip(Stream.from(0)))
+        menu.add(0, command.commandId, index, command.title.get)
+    }
   }
 
   override def onContextItemSelected(item: MenuItem) = {
-    val actions = contextMenuActions
-    val info = item.getMenuInfo.asInstanceOf[AdapterContextMenuInfo]
-    actions.find(_.commandId == item.getItemId) match {
-      case Some(action) => action.invoke(uriWithId(info.id), this); true
-      case None => super.onContextItemSelected(item)
+    withExceptionReportingHavingDefaultReturnValue(exceptionalReturnValue = true) {
+      val actions = contextMenuActions
+      val info = item.getMenuInfo.asInstanceOf[AdapterContextMenuInfo]
+      actions.find(_.commandId == item.getItemId) match {
+        case Some(action) => action.invoke(uriWithId(info.id), this); true
+        case None => super.onContextItemSelected(item)
+      }
     }
   }
 
   protected lazy val normalActions = crudApplication.actionsForList(entityType)
 
   override def onListItemClick(l: ListView, v: View, position: Int, id: ID) {
-    if (id >= 0) {
-      crudApplication.actionsForEntity(entityType).headOption.map(_.invoke(uriWithId(id), this)).getOrElse {
-        warn("There are no entity actions defined for " + entityType)
+    withExceptionReporting {
+      if (id >= 0) {
+        crudApplication.actionsForEntity(entityType).headOption.map(_.invoke(uriWithId(id), this)).getOrElse {
+          warn("There are no entity actions defined for " + entityType)
+        }
+      } else {
+        debug("Ignoring " + entityType + ".onListItemClick(" + id + ")")
       }
-    } else {
-      debug("Ignoring " + entityType + ".onListItemClick(" + id + ")")
     }
   }
 }

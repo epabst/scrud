@@ -96,39 +96,49 @@ trait BaseCrudActivity extends ActivityWithState with OptionsMenuActivity with L
   def initialOptionsMenuCommands = generateOptionsMenu.map(_.command)
 
   override def onOptionsItemSelected(item: MenuItem): Boolean = {
-    val actions = generateOptionsMenu
-    actions.find(_.commandId == item.getItemId) match {
-      case Some(action) =>
-        action.invoke(currentUriPath, this)
-        if (LastUndoable.get(this).exists(_.undoAction.commandId == item.getItemId)) {
-          LastUndoable.clear(this)
-          optionsMenuCommands = generateOptionsMenu.map(_.command)
-        }
-        true
-      case None => super.onOptionsItemSelected(item)
+    withExceptionReportingHavingDefaultReturnValue(exceptionalReturnValue = true) {
+      val actions = generateOptionsMenu
+      actions.find(_.commandId == item.getItemId) match {
+        case Some(action) =>
+          action.invoke(currentUriPath, this)
+          if (LastUndoable.get(this).exists(_.undoAction.commandId == item.getItemId)) {
+            LastUndoable.clear(this)
+            optionsMenuCommands = generateOptionsMenu.map(_.command)
+          }
+          true
+        case None => super.onOptionsItemSelected(item)
+      }
     }
   }
 
   override def onSaveInstanceState(outState: Bundle) {
     super.onSaveInstanceState(outState)
-    // This is after the super call so that outState can be overridden if needed.
-    crudContext.onSaveActivityState(outState)
+    withExceptionReporting {
+      // This is after the super call so that outState can be overridden if needed.
+      crudContext.onSaveActivityState(outState)
+    }
   }
 
   override def onRestoreInstanceState(savedInstanceState: Bundle) {
-    // This is before the super call to be the opposite order as onSaveInstanceState.
-    crudContext.onRestoreActivityState(savedInstanceState)
+    withExceptionReporting {
+      // This is before the super call to be the opposite order as onSaveInstanceState.
+      crudContext.onRestoreActivityState(savedInstanceState)
+    }
     super.onRestoreInstanceState(savedInstanceState)
   }
 
   override def onResume() {
-    trace("onResume")
-    crudContext.onClearActivityState(stayActive = true)
+    withExceptionReporting {
+      trace("onResume")
+      crudContext.onClearActivityState(stayActive = true)
+    }
     super.onResume()
   }
 
   override def onDestroy() {
-    crudContext.activityState.onDestroyState()
+    withExceptionReporting {
+      crudContext.activityState.onDestroyState()
+    }
     super.onDestroy()
   }
 
