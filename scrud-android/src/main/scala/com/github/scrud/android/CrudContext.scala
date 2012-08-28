@@ -10,9 +10,11 @@ import collection.mutable
 import java.util.concurrent.CopyOnWriteArraySet
 import collection.JavaConversions._
 
-/** A context which can store data for the duration of a single Activity.
-  * @author Eric Pabst (epabst@gmail.com)
-  */
+/**
+ * The context and state for the application code to interact with.
+ * A context which can store data for the duration of a single Activity.
+ * @author Eric Pabst (epabst@gmail.com)
+ */
 case class CrudContext(activityContext: ContextWithState, application: CrudApplication) {
   def activityState: State = activityContext
   lazy val applicationState: State = activityContext.applicationState

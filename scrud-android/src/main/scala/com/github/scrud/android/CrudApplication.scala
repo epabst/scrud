@@ -6,7 +6,12 @@ import java.util.NoSuchElementException
 import persistence.EntityType
 import com.github.triangle.{GetterInput, PortableField, PortableValue, Logging}
 
-/** An Application that works with [[com.github.scrud.android.CrudType]]s.
+/**
+ * A stateless Application that uses Scrud.  It has all the configuration for how the application behaves,
+ * but none of its actual state.
+ * It that works with pairings of an [[com.github.scrud.android.persistence.EntityType]] and
+ * a [[com.github.scrud.android.PersistenceFactory]].
+ * Internally it uses [[com.github.scrud.android.CrudType]]s.
  * @author Eric Pabst (epabst@gmail.com)
  * Date: 3/31/11
  * Time: 4:50 PM
