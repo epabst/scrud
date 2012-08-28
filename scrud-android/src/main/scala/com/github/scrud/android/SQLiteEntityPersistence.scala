@@ -23,6 +23,7 @@ class SQLiteEntityPersistence(val entityType: EntityType, val crudContext: CrudC
   lazy val database: SQLiteDatabase = databaseSetup.getWritableDatabase
   lazy val entityTypePersistedInfo = EntityTypePersistedInfo(entityType)
   private lazy val backupManager = new BackupManager(crudContext.activityContext)
+  private lazy val deletedEntityIdCrudType = DeletedEntityIdCrudType
   private val cursors = new SynchronizedQueue[Cursor]
   private def toOption(string: String): Option[String] = if (string == "") None else Some(string)
 
@@ -86,7 +87,7 @@ class SQLiteEntityPersistence(val entityType: EntityType, val crudContext: CrudC
     }
     future {
       ids.foreach { id =>
-        DeletedEntityIdCrudType.recordDeletion(entityType, id, crudContext.activityContext)
+        deletedEntityIdCrudType.recordDeletion(entityType, id, crudContext.activityContext)
       }
       notifyDataChanged()
     }

@@ -1,21 +1,32 @@
 package com.github.scrud.android
 
 import action._
-import android.view.MenuItem
+import android.view.{View, MenuItem}
 import android.content.Intent
-import common.{UriPath, Common, Timing, PlatformTypes}
+import common.{Timing, UriPath, Common, PlatformTypes}
 import persistence.EntityType
 import PlatformTypes._
 import com.github.scrud.android.view.AndroidConversions._
 import android.os.Bundle
 import com.github.triangle.{GetterInput, FieldList, PortableField, Logging}
 import view.{ViewField, OnClickOperationSetter}
+import android.app.Activity
 
 /** Support for the different Crud Activity's.
   * @author Eric Pabst (epabst@gmail.com)
   */
 
 trait BaseCrudActivity extends ActivityWithState with OptionsMenuActivity with Logging with Timing {
+  lazy val platformDriver = new AndroidPlatformDriver(this, logTag)
+
+  def runOnUiThread[T](view: View)(body: => T) {
+    platformDriver.runOnUiThread(view)(body)
+  }
+
+  def runOnUiThread[T](activity: Activity)(body: => T) {
+    platformDriver.runOnUiThread(activity)(body)
+  }
+
   def crudApplication: CrudApplication = super.getApplication.asInstanceOf[CrudAndroidApplication].application
 
   lazy val crudType: CrudType = crudApplication.allCrudTypes.find(crudType => Some(crudType.entityName) == currentUriPath.lastEntityNameOption).getOrElse {

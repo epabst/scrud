@@ -1,7 +1,5 @@
 package com.github.scrud.android.common
 
-import android.view.View
-import android.app.Activity
 import com.github.triangle.Logging
 
 /** A utility for interacting with threads, which enables overriding for testing.
@@ -9,30 +7,33 @@ import com.github.triangle.Logging
   */
 
 trait Timing extends Logging {
-  private def withExceptionLogging[T](body: => T): T = {
+  def platformDriver: PlatformDriver
+
+  def propagateWithExceptionReporting[T](body: => T): T = {
     try {
       body
     } catch {
       case e: Throwable =>
-        logError("Error in non-UI Thread", e)
+        platformDriver.reportError(e)
         throw e
+    }
+  }
+
+  def withExceptionReporting(body: => Unit) {
+    try {
+      body
+    } catch {
+      case e: Throwable =>
+        platformDriver.reportError(e)
     }
   }
 
   def future[T](body: => T): () => T = {
     // Use this instead of scala.actors.Futures.future because it preserves exceptions
-    scala.concurrent.ops.future(withExceptionLogging(body))
+    scala.concurrent.ops.future(propagateWithExceptionReporting(body))
   }
 
-  def runOnUiThread[T](view: View)(body: => T) {
-    view.post(toRunnable(withExceptionLogging(body)))
-  }
-
-  def runOnUiThread[T](activity: Activity)(body: => T) {
-    activity.runOnUiThread(toRunnable(withExceptionLogging(body)))
-  }
-
-  private def toRunnable(operation: => Unit): Runnable = new Runnable {
+  protected def toRunnable(operation: => Unit): Runnable = new Runnable {
     def run() {
       operation
     }

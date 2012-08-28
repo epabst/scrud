@@ -3,12 +3,12 @@ package com.github.scrud.android.view
 import com.github.triangle.{GetterInput, PortableValue, Logging}
 import com.github.scrud.android.persistence.EntityType
 import android.view.{ViewGroup, View}
-import com.github.scrud.android.CachedStateListener
+import com.github.scrud.android.{AndroidPlatformDriver, CachedStateListener}
 import android.os.Bundle
 import android.widget.{Adapter, AdapterView, BaseAdapter}
 import android.util.SparseArray
 import collection.mutable
-import com.github.scrud.android.common.{Common, Timing}
+import com.github.scrud.android.common.{PlatformDriver, Common, Timing}
 import actors.Actor
 
 case class GetValueAtPosition(position: Long, entityData: AnyRef, contextItems: GetterInput, onCached: PortableValue => Unit)
@@ -17,7 +17,7 @@ case class ClearCache(reason: String)
 object RetrieveCachedState
 case class CachedState(bundles: Map[Long,Bundle])
 
-class CacheActor(adapterView: ViewGroup, adapter: BaseAdapter, entityType: EntityType) extends Actor with Logging with Timing { self =>
+class CacheActor(val platformDriver: PlatformDriver, adapterView: ViewGroup, adapter: BaseAdapter, entityType: EntityType) extends Actor with Logging with Timing { self =>
   protected def logTag = entityType.logTag
   private var cache: Map[Long, PortableValue] = Map.empty
 
@@ -83,15 +83,15 @@ class CacheActor(adapterView: ViewGroup, adapter: BaseAdapter, entityType: Entit
   }
 }
 
-object AdapterCaching extends Timing {
+object AdapterCaching {
   protected def logTag = Common.logTag
 
   /** This should be run on the UI Thread. */
   private[scrud] def findCacheActor(adapterView: ViewGroup): Option[CacheActor] =
     Option(adapterView.getTag.asInstanceOf[CacheActor])
 
-  def clearCache(adapterView: ViewGroup, reason: String) {
-    runOnUiThread(adapterView) {
+  def clearCache(platformDriver: AndroidPlatformDriver, adapterView: ViewGroup, reason: String) {
+    platformDriver.runOnUiThread(adapterView) {
       findCacheActor(adapterView).foreach { cacheActor =>
         cacheActor ! ClearCache(reason)
       }
@@ -102,13 +102,15 @@ object AdapterCaching extends Timing {
 trait AdapterCaching extends Logging with Timing { self: BaseAdapter =>
   import AdapterCaching._
 
+  def platformDriver: AndroidPlatformDriver
+
   def entityType: EntityType
 
   protected def logTag = entityType.logTag
 
   private def cacheActor(adapterView: ViewGroup): CacheActor = {
     findCacheActor(adapterView).getOrElse {
-      val actor = new CacheActor(adapterView, this, entityType)
+      val actor = new CacheActor(platformDriver, adapterView, this, entityType)
       adapterView.setTag(actor)
       actor.start()
       actor
@@ -119,7 +121,7 @@ trait AdapterCaching extends Logging with Timing { self: BaseAdapter =>
     view.setTag(position)
     // notifyDataSetChanged() should cause bindViewFromCacheOrItems to be requested again once the real value is cached
     (cacheActor(adapterView) !? GetValueAtPosition(position, entityData, contextItems, portableValue => {
-      runOnUiThread(adapterView) {
+      platformDriver.runOnUiThread(adapterView) {
         // Don't copy if the View has been re-used for a different position.
         if (view.getTag == position) {
           portableValue.update(view, contextItems)
@@ -135,7 +137,8 @@ trait AdapterCaching extends Logging with Timing { self: BaseAdapter =>
   }
 }
 
-class AdapterCachingStateListener[A <: Adapter](adapterView: AdapterView[A], entityType: EntityType, adapterFactory: => A) extends CachedStateListener with Logging {
+class AdapterCachingStateListener[A <: Adapter](adapterView: AdapterView[A], entityType: EntityType,
+                                                platformDriver: AndroidPlatformDriver, adapterFactory: => A) extends CachedStateListener with Logging {
   protected def logTag = entityType.logTag
 
   def onSaveState(outState: Bundle) {
@@ -173,7 +176,7 @@ class AdapterCachingStateListener[A <: Adapter](adapterView: AdapterView[A], ent
   }
 
   def onClearState(stayActive: Boolean) {
-    AdapterCaching.clearCache(adapterView, if (stayActive) "refresh" else "stop")
+    AdapterCaching.clearCache(platformDriver, adapterView, if (stayActive) "refresh" else "stop")
     if (stayActive) {
       adapterView.setAdapter(adapterFactory)
     }

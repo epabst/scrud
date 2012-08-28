@@ -5,7 +5,7 @@ import action.Action
 import action.Command
 import action.StartEntityActivityOperation
 import action.StartEntityIdActivityOperation
-import common.{UriPath, Timing}
+import common.UriPath
 import Operation._
 import android.app.Activity
 import com.github.triangle._
@@ -26,7 +26,7 @@ import scala.Some
   * implement CRUD on the entity.  This shouldn't depend on the platform (e.g. android).
   * @author Eric Pabst (epabst@gmail.com)
   */
-class CrudType(val entityType: EntityType, val persistenceFactory: PersistenceFactory) extends Timing with Logging { self =>
+class CrudType(val entityType: EntityType, val persistenceFactory: PersistenceFactory) extends Logging { self =>
   protected def logTag = entityType.logTag
 
   trace("Instantiated CrudType: " + this)
@@ -227,6 +227,8 @@ class CrudType(val entityType: EntityType, val persistenceFactory: PersistenceFa
           }
         }, crudContext)
         new ResourceCursorAdapter(activity, itemLayout, cursor) with AdapterCaching {
+          def platformDriver = persistence.platformDriver
+
           def entityType = self.entityType
 
           def bindView(view: View, context: Context, cursor: Cursor) {
@@ -234,14 +236,14 @@ class CrudType(val entityType: EntityType, val persistenceFactory: PersistenceFa
             bindViewFromCacheOrItems(view, row, contextItems, cursor.getPosition, adapterView)
           }
         }
-      case _ => new EntityAdapter(entityType, findAllResult, itemLayout, contextItems, activity.getLayoutInflater)
+      case _ => new EntityAdapter(entityType, findAllResult, itemLayout, contextItems, persistence.platformDriver, activity.getLayoutInflater)
     }
   }
 
   private def setListAdapter[A <: Adapter](adapterView: AdapterView[A], persistence: CrudPersistence, uriPath: UriPath, entityType: EntityType, crudContext: CrudContext, contextItems: GetterInput, activity: Activity, itemLayout: LayoutKey) {
     addDataListener(new DataListener {
       def onChanged(uri: UriPath) {
-        AdapterCaching.clearCache(adapterView, "changed")
+        AdapterCaching.clearCache(crudContext.platformDriver, adapterView, "changed")
       }
     }, crudContext)
     def callCreateAdapter(): A = {
@@ -249,7 +251,7 @@ class CrudType(val entityType: EntityType, val persistenceFactory: PersistenceFa
     }
     val adapter = callCreateAdapter()
     adapterView.setAdapter(adapter)
-    crudContext.addCachedActivityStateListener(new AdapterCachingStateListener(adapterView, entityType, adapterFactory = callCreateAdapter()))
+    crudContext.addCachedActivityStateListener(new AdapterCachingStateListener(adapterView, entityType, persistence.platformDriver, adapterFactory = callCreateAdapter()))
   }
 
   def setListAdapter[A <: Adapter](adapterView: AdapterView[A], entityType: EntityType, uriPath: UriPath, crudContext: CrudContext, contextItems: GetterInput, activity: Activity, itemLayout: LayoutKey) {

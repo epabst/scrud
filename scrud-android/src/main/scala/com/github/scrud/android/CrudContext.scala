@@ -16,6 +16,7 @@ import collection.JavaConversions._
  * @author Eric Pabst (epabst@gmail.com)
  */
 case class CrudContext(activityContext: ContextWithState, application: CrudApplication) {
+  lazy val platformDriver = new AndroidPlatformDriver(activityContext, application.logTag)
   def activityState: State = activityContext
   lazy val applicationState: State = activityContext.applicationState
 
