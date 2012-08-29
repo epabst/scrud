@@ -142,17 +142,5 @@ trait BaseCrudActivity extends ActivityWithState with OptionsMenuActivity with L
     super.onDestroy()
   }
 
-  //available to be overridden for testing
-  def openEntityPersistence(): CrudPersistence = crudContext.openEntityPersistence(entityType)
-
-  def withPersistence[T](f: CrudPersistence => T): T = {
-    val persistence = openEntityPersistence()
-    try {
-      f(persistence)
-    } finally {
-      persistence.close()
-    }
-  }
-
   override def toString = getClass.getSimpleName + "@" + System.identityHashCode(this)
 }

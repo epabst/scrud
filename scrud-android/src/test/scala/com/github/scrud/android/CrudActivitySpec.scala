@@ -100,7 +100,7 @@ class CrudActivitySpec extends MockitoSugar with MustMatchers {
       override lazy val crudType = _crudType
       override def crudApplication = application
     }
-    activity.withPersistence(p => p.findAll(UriPath.EMPTY))
+    activity.crudContext.withEntityPersistence(_crudType.entityType) { p => p.findAll(UriPath.EMPTY) }
     verify(persistence).close()
   }
 
@@ -113,7 +113,7 @@ class CrudActivitySpec extends MockitoSugar with MustMatchers {
       override def crudApplication = application
     }
     try {
-      activity.withPersistence(p => throw new IllegalArgumentException("intentional"))
+      activity.crudContext.withEntityPersistence(_crudType.entityType) { p => throw new IllegalArgumentException("intentional") }
       fail("should have propogated exception")
     } catch {
       case e: IllegalArgumentException => "expected"

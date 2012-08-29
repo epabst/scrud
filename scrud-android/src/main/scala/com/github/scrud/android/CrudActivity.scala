@@ -17,7 +17,7 @@ class CrudActivity extends BaseCrudActivity { self =>
 
   private def populateFromUri(uri: UriPath) {
     future {
-      withPersistence { persistence =>
+      crudContext.withEntityPersistence(entityType) { persistence =>
         val readableOrUnit: AnyRef = persistence.find(uri).getOrElse(PortableField.UseDefaults)
         val portableValue = entityType.copyFrom(readableOrUnit +: contextItems)
         runOnUiThread(this) { portableValue.update(this, contextItems) }
@@ -64,7 +64,7 @@ class CrudActivity extends BaseCrudActivity { self =>
     withExceptionReporting {
       // Save before going back so that the Activity being activated will read the correct data from persistence.
       val writable = crudApplication.newWritable(entityType)
-      withPersistence { persistence =>
+      crudContext.withEntityPersistence(entityType) { persistence =>
         val copyableFields = entityType.copyableTo(writable, contextItemsWithoutUseDefaults)
         val portableValue = copyableFields.copyFrom(this +: contextItemsWithoutUseDefaults)
         if (portableValue.update(ValidationResult.Valid).isValid) {
