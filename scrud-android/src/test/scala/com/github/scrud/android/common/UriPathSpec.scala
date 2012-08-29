@@ -38,15 +38,32 @@ class UriPathSpec extends Spec with MustMatchers {
     }
   }
 
-  describe("upToIdOf") {
+  describe("upToOptionalIdOf") {
     it("must strip of whatever is after the ID") {
       val uri = UriPath("abc", "123", entityName, "456", "def")
-      uri.upToIdOf(entityName) must be (UriPath("abc", "123", entityName, "456"))
+      uri.upToOptionalIdOf(entityName) must be (UriPath("abc", "123", entityName, "456"))
     }
 
     it("must not fail if no ID found but also preserve what is there already") {
       val uri = UriPath("abc", "123", "def")
-      uri.upToIdOf(entityName).segments.startsWith(uri.segments) must be (true)
+      uri.upToOptionalIdOf(entityName).segments.startsWith(uri.segments) must be (true)
+    }
+  }
+
+  describe("upToIdOf") {
+    it("must strip of whatever is after the ID") {
+      val uri = UriPath("abc", "123", entityName, "456", "def")
+      uri.upToIdOf(entityName) must be (Some(UriPath("abc", "123", entityName, "456")))
+    }
+
+    it("must return None if no entityName not found") {
+      val uri = UriPath("abc", "123", "def")
+      uri.upToIdOf(entityName) must be (None)
+    }
+
+    it("must return None if no ID specified") {
+      val uri = UriPath("abc", "123", entityName)
+      uri.upToIdOf(entityName) must be (None)
     }
   }
 

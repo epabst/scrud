@@ -26,7 +26,9 @@ case class UriPath(segments: String*) {
       case _ => None
     }
 
-  def upToIdOf(entityName: String): UriPath = specify(entityName +: findId(entityName).map(_.toString).toList:_*)
+  def upToOptionalIdOf(entityName: String): UriPath = specify(entityName +: findId(entityName).map(_.toString).toList:_*)
+
+  def upToIdOf(entityName: String): Option[UriPath] = findId(entityName).map(id => specify(entityName, id.toString))
 
   override def toString = segments.mkString("/", "/", "")
 }

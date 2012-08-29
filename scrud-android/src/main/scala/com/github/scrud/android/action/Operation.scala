@@ -106,7 +106,7 @@ final case class StartEntityActivityOperation(entityName: String, action: String
 final case class StartEntityIdActivityOperation(entityName: String, action: String, activityClass: Class[_ <: Activity])
   extends BaseStartActivityOperation with EntityOperation {
 
-  override def determineIntent(uri: UriPath, activity: ActivityWithState) = super.determineIntent(uri.upToIdOf(entityName), activity)
+  override def determineIntent(uri: UriPath, activity: ActivityWithState) = super.determineIntent(uri.upToOptionalIdOf(entityName), activity)
 }
 
 trait StartActivityForResultOperation extends StartActivityOperation {

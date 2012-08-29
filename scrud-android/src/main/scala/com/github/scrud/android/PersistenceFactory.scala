@@ -28,7 +28,7 @@ trait PersistenceFactory {
     * It may be overridden in cases where an entity instance can be found even if no ID is present in the URI.
     */
   def maySpecifyEntityInstance(entityType: EntityType, uri: UriPath): Boolean =
-    entityType.IdField.getValue(uri).isDefined
+    uri.upToIdOf(entityType.entityName).isDefined
 
   final def addListener(listener: DataListener, entityType: EntityType, crudContext: CrudContext) {
     listenerHolder(entityType, crudContext).addListener(listener)
