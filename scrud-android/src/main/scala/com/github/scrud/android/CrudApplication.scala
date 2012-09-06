@@ -1,10 +1,11 @@
 package com.github.scrud.android
 
 import action._
-import common.{UriPath, Common}
+import common.{CachedFunction, UriPath, Common}
 import java.util.NoSuchElementException
 import persistence.EntityType
 import com.github.triangle.{GetterInput, PortableField, PortableValue, Logging}
+import android.os.Bundle
 
 /**
  * A stateless Application that uses Scrud.  It has all the configuration for how the application behaves,
@@ -83,11 +84,37 @@ trait CrudApplication extends Logging {
 
   def actionToDisplay(entityType: EntityType): Option[Action] = Some(crudType(entityType).displayAction)
 
-  def copyFromPersistedEntity(entityType: EntityType, uriPathWithId: UriPath, crudContext: CrudContext): Option[PortableValue] = {
-    val contextItems = GetterInput(uriPathWithId, crudContext, PortableField.UseDefaults)
-    crudContext.withEntityPersistence(entityType)(_.find(uriPathWithId).map { readable =>
-      debug("Copying " + entityType.entityName + "#" + entityType.IdField.getRequired(readable) + " to " + this)
-      entityType.copyFrom(readable +: contextItems)
+  private def cacheFunctionForActivity[A,B](crudContext: CrudContext, function: A => B) = {
+    val cachedFunction = CachedFunction[A,B](function)
+    crudContext.addCachedActivityStateListener(new CachedStateListener {
+      /**Save any cached state into the given bundle before switching context. */
+      def onSaveState(outState: Bundle) {}
+
+      /**Restore cached state from the given bundle before switching back context. */
+      def onRestoreState(savedInstanceState: Bundle) {}
+
+      /**Drop cached state.  If stayActive is true, then the state needs to be functional. */
+      def onClearState(stayActive: Boolean) {
+        cachedFunction.clear()
+      }
     })
+    cachedFunction
+  }
+
+  def copyFromPersistedEntity(entityType: EntityType, uriPathWithId: UriPath, crudContext: CrudContext): Option[PortableValue] = {
+    val function = EntityValueCache.getOrSet(crudContext, cacheFunctionForActivity(crudContext, entityValueFunction))
+    function.apply((entityType, uriPathWithId, crudContext))
+  }
+
+  // This is declared outside of copyFromPersistedEntity to avoid accidentally using parameters that are not part of the cache's key
+  private val entityValueFunction: ((EntityType, UriPath, CrudContext)) => Option[PortableValue] = {
+    case (entityType, uriPathWithId, crudContext) =>
+      val contextItems = GetterInput(uriPathWithId, crudContext, PortableField.UseDefaults)
+      crudContext.withEntityPersistence(entityType)(_.find(uriPathWithId).map { readable =>
+        debug("Copying " + entityType.entityName + "#" + entityType.IdField.getRequired(readable) + " to " + this)
+        entityType.copyFrom(readable +: contextItems)
+      })
   }
 }
+
+object EntityValueCache extends ActivityVar[CachedFunction[(EntityType,UriPath,CrudContext),Option[PortableValue]]]
