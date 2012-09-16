@@ -4,8 +4,9 @@ import action._
 import common.{CachedFunction, UriPath, Common}
 import java.util.NoSuchElementException
 import persistence.EntityType
-import com.github.triangle.{GetterInput, PortableField, PortableValue, Logging}
+import com.github.triangle.{PortableValue, Logging}
 import android.os.Bundle
+import state.EntityValueCachedFunction
 
 /**
  * A stateless Application that uses Scrud.  It has all the configuration for how the application behaves,
@@ -101,20 +102,16 @@ trait CrudApplication extends Logging {
     cachedFunction
   }
 
+  /**
+   * Copy the data for a given entity.  It is cached so that it is not reread from the database
+   * nor recomputed in any way until a write operation has occurred.
+   * The method is defined here so that applications may override the behavior if/when needed such as for testing.
+   * @param entityType the EntityType to copy from
+   * @param uriPathWithId the UriPath with the id of the entity
+   * @param crudContext the CrudContext (where things are cached)
+   * @return the resulting value if persisted, otherwise None
+   */
   def copyFromPersistedEntity(entityType: EntityType, uriPathWithId: UriPath, crudContext: CrudContext): Option[PortableValue] = {
-    val function = EntityValueCache.getOrSet(crudContext, cacheFunctionForActivity(crudContext, entityValueFunction))
-    function.apply((entityType, uriPathWithId, crudContext))
-  }
-
-  // This is declared outside of copyFromPersistedEntity to avoid accidentally using parameters that are not part of the cache's key
-  private val entityValueFunction: ((EntityType, UriPath, CrudContext)) => Option[PortableValue] = {
-    case (entityType, uriPathWithId, crudContext) =>
-      val contextItems = GetterInput(uriPathWithId, crudContext, PortableField.UseDefaults)
-      crudContext.withEntityPersistence(entityType)(_.find(uriPathWithId).map { readable =>
-        debug("Copying " + entityType.entityName + "#" + entityType.IdField.getRequired(readable) + " to " + this)
-        entityType.copyFrom(readable +: contextItems)
-      })
+    EntityValueCachedFunction.apply(crudContext, (entityType, uriPathWithId, crudContext))
   }
 }
-
-object EntityValueCache extends ActivityVar[CachedFunction[(EntityType,UriPath,CrudContext),Option[PortableValue]]]
