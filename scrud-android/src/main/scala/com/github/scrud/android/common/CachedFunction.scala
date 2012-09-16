@@ -16,6 +16,10 @@ case class CachedFunction[A,B](function: (A) => B) extends ((A) => B) {
     result
   }
 
+  def setResult(input: A, result: B) {
+    resultByInput.put(input, result)
+  }
+
   def clear() {
     resultByInput.clear()
   }
