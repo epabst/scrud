@@ -9,7 +9,7 @@ import android.view.ContextMenu.ContextMenuInfo
 import android.widget.AdapterView.AdapterContextMenuInfo
 import com.github.triangle.{GetterInput, PortableValue}
 import common.UriPath
-import persistence.AsyncDataListener
+import persistence.DataListener
 import common.PlatformTypes._
 
 /** A generic ListActivity for CRUD operations
@@ -31,8 +31,8 @@ class CrudListActivity extends ListActivity with BaseCrudActivity {
       crudType.setListAdapterUsingUri(crudContext, this)
       future {
         populateFromParentEntities()
-        crudType.addDataListener(new AsyncDataListener {
-          def onChangedAsync(uri: UriPath) {
+        crudType.addDataListener(new DataListener {
+          def onChanged(uri: UriPath) {
             //Some of the parent fields may be calculated from the children
             populateFromParentEntities()
           }
