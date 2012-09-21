@@ -19,7 +19,7 @@ import org.mockito.invocation.InvocationOnMock
  *         Time: 3:26 PM
  */
 class EntityValueCachedFunctionSpec extends FunSpec with MockitoSugar with MustMatchers {
-  it("should get results") {
+  it("should get and cache results") {
     val uri = UriPath("a", "1", MyEntityType.entityName, "2")
     val entityData = Map("name" -> "George", "age" -> 45, "uri" -> "uri:george")
     val crudContext = mock[CrudContext]
