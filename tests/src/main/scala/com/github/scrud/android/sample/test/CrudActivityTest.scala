@@ -1,4 +1,4 @@
-package com.github.scrud.android.sample.tests
+package com.github.scrud.android.sample.test
 
 import junit.framework.Assert._
 import _root_.android.test.ActivityInstrumentationTestCase2

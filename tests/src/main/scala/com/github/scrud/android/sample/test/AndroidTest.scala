@@ -1,4 +1,4 @@
-package com.github.scrud.android.sample.tests
+package com.github.scrud.android.sample.test
 
 import android.test.AndroidTestCase
 import junit.framework.Assert._
@@ -11,6 +11,6 @@ import junit.framework.Assert._
  */
 class AndroidTest extends AndroidTestCase {
   def testPackageIsCorrect() {
-    assertEquals("com.github.scrud.android", getContext.getPackageName)
+    assertEquals("com.github.scrud.android.sample", getContext.getPackageName)
   }
 }
