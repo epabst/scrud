@@ -20,11 +20,11 @@ trait BaseCrudActivity extends ActivityWithState with OptionsMenuActivity with L
   lazy val platformDriver = new AndroidPlatformDriver(this, logTag)
 
   def runOnUiThread[T](view: View)(body: => T) {
-    platformDriver.runOnUiThread(view)(body)
+    platformDriver.runOnUiThread(view)(trackWorkInProgress(body).apply())
   }
 
   def runOnUiThread[T](activity: Activity)(body: => T) {
-    platformDriver.runOnUiThread(activity)(body)
+    platformDriver.runOnUiThread(activity)(trackWorkInProgress(body).apply())
   }
 
   def crudApplication: CrudApplication = super.getApplication.asInstanceOf[CrudAndroidApplication].application
@@ -140,6 +140,12 @@ trait BaseCrudActivity extends ActivityWithState with OptionsMenuActivity with L
       crudContext.activityState.onDestroyState()
     }
     super.onDestroy()
+  }
+
+  override def waitForWorkInProgress() {
+    val start = System.currentTimeMillis()
+    super.waitForWorkInProgress()
+    debug("Waited for work in progress for " + (System.currentTimeMillis() - start) + "ms")
   }
 
   override def toString = getClass.getSimpleName + "@" + System.identityHashCode(this)
