@@ -28,11 +28,11 @@ class CrudType(val entityType: EntityType, val persistenceFactory: PersistenceFa
   def entityName = entityType.entityName
   lazy val entityNameLayoutPrefix = NamingConventions.toLayoutPrefix(entityName)
 
-  def rLayoutClasses: Seq[Class[_]] = detectRLayoutClasses(this.getClass)
+  def rLayoutClasses: Seq[Class[_]] = detectRLayoutClasses(entityType.getClass)
   private lazy val rLayoutClassesVal = rLayoutClasses
-  def rStringClasses: Seq[Class[_]] = detectRStringClasses(this.getClass)
+  def rStringClasses: Seq[Class[_]] = detectRStringClasses(entityType.getClass)
   private lazy val rStringClassesVal = rStringClasses
-  def rIdClasses: Seq[Class[_]] = detectRIdClasses(this.getClass)
+  def rIdClasses: Seq[Class[_]] = detectRIdClasses(entityType.getClass)
   private lazy val rIdClassesVal = rIdClasses
 
   protected def getLayoutKey(layoutName: String): LayoutKey =
