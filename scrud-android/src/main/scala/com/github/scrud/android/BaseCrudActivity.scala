@@ -60,7 +60,7 @@ trait BaseCrudActivity extends ActivityWithState with OptionsMenuActivity with L
 
   def contextItemsWithoutUseDefaults = GetterInput(currentUriPath, crudContext)
 
-  protected lazy val logTag = Common.tryToEvaluate(entityType.entityName).getOrElse(Common.logTag)
+  protected lazy val logTag = Common.tryToEvaluate(crudApplication.name).getOrElse(Common.logTag)
 
   /** This should be a lazy val in subclasses. */
   protected def normalActions: Seq[Action]
