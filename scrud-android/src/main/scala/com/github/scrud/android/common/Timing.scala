@@ -65,3 +65,11 @@ trait Timing {
     workInProgress.keys.foreach(_.apply())
   }
 }
+
+object Timing {
+  def toRunnable(operation: => Unit): Runnable = new Runnable {
+    def run() {
+      operation
+    }
+  }
+}
