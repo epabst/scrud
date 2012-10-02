@@ -16,6 +16,4 @@ AndroidKeys.useProguard in AndroidKeys.Android := true
 
 resolvers += "Local Maven Repository" at "file://"+Path.userHome.absolutePath+"/.m2/repository"
 
-libraryDependencies += "junit" % "junit" % "4.5" % "test"
-
-libraryDependencies += "org.scalatest" %% "scalatest" % "1.8" % "test"
+libraryDependencies += "com.jayway.android.robotium" % "robotium-solo" % "3.4.1"
