@@ -50,6 +50,18 @@ trait BaseCrudActivity extends ActivityWithState with OptionsMenuActivity with L
     }).getOrElse(defaultContentUri)
   }
 
+  def currentCrudOperation: CrudOperation = CrudOperation(entityType, currentCrudOperationType)
+
+  private def currentCrudOperationType: CrudOperationType.Value = currentAction match {
+    case Operation.CreateActionName => CrudOperationType.Create
+    case Operation.ListActionName => CrudOperationType.List
+    // This would normally be Operation.ListActionName, but it is the starting intent.
+    case Intent.ACTION_MAIN => CrudOperationType.List
+    case Operation.DisplayActionName => CrudOperationType.Read
+    case Operation.UpdateActionName => CrudOperationType.Update
+    case Operation.DeleteActionName => CrudOperationType.Delete
+  }
+
   lazy val currentAction: String = getIntent.getAction
 
   def uriWithId(id: ID): UriPath = currentUriPath.specify(entityType.entityName, id.toString)
