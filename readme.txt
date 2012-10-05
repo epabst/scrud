@@ -36,3 +36,4 @@ Todo
 ---------------------------------
 Add a test to each application that verifies it meets contract:
   - For each Persistence: it's find must be able to correctly find each item returned by findAll.
+Make "Add Author" show up in the menu for the list of Books for an Author.
