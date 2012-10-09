@@ -45,7 +45,7 @@ case class EntityView(entityType: EntityType)
       }
     case UpdaterInput(AndroidUIElement(uiElement), idOpt, input @ UriField(Some(baseUri)) && CrudContextField(Some(crudContext))) =>
       val entityOpt = idOpt.flatMap(id => crudContext.withEntityPersistence(entityType)(_.find(id, baseUri)))
-      entityType.copy(GetterInput(entityOpt.getOrElse(UseDefaults) +: input.items), uiElement)
+      entityType.copy(entityOpt.getOrElse(UseDefaults) +: input, uiElement)
   }
 
   override def toString = "EntityView(" + entityType.entityName + ")"
