@@ -230,7 +230,7 @@ class CrudType(val entityType: EntityType, val persistenceFactory: PersistenceFa
 
           def bindView(view: View, context: Context, cursor: Cursor) {
             val row = entityTypePersistedInfo.copyRowToMap(cursor)
-            bindViewFromCacheOrItems(view, cursor.getPosition, row, adapterView, contextItems)
+            bindViewFromCacheOrItems(view, cursor.getPosition, row, adapterView, crudContext, contextItems)
           }
         }
       case _ => new EntityAdapter(entityType, findAllResult, itemLayout, contextItems, persistence.platformDriver, activity.getLayoutInflater)

@@ -29,17 +29,16 @@ trait AdapterCaching extends Logging with Timing { self: BaseAdapter =>
     case _ => position
   }
 
-  protected[scrud] def bindViewFromCacheOrItems(view: View, position: Int, parent: ViewGroup, contextItems: GetterInput) {
-    bindViewFromCacheOrItems(view, position, getItem(position), parent, contextItems)
+  protected[scrud] def bindViewFromCacheOrItems(view: View, position: Int, parent: ViewGroup, crudContext: CrudContext, contextItems: GetterInput) {
+    bindViewFromCacheOrItems(view, position, getItem(position), parent, crudContext, contextItems)
   }
 
-  protected[scrud] def bindViewFromCacheOrItems(view: View, position: Int, entityData: AnyRef, parent: ViewGroup, contextItems: GetterInput) {
-    bindViewFromCacheOrItems(view, entityData, contextItems, baseUriPath / getItemId(entityData, position), parent)
+  protected[scrud] def bindViewFromCacheOrItems(view: View, position: Int, entityData: AnyRef, parent: ViewGroup, crudContext: CrudContext, contextItems: GetterInput) {
+    bindViewFromCacheOrItems(view, entityData, crudContext, contextItems, baseUriPath / getItemId(entityData, position), parent)
   }
 
-  protected[scrud] def bindViewFromCacheOrItems(view: View, entityData: AnyRef, contextItems: GetterInput, uriPath: UriPath, adapterView: ViewGroup) {
+  protected[scrud] def bindViewFromCacheOrItems(view: View, entityData: AnyRef, crudContext: CrudContext, contextItems: GetterInput, uriPath: UriPath, adapterView: ViewGroup) {
     view.setTag(uriPath)
-    val crudContext = CrudContextField(contextItems).getOrElse(sys.error("no CrudContext provided"))
     val application = crudContext.application
     val futurePortableValue = application.futurePortableValue(entityType, uriPath, crudContext)
     if (futurePortableValue.isSet) {

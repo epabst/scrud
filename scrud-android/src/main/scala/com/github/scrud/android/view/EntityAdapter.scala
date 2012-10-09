@@ -5,7 +5,7 @@ import com.github.scrud.android.common.PlatformTypes._
 import com.github.scrud.android.persistence.EntityType
 import android.view.{LayoutInflater, ViewGroup, View}
 import com.github.triangle.GetterInput
-import com.github.scrud.android.{UriField, AndroidPlatformDriver}
+import com.github.scrud.android.{CrudContextField, UriField, AndroidPlatformDriver}
 
 /** An Android Adapter for an EntityType with the result of EntityPersistence.findAll.
   * @author Eric Pabst (epabst@gmail.com)
@@ -16,6 +16,8 @@ class EntityAdapter(val entityType: EntityType, values: Seq[AnyRef], rowLayout: 
   /** The UriPath that does not contain the entities. */
   protected lazy val uriPathWithoutEntityId = UriField(contextItems).getOrElse(sys.error("no UriPath provided"))
 
+  protected lazy val crudContext = CrudContextField(contextItems).getOrElse(sys.error("no CrudContext found"))
+
   def getItemId(position: Int): ID = getItemId(getItem(position), position)
 
   def getCount: Int = values.size
@@ -24,7 +26,7 @@ class EntityAdapter(val entityType: EntityType, values: Seq[AnyRef], rowLayout: 
 
   def getView(position: Int, convertView: View, parent: ViewGroup): View = {
     val view = if (convertView == null) layoutInflater.inflate(rowLayout, parent, false) else convertView
-    bindViewFromCacheOrItems(view, position, parent, contextItems)
+    bindViewFromCacheOrItems(view, position, parent, crudContext, contextItems)
     view
   }
 }
