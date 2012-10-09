@@ -1,12 +1,15 @@
 package com.github.scrud.android
 
 import action._
-import common.{CachedFunction, UriPath, Common}
+import common.{UrgentFutureExecutor, UriPath, Common}
 import java.util.NoSuchElementException
 import persistence.EntityType
-import com.github.triangle.{PortableValue, Logging}
-import android.os.Bundle
+import com.github.triangle.{PortableField, GetterInput, PortableValue, Logging}
 import state.EntityValueCachedFunction
+import scala.actors.Future
+import collection.mutable
+import java.util.concurrent.ConcurrentHashMap
+import scala.collection.JavaConversions._
 
 /**
  * A stateless Application that uses Scrud.  It has all the configuration for how the application behaves,
@@ -85,21 +88,45 @@ trait CrudApplication extends Logging {
 
   def actionToDisplay(entityType: EntityType): Option[Action] = Some(crudType(entityType).displayAction)
 
-  private def cacheFunctionForActivity[A,B](crudContext: CrudContext, function: A => B) = {
-    val cachedFunction = CachedFunction[A,B](function)
-    crudContext.addCachedActivityStateListener(new CachedStateListener {
-      /**Save any cached state into the given bundle before switching context. */
-      def onSaveState(outState: Bundle) {}
+  private[scrud] object FuturePortableValueCache
+    extends LazyApplicationVal[mutable.ConcurrentMap[(EntityType, UriPath, CrudContext),Future[PortableValue]]](new ConcurrentHashMap[(EntityType, UriPath, CrudContext),Future[PortableValue]]())
 
-      /**Restore cached state from the given bundle before switching back context. */
-      def onRestoreState(savedInstanceState: Bundle) {}
+  private lazy val executor = new UrgentFutureExecutor()
 
-      /**Drop cached state.  If stayActive is true, then the state needs to be functional. */
-      def onClearState(stayActive: Boolean) {
-        cachedFunction.clear()
+  private def cachedFuturePortableValueOrCalculate(entityType: EntityType, uriPathWithId: UriPath, crudContext: CrudContext)(calculate: => PortableValue): Future[PortableValue] = {
+    val cache = FuturePortableValueCache.get(crudContext)
+    val key = (entityType, uriPathWithId, crudContext)
+    cache.get(key).getOrElse {
+      val futurePortableValue = executor.urgentFuture {
+        calculatePortableValue(entityType, uriPathWithId, crudContext)
       }
-    })
-    cachedFunction
+      cache.put(key, futurePortableValue)
+      futurePortableValue
+    }
+  }
+
+  def futurePortableValue(entityType: EntityType, uriPathWithId: UriPath, crudContext: CrudContext): Future[PortableValue] = {
+    cachedFuturePortableValueOrCalculate(entityType, uriPathWithId, crudContext) {
+      calculatePortableValue(entityType, uriPathWithId, crudContext)
+    }
+  }
+
+  def futurePortableValue(entityType: EntityType, uriPathWithId: UriPath, entityData: AnyRef, crudContext: CrudContext): Future[PortableValue] = {
+    cachedFuturePortableValueOrCalculate(entityType, uriPathWithId, crudContext) {
+      calculatePortableValue(entityType, uriPathWithId, entityData, crudContext)
+    }
+  }
+
+  protected def calculatePortableValue(entityType: EntityType, uriPathWithId: UriPath, crudContext: CrudContext): PortableValue = {
+    crudContext.withEntityPersistence(entityType)(_.find(uriPathWithId).map { entityData =>
+      calculatePortableValue(entityType, uriPathWithId, entityData, crudContext)
+    }).getOrElse(PortableValue.empty)
+  }
+
+  protected def calculatePortableValue(entityType: EntityType, uriPathWithId: UriPath, entityData: AnyRef, crudContext: CrudContext): PortableValue = {
+    val contextItems = GetterInput(uriPathWithId, crudContext, PortableField.UseDefaults)
+    debug("Copying " + entityType.entityName + "#" + entityType.IdField.getRequired(entityData))
+    entityType.copyFrom(entityData +: contextItems)
   }
 
   /**

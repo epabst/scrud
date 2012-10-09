@@ -225,9 +225,12 @@ class CrudType(val entityType: EntityType, val persistenceFactory: PersistenceFa
 
           def entityType = self.entityType
 
+          /** The UriPath that does not contain the entities. */
+          protected def uriPathWithoutEntityId = uriPath
+
           def bindView(view: View, context: Context, cursor: Cursor) {
             val row = entityTypePersistedInfo.copyRowToMap(cursor)
-            bindViewFromCacheOrItems(view, row, contextItems, cursor.getPosition, adapterView)
+            bindViewFromCacheOrItems(view, cursor.getPosition, row, adapterView, contextItems)
           }
         }
       case _ => new EntityAdapter(entityType, findAllResult, itemLayout, contextItems, persistence.platformDriver, activity.getLayoutInflater)
@@ -237,7 +240,7 @@ class CrudType(val entityType: EntityType, val persistenceFactory: PersistenceFa
   private def setListAdapter[A <: Adapter](adapterView: AdapterView[A], persistence: CrudPersistence, uriPath: UriPath, entityType: EntityType, crudContext: CrudContext, contextItems: GetterInput, activity: Activity, itemLayout: LayoutKey) {
     addDataListener(new DataListener {
       def onChanged(uri: UriPath) {
-        AdapterCaching.clearCache(crudContext.platformDriver, adapterView, "changed")
+        crudContext.application.FuturePortableValueCache.get(crudContext).clear()
       }
     }, crudContext)
     def callCreateAdapter(): A = {
@@ -245,7 +248,7 @@ class CrudType(val entityType: EntityType, val persistenceFactory: PersistenceFa
     }
     val adapter = callCreateAdapter()
     adapterView.setAdapter(adapter)
-    crudContext.addCachedActivityStateListener(new AdapterCachingStateListener(adapterView, entityType, persistence.platformDriver, adapterFactory = callCreateAdapter()))
+    crudContext.addCachedActivityStateListener(new AdapterCachingStateListener(adapterView, entityType, persistence.platformDriver, crudContext, adapterFactory = callCreateAdapter()))
   }
 
   def setListAdapter[A <: Adapter](adapterView: AdapterView[A], entityType: EntityType, uriPath: UriPath, crudContext: CrudContext, contextItems: GetterInput, activity: Activity, itemLayout: LayoutKey) {
