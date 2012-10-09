@@ -1,6 +1,6 @@
 package com.github.scrud.android.view
 
-import com.github.triangle.{GetterInput, Logging}
+import com.github.triangle.{UpdaterInput, GetterInput, Logging}
 import com.github.scrud.android.persistence.EntityType
 import android.view.{ViewGroup, View}
 import com.github.scrud.android.{CrudContext, CrudContextField, AndroidPlatformDriver, CachedStateListener}
@@ -40,15 +40,16 @@ trait AdapterCaching extends Logging with Timing { self: BaseAdapter =>
   protected[scrud] def bindViewFromCacheOrItems(view: View, entityData: AnyRef, crudContext: CrudContext, contextItems: GetterInput, uriPath: UriPath, adapterView: ViewGroup) {
     view.setTag(uriPath)
     val application = crudContext.application
-    val futurePortableValue = application.futurePortableValue(entityType, uriPath, crudContext)
+    val futurePortableValue = application.futurePortableValue(entityType, uriPath, entityData, crudContext)
+    val updaterInput = UpdaterInput(view, contextItems)
     if (futurePortableValue.isSet) {
-      futurePortableValue().update(view, contextItems)
+      futurePortableValue().update(updaterInput)
     } else {
-      entityType.defaultValue.update(view, contextItems)
+      entityType.defaultValue.update(updaterInput)
       futurePortableValue.foreach { portableValue =>
         platformDriver.runOnUiThread(view) {
           if (view.getTag == uriPath) {
-            portableValue.update(view, contextItems)
+            portableValue.update(updaterInput)
           }
         }
       }
