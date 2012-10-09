@@ -98,10 +98,9 @@ trait CrudApplication extends Logging {
     val key = (entityType, uriPathWithId, crudContext)
     cache.get(key).getOrElse {
       val futurePortableValue = executor.urgentFuture {
-        calculatePortableValue(entityType, uriPathWithId, crudContext)
+        calculate
       }
-      cache.put(key, futurePortableValue)
-      futurePortableValue
+      cache.putIfAbsent(key, futurePortableValue).getOrElse(futurePortableValue)
     }
   }
 
