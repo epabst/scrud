@@ -9,8 +9,8 @@ object Common {
 
   /** Evaluates the given function and returns the result.  If it throws an exception, it returns None. */
   def tryToEvaluate[T](f: => T): Option[T] = {
-    try { Some(f) }
-    catch { case _ => None }
+    try { Option(f) }
+    catch { case _: Throwable => None }
   }
 
   def withCloseable[C <: {def close()},T](closeable: C)(f: C => T): T = {
