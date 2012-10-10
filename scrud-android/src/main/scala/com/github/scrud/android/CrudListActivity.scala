@@ -7,7 +7,6 @@ import android.os.Bundle
 import android.view.{ContextMenu, View, MenuItem}
 import android.view.ContextMenu.ContextMenuInfo
 import android.widget.AdapterView.AdapterContextMenuInfo
-import com.github.triangle.{GetterInput, PortableValue}
 import common.UriPath
 import persistence.DataListener
 import common.PlatformTypes._
@@ -44,15 +43,10 @@ class CrudListActivity extends ListActivity with BaseCrudActivity {
   private[scrud] def populateFromParentEntities() {
     val uriPath = currentUriPath
     //copy each parent Entity's data to the Activity if identified in the currentUriPath
-    val portableValues: Seq[PortableValue] = crudType.parentEntityTypes(crudApplication).flatMap { parentType =>
+    crudType.parentEntityTypes(crudApplication).foreach { parentType =>
       if (crudApplication.maySpecifyEntityInstance(uriPath, parentType)) {
-        crudApplication.copyFromPersistedEntity(parentType, uriPath, crudContext)
-      } else {
-        None
+        populateFromUri(parentType, uriPath)
       }
-    }
-    runOnUiThread(this) {
-      portableValues.foreach(_.update(this, GetterInput.single(crudContext)))
     }
   }
 

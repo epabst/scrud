@@ -1,6 +1,8 @@
 package com.github.scrud.android
 
 import action._
+import action.Action
+import action.CrudOperation
 import android.view.{View, MenuItem}
 import android.content.Intent
 import common.{Timing, UriPath, Common, PlatformTypes}
@@ -8,15 +10,16 @@ import persistence.EntityType
 import PlatformTypes._
 import com.github.scrud.android.view.AndroidConversions._
 import android.os.Bundle
-import com.github.triangle.{GetterInput, FieldList, PortableField, Logging}
+import com.github.triangle._
 import view.{ViewField, OnClickOperationSetter}
 import android.app.Activity
+import scala.Some
 
 /** Support for the different Crud Activity's.
   * @author Eric Pabst (epabst@gmail.com)
   */
 
-trait BaseCrudActivity extends ActivityWithState with OptionsMenuActivity with Logging with Timing {
+trait BaseCrudActivity extends ActivityWithState with OptionsMenuActivity with Logging with Timing { self =>
   lazy val platformDriver = new AndroidPlatformDriver(this, logTag)
 
   def runOnUiThread[T](view: View)(body: => T) {
@@ -76,6 +79,21 @@ trait BaseCrudActivity extends ActivityWithState with OptionsMenuActivity with L
 
   /** This should be a lazy val in subclasses. */
   protected def normalActions: Seq[Action]
+
+  def populateFromUri(entityType: EntityType, uri: UriPath) {
+    val futurePortableValue = crudApplication.futurePortableValue(entityType, uri, crudContext)
+    val updaterInput = UpdaterInput(this, contextItems)
+    if (futurePortableValue.isSet) {
+      futurePortableValue().update(updaterInput)
+    } else {
+      entityType.defaultValue.update(updaterInput)
+      futurePortableValue.foreach { portableValue =>
+        platformDriver.runOnUiThread(self) {
+          portableValue.update(updaterInput)
+        }
+      }
+    }
+  }
 
   /** A StateVar that holds an undoable Action if present. */
   private object LastUndoable extends StateVar[Undoable]

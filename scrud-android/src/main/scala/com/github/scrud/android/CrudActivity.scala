@@ -15,14 +15,6 @@ import validate.ValidationResult
   */
 class CrudActivity extends BaseCrudActivity { self =>
 
-  private def populateFromUri(uri: UriPath) {
-    future {
-      val updaterInput = UpdaterInput(this, contextItems)
-      val portableValue = crudApplication.copyFromPersistedEntity(entityType, uri, crudContext).getOrElse(entityType.defaultValue)
-      runOnUiThread(this) { portableValue.update(updaterInput) }
-    }
-  }
-
   override def onCreate(savedInstanceState: Bundle) {
     super.onCreate(savedInstanceState)
 
@@ -31,7 +23,7 @@ class CrudActivity extends BaseCrudActivity { self =>
         setContentView(crudType.entryLayout)
         val currentPath = currentUriPath
         if (crudApplication.maySpecifyEntityInstance(currentPath, entityType)) {
-          populateFromUri(currentPath)
+          populateFromUri(entityType, currentPath)
         } else {
           entityType.copy(PortableField.UseDefaults +: contextItems, this)
         }
@@ -41,7 +33,7 @@ class CrudActivity extends BaseCrudActivity { self =>
         crudContext.addCachedActivityStateListener(new CachedStateListener {
           def onClearState(stayActive: Boolean) {
             if (stayActive) {
-              populateFromUri(currentUriPath)
+              populateFromUri(entityType, currentUriPath)
             }
           }
 

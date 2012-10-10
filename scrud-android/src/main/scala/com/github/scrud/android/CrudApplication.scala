@@ -5,7 +5,6 @@ import common.{UrgentFutureExecutor, UriPath, Common}
 import java.util.NoSuchElementException
 import persistence.EntityType
 import com.github.triangle.{PortableField, GetterInput, PortableValue, Logging}
-import state.EntityValueCachedFunction
 import scala.actors.Future
 import collection.mutable
 import java.util.concurrent.ConcurrentHashMap
@@ -126,18 +125,5 @@ trait CrudApplication extends Logging {
     val contextItems = GetterInput(uriPathWithId, crudContext, PortableField.UseDefaults)
     debug("Copying " + entityType.entityName + "#" + entityType.IdField.getRequired(entityData))
     entityType.copyFrom(entityData +: contextItems)
-  }
-
-  /**
-   * Copy the data for a given entity.  It is cached so that it is not reread from the database
-   * nor recomputed in any way until a write operation has occurred.
-   * The method is defined here so that applications may override the behavior if/when needed such as for testing.
-   * @param entityType the EntityType to copy from
-   * @param uriPathWithId the UriPath with the id of the entity
-   * @param crudContext the CrudContext (where things are cached)
-   * @return the resulting value if persisted, otherwise None
-   */
-  def copyFromPersistedEntity(entityType: EntityType, uriPathWithId: UriPath, crudContext: CrudContext): Option[PortableValue] = {
-    EntityValueCachedFunction.apply(crudContext, (entityType, uriPathWithId, crudContext))
   }
 }
