@@ -3,7 +3,7 @@ package com.github.scrud.android.view
 import com.github.triangle.{UpdaterInput, GetterInput, Logging}
 import com.github.scrud.android.persistence.EntityType
 import android.view.{ViewGroup, View}
-import com.github.scrud.android.{CrudContext, CrudContextField, AndroidPlatformDriver, CachedStateListener}
+import com.github.scrud.android.{CrudContext, AndroidPlatformDriver, CachedStateListener}
 import android.os.Bundle
 import android.widget.{Adapter, AdapterView, BaseAdapter}
 import com.github.scrud.android.common._
@@ -45,7 +45,7 @@ trait AdapterCaching extends Logging with Timing { self: BaseAdapter =>
     if (futurePortableValue.isSet) {
       futurePortableValue().update(updaterInput)
     } else {
-      entityType.defaultValue.update(updaterInput)
+      entityType.loadingValue.update(updaterInput)
       futurePortableValue.foreach { portableValue =>
         platformDriver.runOnUiThread(view) {
           if (view.getTag == uriPath) {
