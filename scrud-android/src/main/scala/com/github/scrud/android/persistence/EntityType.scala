@@ -5,6 +5,7 @@ import com.github.scrud.android.common._
 import PlatformTypes._
 import CursorField.PersistedId
 import UriPath.uriIdField
+import com.github.scrud.LoadingIndicator
 
 /** An entity configuration that provides information needed to map data to and from persistence.
   * This shouldn't depend on the platform (e.g. android).
@@ -38,7 +39,7 @@ trait EntityType extends FieldList with Logging {
 
   def toUri(id: ID) = UriPath(entityName, id.toString)
 
-  lazy val DefaultPortableValue = copyFrom(PortableField.UseDefaults)
+  lazy val loadingValue: PortableValue = copyFrom(LoadingIndicator)
 
   override def toString() = entityName
 }

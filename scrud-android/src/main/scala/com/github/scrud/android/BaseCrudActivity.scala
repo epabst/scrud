@@ -86,7 +86,7 @@ trait BaseCrudActivity extends ActivityWithState with OptionsMenuActivity with L
     if (futurePortableValue.isSet) {
       futurePortableValue().update(updaterInput)
     } else {
-      entityType.defaultValue.update(updaterInput)
+      entityType.loadingValue.update(updaterInput)
       futurePortableValue.foreach { portableValue =>
         platformDriver.runOnUiThread(self) {
           portableValue.update(updaterInput)
