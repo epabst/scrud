@@ -2,7 +2,7 @@ package com.github.scrud.android
 
 import action.{OperationResponse, EntityOperation}
 import android.os.Bundle
-import com.github.triangle.{GetterInput, PortableField}
+import com.github.triangle.{UpdaterInput, GetterInput, PortableField}
 import android.content.Intent
 import android.app.Activity
 import com.github.scrud.android.view.AndroidConversions._
@@ -17,8 +17,9 @@ class CrudActivity extends BaseCrudActivity { self =>
 
   private def populateFromUri(uri: UriPath) {
     future {
-      val portableValue = crudApplication.copyFromPersistedEntity(entityType, uri, crudContext).getOrElse(entityType.DefaultPortableValue)
-      runOnUiThread(this) { portableValue.update(this, contextItems) }
+      val updaterInput = UpdaterInput(this, contextItems)
+      val portableValue = crudApplication.copyFromPersistedEntity(entityType, uri, crudContext).getOrElse(entityType.defaultValue)
+      runOnUiThread(this) { portableValue.update(updaterInput) }
     }
   }
 
