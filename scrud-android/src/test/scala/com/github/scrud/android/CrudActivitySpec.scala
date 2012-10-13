@@ -72,7 +72,7 @@ class CrudActivitySpec extends MockitoSugar with MustMatchers {
     val _crudType = new MyCrudType(persistence)
     val application = MyCrudApplication(_crudType)
     val entity = mutable.Map[String,Any]("name" -> "Bob", "age" -> 25)
-    val uri = UriPath(_crudType.entityName, "101")
+    val uri = UriPath(_crudType.entityName) / 101
     stub(persistence.find(uri)).toReturn(Some(entity))
     val activity = new CrudActivity {
       override lazy val crudType = _crudType

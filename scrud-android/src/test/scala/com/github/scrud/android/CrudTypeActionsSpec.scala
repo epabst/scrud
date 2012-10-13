@@ -28,13 +28,13 @@ class CrudTypeActionsSpec extends MustMatchers with CrudMockitoSugar {
   def createActionShouldHaveTheRightUri() {
     val activity = null
     createOperation.determineIntent(UriPath("foo"), activity).uriPath must
-      be (UriPath("foo", entityName))
-    createOperation.determineIntent(UriPath("foo", entityName), activity).uriPath must
-      be (UriPath("foo", entityName))
-    createOperation.determineIntent(UriPath("foo", entityName, "123"), activity).uriPath must
-      be (UriPath("foo", entityName))
-    createOperation.determineIntent(UriPath("foo", entityName, "123", "bar"), activity).uriPath must
-      be (UriPath("foo", entityName))
+      be (UriPath("foo") / entityName)
+    createOperation.determineIntent(UriPath("foo") / entityName, activity).uriPath must
+      be (UriPath("foo") / entityName)
+    createOperation.determineIntent(UriPath("foo").specify(entityName, 123), activity).uriPath must
+      be (UriPath("foo") / entityName)
+    createOperation.determineIntent(UriPath("foo").specify(entityName, 123).specify("bar"), activity).uriPath must
+      be (UriPath("foo") / entityName)
     createOperation.determineIntent(UriPath(), activity).uriPath must
       be (UriPath(entityName))
   }
@@ -43,13 +43,13 @@ class CrudTypeActionsSpec extends MustMatchers with CrudMockitoSugar {
   def listActionShouldHaveTheRightUri() {
     val activity = null
     listOperation.determineIntent(UriPath("foo"), activity).uriPath must
-      be (UriPath("foo", entityName))
-    listOperation.determineIntent(UriPath("foo", entityName), activity).uriPath must
-      be (UriPath("foo", entityName))
-    listOperation.determineIntent(UriPath("foo", entityName, "123"), activity).uriPath must
-      be (UriPath("foo", entityName))
-    listOperation.determineIntent(UriPath("foo", entityName, "123", "bar"), activity).uriPath must
-      be (UriPath("foo", entityName))
+      be (UriPath("foo") / entityName)
+    listOperation.determineIntent(UriPath("foo", entityName.name), activity).uriPath must
+      be (UriPath("foo") / entityName)
+    listOperation.determineIntent(UriPath("foo", entityName.name, "123"), activity).uriPath must
+      be (UriPath("foo") / entityName)
+    listOperation.determineIntent(UriPath("foo", entityName.name, "123", "bar"), activity).uriPath must
+      be (UriPath("foo") / entityName)
     listOperation.determineIntent(UriPath(), activity).uriPath must
       be (UriPath(entityName))
   }
@@ -57,23 +57,23 @@ class CrudTypeActionsSpec extends MustMatchers with CrudMockitoSugar {
   @Test
   def displayActionShouldHaveTheRightUri() {
     val activity = null
-    displayOperation.determineIntent(UriPath("foo", entityName, "35"), activity).uriPath must
-      be (UriPath("foo", entityName, "35"))
-    displayOperation.determineIntent(UriPath("foo", entityName, "34", "bar"), activity).uriPath must
-      be (UriPath("foo", entityName, "34"))
-    displayOperation.determineIntent(UriPath("foo", entityName, "34", "bar", "123"), activity).uriPath must
-      be (UriPath("foo", entityName, "34"))
+    displayOperation.determineIntent(UriPath("foo", entityName.name, "35"), activity).uriPath must
+      be (UriPath("foo", entityName.name, "35"))
+    displayOperation.determineIntent(UriPath("foo", entityName.name, "34", "bar"), activity).uriPath must
+      be (UriPath("foo", entityName.name, "34"))
+    displayOperation.determineIntent(UriPath("foo", entityName.name, "34", "bar", "123"), activity).uriPath must
+      be (UriPath("foo", entityName.name, "34"))
   }
 
   @Test
   def updateActionShouldHaveTheRightUri() {
     val activity = null
-    updateOperation.determineIntent(UriPath("foo", entityName, "35"), activity).uriPath must
-      be (UriPath("foo", entityName, "35"))
-    updateOperation.determineIntent(UriPath("foo", entityName, "34", "bar"), activity).uriPath must
-      be (UriPath("foo", entityName, "34"))
-    updateOperation.determineIntent(UriPath("foo", entityName, "34", "bar", "123"), activity).uriPath must
-      be (UriPath("foo", entityName, "34"))
+    updateOperation.determineIntent(UriPath("foo", entityName.name, "35"), activity).uriPath must
+      be (UriPath("foo", entityName.name, "35"))
+    updateOperation.determineIntent(UriPath("foo", entityName.name, "34", "bar"), activity).uriPath must
+      be (UriPath("foo", entityName.name, "34"))
+    updateOperation.determineIntent(UriPath("foo", entityName.name, "34", "bar", "123"), activity).uriPath must
+      be (UriPath("foo", entityName.name, "34"))
   }
 
   @Test

@@ -94,7 +94,7 @@ class CrudType(val entityType: EntityType, val persistenceFactory: PersistenceFa
     case parentField: ParentField => parentField
   }
 
-  def parentEntityTypes(application: CrudApplication): Seq[EntityType] = parentFields.map(_.entityType)
+  def parentEntityTypes(application: CrudApplication): Seq[EntityType] = entityType.parentEntityNames.map(application.entityType(_))
 
   def childEntityTypes(application: CrudApplication): Seq[EntityType] = childEntities(application).map(_.entityType)
 
@@ -164,8 +164,8 @@ class CrudType(val entityType: EntityType, val persistenceFactory: PersistenceFa
     val thisEntity = this.entityType
     (parentFields match {
       //exactly one parent w/o a display page
-      case parentField :: Nil if !application.crudType(parentField.entityType).hasDisplayPage => {
-        val parentEntityType = parentField.entityType
+      case parentField :: Nil if !application.crudType(parentField.entityName).hasDisplayPage => {
+        val parentEntityType = application.entityType(parentField.entityName)
         //the parent's actionToUpdate should be shown since clicking on the parent entity brought the user
         //to the list of child entities instead of to a display page for the parent entity.
         application.actionToUpdate(parentEntityType).toSeq ++

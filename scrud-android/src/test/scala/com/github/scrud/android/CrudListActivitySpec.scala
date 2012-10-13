@@ -2,6 +2,7 @@ package com.github.scrud.android
 
 import _root_.android.content.Intent
 import action.State
+import entity.EntityName
 import org.junit.Test
 import org.junit.runner.RunWith
 import com.xtremelabs.robolectric.RobolectricTestRunner
@@ -25,16 +26,15 @@ class CrudListActivitySpec extends MustMatchers with CrudMockitoSugar {
 
   @Test
   def mustNotCopyFromParentEntityIfUriPathIsInsufficient() {
-    val crudType = mock[CrudType]
-    val parentCrudType = mock[CrudType]
-    val parentEntityType = mock[EntityType]
     val persistenceFactory = mock[PersistenceFactory]
+    val parentEntityName = EntityName("Parent")
+    val entityType = new MyEntityType {
+      override def parentEntityNames = Seq(parentEntityName)
+    }
+    val crudType = new CrudType(entityType, persistenceFactory)
+    val parentEntityType = new MyEntityType(parentEntityName)
+    val parentCrudType = new CrudType(parentEntityType, persistenceFactory)
     val application = MyCrudApplication(crudType, parentCrudType)
-    val entityType = mock[EntityType]
-    stub(crudType.entityType).toReturn(entityType)
-    stub(parentCrudType.entityType).toReturn(parentEntityType)
-    stub(crudType.parentEntityTypes(application)).toReturn(List(parentEntityType))
-    stub(parentCrudType.persistenceFactory).toReturn(persistenceFactory)
     stub(persistenceFactory.maySpecifyEntityInstance(eql(entityType), any())).toReturn(false)
 
     val activity = new CrudListActivity {
@@ -52,6 +52,14 @@ class CrudListActivitySpec extends MustMatchers with CrudMockitoSugar {
     val application = MyCrudApplication(crudType)
     when(persistence.findAll(any())).thenReturn(Seq(Map[String,Any]("name" -> "Bob", "age" -> 25)))
     val activity = new CrudListActivity {
+      override lazy val platformDriver = new AndroidPlatformDriver(this, logTag) {
+        /**
+         * Handle the exception by communicating it to the user and developers.
+         */
+        override def reportError(throwable: Throwable) {
+          throw throwable
+        }
+      }
       override val applicationState = new State {}
 
       override def crudApplication = application

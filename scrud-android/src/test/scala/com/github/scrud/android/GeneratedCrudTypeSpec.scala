@@ -2,6 +2,7 @@ package com.github.scrud.android
 
 import action.State
 import common.{ListenerHolder, UriPath}
+import entity.EntityName
 import org.junit.runner.RunWith
 import org.scalatest.matchers.MustMatchers
 import com.xtremelabs.robolectric.RobolectricTestRunner
@@ -26,7 +27,7 @@ class GeneratedCrudTypeSpec extends MustMatchers with CrudMockitoSugar {
   val adapterView = mock[AdapterView[BaseAdapter]]
   val activity = mock[Activity]
   val listAdapterCapture = capturingAnswer[Unit] { Unit }
-  val generatedEntityName = "Generated"
+  val generatedEntityName = EntityName("Generated")
   val crudContext = mock[CrudContext]
   val layoutInflater = mock[LayoutInflater]
   val dataListenerHolder = mock[ListenerHolder[DataListener]]
@@ -36,9 +37,8 @@ class GeneratedCrudTypeSpec extends MustMatchers with CrudMockitoSugar {
     val factory = new GeneratedPersistenceFactory[Map[String,Any]] {
       def createEntityPersistence(entityType: EntityType, crudContext: CrudContext) = seqPersistence
     }
-    val entityType = new EntityType {
+    val entityType = new EntityType(generatedEntityName) {
       override protected def idField = mapField[ID]("longId") + super.idField
-      def entityName = generatedEntityName
       def valueFields = Nil
     }
     stub(activity.getLayoutInflater).toReturn(layoutInflater)

@@ -23,7 +23,7 @@ trait CrudPersistence extends EntityPersistence with ListenerSet[DataListener] w
     find(uri).map(entityType.fieldsIncludingIdPk.copyAndUpdate(_, instantiateItem))
 
   /** Find an entity with a given ID using a baseUri. */
-  def find(id: ID, baseUri: UriPath): Option[AnyRef] = find(baseUri.specify(entityType.entityName, id.toString))
+  def find(id: ID, baseUri: UriPath): Option[AnyRef] = find(baseUri.specify(entityType.entityName, id))
 
   override def find(uri: UriPath): Option[AnyRef] = {
     val result = super.find(uri)

@@ -2,6 +2,7 @@ package com.github.scrud.android
 
 import android.content.ContentValues
 import common.{CachedFunction, MutableListenerSet}
+import entity.EntityName
 import persistence.{DataListener, SQLiteUtil, EntityType}
 import android.database.sqlite.SQLiteDatabase
 
@@ -34,7 +35,7 @@ class SQLitePersistenceFactory extends PersistenceFactory with DataListenerSetVa
    */
   protected def onCreateDatabase(persistence: SQLiteEntityPersistence) {}
 
-  def toTableName(entityName: String): String = SQLiteUtil.toNonReservedWord(entityName)
+  def toTableName(entityName: EntityName): String = SQLiteUtil.toNonReservedWord(entityName.name)
 }
 
 object SQLitePersistenceFactory extends SQLitePersistenceFactory

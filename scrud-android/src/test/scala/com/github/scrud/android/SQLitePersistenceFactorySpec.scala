@@ -3,6 +3,7 @@ package com.github.scrud.android
 import action.{State, ContextWithState}
 import android.provider.BaseColumns
 import common.ListenerSet
+import entity.EntityName
 import org.junit.Test
 import org.junit.runner.RunWith
 import com.xtremelabs.robolectric.RobolectricTestRunner
@@ -39,8 +40,9 @@ class SQLitePersistenceFactorySpec extends MustMatchers with CrudMockitoSugar wi
     }
   }
 
-  object TestEntityType extends EntityType {
-    def entityName = "Test"
+  object TestEntity extends EntityName("Test")
+
+  object TestEntityType extends EntityType(TestEntity) {
     val valueFields = List(persisted[Int]("age") + default(21))
   }
 
@@ -135,7 +137,7 @@ class SQLitePersistenceFactorySpec extends MustMatchers with CrudMockitoSugar wi
   }
 
   def tableNameMustNotBeReservedWord(name: String) {
-    SQLitePersistenceFactory.toTableName(name) must be (name + "0")
+    SQLitePersistenceFactory.toTableName(EntityName(name)) must be (name + "0")
   }
 
   @Test

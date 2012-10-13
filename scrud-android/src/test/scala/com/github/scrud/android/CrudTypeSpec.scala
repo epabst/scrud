@@ -2,6 +2,7 @@ package com.github.scrud.android
 
 import action.State
 import common.UriPath
+import entity.EntityName
 import org.junit.runner.RunWith
 import persistence.CursorField
 import scala.collection.mutable
@@ -30,8 +31,8 @@ class CrudTypeSpec extends Spec with MustMatchers with CrudMockitoSugar {
   }
 
   it("must derive parent entities from ParentField fields") {
-    val entityType1 = new MyEntityType()
-    val entityType2 = new MyEntityType()
+    val entityType1 = new MyEntityType(new EntityName("Entity1"))
+    val entityType2 = new MyEntityType(new EntityName("Entity2"))
     val crudType3 = new MyCrudType(new MyEntityType {
       override val valueFields = ParentField(entityType1) +: ParentField(entityType2) +: super.valueFields
     })
@@ -40,8 +41,8 @@ class CrudTypeSpec extends Spec with MustMatchers with CrudMockitoSugar {
   }
 
   it("must derive parent entities from foreignKey fields") {
-    val entityType1 = new MyEntityType()
-    val entityType2 = new MyEntityType()
+    val entityType1 = new MyEntityType(new EntityName("Entity1"))
+    val entityType2 = new MyEntityType(new EntityName("Entity2"))
     val crudType3 = new MyCrudType(new MyEntityType {
       override val valueFields = foreignKey(entityType1) +: foreignKey(entityType2) +: super.valueFields
     })
@@ -50,7 +51,7 @@ class CrudTypeSpec extends Spec with MustMatchers with CrudMockitoSugar {
   }
 
   it("must get the correct entity actions with child entities") {
-    val parentEntityType = new MyEntityType()
+    val parentEntityType = new MyEntityType(new EntityName("Entity1"))
     val childCrudType = new MyCrudType(new MyEntityType {
       override lazy val valueFields = ParentField(parentEntityType) :: super.valueFields
     })
@@ -62,11 +63,11 @@ class CrudTypeSpec extends Spec with MustMatchers with CrudMockitoSugar {
   }
 
   it("must get the correct list actions with child entities") {
-    val parentEntityType = new MyEntityType
-    val childEntityType1 = new MyEntityType {
+    val parentEntityType = new MyEntityType(EntityName("Parent"))
+    val childEntityType1 = new MyEntityType(EntityName("Child1")) {
       override lazy val valueFields = ParentField(parentEntityType) :: super.valueFields
     }
-    val childEntityType2 = new MyEntityType {
+    val childEntityType2 = new MyEntityType(EntityName("Child2")) {
       override lazy val valueFields = ParentField(parentEntityType) :: super.valueFields
     }
     val parentCrudType = new MyCrudType(parentEntityType) {
@@ -80,11 +81,11 @@ class CrudTypeSpec extends Spec with MustMatchers with CrudMockitoSugar {
   }
 
   it("must get the correct list actions with child entities w/ no parent display") {
-    val parentEntityType = new MyEntityType
-    val childEntityType1 = new MyEntityType {
+    val parentEntityType = new MyEntityType(EntityName("Parent"))
+    val childEntityType1 = new MyEntityType(EntityName("Child1")) {
       override lazy val valueFields = ParentField(parentEntityType) :: super.valueFields
     }
-    val childEntityType2 = new MyEntityType {
+    val childEntityType2 = new MyEntityType(EntityName("Child2")) {
       override lazy val valueFields = ParentField(parentEntityType) :: super.valueFields
     }
     val parentCrudType = new MyCrudType(parentEntityType)

@@ -1,6 +1,6 @@
 package com.github.scrud.android.generate
 
-import org.scalatest.Spec
+import org.scalatest.FunSpec
 import org.scalatest.matchers.MustMatchers
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
@@ -18,7 +18,7 @@ import view.EntityView
   * @author Eric Pabst (epabst@gmail.com)
   */
 @RunWith(classOf[JUnitRunner])
-class EntityFieldInfoSpec extends Spec with MustMatchers with MockitoSugar {
+class EntityFieldInfoSpec extends FunSpec with MustMatchers with MockitoSugar {
   describe("viewFields") {
     it("must find all ViewFields") {
       val dummyFormat = ValueFormat[String](s => Some(s + "."), _.stripSuffix("."))
@@ -34,12 +34,12 @@ class EntityFieldInfoSpec extends Spec with MustMatchers with MockitoSugar {
   }
 
   it("must consider a ParentField displayable if it has a viewId field") {
-    val fieldInfo = EntityFieldInfo(ParentField(MyEntityType) + viewId(classOf[R], "foo", longView), Seq(classOf[R]))
+    val fieldInfo = EntityFieldInfo(ParentField(MyEntity) + viewId(classOf[R], "foo", longView), Seq(classOf[R]))
     fieldInfo.isDisplayable must be (true)
   }
 
   it("must not include a ParentField if it has no viewId field") {
-    val fieldInfos = EntityFieldInfo(ParentField(MyEntityType), Seq(classOf[R])).viewIdFieldInfos
+    val fieldInfos = EntityFieldInfo(ParentField(MyEntity), Seq(classOf[R])).viewIdFieldInfos
     fieldInfos must be (Nil)
   }
 
@@ -59,7 +59,7 @@ class EntityFieldInfoSpec extends Spec with MustMatchers with MockitoSugar {
   }
 
   it("must not include a ForeignKey if it has no viewId field") {
-    val fieldInfo = EntityFieldInfo(foreignKey(MyEntityType), Seq(classOf[R]))
+    val fieldInfo = EntityFieldInfo(foreignKey(MyEntity), Seq(classOf[R]))
     fieldInfo.isUpdateable must be (false)
   }
 
@@ -68,7 +68,7 @@ class EntityFieldInfoSpec extends Spec with MustMatchers with MockitoSugar {
     fieldInfos.map(_.id) must be (List("foo", "bar"))
   }
 
-  val entityFieldInfo = EntityFieldInfo(viewId(R.id.foo, foreignKey(MyEntityType) + EntityView(MyEntityType)), Seq(classOf[id]))
+  val entityFieldInfo = EntityFieldInfo(viewId(R.id.foo, foreignKey(MyEntity) + EntityView(MyEntityType)), Seq(classOf[id]))
 
   describe("updateableViewIdFieldInfos") {
     it("must not include fields whose editXml is Empty") {

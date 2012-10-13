@@ -4,6 +4,7 @@ import action.{State, ContextWithState}
 import android.app.backup.{BackupDataOutput, BackupDataInput, BackupAgent}
 import com.github.triangle.Logging
 import common.{Timing, UriPath, CalculatedIterator, Common}
+import entity.EntityName
 import persistence.CursorField._
 import android.os.ParcelFileDescriptor
 import java.io.{ObjectInputStream, ByteArrayInputStream, ObjectOutputStream, ByteArrayOutputStream}
@@ -147,9 +148,9 @@ trait BackupTarget {
 
 case class RestoreItem(key: String, map: Map[String,Any])
 
-object DeletedEntityIdEntityType extends EntityType {
-  def entityName = "DeletedEntityId"
+object DeletedEntityId extends EntityName("DeletedEntityId")
 
+object DeletedEntityIdEntityType extends EntityType(DeletedEntityId) {
   val entityNameField = persisted[String]("entityName")
   val entityIdField = persisted[ID]("entityId")
   def valueFields = List(entityNameField, entityIdField)
@@ -178,7 +179,7 @@ object DeletedEntityIdCrudType extends CrudType(DeletedEntityIdEntityType, SQLit
   def recordDeletion(entityType: EntityType, id: ID, context: ContextWithState) {
     val crudContext = new CrudContext(context, application)
     val writable = DeletedEntityIdEntityType.copyAndUpdate(
-      Map(DeletedEntityIdEntityType.entityNameField.name -> entityType.entityName,
+      Map(DeletedEntityIdEntityType.entityNameField.name -> entityType.entityName.name,
         DeletedEntityIdEntityType.entityIdField.name -> id), newWritable)
     withEntityPersistence(crudContext) { _.save(None, writable) }
   }

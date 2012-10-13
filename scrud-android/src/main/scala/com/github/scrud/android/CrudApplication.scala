@@ -2,6 +2,7 @@ package com.github.scrud.android
 
 import action._
 import common.{UrgentFutureExecutor, UriPath, Common}
+import entity.EntityName
 import java.util.NoSuchElementException
 import persistence.EntityType
 import com.github.triangle.{PortableField, GetterInput, PortableValue, Logging}
@@ -44,6 +45,10 @@ trait CrudApplication extends Logging {
   /** The EntityType for the first page of the App. */
   def primaryEntityType: EntityType = allEntityTypes.head
 
+  def entityType(entityName: EntityName): EntityType = allEntityTypes.find(_.entityName == entityName).getOrElse {
+    throw new IllegalArgumentException("Unknown entity: entityName=" + entityName)
+  }
+
   lazy val contentProviderAuthority = packageName
   // The first EntityType is used as the default starting point.
   lazy val defaultContentUri = UriPath("content://" + contentProviderAuthority) / primaryEntityType.entityName
@@ -56,6 +61,8 @@ trait CrudApplication extends Logging {
 
   def crudType(entityType: EntityType): CrudType =
     allCrudTypes.find(_.entityType == entityType).getOrElse(throw new NoSuchElementException(entityType + " not found"))
+
+  def crudType(entityName: EntityName): CrudType = crudType(entityType(entityName))
 
   private def persistenceFactory(entityType: EntityType): PersistenceFactory = crudType(entityType).persistenceFactory
 

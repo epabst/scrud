@@ -19,6 +19,7 @@ import com.github.triangle.Converter._
 import com.github.scrud.android.view.FieldLayout._
 import android.content.Context
 import xml.NodeSeq
+import com.github.scrud.android.entity.EntityName
 
 /** A behavior specification for [[com.github.scrud.android.view.ViewField]].
   * @author Eric Pabst (epabst@gmail.com)
@@ -111,7 +112,7 @@ class ViewFieldSpec extends MustMatchers with MockitoSugar {
 
   @Test
   def itMustGetTheIdForAnEntityNameFromTheUriPath() {
-    val field = uriIdField("foo")
+    val field = uriIdField(EntityName("foo"))
     val uripath = UriPath("hello", "1", "foo", "4", "bar", "3")
     field.singleGetter(uripath) must be (Some(4))
 

@@ -9,6 +9,7 @@ import android.view.View
 import com.github.triangle.Field
 import com.github.triangle.PortableField._
 import com.github.scrud.android.view.ViewRef
+import com.github.scrud.android.entity.EntityName
 
 /** Represents something that a user can initiate.
   * @author Eric Pabst (epabst@gmail.com)
@@ -90,12 +91,12 @@ class StartActivityOperationFromIntent(intent: => Intent) extends StartActivityO
 final case class StartNamedActivityOperation(action: String, activityClass: Class[_ <: Activity]) extends BaseStartActivityOperation
 
 trait EntityOperation extends Operation {
-  def entityName: String
+  def entityName: EntityName
   def action: String
 }
 
 //final to guarantee equality is correct
-final case class StartEntityActivityOperation(entityName: String, action: String, activityClass: Class[_ <: Activity])
+final case class StartEntityActivityOperation(entityName: EntityName, action: String, activityClass: Class[_ <: Activity])
   extends BaseStartActivityOperation with EntityOperation {
 
   override def determineIntent(uri: UriPath, activity: ActivityWithState): Intent =
@@ -103,7 +104,7 @@ final case class StartEntityActivityOperation(entityName: String, action: String
 }
 
 //final to guarantee equality is correct
-final case class StartEntityIdActivityOperation(entityName: String, action: String, activityClass: Class[_ <: Activity])
+final case class StartEntityIdActivityOperation(entityName: EntityName, action: String, activityClass: Class[_ <: Activity])
   extends BaseStartActivityOperation with EntityOperation {
 
   override def determineIntent(uri: UriPath, activity: ActivityWithState) = super.determineIntent(uri.upToOptionalIdOf(entityName), activity)

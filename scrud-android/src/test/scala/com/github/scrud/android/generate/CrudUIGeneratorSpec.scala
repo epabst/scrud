@@ -60,46 +60,46 @@ class CrudUIGeneratorSpec extends Spec with MustMatchers with MockitoSugar {
 
   describe("generateValueStrings") {
     it("must include 'list', 'add' and 'edit' strings for modifiable entities") {
-      val entityType = new MyEntityType {
+      val myEntityType = new MyEntityType {
         override def valueFields = List(persisted[String]("model") + viewId(classOf[R], "model", textView))
       }
       val application = new CrudApplication {
-        def allCrudTypes = List(new MyCrudType(entityType))
+        def allCrudTypes = List(new MyCrudType(myEntityType))
         def dataVersion = 1
         def name = "Test App"
       }
-      val valueStrings = CrudUIGenerator.generateValueStrings(EntityTypeViewInfo(entityType), application)
+      val valueStrings = CrudUIGenerator.generateValueStrings(EntityTypeViewInfo(myEntityType), application)
       valueStrings.foreach(println(_))
       (valueStrings \\ "string").length must be (3)
     }
 
     it("must not include an 'add' string for unaddable entities") {
-      val entityType = new MyEntityType {
+      val myEntityType = new MyEntityType {
         override def valueFields = List(bundleField[String]("model"))
       }
       val application = new CrudApplication {
-        def allCrudTypes = List(new MyCrudType(entityType))
+        def allCrudTypes = List(new MyCrudType(myEntityType))
         def dataVersion = 1
         def name = "Test App"
         override def isAddable(entityType: EntityType) = false
       }
-      val valueStrings = CrudUIGenerator.generateValueStrings(EntityTypeViewInfo(entityType), application)
+      val valueStrings = CrudUIGenerator.generateValueStrings(EntityTypeViewInfo(myEntityType), application)
       valueStrings.foreach(println(_))
       (valueStrings \\ "string").length must be (2)
     }
 
     it("must not include 'add' and 'edit' strings for unmodifiable entities") {
-      val entityType = new MyEntityType {
+      val _entityType = new MyEntityType {
         override def valueFields = List(bundleField[String]("model"))
       }
       val application = new CrudApplication {
-        def allCrudTypes = List(new MyCrudType(entityType))
+        def allCrudTypes = List(new MyCrudType(_entityType))
         def dataVersion = 1
         def name = "Test App"
         override def isAddable(entityType: EntityType) = false
         override def isSavable(entityType: EntityType) = false
       }
-      val valueStrings = CrudUIGenerator.generateValueStrings(EntityTypeViewInfo(entityType), application)
+      val valueStrings = CrudUIGenerator.generateValueStrings(EntityTypeViewInfo(_entityType), application)
       valueStrings.foreach(println(_))
       (valueStrings \\ "string").length must be (1)
     }

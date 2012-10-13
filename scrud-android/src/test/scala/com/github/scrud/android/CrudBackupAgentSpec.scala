@@ -2,6 +2,8 @@ package com.github.scrud.android
 
 import action.State
 import common.CalculatedIterator
+import entity.EntityName
+import entity.EntityName
 import org.junit.Test
 import org.junit.runner.RunWith
 import com.xtremelabs.robolectric.RobolectricTestRunner
@@ -10,19 +12,22 @@ import android.widget.ListAdapter
 import persistence.CursorField.PersistedId
 import persistence.EntityType
 import scala.collection.mutable
-import org.easymock.{IAnswer, EasyMock}
-import EasyMock._
-import com.github.triangle.PortableField._
+import org.mockito.Mockito._
+import org.mockito.Matchers._
 import CrudBackupAgent._
 import android.os.ParcelFileDescriptor
 import common.UriPath
 import com.github.triangle.BaseField
+import scala.Some
+import com.github.scrud.android.RestoreItem
+import org.mockito.stubbing.Answer
+import com.github.triangle.PortableField._
 
 /** A test for [[com.github.scrud.android.CrudBackupAgent]].
   * @author Eric Pabst (epabst@gmail.com)
   */
 @RunWith(classOf[RobolectricTestRunner])
-class CrudBackupAgentSpec extends MustMatchers with CrudEasyMockSugar {
+class CrudBackupAgentSpec extends MustMatchers with CrudMockitoSugar {
   @Test
   def calculatedIteratorShouldWork() {
     val values = List("a", "b", "c").toIterator
@@ -64,52 +69,48 @@ class CrudBackupAgentSpec extends MustMatchers with CrudEasyMockSugar {
     persistence2.save(Some(104L), mutable.Map("city" -> "Chicago", "state" -> "IL"))
     val entityType = new MyCrudType(persistence)
     val entityType2 = new MyCrudType(new MyEntityType {
-      override def entityName = "OtherMap"
+      override val entityName = EntityName("OtherMap")
     }, persistence2)
     val persistenceB = new MyEntityPersistence
     val persistence2B = new MyEntityPersistence
     val entityTypeB = new MyCrudType(persistenceB)
     val entityType2B = new MyCrudType(persistence2B) {
-      override def entityName = "OtherMap"
+      override def entityName = EntityName("OtherMap")
     }
     val state0 = null
     var restoreItems = mutable.ListBuffer[RestoreItem]()
-    expecting {
-      call(application.allCrudTypes).andReturn(List[CrudType](entityType, entityType2))
-      backupTarget.writeEntity(eql("MyMap#100"), notNull()).andAnswer(saveRestoreItem(restoreItems))
-      backupTarget.writeEntity(eql("MyMap#101"), notNull()).andAnswer(saveRestoreItem(restoreItems))
-      backupTarget.writeEntity(eql("OtherMap#101"), notNull()).andAnswer(saveRestoreItem(restoreItems))
-      backupTarget.writeEntity(eql("OtherMap#104"), notNull()).andAnswer(saveRestoreItem(restoreItems))
-      call(applicationB.allCrudTypes).andReturn(List[CrudType](entityTypeB, entityType2B))
+    when(application.allCrudTypes).thenReturn(List[CrudType](entityType, entityType2))
+    when(backupTarget.writeEntity(eql("MyMap#100"), any())).thenAnswer(saveRestoreItem(restoreItems))
+    when(backupTarget.writeEntity(eql("MyMap#101"), any())).thenAnswer(saveRestoreItem(restoreItems))
+    when(backupTarget.writeEntity(eql("OtherMap#101"), any())).thenAnswer(saveRestoreItem(restoreItems))
+    when(backupTarget.writeEntity(eql("OtherMap#104"), any())).thenAnswer(saveRestoreItem(restoreItems))
+    when(applicationB.allCrudTypes).thenReturn(List[CrudType](entityTypeB, entityType2B))
+    val backupAgent = new CrudBackupAgent(application) {
+      override val applicationState = new State {}
     }
-    whenExecuting(application, applicationB, listAdapter, backupTarget, state1, state1b) {
-      val backupAgent = new CrudBackupAgent(application) {
-        override val applicationState = new State {}
-      }
-      backupAgent.onCreate()
-      backupAgent.onBackup(state0, backupTarget, state1)
-      backupAgent.onDestroy()
+    backupAgent.onCreate()
+    backupAgent.onBackup(state0, backupTarget, state1)
+    backupAgent.onDestroy()
 
-      persistenceB.findAll(UriPath.EMPTY).size must be (0)
-      persistence2B.findAll(UriPath.EMPTY).size must be (0)
+    persistenceB.findAll(UriPath.EMPTY).size must be (0)
+    persistence2B.findAll(UriPath.EMPTY).size must be (0)
 
-      val backupAgentB = new CrudBackupAgent(applicationB)
-      backupAgentB.onCreate()
-      backupAgentB.onRestore(restoreItems.toIterator, 1, state1b)
-      backupAgentB.onDestroy()
+    val backupAgentB = new CrudBackupAgent(applicationB)
+    backupAgentB.onCreate()
+    backupAgentB.onRestore(restoreItems.toIterator, 1, state1b)
+    backupAgentB.onDestroy()
 
-      val allB = persistenceB.findAll(UriPath.EMPTY)
-      allB.size must be (2)
-      allB.map(PersistedId.getRequired(_)) must be (List(100L, 101L))
+    val allB = persistenceB.findAll(UriPath.EMPTY)
+    allB.size must be (2)
+    allB.map(PersistedId.getRequired(_)) must be (List(100L, 101L))
 
-      val all2B = persistence2B.findAll(UriPath.EMPTY)
-      all2B.size must be (2)
-      all2B.map(PersistedId.getRequired(_)) must be (List(101L, 104L))
-    }
+    val all2B = persistence2B.findAll(UriPath.EMPTY)
+    all2B.size must be (2)
+    all2B.map(PersistedId.getRequired(_)) must be (List(101L, 104L))
   }
 
-  def saveRestoreItem(restoreItems: mutable.ListBuffer[RestoreItem]): IAnswer[Unit] = answer {
-    val currentArguments = EasyMock.getCurrentArguments
+  def saveRestoreItem(restoreItems: mutable.ListBuffer[RestoreItem]): Answer[Unit] = answerWithInvocation { invocation =>
+    val currentArguments = invocation.getArguments
     currentArguments(1).asInstanceOf[Option[Map[String,Any]]].foreach { map =>
       restoreItems += RestoreItem(currentArguments(0).asInstanceOf[String], map)
     }
@@ -124,24 +125,19 @@ class CrudBackupAgentSpec extends MustMatchers with CrudEasyMockSugar {
     val persistenceFactory = mock[GeneratedPersistenceFactory[Map[String, Any]]]
     val persistence = new MyEntityPersistence
     val entityType = new MyCrudType(persistence)
-    val generatedType = new CrudType(new EntityType {
-      def entityName = "Generated"
+    val generatedType = new CrudType(new EntityType(EntityName("Generated")) {
       def valueFields = List[BaseField](ParentField(MyEntityType), default[Int](100))
     }, persistenceFactory) with StubCrudType
     val state0 = null
-    expecting {
-      call(application.allCrudTypes).andReturn(List[CrudType](entityType, generatedType))
-      //shouldn't call any methods on generatedPersistence
+    when(application.allCrudTypes).thenReturn(List[CrudType](entityType, generatedType))
+    //shouldn't call any methods on generatedPersistence
+    val backupAgent = new CrudBackupAgent(application) {
+      override val applicationState = new State {}
     }
-    whenExecuting(application, listAdapter, backupTarget, state1) {
-      val backupAgent = new CrudBackupAgent(application) {
-        override val applicationState = new State {}
-      }
-      backupAgent.onCreate()
-      //shouldn't fail even though one is generated
-      backupAgent.onBackup(state0, backupTarget, state1)
-      backupAgent.onDestroy()
-    }
+    backupAgent.onCreate()
+    //shouldn't fail even though one is generated
+    backupAgent.onBackup(state0, backupTarget, state1)
+    backupAgent.onDestroy()
   }
 }
 

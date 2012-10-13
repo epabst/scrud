@@ -4,22 +4,22 @@ import org.junit.runner.RunWith
 import com.github.scrud.android.MyCrudType
 import org.scalatest.matchers.MustMatchers
 import org.scalatest.junit.JUnitRunner
-import org.scalatest.Spec
+import org.scalatest.FunSpec
 
 /** A behavior specification for [[com.github.scrud.android.common.UriPath]].
   * @author Eric Pabst (epabst@gmail.com)
   */
 @RunWith(classOf[JUnitRunner])
-class UriPathSpec extends Spec with MustMatchers {
+class UriPathSpec extends FunSpec with MustMatchers {
   val entityName = MyCrudType.entityName
 
   describe("findId") {
     it("must find the id following the entity name") {
       UriPath("foo").findId(entityName) must be (None)
       UriPath(entityName).findId(entityName) must be (None)
-      UriPath(entityName, "123").findId(entityName) must be (Some(123))
-      UriPath(entityName, "123", "foo").findId(entityName) must be (Some(123))
-      UriPath(entityName, "blah").findId(entityName) must be (None)
+      UriPath(entityName, 123).findId(entityName) must be (Some(123))
+      (UriPath(entityName, 123) / "foo").findId(entityName) must be (Some(123))
+      (UriPath(entityName) / "blah").findId(entityName) must be (None)
     }
   }
 
@@ -40,8 +40,8 @@ class UriPathSpec extends Spec with MustMatchers {
 
   describe("upToOptionalIdOf") {
     it("must strip of whatever is after the ID") {
-      val uri = UriPath("abc", "123", entityName, "456", "def")
-      uri.upToOptionalIdOf(entityName) must be (UriPath("abc", "123", entityName, "456"))
+      val uri = UriPath("abc", "123", entityName.name, "456", "def")
+      uri.upToOptionalIdOf(entityName) must be (UriPath("abc", "123", entityName.name, "456"))
     }
 
     it("must not fail if no ID found but also preserve what is there already") {
@@ -52,8 +52,8 @@ class UriPathSpec extends Spec with MustMatchers {
 
   describe("upToIdOf") {
     it("must strip of whatever is after the ID") {
-      val uri = UriPath("abc", "123", entityName, "456", "def")
-      uri.upToIdOf(entityName) must be (Some(UriPath("abc", "123", entityName, "456")))
+      val uri = UriPath("abc", "123", entityName.name, "456", "def")
+      uri.upToIdOf(entityName) must be (Some(UriPath("abc", "123", entityName.name, "456")))
     }
 
     it("must return None if no entityName not found") {
@@ -62,7 +62,7 @@ class UriPathSpec extends Spec with MustMatchers {
     }
 
     it("must return None if no ID specified") {
-      val uri = UriPath("abc", "123", entityName)
+      val uri = UriPath("abc", "123", entityName.name)
       uri.upToIdOf(entityName) must be (None)
     }
   }

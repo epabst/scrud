@@ -1,15 +1,16 @@
 package com.github.scrud.android.sample
 
 import com.github.scrud.android._
+import entity.EntityName
 import persistence.CursorField._
 import persistence.EntityType
 import view.ViewField._
 import com.github.triangle._
 import com.github.scrud.android.validate.Validation._
 
-object AuthorEntityType extends EntityType {
-  def entityName = "Author"
+object Author extends EntityName("Author")
 
+object AuthorEntityType extends EntityType(Author) {
   def valueFields = List(
     persisted[String]("name") + viewId(classOf[R], "name", textView) + requiredString,
 

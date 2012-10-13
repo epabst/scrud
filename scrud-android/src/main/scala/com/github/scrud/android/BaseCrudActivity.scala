@@ -32,7 +32,7 @@ trait BaseCrudActivity extends ActivityWithState with OptionsMenuActivity with L
 
   def crudApplication: CrudApplication = super.getApplication.asInstanceOf[CrudAndroidApplication].application
 
-  lazy val crudType: CrudType = crudApplication.allCrudTypes.find(crudType => Some(crudType.entityName) == currentUriPath.lastEntityNameOption).getOrElse {
+  lazy val crudType: CrudType = crudApplication.allCrudTypes.find(crudType => Some(crudType.entityName.name) == currentUriPath.lastEntityNameOption).getOrElse {
     throw new IllegalStateException("No valid entityName in " + currentUriPath)
   }
 
@@ -67,7 +67,7 @@ trait BaseCrudActivity extends ActivityWithState with OptionsMenuActivity with L
 
   lazy val currentAction: String = getIntent.getAction
 
-  def uriWithId(id: ID): UriPath = currentUriPath.specify(entityType.entityName, id.toString)
+  def uriWithId(id: ID): UriPath = currentUriPath.specify(entityType.entityName, id)
 
   lazy val crudContext = new CrudContext(this, crudApplication)
 

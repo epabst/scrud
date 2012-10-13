@@ -4,20 +4,19 @@ import com.github.triangle._
 import com.github.scrud.android.common._
 import PlatformTypes._
 import CursorField.PersistedId
-import UriPath.uriIdField
 import com.github.scrud.LoadingIndicator
+import com.github.scrud.android.entity.EntityName
+import com.github.scrud.android.ParentField
 
 /** An entity configuration that provides information needed to map data to and from persistence.
   * This shouldn't depend on the platform (e.g. android).
   * @author Eric Pabst (epabst@gmail.com)
+  * @param entityName  this is used to identify the EntityType and for internationalized strings
   */
-trait EntityType extends FieldList with Logging {
-  override lazy val logTag = Common.tryToEvaluate(entityName).getOrElse(Common.logTag)
+abstract class EntityType(val entityName: EntityName) extends FieldList with Logging {
+  override lazy val logTag = Common.tryToEvaluate(entityName.name).getOrElse(Common.logTag)
 
-  //this is the type used for internationalized strings
-  def entityName: String
-
-  object UriPathId extends Field[ID](uriIdField(entityName))
+  def UriPathId = entityName.UriPathId
 
   /** This should only be used in order to override this.  IdField should be used instead of this.
     * A field that uses IdPk.id is NOT included here because it could match a related entity that also extends IdPk,
@@ -37,9 +36,15 @@ trait EntityType extends FieldList with Logging {
   /** These are all of the entity's fields, which includes IdPk.idField and the valueFields. */
   final lazy val fields: List[BaseField] = IdField +: valueFields
 
-  def toUri(id: ID) = UriPath(entityName, id.toString)
+  lazy val parentFields: Seq[ParentField] = deepCollect {
+    case parentField: ParentField => parentField
+  }
+
+  def parentEntityNames: Seq[EntityName] = parentFields.map(_.entityName)
+
+  def toUri(id: ID) = UriPath(entityName, id)
 
   lazy val loadingValue: PortableValue = copyFrom(LoadingIndicator)
 
-  override def toString() = entityName
+  override def toString() = entityName.toString
 }
