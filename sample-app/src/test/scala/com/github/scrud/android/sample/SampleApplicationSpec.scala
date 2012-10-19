@@ -1,6 +1,6 @@
 package com.github.scrud.android.sample
 
-import org.scalatest.Spec
+import org.scalatest.FunSpec
 import org.scalatest.matchers.MustMatchers
 import com.github.scrud.android.persistence.CursorField._
 import org.junit.runner.RunWith
@@ -16,7 +16,7 @@ import com.github.triangle.GetterInput
   * @author Eric Pabst (epabst@gmail.com)
   */
 @RunWith(classOf[JUnitRunner])
-class SampleApplicationSpec extends Spec with MustMatchers with MockitoSugar {
+class SampleApplicationSpec extends FunSpec with MustMatchers with MockitoSugar {
   val application = new SampleApplication
 
   describe("Author") {

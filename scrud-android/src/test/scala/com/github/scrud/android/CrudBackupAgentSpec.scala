@@ -19,7 +19,6 @@ import android.os.ParcelFileDescriptor
 import common.UriPath
 import com.github.triangle.BaseField
 import scala.Some
-import com.github.scrud.android.RestoreItem
 import org.mockito.stubbing.Answer
 import com.github.triangle.PortableField._
 
