@@ -1,14 +1,15 @@
 package com.github.scrud.android.view
 
 import com.github.triangle.{UpdaterInput, GetterInput, Logging}
-import com.github.scrud.android.persistence.EntityType
+import com.github.scrud.{UriPath, EntityType}
 import android.view.{ViewGroup, View}
-import com.github.scrud.android.{CrudContext, AndroidPlatformDriver, CachedStateListener}
 import android.os.Bundle
 import android.widget.{Adapter, AdapterView, BaseAdapter}
-import com.github.scrud.android.common._
-import com.github.scrud.android.common.PlatformTypes._
+import com.github.scrud.platform.PlatformTypes._
 import scala.Some
+import com.github.scrud.action.Timing
+import com.github.scrud.android.{CrudContext, AndroidPlatformDriver}
+import com.github.scrud.android.state.CachedStateListener
 
 trait AdapterCaching extends Logging with Timing { self: BaseAdapter =>
   def platformDriver: AndroidPlatformDriver

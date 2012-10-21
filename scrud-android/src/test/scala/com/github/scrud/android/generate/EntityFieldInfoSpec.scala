@@ -7,12 +7,13 @@ import org.scalatest.junit.JUnitRunner
 import com.github.triangle.{PortableField, ValueFormat}
 import PortableField._
 import com.github.scrud.android.view.ViewField._
-import com.github.scrud.android.ParentField._
+import com.github.scrud.android.ForeignKey._
 import com.github.scrud.android.testres.R
 import com.github.scrud.android._
 import org.scalatest.mock.MockitoSugar
 import testres.R.id
 import view.EntityView
+import com.github.scrud.ParentField
 
 /** A behavior specification for [[com.github.scrud.android.generate.EntityFieldInfo]].
   * @author Eric Pabst (epabst@gmail.com)

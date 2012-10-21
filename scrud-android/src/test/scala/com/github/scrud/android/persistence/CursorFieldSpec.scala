@@ -10,7 +10,7 @@ import CursorField._
 import org.scalatest.matchers.MustMatchers
 import org.scalatest.mock.EasyMockSugar
 import android.database.Cursor
-import com.github.scrud.android.common.PlatformTypes._
+import com.github.scrud.platform.PlatformTypes._
 
 /** A specification for [[com.github.scrud.android.persistence.CursorField]].
   * @author Eric Pabst (epabst@gmail.com)

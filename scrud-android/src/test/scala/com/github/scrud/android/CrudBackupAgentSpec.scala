@@ -1,26 +1,24 @@
 package com.github.scrud.android
 
-import action.State
-import common.CalculatedIterator
-import entity.EntityName
-import entity.EntityName
+import _root_.android.os.ParcelFileDescriptor
 import org.junit.Test
 import org.junit.runner.RunWith
 import com.xtremelabs.robolectric.RobolectricTestRunner
 import org.scalatest.matchers.MustMatchers
-import android.widget.ListAdapter
-import persistence.CursorField.PersistedId
-import persistence.EntityType
+import com.github.scrud.android.persistence.CursorField.PersistedId
+import com.github.scrud._
 import scala.collection.mutable
 import org.mockito.Mockito._
 import org.mockito.Matchers._
 import CrudBackupAgent._
-import android.os.ParcelFileDescriptor
-import common.UriPath
 import com.github.triangle.BaseField
-import scala.Some
 import org.mockito.stubbing.Answer
 import com.github.triangle.PortableField._
+import com.github.scrud.state.State
+import com.github.scrud.util.{CalculatedIterator, CrudMockitoSugar}
+import com.github.scrud.persistence.{GeneratedPersistenceFactory, ListBufferCrudPersistence}
+import com.github.scrud.EntityName
+import scala.Some
 
 /** A test for [[com.github.scrud.android.CrudBackupAgent]].
   * @author Eric Pabst (epabst@gmail.com)
@@ -55,7 +53,6 @@ class CrudBackupAgentSpec extends MustMatchers with CrudMockitoSugar {
   def shouldSupportBackupAndRestore() {
     val application = mock[CrudApplication]
     val applicationB = mock[CrudApplication]
-    val listAdapter = mock[ListAdapter]
     val backupTarget = mock[BackupTarget]
     val state1 = mock[ParcelFileDescriptor]
     val state1b = mock[ParcelFileDescriptor]
@@ -118,7 +115,6 @@ class CrudBackupAgentSpec extends MustMatchers with CrudMockitoSugar {
   @Test
   def shouldSkipBackupOfGeneratedTypes() {
     val application = mock[CrudApplication]
-    val listAdapter = mock[ListAdapter]
     val backupTarget = mock[BackupTarget]
     val state1 = mock[ParcelFileDescriptor]
     val persistenceFactory = mock[GeneratedPersistenceFactory[Map[String, Any]]]
@@ -126,8 +122,10 @@ class CrudBackupAgentSpec extends MustMatchers with CrudMockitoSugar {
     val entityType = new MyCrudType(persistence)
     val generatedType = new CrudType(new EntityType(EntityName("Generated")) {
       def valueFields = List[BaseField](ParentField(MyEntityType), default[Int](100))
-    }, persistenceFactory) with StubCrudType
+    }, persistenceFactory)
     val state0 = null
+    when(application.entityNameLayoutPrefixFor(entityType.entityName)).thenReturn("test")
+    when(application.entityNameLayoutPrefixFor(generatedType.entityName)).thenReturn("generated")
     when(application.allCrudTypes).thenReturn(List[CrudType](entityType, generatedType))
     //shouldn't call any methods on generatedPersistence
     val backupAgent = new CrudBackupAgent(application) {

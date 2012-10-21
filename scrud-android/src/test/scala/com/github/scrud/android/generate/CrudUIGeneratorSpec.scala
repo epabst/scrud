@@ -1,13 +1,13 @@
 package com.github.scrud.android.generate
 
-import org.scalatest.Spec
+import org.scalatest.FunSpec
 import org.scalatest.matchers.MustMatchers
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import com.github.scrud.android.persistence.CursorField._
 import com.github.scrud.android._
 import org.scalatest.mock.MockitoSugar
-import persistence.EntityType
+import com.github.scrud.{CrudApplication, EntityType}
 import testres.R
 import view.ViewField
 import ViewField._
@@ -16,7 +16,7 @@ import ViewField._
   * @author Eric Pabst (epabst@gmail.com)
   */
 @RunWith(classOf[JUnitRunner])
-class CrudUIGeneratorSpec extends Spec with MustMatchers with MockitoSugar {
+class CrudUIGeneratorSpec extends FunSpec with MustMatchers with MockitoSugar {
   val displayName = "My Name"
   val viewIdFieldInfo = ViewIdFieldInfo("foo", displayName, textView)
 
@@ -81,7 +81,7 @@ class CrudUIGeneratorSpec extends Spec with MustMatchers with MockitoSugar {
         def allCrudTypes = List(new MyCrudType(myEntityType))
         def dataVersion = 1
         def name = "Test App"
-        override def isAddable(entityType: EntityType) = false
+        override def isCreatable(entityType: EntityType) = false
       }
       val valueStrings = CrudUIGenerator.generateValueStrings(EntityTypeViewInfo(myEntityType), application)
       valueStrings.foreach(println(_))
@@ -96,7 +96,7 @@ class CrudUIGeneratorSpec extends Spec with MustMatchers with MockitoSugar {
         def allCrudTypes = List(new MyCrudType(_entityType))
         def dataVersion = 1
         def name = "Test App"
-        override def isAddable(entityType: EntityType) = false
+        override def isCreatable(entityType: EntityType) = false
         override def isSavable(entityType: EntityType) = false
       }
       val valueStrings = CrudUIGenerator.generateValueStrings(EntityTypeViewInfo(_entityType), application)

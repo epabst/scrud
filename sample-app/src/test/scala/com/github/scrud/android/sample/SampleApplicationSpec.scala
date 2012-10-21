@@ -8,8 +8,11 @@ import org.scalatest.junit.JUnitRunner
 import org.scalatest.mock.MockitoSugar
 import org.mockito.Mockito._
 import com.github.scrud.android._
-import action.{ContextWithState, State}
+import com.github.scrud.state.State
+import action.ContextWithState
 import com.github.triangle.GetterInput
+import com.github.scrud.CrudApplication
+import com.github.scrud.persistence._
 
 /** A behavior specification for [[com.github.scrud.android.sample.AuthorEntityType]]
   * within [[com.github.scrud.android.sample.SampleApplication]].

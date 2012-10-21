@@ -2,12 +2,13 @@ package com.github.scrud.android
 
 import _root_.android.content.Intent
 import action.{StartActivityOperation, Action}
-import common.UriPath
+import com.github.scrud.UriPath
 import org.junit.Test
 import org.junit.runner.RunWith
 import com.xtremelabs.robolectric.RobolectricTestRunner
 import org.scalatest.matchers.MustMatchers
 import com.github.scrud.android.action.Operation.toRichItent
+import com.github.scrud.util.CrudMockitoSugar
 
 /** A test for [[com.github.scrud.android.CrudListActivity]].
   * @author Eric Pabst (epabst@gmail.com)
@@ -16,13 +17,14 @@ import com.github.scrud.android.action.Operation.toRichItent
 class CrudTypeActionsSpec extends MustMatchers with CrudMockitoSugar {
   //todo determine if shadowing, and run tests on real Android device as well.
   val isShadowing = true
+  val application = MyCrudApplication(MyCrudType)
 
   import MyCrudType.entityName
 
-  val Action(_, createOperation: StartActivityOperation) = MyCrudType.createAction.get
-  val Action(_, listOperation: StartActivityOperation) = MyCrudType.listAction
-  val Action(_, displayOperation: StartActivityOperation) = MyCrudType.displayAction
-  val Action(_, updateOperation: StartActivityOperation) = MyCrudType.updateAction.get
+  val Action(_, createOperation: StartActivityOperation) = application.actionToCreate(MyEntityType).get
+  val Action(_, listOperation: StartActivityOperation) = application.actionToList(MyEntityType).get
+  val Action(_, displayOperation: StartActivityOperation) = application.actionToDisplay(MyEntityType).get
+  val Action(_, updateOperation: StartActivityOperation) = application.actionToUpdate(MyEntityType).get
 
   @Test
   def createActionShouldHaveTheRightUri() {

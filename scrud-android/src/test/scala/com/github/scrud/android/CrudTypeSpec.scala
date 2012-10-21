@@ -1,25 +1,26 @@
 package com.github.scrud.android
 
-import action.State
-import common.UriPath
-import entity.EntityName
+import com.github.scrud.{ParentField, EntityName, UriPath}
 import org.junit.runner.RunWith
 import persistence.CursorField
 import scala.collection.mutable
 import org.scalatest.junit.JUnitRunner
 import org.scalatest.matchers.MustMatchers
-import org.scalatest.Spec
+import org.scalatest.FunSpec
 import org.mockito._
 import Mockito._
 import Matchers._
 import com.github.triangle.PortableField._
-import ParentField.foreignKey
+import ForeignKey.foreignKey
+import com.github.scrud.state.State
+import com.github.scrud.persistence.CrudPersistence
+import com.github.scrud.util.CrudMockitoSugar
 
 /** A behavior specification for [[com.github.scrud.android.CrudType]].
   * @author Eric Pabst (epabst@gmail.com)
   */
 @RunWith(classOf[JUnitRunner])
-class CrudTypeSpec extends Spec with MustMatchers with CrudMockitoSugar {
+class CrudTypeSpec extends FunSpec with MustMatchers with CrudMockitoSugar {
 
   it("must force having an id field on subtypes") {
     val crudType = new MyEntityType {
@@ -52,14 +53,15 @@ class CrudTypeSpec extends Spec with MustMatchers with CrudMockitoSugar {
 
   it("must get the correct entity actions with child entities") {
     val parentEntityType = new MyEntityType(new EntityName("Entity1"))
-    val childCrudType = new MyCrudType(new MyEntityType {
+    val childEntityType = new MyEntityType {
       override lazy val valueFields = ParentField(parentEntityType) :: super.valueFields
-    })
+    }
+    val childCrudType = new MyCrudType(childEntityType)
     val parentCrudType = new MyCrudType(parentEntityType)
     val application = MyCrudApplication(childCrudType, parentCrudType)
-    childCrudType.getEntityActions(application) must be (List(childCrudType.updateAction.get, childCrudType.deleteAction.get))
-    parentCrudType.getEntityActions(application) must be (
-      List(childCrudType.listAction, parentCrudType.updateAction.get, parentCrudType.deleteAction.get))
+    application.actionsForEntity(childEntityType) must be (List(application.actionToUpdate(childEntityType).get, application.actionToDelete(childEntityType).get))
+    application.actionsForEntity(parentEntityType) must be (
+      List(application.actionToList(childEntityType).get, application.actionToUpdate(parentEntityType).get, application.actionToDelete(parentEntityType).get))
   }
 
   it("must get the correct list actions with child entities") {
@@ -70,14 +72,14 @@ class CrudTypeSpec extends Spec with MustMatchers with CrudMockitoSugar {
     val childEntityType2 = new MyEntityType(EntityName("Child2")) {
       override lazy val valueFields = ParentField(parentEntityType) :: super.valueFields
     }
-    val parentCrudType = new MyCrudType(parentEntityType) {
-      override lazy val displayLayout = Some(123)
-    }
+    val parentCrudType = new MyCrudType(parentEntityType)
     val childCrudType1 = new MyCrudType(childEntityType1)
     val childCrudType2 = new MyCrudType(childEntityType2)
-    val application = MyCrudApplication(childCrudType1, childCrudType2, parentCrudType)
-    parentCrudType.getListActions(application) must be (List(parentCrudType.createAction.get))
-    childCrudType1.getListActions(application) must be (List(childCrudType1.createAction.get))
+    val application = new MyCrudApplication(childCrudType1, childCrudType2, parentCrudType) {
+      override def hasDisplayPage(entityName: EntityName): Boolean = parentCrudType.entityName == entityName
+    }
+    application.actionsForList(parentEntityType) must be (List(application.actionToCreate(parentEntityType).get))
+    application.actionsForList(childEntityType1) must be (List(application.actionToCreate(childEntityType1).get))
   }
 
   it("must get the correct list actions with child entities w/ no parent display") {
@@ -92,53 +94,8 @@ class CrudTypeSpec extends Spec with MustMatchers with CrudMockitoSugar {
     val childCrudType1 = new MyCrudType(childEntityType1)
     val childCrudType2 = new MyCrudType(childEntityType2)
     val application = MyCrudApplication(parentCrudType, childCrudType1, childCrudType2)
-    parentCrudType.getListActions(application) must be (List(parentCrudType.createAction.get))
-    childCrudType1.getListActions(application) must be (
-      List(parentCrudType.updateAction.get, childCrudType2.listAction, childCrudType1.createAction.get))
-  }
-
-  it("must delete with undo possibility which must be closable") {
-    val persistence = mock[CrudPersistence]
-    val activity = mock[CrudActivity]
-    val crudContext = mock[CrudContext]
-    stub(crudContext.activityState).toReturn(new State {})
-    val entity = new MyCrudType(persistence)
-    val readable = mutable.Map[String,Any]()
-    val uri = UriPath(entity.entityName) / 345L
-    stub(activity.crudContext).toReturn(crudContext)
-    stub(persistence.crudContext).toReturn(crudContext)
-    stub(persistence.find(uri)).toReturn(Some(readable))
-    stub(activity.allowUndo(notNull.asInstanceOf[Undoable])).toAnswer(answerWithInvocation { invocationOnMock =>
-      val currentArguments = invocationOnMock.getArguments
-      val undoable = currentArguments(0).asInstanceOf[Undoable]
-      undoable.closeOperation.foreach(_.invoke(uri, activity))
-    })
-    entity.startDelete(uri, activity)
-    verify(persistence).delete(uri)
-  }
-
-  it("undo of delete must work") {
-    val persistence = mock[CrudPersistence]
-    val activity = mock[CrudActivity]
-    val crudContext = mock[CrudContext]
-    val entity = new MyCrudType(persistence)
-    val readable = mutable.Map[String,Any](CursorField.idFieldName -> 345L, "name" -> "George")
-    val uri = UriPath(entity.entityName) / 345L
-    stub(activity.crudContext).toReturn(crudContext)
-    val vars = new State {}
-    stub(crudContext.activityState).toReturn(vars)
-    stub(crudContext.activityContext).toReturn(activity)
-    stub(crudContext.application).toReturn(MyCrudApplication(entity))
-    stub(activity.variables).toReturn(vars.variables)
-    stub(persistence.crudContext).toReturn(crudContext)
-    stub(persistence.find(uri)).toReturn(Some(readable))
-    when(activity.allowUndo(notNull.asInstanceOf[Undoable])).thenAnswer(answerWithInvocation { invocationOnMock =>
-      val currentArguments = invocationOnMock.getArguments
-      val undoable = currentArguments(0).asInstanceOf[Undoable]
-      undoable.undoAction.invoke(uri, activity)
-    })
-    entity.startDelete(uri, activity)
-    verify(persistence).delete(uri)
-    verify(persistence).save(Some(345L), mutable.Map(CursorField.idFieldName -> 345L, "name" -> "George"))
+    application.actionsForList(parentEntityType) must be (List(application.actionToCreate(parentEntityType).get))
+    application.actionsForList(childEntityType1) must be (
+      List(application.actionToUpdate(parentEntityType).get, application.actionToList(childEntityType2).get, application.actionToCreate(childEntityType1).get))
   }
 }

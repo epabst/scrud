@@ -1,6 +1,6 @@
 package com.github.scrud.android
 
-import entity.EntityName
+import com.github.scrud.EntityName
 
 /** A utility that defines the naming conventions for Crud applications.
   * @author Eric Pabst (epabst@gmail.com)

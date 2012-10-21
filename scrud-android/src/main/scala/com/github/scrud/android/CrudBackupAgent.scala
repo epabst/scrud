@@ -1,17 +1,18 @@
 package com.github.scrud.android
 
-import action.{State, ContextWithState}
+import action.ContextWithState
 import android.app.backup.{BackupDataOutput, BackupDataInput, BackupAgent}
 import com.github.triangle.Logging
-import common.{Timing, UriPath, CalculatedIterator, Common}
-import entity.EntityName
 import persistence.CursorField._
 import android.os.ParcelFileDescriptor
 import java.io.{ObjectInputStream, ByteArrayInputStream, ObjectOutputStream, ByteArrayOutputStream}
-import persistence.EntityType
 import scala.collection.JavaConversions._
 import java.util.{Map => JMap,HashMap}
-import common.PlatformTypes._
+import com.github.scrud.platform.PlatformTypes._
+import com.github.scrud.{UriPath, EntityType, EntityName, CrudApplication}
+import com.github.scrud.util.{CalculatedIterator, Common}
+import com.github.scrud.state.State
+import com.github.scrud.action.Timing
 
 object CrudBackupAgent {
   private val backupStrategyVersion: Int = 1
@@ -123,21 +124,20 @@ class CrudBackupAgent(application: CrudApplication) extends BackupAgent with Con
   def onRestore(data: Iterator[RestoreItem], appVersionCode: Int, newState: ParcelFileDescriptor) {
     info("Restoring backup of " + application)
     val crudContext = new CrudContext(this, application)
-    val crudTypes = application.allCrudTypes
+    val entityTypes = application.allEntityTypes
     data.foreach(restoreItem => {
-      val entityName = restoreItem.key.substring(0, restoreItem.key.lastIndexOf("#"))
-      crudTypes.find(_.entityName == entityName).map(_ match {
-        case entityType: CrudType => onRestore(entityType, restoreItem, crudContext)
-      })
+      val nameOfEntity = restoreItem.key.substring(0, restoreItem.key.lastIndexOf("#"))
+      entityTypes.find(_.entityName.name == nameOfEntity).foreach {
+        onRestore(_, restoreItem, crudContext)
+      }
     })
   }
 
-  def onRestore(crudType: CrudType, restoreItem: RestoreItem, crudContext: CrudContext) {
+  def onRestore(entityType: EntityType, restoreItem: RestoreItem, crudContext: CrudContext) {
     debug("Restoring " + restoreItem.key + " <- " + restoreItem.map)
-    import crudType._
     val id = restoreItem.key.substring(restoreItem.key.lastIndexOf("#") + 1).toLong
-    val writable = entityType.copyAndUpdate(restoreItem.map, newWritable)
-    withEntityPersistence(crudContext) { _.save(Some(id), writable) }
+    val writable = entityType.copyAndUpdate(restoreItem.map, crudContext.application.newWritable(entityType))
+    crudContext.withEntityPersistence(entityType) { _.save(Some(id), writable) }
     Unit
   }
 }
@@ -180,7 +180,7 @@ object DeletedEntityIdCrudType extends CrudType(DeletedEntityIdEntityType, SQLit
     val crudContext = new CrudContext(context, application)
     val writable = DeletedEntityIdEntityType.copyAndUpdate(
       Map(DeletedEntityIdEntityType.entityNameField.name -> entityType.entityName.name,
-        DeletedEntityIdEntityType.entityIdField.name -> id), newWritable)
+        DeletedEntityIdEntityType.entityIdField.name -> id), crudContext.application.newWritable(entityType))
     withEntityPersistence(crudContext) { _.save(None, writable) }
   }
 

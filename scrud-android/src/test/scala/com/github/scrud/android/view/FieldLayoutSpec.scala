@@ -2,7 +2,7 @@ package com.github.scrud.android.view
 
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
-import org.scalatest.Spec
+import org.scalatest.FunSpec
 import org.scalatest.matchers.MustMatchers
 import xml.NodeSeq
 
@@ -11,7 +11,7 @@ import xml.NodeSeq
   */
 
 @RunWith(classOf[JUnitRunner])
-class FieldLayoutSpec extends Spec with MustMatchers {
+class FieldLayoutSpec extends FunSpec with MustMatchers {
 
   describe("toDisplayName") {
     import FieldLayout._

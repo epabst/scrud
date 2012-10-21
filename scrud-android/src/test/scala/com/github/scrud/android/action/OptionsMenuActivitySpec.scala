@@ -9,7 +9,7 @@ import org.scalatest.mock.MockitoSugar
 import org.mockito.Mockito._
 import org.mockito.Matchers.{eq => eql, _}
 import android.view.{MenuItem, Menu}
-import com.github.scrud.android.common.StubPlatformDriver
+import com.github.scrud.platform.StubPlatformDriver
 
 /** A behavior specification for [[com.github.scrud.android.action.OptionsMenuActivity]].
   * @author Eric Pabst (epabst@gmail.com)

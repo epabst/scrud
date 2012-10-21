@@ -1,8 +1,6 @@
 package com.github.scrud.android
 
 import _root_.android.content.Intent
-import action.State
-import entity.EntityName
 import org.junit.Test
 import org.junit.runner.RunWith
 import com.xtremelabs.robolectric.RobolectricTestRunner
@@ -11,8 +9,11 @@ import org.scalatest.matchers.MustMatchers
 import android.view.{View, ContextMenu}
 import org.mockito.Mockito._
 import org.mockito.Matchers._
-import persistence.EntityType
+import com.github.scrud.{EntityType, CrudApplication, EntityName}
 import android.util.SparseArray
+import com.github.scrud.state.State
+import com.github.scrud.persistence.{CrudPersistence, PersistenceFactory}
+import com.github.scrud.util.CrudMockitoSugar
 
 /** A test for [[com.github.scrud.android.CrudListActivity]].
   * @author Eric Pabst (epabst@gmail.com)
@@ -96,10 +97,10 @@ class CrudListActivitySpec extends MustMatchers with CrudMockitoSugar {
     val ignoredView: View = null
     val ignoredMenuInfo: ContextMenu.ContextMenuInfo = null
 
-    val _crudType = new MyCrudType(new MyEntityType) {
-      override def getEntityActions(application: CrudApplication) = Nil
+    val _crudType = new MyCrudType(new MyEntityType)
+    val application = new MyCrudApplication(_crudType) {
+      override def actionsForEntity(entityType: EntityType) = Nil
     }
-    val application = MyCrudApplication(_crudType)
     val activity = new CrudListActivity {
       override lazy val crudType = _crudType
       override def crudApplication = application

@@ -3,7 +3,8 @@ package com.github.scrud.android.action
 import android.view.Menu
 import java.lang.reflect.Method
 import java.util.concurrent.atomic.AtomicBoolean
-import com.github.scrud.android.common.Timing
+import com.github.scrud.action.Timing
+import com.github.scrud.state.StateVar
 
 /** An Activity that has an options menu.
   * This is intended to handle both Android 2 and 3.

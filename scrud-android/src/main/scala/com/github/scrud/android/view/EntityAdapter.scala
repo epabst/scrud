@@ -1,11 +1,12 @@
 package com.github.scrud.android.view
 
 import android.widget.BaseAdapter
-import com.github.scrud.android.common.PlatformTypes._
-import com.github.scrud.android.persistence.EntityType
+import com.github.scrud.platform.PlatformTypes._
 import android.view.{LayoutInflater, ViewGroup, View}
 import com.github.triangle.GetterInput
-import com.github.scrud.android.{CrudContextField, UriField, AndroidPlatformDriver}
+import com.github.scrud.android.{CrudContextField, AndroidPlatformDriver}
+import com.github.scrud
+import scrud.{UriField, EntityType}
 
 /** An Android Adapter for an EntityType with the result of EntityPersistence.findAll.
   * @author Eric Pabst (epabst@gmail.com)

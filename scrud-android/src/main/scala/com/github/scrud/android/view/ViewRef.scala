@@ -1,10 +1,10 @@
 package com.github.scrud.android.view
 
-import com.github.scrud.android.common.PlatformTypes._
+import com.github.scrud.platform.PlatformTypes._
 import com.github.scrud.android.view.AndroidResourceAnalyzer._
 
 /**
- * A reference to an element in the UI.  It wraps a [[com.github.scrud.android.common.PlatformTypes.ViewKey]].
+ * A reference to an element in the UI.  It wraps a [[com.github.scrud.platform.PlatformTypes.ViewKey]].
  * @author Eric Pabst (epabst@gmail.com)
  * Date: 3/26/12
  * Time: 6:39 AM
@@ -26,29 +26,29 @@ trait ViewRef {
 }
 
 object ViewRef {
-  def apply(viewKey: ViewKey): ViewRef = {
-    new ViewRef {
-      def viewKeyOpt = Some(viewKey)
+  def apply(viewKey: ViewKey): ViewRef = ViewRefUsingViewKey(viewKey)
 
-      def viewKeyOrError = viewKey
+  def apply(viewResourceIdName: String, rIdClasses: Seq[Class[_]]): ViewRef = ViewRefUsingName(viewResourceIdName, rIdClasses)
+}
 
-      def fieldName(rIdClasses: Seq[Class[_]]): String = {
-        resourceFieldWithIntValue(rIdClasses, viewKey).getName
-      }
+private case class ViewRefUsingViewKey(viewKey: ViewKey) extends ViewRef {
+  def viewKeyOpt = Some(viewKey)
 
-      override def toString = viewKey.toString
-    }
+  def viewKeyOrError = viewKey
+
+  def fieldName(rIdClasses: Seq[Class[_]]): String = {
+    resourceFieldWithIntValue(rIdClasses, viewKey).getName
   }
 
-  def apply(viewResourceIdName: String, rIdClasses: Seq[Class[_]]): ViewRef = {
-    new ViewRef {
-      def viewKeyOpt = findResourceIdWithName(rIdClasses, viewResourceIdName)
+  override def toString = viewKey.toString
+}
 
-      def viewKeyOrError = resourceIdWithName(rIdClasses, viewResourceIdName)
+private case class ViewRefUsingName(viewResourceIdName: String, rIdClasses: Seq[Class[_]]) extends ViewRef {
+  def viewKeyOpt = findResourceIdWithName(rIdClasses, viewResourceIdName)
 
-      def fieldName(rIdClasses: Seq[Class[_]]): String = viewResourceIdName
+  def viewKeyOrError = resourceIdWithName(rIdClasses, viewResourceIdName)
 
-      override def toString = viewResourceIdName
-    }
-  }
+  def fieldName(rIdClasses: Seq[Class[_]]): String = viewResourceIdName
+
+  override def toString = viewResourceIdName
 }

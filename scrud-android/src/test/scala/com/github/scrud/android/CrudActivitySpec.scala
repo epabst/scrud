@@ -1,7 +1,6 @@
 package com.github.scrud.android
 
 import action.Operation
-import common.ReadyFuture
 import org.junit.Test
 import org.junit.runner.RunWith
 import com.xtremelabs.robolectric.RobolectricTestRunner
@@ -11,16 +10,20 @@ import org.scalatest.matchers.MustMatchers
 import Operation._
 import android.widget.ListAdapter
 import java.lang.IllegalStateException
-import common.UriPath
-import org.scalatest.mock.MockitoSugar
+import com.github.scrud.UriPath
 import org.mockito.Mockito._
 import actors.Future
+import com.github.scrud.persistence._
+import com.github.scrud.util.{CrudMockitoSugar, ReadyFuture}
+import com.github.scrud.state.State
+import org.mockito.Matchers._
+import scala.Some
 
 /** A test for [[com.github.scrud.android.CrudListActivity]].
   * @author Eric Pabst (epabst@gmail.com)
   */
 @RunWith(classOf[RobolectricTestRunner])
-class CrudActivitySpec extends MockitoSugar with MustMatchers {
+class CrudActivitySpec extends CrudMockitoSugar with MustMatchers {
   val persistenceFactory = mock[PersistenceFactory]
   val persistence = mock[CrudPersistence]
   val listAdapter = mock[ListAdapter]
@@ -30,7 +33,7 @@ class CrudActivitySpec extends MockitoSugar with MustMatchers {
     val _crudType = new MyCrudType(persistence)
     val application = MyCrudApplication(_crudType)
     val entity = Map[String,Any]("name" -> "Bob", "age" -> 25)
-    val uri = UriPath(_crudType.entityName)
+    val uri = UriPath(_crudType.entityType.entityName)
     val activity = new CrudActivity {
       override lazy val crudType = _crudType
       override def crudApplication = application
@@ -51,7 +54,7 @@ class CrudActivitySpec extends MockitoSugar with MustMatchers {
     val _crudType = new MyCrudType(persistence)
     val application = MyCrudApplication(_crudType)
     val entity = mutable.Map[String,Any]("name" -> "Bob", "age" -> 25)
-    val uri = UriPath(_crudType.entityName)
+    val uri = UriPath(_crudType.entityType.entityName)
     val activity = new CrudActivity {
       override lazy val crudType = _crudType
       override def crudApplication = application
@@ -72,7 +75,7 @@ class CrudActivitySpec extends MockitoSugar with MustMatchers {
     val _crudType = new MyCrudType(persistence)
     val application = MyCrudApplication(_crudType)
     val entity = mutable.Map[String,Any]("name" -> "Bob", "age" -> 25)
-    val uri = UriPath(_crudType.entityName) / 101
+    val uri = UriPath(_crudType.entityType.entityName) / 101
     stub(persistence.find(uri)).toReturn(Some(entity))
     val activity = new CrudActivity {
       override lazy val crudType = _crudType
@@ -139,7 +142,7 @@ class CrudActivitySpec extends MockitoSugar with MustMatchers {
     val _crudType = new MyCrudType(persistence)
     val application = MyCrudApplication(_crudType)
     val entity = mutable.Map[String,Any]("name" -> "Bob", "age" -> 25)
-    val uri = UriPath(_crudType.entityName)
+    val uri = UriPath(_crudType.entityType.entityName)
     when(persistence.find(uri)).thenReturn(None)
     stub(persistence.save(None, mutable.Map[String,Any]("name" -> "Bob", "age" -> 25, "uri" -> uri.toString))).toReturn(101)
     val activity = new CrudActivity {
@@ -158,5 +161,52 @@ class CrudActivitySpec extends MockitoSugar with MustMatchers {
     //all but the first time should provide an id
     verify(persistence).save(Some(101), mutable.Map[String,Any]("name" -> "Bob", "age" -> 25, "uri" -> (uri / 101).toString,
       CursorField.idFieldName -> 101))
+  }
+
+  @Test
+  def itMustDeleteWithUndoPossibilityWhichMustBeClosable() {
+    val persistence = mock[CrudPersistence]
+    val activity = mock[CrudActivity]
+    val crudContext = mock[CrudContext]
+    stub(crudContext.activityState).toReturn(new State {})
+    val entity = new MyEntityType
+    val readable = mutable.Map[String,Any]()
+    val uri = UriPath(entity.entityName) / 345L
+    stub(activity.crudContext).toReturn(crudContext)
+    stub(persistence.crudContext).toReturn(crudContext)
+    stub(persistence.find(uri)).toReturn(Some(readable))
+    stub(activity.allowUndo(notNull.asInstanceOf[Undoable])).toAnswer(answerWithInvocation { invocationOnMock =>
+      val currentArguments = invocationOnMock.getArguments
+      val undoable = currentArguments(0).asInstanceOf[Undoable]
+      undoable.closeOperation.foreach(_.invoke(uri, activity))
+    })
+    new CrudActivity().startDelete(entity, uri, activity)
+    verify(persistence).delete(uri)
+  }
+
+  @Test
+  def undoOfDeleteMustWork() {
+    val persistence = mock[CrudPersistence]
+    val activity = mock[CrudActivity]
+    val crudContext = mock[CrudContext]
+    val entity = MyEntityType
+    val readable = mutable.Map[String,Any](CursorField.idFieldName -> 345L, "name" -> "George")
+    val uri = UriPath(entity.entityName) / 345L
+    stub(activity.crudContext).toReturn(crudContext)
+    val vars = new State {}
+    stub(crudContext.activityState).toReturn(vars)
+    stub(crudContext.activityContext).toReturn(activity)
+    stub(crudContext.application).toReturn(MyCrudApplication(new MyCrudType(entity, persistence)))
+    stub(activity.variables).toReturn(vars.variables)
+    stub(persistence.crudContext).toReturn(crudContext)
+    stub(persistence.find(uri)).toReturn(Some(readable))
+    when(activity.allowUndo(notNull.asInstanceOf[Undoable])).thenAnswer(answerWithInvocation { invocationOnMock =>
+      val currentArguments = invocationOnMock.getArguments
+      val undoable = currentArguments(0).asInstanceOf[Undoable]
+      undoable.undoAction.invoke(uri, activity)
+    })
+    new CrudActivity().startDelete(entity, uri, activity)
+    verify(persistence).delete(uri)
+    verify(persistence).save(Some(345L), mutable.Map(CursorField.idFieldName -> 345L, "name" -> "George"))
   }
 }

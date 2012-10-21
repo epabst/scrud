@@ -2,10 +2,11 @@ package com.github.scrud.android.generate
 
 import com.github.scrud.android.view.AndroidResourceAnalyzer._
 import com.github.triangle.{PortableField, FieldList, BaseField}
-import com.github.scrud.android.persistence.{EntityType, CursorField}
+import com.github.scrud.android.persistence.CursorField
 import com.github.scrud.android.view._
 import xml.NodeSeq
 import com.github.scrud.android.NamingConventions
+import com.github.scrud.EntityType
 
 case class EntityFieldInfo(field: BaseField, rIdClasses: Seq[Class[_]]) {
   private lazy val updateablePersistedFields = CursorField.updateablePersistedFields(field, rIdClasses)

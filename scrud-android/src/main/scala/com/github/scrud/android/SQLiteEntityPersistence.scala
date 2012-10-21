@@ -3,14 +3,16 @@ package com.github.scrud.android
 import android.provider.BaseColumns
 import android.database.Cursor
 import android.content.ContentValues
-import common._
-import common.PlatformTypes._
+import com.github.scrud.platform.PlatformTypes._
 import persistence._
 import scala.None
 import collection.mutable.SynchronizedQueue
 import android.app.backup.BackupManager
 import android.database.sqlite.{SQLiteOpenHelper, SQLiteDatabase}
 import com.github.triangle.{GetterInput, PortableField, Logging}
+import com.github.scrud.{UriPath, EntityType}
+import com.github.scrud.util.{Common, DelegatingListenerSet, ListenerSet}
+import com.github.scrud.persistence.{CrudPersistence, DataListener}
 
 /** EntityPersistence for SQLite.
   * @author Eric Pabst (epabst@gmail.com)

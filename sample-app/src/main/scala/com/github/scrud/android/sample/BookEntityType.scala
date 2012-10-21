@@ -1,15 +1,14 @@
 package com.github.scrud.android.sample
 
 import com.github.scrud.android._
-import entity.EntityName
 import persistence.CursorField._
-import persistence.EntityType
+import com.github.scrud.{EntityName, EntityType}
 import persistence.PersistedType._
 import java.util.Date
-import com.github.scrud.android.ParentField._
+import ForeignKey._
 import view.ViewField._
 import view.{EntityView, EnumerationView}
-import com.github.scrud.android.validate.Validation._
+import com.github.scrud.Validation._
 
 object Book extends EntityName("Book")
 

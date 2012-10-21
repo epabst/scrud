@@ -1,12 +1,11 @@
 package com.github.scrud.android.sample
 
 import com.github.scrud.android._
-import entity.EntityName
 import persistence.CursorField._
-import persistence.EntityType
+import com.github.scrud.{EntityName, UriField, EntityType}
 import view.ViewField._
 import com.github.triangle._
-import com.github.scrud.android.validate.Validation._
+import com.github.scrud.Validation._
 
 object Author extends EntityName("Author")
 

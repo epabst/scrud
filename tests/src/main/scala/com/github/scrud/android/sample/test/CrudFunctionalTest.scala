@@ -5,11 +5,11 @@ import android.test.ActivityInstrumentationTestCase2
 import com.github.scrud.android.{BaseCrudActivity, CrudListActivity, CrudActivity, sample}
 import sample.{BookEntityType, SampleApplication, AuthorEntityType}
 import com.jayway.android.robotium.solo.Solo
-import com.github.scrud.android.action.{CrudOperation, CrudOperationType}
-import com.github.scrud.android.common.Timing._
+import com.github.scrud.action.Timing._
 import com.github.triangle.PortableValue
-import com.github.scrud.android.persistence.EntityType
+import com.github.scrud.EntityType
 import android.app.Instrumentation
+import com.github.scrud.action.{CrudOperationType, CrudOperation}
 
 class CrudFunctionalTest extends ActivityInstrumentationTestCase2(classOf[CrudListActivity]) {
   var instrumentation: Instrumentation = _

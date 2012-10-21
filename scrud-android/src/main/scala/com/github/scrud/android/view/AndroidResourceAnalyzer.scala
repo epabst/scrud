@@ -3,7 +3,7 @@ package com.github.scrud.android.view
 import java.lang.reflect.{Modifier, Field}
 import com.github.triangle.Logging
 import com.github.scrud
-import scrud.android.common.Common
+import scrud.util.Common
 
 /** An "R" analyzer.
   * @author Eric Pabst (epabst@gmail.com)

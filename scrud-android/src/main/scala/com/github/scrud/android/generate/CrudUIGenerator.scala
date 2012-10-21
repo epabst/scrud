@@ -1,14 +1,14 @@
 package com.github.scrud.android.generate
 
 import com.github.triangle._
-import com.github.scrud.android.common.Common
 import collection.immutable.List
-import com.github.scrud.android.{Path, CrudAndroidApplication, CrudApplication}
 import xml._
 import com.github.scrud.android.view.EntityView
-import com.github.scrud.android.persistence.EntityType
-import com.github.scrud.android.FileConversions._
+import com.github.scrud.{CrudApplication, EntityType}
+import com.github.scrud.util.FileConversions._
 import java.io.File
+import com.github.scrud.util.{Path, Common}
+import com.github.scrud.android.{CrudListActivity, CrudActivity, CrudAndroidApplication}
 
 /** A UI Generator for a CrudTypes.
   * @author Eric Pabst (epabst@gmail.com)
@@ -40,9 +40,7 @@ object CrudUIGenerator extends Logging {
     if (!classOf[CrudAndroidApplication].isAssignableFrom(androidApplicationClass)) {
       throw new IllegalArgumentException(androidApplicationClass + " does not extend CrudAndroidApplication")
     }
-    val activityNames = application.allCrudTypes.flatMap { crudType =>
-      List(crudType.listActivityClass.getName, crudType.activityClass.getName)
-    }.distinct
+    val activityNames = Seq(classOf[CrudListActivity].getName, classOf[CrudActivity].getName)
     <manifest xmlns:android="http://schemas.android.com/apk/res/android"
               package={application.packageName}
               android:versionName="${project.version}"
@@ -68,7 +66,7 @@ object CrudUIGenerator extends Logging {
 
   def generateValueStrings(entityInfo: EntityTypeViewInfo, application: CrudApplication): NodeSeq = {
     import entityInfo._
-    val addSeq = if (application.isAddable(entityType)) <string name={"add_" + layoutPrefix}>Add {entityName}</string> else NodeSeq.Empty
+    val addSeq = if (application.isCreatable(entityType)) <string name={"add_" + layoutPrefix}>Add {entityName}</string> else NodeSeq.Empty
     val editSeq = if (application.isSavable(entityType)) <string name={"edit_" + layoutPrefix}>Edit {entityName}</string> else NodeSeq.Empty
     val listSeq = if (application.isListable(entityType)) <string name={layoutPrefix + "_list"}>{entityName} List</string> else NodeSeq.Empty
     listSeq ++ addSeq ++ editSeq
@@ -125,7 +123,7 @@ object CrudUIGenerator extends Logging {
   }
 
   protected def listLayout(entityInfo: EntityTypeViewInfo, childEntityInfos: Seq[EntityTypeViewInfo], application: CrudApplication) = {
-    val addableEntityTypeInfos = if (application.isAddable(entityInfo.entityType)) List(entityInfo) else childEntityInfos.filter(childInfo => application.isAddable(childInfo.entityType))
+    val addableEntityTypeInfos = if (application.isCreatable(entityInfo.entityType)) List(entityInfo) else childEntityInfos.filter(childInfo => application.isCreatable(childInfo.entityType))
     <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
                   android:orientation="vertical"
                   android:layout_width="fill_parent"

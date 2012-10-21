@@ -10,7 +10,7 @@ import com.xtremelabs.robolectric.RobolectricTestRunner
 import org.junit.Test
 import org.scalatest.mock.MockitoSugar
 import org.mockito.Mockito._
-import com.github.scrud.android.common.UriPath
+import com.github.scrud.UriPath
 import UriPath.uriIdField
 import android.widget._
 import java.util.{Locale, GregorianCalendar, Calendar}
@@ -19,7 +19,7 @@ import com.github.triangle.Converter._
 import com.github.scrud.android.view.FieldLayout._
 import android.content.Context
 import xml.NodeSeq
-import com.github.scrud.android.entity.EntityName
+import com.github.scrud.EntityName
 
 /** A behavior specification for [[com.github.scrud.android.view.ViewField]].
   * @author Eric Pabst (epabst@gmail.com)

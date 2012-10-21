@@ -1,13 +1,14 @@
 package com.github.scrud.android
 
 import org.mockito.Mockito
-import persistence.EntityType
+import com.github.scrud.{EntityName, CrudApplication, EntityType}
+import com.github.scrud.persistence.{PersistenceFactory, CrudPersistence, DataListenerSetValHolder}
 
 /** A simple CrudType for testing.
   * @author Eric Pabst (epabst@gmail.com)
   */
 case class MyCrudType(override val entityType: EntityType, override val persistenceFactory: PersistenceFactory)
-  extends CrudType(entityType, persistenceFactory) with StubCrudType {
+  extends CrudType(entityType, persistenceFactory) {
 
   def this(entityType: EntityType, persistence: CrudPersistence = Mockito.mock(classOf[CrudPersistence])) {
     this(entityType, new MyPersistenceFactory(persistence))
@@ -32,18 +33,14 @@ class MyPersistenceFactory(persistence: CrudPersistence) extends PersistenceFact
   def createEntityPersistence(entityType: EntityType, crudContext: CrudContext) = persistence
 }
 
-trait StubCrudType extends CrudType {
-  override lazy val entityNameLayoutPrefix = "test"
-}
+case class MyCrudApplication(crudTypes: CrudType*) extends CrudApplication {
+  def name = "test app"
 
-object MyCrudApplication {
-  def apply(crudTypes: CrudType*): CrudApplication = new CrudApplication {
-    def name = "test app"
+  override def primaryEntityType = crudTypes.head.entityType
 
-    override def primaryEntityType = crudTypes.head.entityType
+  def allCrudTypes = crudTypes.toList
 
-    def allCrudTypes = crudTypes.toList
+  override def entityNameLayoutPrefixFor(entityName: EntityName) = "test"
 
-    def dataVersion = 1
-  }
+  def dataVersion = 1
 }

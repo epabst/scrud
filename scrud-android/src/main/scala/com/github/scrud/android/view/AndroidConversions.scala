@@ -3,7 +3,7 @@ package com.github.scrud.android.view
 import android.view.View
 import android.view.View.OnClickListener
 import android.net.Uri
-import com.github.scrud.android.common.UriPath
+import com.github.scrud.UriPath
 
 /** Useful conversions for Android development. */
 object AndroidConversions {

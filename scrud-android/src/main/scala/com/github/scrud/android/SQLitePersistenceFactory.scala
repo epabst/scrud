@@ -1,10 +1,10 @@
 package com.github.scrud.android
 
 import android.content.ContentValues
-import common.{CachedFunction, MutableListenerSet}
-import entity.EntityName
-import persistence.{DataListener, SQLiteUtil, EntityType}
+import persistence.SQLiteUtil
 import android.database.sqlite.SQLiteDatabase
+import com.github.scrud.{EntityType, EntityName}
+import com.github.scrud.persistence.{DataListenerSetValHolder, PersistenceFactory}
 
 /** A PersistenceFactory for SQLite.
   * @author Eric Pabst (epabst@gmail.com)
@@ -39,15 +39,3 @@ class SQLitePersistenceFactory extends PersistenceFactory with DataListenerSetVa
 }
 
 object SQLitePersistenceFactory extends SQLitePersistenceFactory
-
-trait DataListenerSetValHolder {
-  private object ListenersByEntityType
-    extends LazyApplicationVal[CachedFunction[EntityType, MutableListenerSet[DataListener]]](
-      CachedFunction[EntityType, MutableListenerSet[DataListener]](_ => new MutableListenerSet[DataListener]))
-
-  def listenerSet(entityType: EntityType, crudContext: CrudContext): MutableListenerSet[DataListener] =
-    ListenersByEntityType.get(crudContext).apply(entityType)
-
-  def listenerHolder(entityType: EntityType, crudContext: CrudContext): MutableListenerSet[DataListener] =
-    ListenersByEntityType.get(crudContext).apply(entityType)
-}

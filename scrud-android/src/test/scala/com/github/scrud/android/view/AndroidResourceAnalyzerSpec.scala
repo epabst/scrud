@@ -2,7 +2,7 @@ package com.github.scrud.android.view
 
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
-import org.scalatest.Spec
+import org.scalatest.FunSpec
 import org.scalatest.matchers.MustMatchers
 import com.github.scrud.android.testres._
 
@@ -10,7 +10,7 @@ import com.github.scrud.android.testres._
   * @author Eric Pabst (epabst@gmail.com)
   */
 @RunWith(classOf[JUnitRunner])
-class AndroidResourceAnalyzerSpec extends Spec with MustMatchers {
+class AndroidResourceAnalyzerSpec extends FunSpec with MustMatchers {
   describe("detectRIdClasses") {
     it("must be able to find all of the R.id instances") {
       AndroidResourceAnalyzer.detectRIdClasses(classOf[SiblingToR]) must

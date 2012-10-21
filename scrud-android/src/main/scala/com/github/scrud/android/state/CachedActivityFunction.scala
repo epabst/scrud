@@ -1,8 +1,9 @@
 package com.github.scrud.android.state
 
-import com.github.scrud.android.{CachedStateListener, CrudContext, ActivityVar}
-import com.github.scrud.android.common.CachedFunction
 import android.os.Bundle
+import com.github.scrud.state.ActivityVar
+import com.github.scrud.util.CachedFunction
+import com.github.scrud.android.CrudContext
 
 /** A Function whose results are cached in each Activity. */
 trait CachedActivityFunction[A, B] {

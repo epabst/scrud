@@ -1,10 +1,11 @@
 package com.github.scrud.android
 
-import common.{Timing, PlatformDriver}
 import android.widget.Toast
 import android.content.Context
 import android.view.View
 import android.app.Activity
+import com.github.scrud.action.Timing
+import com.github.scrud.platform.PlatformDriver
 
 /**
  * A PlatformDriver for the Android platform.

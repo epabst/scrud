@@ -2,18 +2,28 @@ package com.github.scrud.android
 
 import action._
 import action.Action
-import action.CrudOperation
+import action.Command
+import com.github.scrud.action.{Timing, CrudOperationType}
 import android.view.{View, MenuItem}
-import android.content.Intent
-import common.{Timing, UriPath, Common, PlatformTypes}
-import persistence.EntityType
-import PlatformTypes._
+import android.content.{Context, Intent}
+import com.github.scrud.util.Common
+import com.github.scrud.platform.PlatformTypes._
 import com.github.scrud.android.view.AndroidConversions._
 import android.os.Bundle
 import com.github.triangle._
-import view.{ViewField, OnClickOperationSetter}
+import persistence.{CursorStream, EntityTypePersistedInfo}
+import view.AndroidResourceAnalyzer._
+import view._
 import android.app.Activity
+import com.github.scrud.{EntityType, UriPath, CrudApplication}
+import com.github.scrud.state.{DestroyStateListener, StateVar}
+import com.github.scrud.persistence.{DataListener, CrudPersistence, PersistenceFactory}
+import android.widget.{ResourceCursorAdapter, AdapterView, Adapter}
+import android.database.Cursor
+import com.github.scrud.EntityName
 import scala.Some
+import com.github.scrud.action.CrudOperation
+import view.OnClickOperationSetter
 
 /** Support for the different Crud Activity's.
   * @author Eric Pabst (epabst@gmail.com)
@@ -37,6 +47,16 @@ trait BaseCrudActivity extends ActivityWithState with OptionsMenuActivity with L
   }
 
   final def entityType = crudType.entityType
+  def entityName = entityType.entityName
+
+  lazy val entityTypePersistedInfo = EntityTypePersistedInfo(entityType)
+
+  /** Instantiates a data buffer which can be saved by EntityPersistence.
+    * The fields must support copying into this object.
+    */
+  def newWritable = persistenceFactory.newWritable
+
+  protected def persistenceFactory: PersistenceFactory = crudType.persistenceFactory
 
   override def setIntent(newIntent: Intent) {
     info("Current Intent: " + newIntent)
@@ -95,6 +115,58 @@ trait BaseCrudActivity extends ActivityWithState with OptionsMenuActivity with L
     }
   }
 
+  lazy val entityNameLayoutPrefix = crudApplication.entityNameLayoutPrefixFor(entityName)
+
+  private lazy val rLayoutClassesVal = crudApplication.rLayoutClassesVal
+
+  protected def getLayoutKey(layoutName: String): LayoutKey =
+    findResourceIdWithName(rLayoutClassesVal, layoutName).getOrElse {
+      rLayoutClassesVal.foreach(layoutClass => logError("Contents of " + layoutClass + " are " + layoutClass.getFields.mkString(", ")))
+      throw new IllegalStateException("R.layout." + layoutName + " not found.  You may want to run the CrudUIGenerator.generateLayouts." +
+              rLayoutClassesVal.mkString("(layout classes: ", ",", ")"))
+    }
+
+  lazy val headerLayout: LayoutKey = getLayoutKey(entityNameLayoutPrefix + "_header")
+  lazy val listLayout: LayoutKey =
+    findResourceIdWithName(rLayoutClassesVal, entityNameLayoutPrefix + "_list").getOrElse(getLayoutKey("entity_list"))
+  lazy val rowLayout: LayoutKey = getLayoutKey(entityNameLayoutPrefix + "_row")
+  /** The layout used for each entity when allowing the user to pick one of them. */
+  lazy val pickLayout: LayoutKey = pickLayoutFor(entityName)
+  lazy val entryLayout: LayoutKey = getLayoutKey(entityNameLayoutPrefix + "_entry")
+
+  /** The layout used for each entity when allowing the user to pick one of them. */
+  def pickLayoutFor(entityName: EntityName): LayoutKey = {
+    findResourceIdWithName(rLayoutClassesVal, crudApplication.entityNameLayoutPrefixFor(entityName) + "_pick").getOrElse(
+      _root_.android.R.layout.simple_spinner_dropdown_item)
+  }
+
+  lazy val commandToUndoDelete = Command(None, Some(res.R.string.undo_delete), None)
+
+  /** Delete an entity by Uri with an undo option.  It can be overridden to do a confirmation box if desired. */
+  def startDelete(entityType: EntityType, uri: UriPath, activity: BaseCrudActivity) {
+    crudContext.withEntityPersistence(entityType)(undoableDelete(uri))
+  }
+
+  private[scrud] def undoableDelete(uri: UriPath)(persistence: CrudPersistence) {
+    persistence.find(uri).foreach { readable =>
+      val id = entityType.IdField.getValue(readable)
+      val writable = entityType.copyAndUpdate(readable, newWritable)
+      persistence.delete(uri)
+      val undoDeleteOperation = new PersistenceOperation(entityType, persistence.crudContext.application) {
+        def invoke(uri: UriPath, persistence: CrudPersistence) {
+          persistence.save(id, writable)
+        }
+      }
+      //todo delete childEntities recursively
+      val context = persistence.crudContext.activityContext
+      context match {
+        case activity: BaseCrudActivity =>
+          activity.allowUndo(Undoable(Action(commandToUndoDelete, undoDeleteOperation), None))
+        case _ =>
+      }
+    }
+  }
+
   /** A StateVar that holds an undoable Action if present. */
   private object LastUndoable extends StateVar[Undoable]
 
@@ -105,8 +177,6 @@ trait BaseCrudActivity extends ActivityWithState with OptionsMenuActivity with L
     LastUndoable.set(this, undoable)
     optionsMenuCommands = generateOptionsMenu.map(_.command)
   }
-
-  def pickLayout(entityType: EntityType): LayoutKey = crudApplication.crudType(entityType).pickLayout
 
   protected def applicableActions: List[Action] = LastUndoable.get(this).map(_.undoAction).toList ++ normalActions
 
@@ -178,5 +248,71 @@ trait BaseCrudActivity extends ActivityWithState with OptionsMenuActivity with L
     debug("Waited for work in progress for " + (System.currentTimeMillis() - start) + "ms")
   }
 
+  def addDataListener(listener: DataListener, crudContext: CrudContext) {
+    crudType.persistenceFactory.addListener(listener, entityType, crudContext)
+  }
+
+  final def setListAdapterUsingUri(crudContext: CrudContext, activity: CrudListActivity) {
+    setListAdapter(activity.getListView, entityType, activity.currentUriPath, crudContext, activity.contextItems, activity, rowLayout)
+  }
+
+  private def createAdapter[A <: Adapter](persistence: CrudPersistence, uriPath: UriPath, entityType: EntityType, crudContext: CrudContext, contextItems: GetterInput, activity: Activity, itemLayout: LayoutKey, adapterView: AdapterView[A]): AdapterCaching = {
+    val findAllResult = persistence.findAll(uriPath)
+    findAllResult match {
+      case CursorStream(cursor, _) =>
+        activity.startManagingCursor(cursor)
+        addDataListener(new DataListener {
+          def onChanged(uri: UriPath) {
+            cursor.requery()
+          }
+        }, crudContext)
+        new ResourceCursorAdapter(activity, itemLayout, cursor) with AdapterCaching {
+          def platformDriver = persistence.platformDriver
+
+          def entityType = self.entityType
+
+          /** The UriPath that does not contain the entities. */
+          protected def uriPathWithoutEntityId = uriPath
+
+          def bindView(view: View, context: Context, cursor: Cursor) {
+            val row = entityTypePersistedInfo.copyRowToMap(cursor)
+            bindViewFromCacheOrItems(view, cursor.getPosition, row, adapterView, crudContext, contextItems)
+          }
+        }
+      case _ => new EntityAdapter(entityType, findAllResult, itemLayout, contextItems, persistence.platformDriver, activity.getLayoutInflater)
+    }
+  }
+
+  private def setListAdapter[A <: Adapter](adapterView: AdapterView[A], persistence: CrudPersistence, uriPath: UriPath, entityType: EntityType, crudContext: CrudContext, contextItems: GetterInput, activity: Activity, itemLayout: LayoutKey) {
+    addDataListener(new DataListener {
+      def onChanged(uri: UriPath) {
+        crudContext.application.FuturePortableValueCache.get(crudContext).clear()
+      }
+    }, crudContext)
+    def callCreateAdapter(): A = {
+      createAdapter(persistence, uriPath, entityType, crudContext, contextItems, activity, itemLayout, adapterView).asInstanceOf[A]
+    }
+    val adapter = callCreateAdapter()
+    adapterView.setAdapter(adapter)
+    crudContext.addCachedActivityStateListener(new AdapterCachingStateListener(adapterView, entityType, persistence.platformDriver, crudContext, adapterFactory = callCreateAdapter()))
+  }
+
+  def setListAdapter[A <: Adapter](adapterView: AdapterView[A], entityType: EntityType, uriPath: UriPath, crudContext: CrudContext, contextItems: GetterInput, activity: Activity, itemLayout: LayoutKey) {
+    val persistence = crudContext.openEntityPersistence(entityType)
+    crudContext.activityState.addListener(new DestroyStateListener {
+      def onDestroyState() {
+        persistence.close()
+      }
+    })
+    setListAdapter(adapterView, persistence, uriPath, entityType, crudContext, contextItems, activity, itemLayout)
+  }
+
   override def toString = getClass.getSimpleName + "@" + System.identityHashCode(this)
 }
+
+/** An undo of an operation.  The operation should have already completed, but it can be undone or accepted.
+  * @param undoAction  An Action that reverses the operation.
+  * @param closeOperation  An operation that releases any resources, and is guaranteed to be called.
+  *           For example, deleting related entities if undo was not called.
+  */
+case class Undoable(undoAction: Action, closeOperation: Option[Operation] = None)

@@ -1,15 +1,15 @@
 package com.github.scrud.android.action
 
 import android.app.Activity
-import com.github.scrud.android.common.PlatformTypes._
+import com.github.scrud.platform.PlatformTypes._
 import android.content.{Context, Intent}
-import com.github.scrud.android.common.UriPath
 import com.github.scrud.android.view.AndroidConversions._
 import android.view.View
 import com.github.triangle.Field
 import com.github.triangle.PortableField._
 import com.github.scrud.android.view.ViewRef
-import com.github.scrud.android.entity.EntityName
+import com.github.scrud.{EntityType, UriPath, EntityName}
+import com.github.scrud.android.BaseCrudActivity
 
 /** Represents something that a user can initiate.
   * @author Eric Pabst (epabst@gmail.com)
@@ -108,6 +108,18 @@ final case class StartEntityIdActivityOperation(entityName: EntityName, action: 
   extends BaseStartActivityOperation with EntityOperation {
 
   override def determineIntent(uri: UriPath, activity: ActivityWithState) = super.determineIntent(uri.upToOptionalIdOf(entityName), activity)
+}
+
+//final to guarantee equality is correct
+final case class StartEntityDeleteOperation(entityType: EntityType) extends EntityOperation {
+  def entityName = entityType.entityName
+  def action = null //unused
+
+  def invoke(uri: UriPath, activity: ActivityWithState) {
+    activity match {
+      case crudActivity: BaseCrudActivity => crudActivity.startDelete(entityType, uri, crudActivity)
+    }
+  }
 }
 
 trait StartActivityForResultOperation extends StartActivityOperation {

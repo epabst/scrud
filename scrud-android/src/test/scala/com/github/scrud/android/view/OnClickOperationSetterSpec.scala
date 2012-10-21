@@ -8,9 +8,10 @@ import org.mockito.Mockito._
 import org.mockito.Matchers._
 import android.view.View
 import com.github.scrud.android.action.{ActivityWithState, Operation}
-import com.github.scrud.android.{CrudApplication, CrudContext}
+import com.github.scrud.CrudApplication
+import com.github.scrud.android.CrudContext
 import com.github.triangle.{GetterInput, PortableField}
-import com.github.scrud.android.common.UriPath
+import com.github.scrud.UriPath
 
 /** A specification of [[com.github.scrud.android.view.OnClickOperationSetter]].
   * @author Eric Pabst (epabst@gmail.com)

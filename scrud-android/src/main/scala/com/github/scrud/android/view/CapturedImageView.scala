@@ -8,12 +8,12 @@ import java.io.File
 import android.os.Environment
 import android.provider.MediaStore
 import com.github.triangle._
-import com.github.scrud.android.common.CachedFunction
-import com.github.scrud.android.common.Common.withCloseable
 import android.graphics.BitmapFactory
 import android.graphics.drawable.{BitmapDrawable, Drawable}
 import com.github.scrud.android.action._
-import com.github.scrud.android.{ApplicationVar, CrudContext, CrudContextField}
+import com.github.scrud.state.ApplicationVar
+import com.github.scrud.android.{CrudContext, CrudContextField}
+import com.github.scrud.util.{Common, CachedFunction}
 
 /** A ViewField for an image that can be captured using the camera.
   * It currently puts the image into external storage, which requires the following in the AndroidManifest.xml:
@@ -41,7 +41,7 @@ object CapturedImageView extends ViewField[Uri](new FieldLayout {
         imageView.setTag(uri.toString)
         val contentResolver = imageView.getContext.getContentResolver
         val cachingResolver = DrawableByUriCache.getOrSet(crudContext, CachedFunction(uri => {
-          withCloseable(contentResolver.openInputStream(uri)) { stream =>
+          Common.withCloseable(contentResolver.openInputStream(uri)) { stream =>
             new BitmapDrawable(BitmapFactory.decodeStream(stream, null, bitmapFactoryOptions))
           }
         }))

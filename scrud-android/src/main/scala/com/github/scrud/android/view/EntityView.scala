@@ -1,14 +1,14 @@
 package com.github.scrud.android.view
 
-import com.github.scrud.android.persistence.EntityType
-import com.github.scrud.android.common.PlatformTypes.ID
+import com.github.scrud.{UriField, EntityType}
+import com.github.scrud.platform.PlatformTypes.ID
 import com.github.triangle.PortableField._
 import com.github.triangle._
 import android.widget._
 import android.view.View
 import android.app.Activity
 import xml.NodeSeq
-import com.github.scrud.android.{CrudContextField, UriField, BaseCrudActivity}
+import com.github.scrud.android.{CrudContextField, BaseCrudActivity}
 import com.github.scrud.android.CrudContext
 import scala.Some
 
@@ -31,11 +31,10 @@ case class EntityView(entityType: EntityType)
   protected val delegate = Getter[AdapterView[BaseAdapter], ID](v => Option(v.getSelectedItemId)) + Setter[ID] {
     case UpdaterInput(adapterView: AdapterView[BaseAdapter], idOpt, UriField(Some(uri)) && CrudContextField(Some(crudContext @ CrudContext(crudActivity: BaseCrudActivity, _)))) =>
       if (idOpt.isDefined || adapterView.getAdapter == null) {
-        val crudType = crudContext.application.crudType(entityType)
         //don't do it again if already done from a previous time
         if (adapterView.getAdapter == null) {
-          crudType.setListAdapter(adapterView, entityType, uri, crudContext, crudActivity.contextItems, crudActivity,
-            crudActivity.pickLayout(entityType))
+          crudActivity.setListAdapter(adapterView, entityType, uri, crudContext, crudActivity.contextItems, crudActivity,
+            crudActivity.pickLayoutFor(entityType.entityName))
         }
         if (idOpt.isDefined) {
           val adapter = adapterView.getAdapter

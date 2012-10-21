@@ -1,20 +1,8 @@
 package com.github.scrud.android
 
-import action._
-import common.UriPath
-import Operation._
-import android.app.Activity
+import com.github.scrud.persistence._
 import com.github.triangle._
-import common.PlatformTypes._
-import persistence.{EntityTypePersistedInfo, CursorStream, EntityType, DataListener}
-import PortableField.toSome
-import view.AndroidResourceAnalyzer._
-import java.lang.IllegalStateException
-import android.view.View
-import android.content.Context
-import android.database.Cursor
-import android.widget._
-import view.{ViewRef, AdapterCachingStateListener, AdapterCaching, EntityAdapter}
+import com.github.scrud.{ParentField, CrudApplication, EntityType}
 
 /** An entity configuration that provides all custom information needed to
   * implement CRUD on the entity.  This shouldn't depend on the platform (e.g. android).
@@ -26,69 +14,17 @@ class CrudType(val entityType: EntityType, val persistenceFactory: PersistenceFa
   trace("Instantiated CrudType: " + this)
 
   def entityName = entityType.entityName
-  lazy val entityNameLayoutPrefix = NamingConventions.toLayoutPrefix(entityName)
-
-  def rLayoutClasses: Seq[Class[_]] = detectRLayoutClasses(entityType.getClass)
-  private lazy val rLayoutClassesVal = rLayoutClasses
-  def rStringClasses: Seq[Class[_]] = detectRStringClasses(entityType.getClass)
-  private lazy val rStringClassesVal = rStringClasses
-  def rIdClasses: Seq[Class[_]] = detectRIdClasses(entityType.getClass)
-  private lazy val rIdClassesVal = rIdClasses
-
-  protected def getLayoutKey(layoutName: String): LayoutKey =
-    findResourceIdWithName(rLayoutClassesVal, layoutName).getOrElse {
-      rLayoutClassesVal.foreach(layoutClass => logError("Contents of " + layoutClass + " are " + layoutClass.getFields.mkString(", ")))
-      throw new IllegalStateException("R.layout." + layoutName + " not found.  You may want to run the CrudUIGenerator.generateLayouts." +
-              rLayoutClassesVal.mkString("(layout classes: ", ",", ")"))
-    }
-
-  lazy val headerLayout: LayoutKey = getLayoutKey(entityNameLayoutPrefix + "_header")
-  lazy val listLayout: LayoutKey =
-    findResourceIdWithName(rLayoutClassesVal, entityNameLayoutPrefix + "_list").getOrElse(getLayoutKey("entity_list"))
-  lazy val rowLayout: LayoutKey = getLayoutKey(entityNameLayoutPrefix + "_row")
-  lazy val displayLayout: Option[LayoutKey] = findResourceIdWithName(rLayoutClassesVal, entityNameLayoutPrefix + "_display")
-  /** The layout used for each entity when allowing the user to pick one of them. */
-  lazy val pickLayout: LayoutKey = findResourceIdWithName(rLayoutClassesVal, entityNameLayoutPrefix + "_pick").getOrElse(
-    _root_.android.R.layout.simple_spinner_dropdown_item)
-  lazy val entryLayout: LayoutKey = getLayoutKey(entityNameLayoutPrefix + "_entry")
-
-  final def hasDisplayPage = displayLayout.isDefined
 
   /** This uses isDeletable because it assumes that if it can be deleted, it can be added as well.
     * @see [[com.github.scrud.android.CrudType.isDeletable]].
     */
-  lazy val isAddable: Boolean = isDeletable
+  lazy val isAddable: Boolean = persistenceFactory.canCreate
 
-  /** @see [[com.github.scrud.android.PersistenceFactory.canDelete]]. */
+  /** @see [[com.github.scrud.persistence.PersistenceFactory.canDelete]]. */
   final lazy val isDeletable: Boolean = persistenceFactory.canDelete
 
-  /** @see [[com.github.scrud.android.PersistenceFactory.canSave]]. */
+  /** @see [[com.github.scrud.persistence.PersistenceFactory.canSave]]. */
   final lazy val isUpdateable: Boolean = persistenceFactory.canSave
-
-  lazy val entityTypePersistedInfo = EntityTypePersistedInfo(entityType)
-
-  protected def getStringKey(stringName: String): SKey =
-    findResourceIdWithName(rStringClassesVal, stringName).getOrElse {
-      rStringClassesVal.foreach(rStringClass => logError("Contents of " + rStringClass + " are " + rStringClass.getFields.mkString(", ")))
-      throw new IllegalStateException("R.string." + stringName + " not found.  You may want to run the CrudUIGenerator.generateLayouts." +
-              rStringClassesVal.mkString("(string classes: ", ",", ")"))
-    }
-
-  def commandToListItems: Command = Command(None,
-    findResourceIdWithName(rStringClassesVal, entityNameLayoutPrefix + "_list"), None)
-
-  def commandToDisplayItem: Command = Command(None, None, None)
-
-  def commandToAddItem: Command = Command(android.R.drawable.ic_menu_add,
-    getStringKey("add_" + entityNameLayoutPrefix),
-    Some(ViewRef("add_" + entityNameLayoutPrefix + "_command", rIdClassesVal)))
-
-  def commandToEditItem: Command = Command(android.R.drawable.ic_menu_edit,
-    getStringKey("edit_" + entityNameLayoutPrefix), None)
-
-  def commandToDeleteItem: Command = Command(android.R.drawable.ic_menu_delete, res.R.string.delete_item, None)
-
-  lazy val commandToUndoDelete = Command(None, Some(res.R.string.undo_delete), None)
 
   lazy val parentFields: Seq[ParentField] = entityType.deepCollect {
     case parentField: ParentField => parentField
@@ -110,186 +46,12 @@ class CrudType(val entityType: EntityType, val persistenceFactory: PersistenceFa
     }
   }
 
-  /** Gets the action to display a UI for a user to fill in data for creating an entity.
-    * The target Activity should copy Unit into the UI using entityType.copy to populate defaults.
-    */
-  @deprecated("use CrudApplication.actionToCreate")
-  lazy val createAction: Option[Action] =
-    if (isAddable)
-      Some(Action(commandToAddItem, new StartEntityActivityOperation(entityType.entityName, CreateActionName, activityClass)))
-    else
-      None
-
-  /** Gets the action to display the list that matches the criteria copied from criteriaSource using entityType.copy. */
-  @deprecated("use CrudApplication.actionToList.get")
-  lazy val listAction = Action(commandToListItems, new StartEntityActivityOperation(entityType.entityName, ListActionName, listActivityClass))
-
-  protected def entityOperation(action: String, activityClass: Class[_ <: Activity]) =
-    new StartEntityIdActivityOperation(entityType.entityName, action, activityClass)
-
-  /** Gets the action to display the entity given the id in the UriPath. */
-  @deprecated("use CrudApplication.actionToDisplay.get")
-  lazy val displayAction = Action(commandToDisplayItem, entityOperation(DisplayActionName, activityClass))
-
-  /** Gets the action to display a UI for a user to edit data for an entity given its id in the UriPath. */
-  @deprecated("use CrudApplication.actionToUpdate")
-  lazy val updateAction: Option[Action] =
-    if (isUpdateable) Some(Action(commandToEditItem, entityOperation(UpdateActionName, activityClass)))
-    else None
-
-  @deprecated("use CrudApplication.actionToDelete")
-  lazy val deleteAction: Option[Action] =
-    if (isDeletable) {
-      Some(Action(commandToDeleteItem, new Operation {
-        def invoke(uri: UriPath, activity: ActivityWithState) {
-          activity match {
-            case crudActivity: BaseCrudActivity => startDelete(uri, crudActivity)
-          }
-        }
-      }))
-    } else None
-
-
-  def listActivityClass: Class[_ <: CrudListActivity] = classOf[CrudListActivity]
-  def activityClass: Class[_ <: CrudActivity] = classOf[CrudActivity]
-
-  /** Gets the actions that a user can perform from a list of the entities.
-    * May be overridden to modify the list of actions.
-    */
-  @deprecated("use CrudApplication.actionsForList")
-  def getListActions(application: CrudApplication): Seq[Action] =
-    getReadOnlyListActions(application) ++ application.actionToCreate(entityType).toSeq
-
-  protected def getReadOnlyListActions(application: CrudApplication): Seq[Action] = {
-    val thisEntity = this.entityType
-    (parentFields match {
-      //exactly one parent w/o a display page
-      case parentField :: Nil if !application.crudType(parentField.entityName).hasDisplayPage => {
-        val parentEntityType = application.entityType(parentField.entityName)
-        //the parent's actionToUpdate should be shown since clicking on the parent entity brought the user
-        //to the list of child entities instead of to a display page for the parent entity.
-        application.actionToUpdate(parentEntityType).toSeq ++
-          application.childEntityTypes(parentEntityType).filter(_ != thisEntity).flatMap(application.actionToList(_))
-      }
-      case _ => Nil
-    })
-  }
-
-  /** Gets the actions that a user can perform from a specific entity instance.
-    * The first one is the one that will be used when the item is clicked on.
-    * May be overridden to modify the list of actions.
-    */
-  @deprecated("use CrudApplication.actionsForEntity")
-  def getEntityActions(application: CrudApplication): Seq[Action] =
-    getReadOnlyEntityActions(application) ++ application.actionToUpdate(entityType).toSeq ++
-      application.actionToDelete(entityType).toSeq
-
-  protected def getReadOnlyEntityActions(application: CrudApplication): Seq[Action] =
-    displayLayout.flatMap(_ => application.actionToDisplay(entityType)).toSeq ++
-      application.childEntityTypes(entityType).flatMap(application.actionToList(_))
-
-  def addDataListener(listener: DataListener, crudContext: CrudContext) {
-    persistenceFactory.addListener(listener, entityType, crudContext)
-  }
-
   def openEntityPersistence(crudContext: CrudContext): CrudPersistence =
     persistenceFactory.createEntityPersistence(entityType, crudContext)
-
-  /** Instantiates a data buffer which can be saved by EntityPersistence.
-    * The fields must support copying into this object.
-    */
-  def newWritable = persistenceFactory.newWritable
 
   final def withEntityPersistence[T](crudContext: CrudContext)(f: CrudPersistence => T): T = {
     val persistence = openEntityPersistence(crudContext)
     try f(persistence)
     finally persistence.close()
   }
-
-  final def setListAdapterUsingUri(crudContext: CrudContext, activity: CrudListActivity) {
-    setListAdapter(activity.getListView, entityType, activity.currentUriPath, crudContext, activity.contextItems, activity, self.rowLayout)
-  }
-
-  private def createAdapter[A <: Adapter](persistence: CrudPersistence, uriPath: UriPath, entityType: EntityType, crudContext: CrudContext, contextItems: GetterInput, activity: Activity, itemLayout: LayoutKey, adapterView: AdapterView[A]): AdapterCaching = {
-    val findAllResult = persistence.findAll(uriPath)
-    findAllResult match {
-      case CursorStream(cursor, _) =>
-        activity.startManagingCursor(cursor)
-        addDataListener(new DataListener {
-          def onChanged(uri: UriPath) {
-            cursor.requery()
-          }
-        }, crudContext)
-        new ResourceCursorAdapter(activity, itemLayout, cursor) with AdapterCaching {
-          def platformDriver = persistence.platformDriver
-
-          def entityType = self.entityType
-
-          /** The UriPath that does not contain the entities. */
-          protected def uriPathWithoutEntityId = uriPath
-
-          def bindView(view: View, context: Context, cursor: Cursor) {
-            val row = entityTypePersistedInfo.copyRowToMap(cursor)
-            bindViewFromCacheOrItems(view, cursor.getPosition, row, adapterView, crudContext, contextItems)
-          }
-        }
-      case _ => new EntityAdapter(entityType, findAllResult, itemLayout, contextItems, persistence.platformDriver, activity.getLayoutInflater)
-    }
-  }
-
-  private def setListAdapter[A <: Adapter](adapterView: AdapterView[A], persistence: CrudPersistence, uriPath: UriPath, entityType: EntityType, crudContext: CrudContext, contextItems: GetterInput, activity: Activity, itemLayout: LayoutKey) {
-    addDataListener(new DataListener {
-      def onChanged(uri: UriPath) {
-        crudContext.application.FuturePortableValueCache.get(crudContext).clear()
-      }
-    }, crudContext)
-    def callCreateAdapter(): A = {
-      createAdapter(persistence, uriPath, entityType, crudContext, contextItems, activity, itemLayout, adapterView).asInstanceOf[A]
-    }
-    val adapter = callCreateAdapter()
-    adapterView.setAdapter(adapter)
-    crudContext.addCachedActivityStateListener(new AdapterCachingStateListener(adapterView, entityType, persistence.platformDriver, crudContext, adapterFactory = callCreateAdapter()))
-  }
-
-  def setListAdapter[A <: Adapter](adapterView: AdapterView[A], entityType: EntityType, uriPath: UriPath, crudContext: CrudContext, contextItems: GetterInput, activity: Activity, itemLayout: LayoutKey) {
-    val persistence = crudContext.openEntityPersistence(entityType)
-    crudContext.activityState.addListener(new DestroyStateListener {
-      def onDestroyState() {
-        persistence.close()
-      }
-    })
-    setListAdapter(adapterView, persistence, uriPath, entityType, crudContext, contextItems, activity, itemLayout)
-  }
-
-  private[scrud] def undoableDelete(uri: UriPath)(persistence: CrudPersistence) {
-    persistence.find(uri).foreach { readable =>
-      val id = entityType.IdField.getValue(readable)
-      val writable = entityType.copyAndUpdate(readable, newWritable)
-      persistence.delete(uri)
-      val undoDeleteOperation = new PersistenceOperation(entityType, persistence.crudContext.application) {
-        def invoke(uri: UriPath, persistence: CrudPersistence) {
-          persistence.save(id, writable)
-        }
-      }
-      //todo delete childEntities recursively
-      val context = persistence.crudContext.activityContext
-      context match {
-        case activity: BaseCrudActivity =>
-          activity.allowUndo(Undoable(Action(commandToUndoDelete, undoDeleteOperation), None))
-        case _ =>
-      }
-    }
-  }
-
-  /** Delete an entity by Uri with an undo option.  It can be overridden to do a confirmation box if desired. */
-  def startDelete(uri: UriPath, activity: BaseCrudActivity) {
-    withEntityPersistence(activity.crudContext)(undoableDelete(uri))
-  }
 }
-
-/** An undo of an operation.  The operation should have already completed, but it can be undone or accepted.
-  * @param undoAction  An Action that reverses the operation.
-  * @param closeOperation  An operation that releases any resources, and is guaranteed to be called.
-  *           For example, deleting related entities if undo was not called.
-  */
-case class Undoable(undoAction: Action, closeOperation: Option[Operation] = None)

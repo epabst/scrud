@@ -2,6 +2,7 @@ package com.github.scrud.android.persistence
 
 import android.database.Cursor
 import com.github.triangle.FieldList
+import com.github.scrud.EntityType
 
 case class EntityTypePersistedInfo(persistedFields: Seq[CursorField[_]]) {
   private val persistedFieldList = FieldList(persistedFields: _*)

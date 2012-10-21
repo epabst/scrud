@@ -1,6 +1,7 @@
 package com.github.scrud.android.sample
 
 import com.github.scrud.android._
+import com.github.scrud.CrudApplication
 
 
 /** The sample application

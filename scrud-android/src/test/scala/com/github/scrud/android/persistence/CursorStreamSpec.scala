@@ -3,16 +3,16 @@ package com.github.scrud.android.persistence
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import org.scalatest.matchers.MustMatchers
-import org.scalatest.Spec
+import org.scalatest.FunSpec
 import org.scalatest.mock.MockitoSugar
 import org.mockito.Mockito._
 import android.database.Cursor
 
-/** A behavior specification for [[com.github.scrud.android.persistence.EntityPersistence]].
+/** A behavior specification for [[com.github.scrud.persistence.EntityPersistence]].
   * @author Eric Pabst (epabst@gmail.com)
   */
 @RunWith(classOf[JUnitRunner])
-class CursorStreamSpec extends Spec with MustMatchers with MockitoSugar {
+class CursorStreamSpec extends FunSpec with MustMatchers with MockitoSugar {
   it("must handle an empty Cursor") {
     val field = CursorField.persisted[String]("name")
     val cursor = mock[Cursor]

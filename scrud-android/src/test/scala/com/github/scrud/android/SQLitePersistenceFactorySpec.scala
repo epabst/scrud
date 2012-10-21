@@ -1,25 +1,28 @@
 package com.github.scrud.android
 
-import action.{State, ContextWithState}
-import android.provider.BaseColumns
-import common.ListenerSet
-import entity.EntityName
+import _root_.android.provider.BaseColumns
+import _root_.android.app.Activity
+import _root_.android.database.{Cursor, DataSetObserver}
+import _root_.android.widget.ListView
+import _root_.android.database.sqlite.{SQLiteOpenHelper, SQLiteDatabase}
+import action.ContextWithState
+import com.github.scrud.state._
+import com.github.scrud.persistence._
 import org.junit.Test
 import org.junit.runner.RunWith
 import com.xtremelabs.robolectric.RobolectricTestRunner
 import org.scalatest.matchers.MustMatchers
 import com.github.triangle._
-import persistence.CursorField._
-import persistence.{DataListener, EntityType, CursorStream, SQLiteCriteria}
+import com.github.scrud.android.persistence.CursorField._
+import persistence.CursorStream
+import persistence.SQLiteCriteria
 import PortableField._
 import scala.collection._
-import mutable.Buffer
 import org.mockito.{Mockito, Matchers}
 import Mockito._
-import android.app.Activity
-import android.database.{Cursor, DataSetObserver}
-import android.widget.ListView
-import android.database.sqlite.{SQLiteOpenHelper, SQLiteDatabase}
+import com.github.scrud.util.{ListenerSet, CrudMockitoSugar}
+import com.github.scrud._
+import com.github.scrud.EntityName
 
 /** A test for [[com.github.scrud.android.SQLitePersistenceFactorySpec]].
   * @author Eric Pabst (epabst@gmail.com)
@@ -34,7 +37,7 @@ class SQLitePersistenceFactorySpec extends MustMatchers with CrudMockitoSugar wi
     warn("NOT running on Real Android.")
     false
   } catch {
-    case _ => {
+    case _: Throwable => {
       info("Running on Real Android.")
       true
     }
@@ -75,7 +78,7 @@ class SQLitePersistenceFactorySpec extends MustMatchers with CrudMockitoSugar wi
     stub(crudContext.activityState).toReturn(new State {})
     stub(crudContext.application).toReturn(application)
 
-    val cursors = Buffer[Cursor]()
+    val cursors = mutable.Buffer[Cursor]()
     val persistence = new SQLiteEntityPersistence(TestEntityType, crudContext, new GeneratedDatabaseSetup(crudContext), listenerSet) {
       override def findAll(criteria: SQLiteCriteria) = {
         val result = super.findAll(criteria)
@@ -84,7 +87,7 @@ class SQLitePersistenceFactorySpec extends MustMatchers with CrudMockitoSugar wi
         result
       }
     }
-    val writable = TestCrudType.newWritable
+    val writable = application.newWritable(TestEntityType)
     TestEntityType.copy(PortableField.UseDefaults, writable)
     val id = persistence.save(None, writable)
     val uri = persistence.toUri(id)
@@ -107,11 +110,11 @@ class SQLitePersistenceFactorySpec extends MustMatchers with CrudMockitoSugar wi
     val observer = mock[DataSetObserver]
 
     val crudContext = new CrudContext(activity, application)
-    TestCrudType.setListAdapterUsingUri(crudContext, activity)
+    activity.setListAdapterUsingUri(crudContext, activity)
     val listAdapter = activity.getListView.getAdapter
     listAdapter.getCount must be (0)
 
-    val writable = TestCrudType.newWritable
+    val writable = application.newWritable(TestEntityType)
     TestEntityType.copy(PortableField.UseDefaults, writable)
     val id = TestCrudType.withEntityPersistence(crudContext) { _.save(None, writable) }
     //it must have refreshed the listAdapter

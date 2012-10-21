@@ -2,40 +2,40 @@ package com.github.scrud.android
 
 import action.Action
 import android.widget.ListView
-import _root_.android.app.ListActivity
+import android.app.ListActivity
 import android.os.Bundle
 import android.view.{ContextMenu, View, MenuItem}
 import android.view.ContextMenu.ContextMenuInfo
 import android.widget.AdapterView.AdapterContextMenuInfo
-import common.UriPath
-import persistence.DataListener
-import common.PlatformTypes._
+import com.github.scrud.UriPath
+import com.github.scrud.platform.PlatformTypes._
+import com.github.scrud.persistence.DataListener
 
 /** A generic ListActivity for CRUD operations
   * @author Eric Pabst (epabst@gmail.com)
   */
-class CrudListActivity extends ListActivity with BaseCrudActivity {
+class CrudListActivity extends ListActivity with BaseCrudActivity { self =>
 
   override def onCreate(savedInstanceState: Bundle) {
     super.onCreate(savedInstanceState)
     withExceptionReporting {
-      setContentView(crudType.listLayout)
+      setContentView(listLayout)
 
       val view = getListView
   		view.setHeaderDividersEnabled(true)
-  		view.addHeaderView(getLayoutInflater.inflate(crudType.headerLayout, null))
+  		view.addHeaderView(getLayoutInflater.inflate(headerLayout, null))
       bindNormalActionsToViews()
       registerForContextMenu(getListView)
 
-      crudType.setListAdapterUsingUri(crudContext, this)
+      setListAdapterUsingUri(crudContext, this)
       future {
         populateFromParentEntities()
-        crudType.addDataListener(new DataListener {
+        crudType.persistenceFactory.addListener(new DataListener {
           def onChanged(uri: UriPath) {
             //Some of the parent fields may be calculated from the children
             populateFromParentEntities()
           }
-        }, crudContext)
+        }, entityType, crudContext)
       }
     }
   }

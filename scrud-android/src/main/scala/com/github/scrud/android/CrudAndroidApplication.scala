@@ -1,7 +1,8 @@
 package com.github.scrud.android
 
-import action.State
 import android.app.Application
+import com.github.scrud.CrudApplication
+import com.github.scrud.state.State
 
 /**
  * A CrudApplication for Android.

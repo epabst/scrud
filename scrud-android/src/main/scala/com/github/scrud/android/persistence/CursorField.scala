@@ -6,8 +6,8 @@ import android.provider.BaseColumns
 import com.github.triangle._
 import PortableField._
 import android.os.Bundle
-import com.github.scrud.android.common.PlatformTypes._
-import com.github.scrud.android.ParentField
+import com.github.scrud.platform.PlatformTypes._
+import com.github.scrud.ParentField
 import com.github.triangle.Converter._
 import android.net.Uri
 

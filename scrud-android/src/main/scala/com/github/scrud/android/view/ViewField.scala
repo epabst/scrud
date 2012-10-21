@@ -1,6 +1,6 @@
 package com.github.scrud.android.view
 
-import com.github.scrud.android.common.PlatformTypes._
+import com.github.scrud.platform.PlatformTypes._
 import com.github.triangle._
 import PortableField._
 import java.util.{Calendar, Date, GregorianCalendar}

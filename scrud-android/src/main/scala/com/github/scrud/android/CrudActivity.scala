@@ -2,13 +2,14 @@ package com.github.scrud.android
 
 import action.{OperationResponse, EntityOperation}
 import android.os.Bundle
-import com.github.triangle.{UpdaterInput, GetterInput, PortableField}
+import com.github.triangle.{GetterInput, PortableField}
 import android.content.Intent
 import android.app.Activity
 import com.github.scrud.android.view.AndroidConversions._
 import android.widget.Toast
-import common.UriPath
-import validate.ValidationResult
+import com.github.scrud.ValidationResult
+import state.CachedStateListener
+import com.github.scrud.persistence.CrudPersistence
 
 /** A generic Activity for CRUD operations
   * @author Eric Pabst (epabst@gmail.com)
@@ -20,7 +21,7 @@ class CrudActivity extends BaseCrudActivity { self =>
 
     withExceptionReporting {
       if (savedInstanceState == null) {
-        setContentView(crudType.entryLayout)
+        setContentView(entryLayout)
         val currentPath = currentUriPath
         if (crudApplication.maySpecifyEntityInstance(currentPath, entityType)) {
           populateFromUri(entityType, currentPath)

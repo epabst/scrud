@@ -1,8 +1,8 @@
 package com.github.scrud.android
 
 import action.{Operation, ActivityWithState}
-import common.UriPath
-import persistence.EntityType
+import com.github.scrud.{UriPath, CrudApplication, EntityType}
+import com.github.scrud.persistence.CrudPersistence
 
 /** An operation that interacts with an entity's persistence.
   * The CrudContext is available as persistence.crudContext to implementing classes.
