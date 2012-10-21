@@ -21,7 +21,7 @@ libraryDependencies += "org.scalatest" %% "scalatest" % "1.8" % "test"
 libraryDependencies += "org.slf4j" % "slf4j-jdk14" % "1.6.1" % "test"
 
 // Don't include this when running simple unit tests since slf4j-jdk14 should be used then.
-fullClasspath in Test ~= { classpath => classpath.filter { entry => println("considering '" + entry.data.getName + "'"); !entry.data.getName.contains("slf4j-android") } }
+fullClasspath in Test ~= { classpath => classpath.filter { entry => !entry.data.getName.contains("slf4j-android") } }
 
 libraryDependencies += "org.mockito" % "mockito-core" % "1.8.5" % "test"
 
