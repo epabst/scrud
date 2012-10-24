@@ -75,15 +75,13 @@ class CrudBackupAgent(application: CrudApplication) extends BackupAgent with Con
     info("Backing up " + application)
     DeletedEntityIdCrudType.writeEntityRemovals(data, this)
     val crudContext = new CrudContext(this, application)
-    application.allCrudTypes.foreach(_ match {
-      case crudType if crudType.persistenceFactory.canSave => onBackup(crudType, data, crudContext)
-      case _ => //skip
-    })
+    application.allEntityTypes.filter(application.isSavable(_)).foreach { entityType =>
+      onBackup(entityType, data, crudContext)
+    }
   }
 
-  def onBackup(crudType: CrudType, data: BackupTarget, crudContext: CrudContext) {
-    import crudType._
-    withEntityPersistence[Unit](crudContext) { persistence =>
+  def onBackup(entityType: EntityType, data: BackupTarget, crudContext: CrudContext) {
+    crudContext.withEntityPersistence[Unit](entityType) { persistence =>
       persistence.findAll(UriPath.EMPTY).foreach { entity =>
         val map = entityType.copyAndUpdate(entity, Map[String,Any]())
         val id = PersistedId.getRequired(entity)
@@ -181,12 +179,12 @@ object DeletedEntityIdCrudType extends CrudType(DeletedEntityIdEntityType, SQLit
     val writable = DeletedEntityIdEntityType.copyAndUpdate(
       Map(DeletedEntityIdEntityType.entityNameField.name -> entityType.entityName.name,
         DeletedEntityIdEntityType.entityIdField.name -> id), crudContext.application.newWritable(entityType))
-    withEntityPersistence(crudContext) { _.save(None, writable) }
+    crudContext.withEntityPersistence(entityType) { _.save(None, writable) }
   }
 
   def writeEntityRemovals(data: BackupTarget, context: ContextWithState) {
     val crudContext = new CrudContext(context, application)
-    withEntityPersistence(crudContext) { persistence =>
+    crudContext.withEntityPersistence(entityType) { persistence =>
       persistence.findAll(UriPath.EMPTY).foreach { entity =>
         val deletedEntityName: String = DeletedEntityIdEntityType.entityNameField.getRequired(entity)
         val deletedId: ID = DeletedEntityIdEntityType.entityIdField.getRequired(entity)

@@ -20,18 +20,21 @@ case class CrudContext(activityContext: ContextWithState, application: CrudAppli
   lazy val applicationState: State = activityContext.applicationState
 
   def dataListenerHolder(entityType: EntityType) =
-    application.crudType(entityType).persistenceFactory.listenerHolder(entityType, this)
+    application.persistenceFactory(entityType).listenerHolder(entityType, this)
 
   def openEntityPersistence(entityType: EntityType): CrudPersistence =
-    application.crudType(entityType).openEntityPersistence(this)
+    application.persistenceFactory(entityType).createEntityPersistence(entityType, this)
 
   /** This is final so that it will call the similar method even when mocking, making mocking easier when testing. */
   final def withEntityPersistence[T](entityType: EntityType)(f: CrudPersistence => T): T =
     withEntityPersistence_uncurried(entityType, f)
 
   /** This is useful for unit testing because it is much easier to mock than its counterpart. */
-  def withEntityPersistence_uncurried[T](entityType: EntityType, f: CrudPersistence => T): T =
-    application.crudType(entityType).withEntityPersistence(this)(f)
+  def withEntityPersistence_uncurried[T](entityType: EntityType, f: CrudPersistence => T): T = {
+    val persistence = openEntityPersistence(entityType)
+    try f(persistence)
+    finally persistence.close()
+  }
 
   def addCachedActivityStateListener(listener: CachedStateListener) {
     CachedStateListeners.get(this) += listener

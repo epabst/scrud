@@ -17,7 +17,7 @@ class ForeignKeySpec extends MustMatchers with EasyMockSugar {
   @Test
   def shouldGetCriteriaCorrectlyForForeignKey() {
     val foreign = foreignKey(MyEntity)
-    val uri = UriPath(MyCrudType.entityName, 19)
+    val uri = UriPath(MyEntityType.entityName, 19)
     //add on extra stuff to make sure it is ignored
     val uriWithExtraStuff = uri / "foo" / 1234
     val criteria = foreign.copyAndUpdate(uriWithExtraStuff, new SQLiteCriteria)

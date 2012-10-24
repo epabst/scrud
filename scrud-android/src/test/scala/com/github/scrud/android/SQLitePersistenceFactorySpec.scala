@@ -116,18 +116,18 @@ class SQLitePersistenceFactorySpec extends MustMatchers with CrudMockitoSugar wi
 
     val writable = application.newWritable(TestEntityType)
     TestEntityType.copy(PortableField.UseDefaults, writable)
-    val id = TestCrudType.withEntityPersistence(crudContext) { _.save(None, writable) }
+    val id = crudContext.withEntityPersistence(TestEntityType) { _.save(None, writable) }
     //it must have refreshed the listAdapter
     listAdapter.getCount must be (if (runningOnRealAndroid) 1 else 0)
 
     TestEntityType.copy(Map("age" -> 50), writable)
     listAdapter.registerDataSetObserver(observer)
-    TestCrudType.withEntityPersistence(crudContext) { _.save(Some(id), writable) }
+    crudContext.withEntityPersistence(TestEntityType) { _.save(Some(id), writable) }
     //it must have refreshed the listAdapter (notified the observer)
     listAdapter.unregisterDataSetObserver(observer)
     listAdapter.getCount must be (if (runningOnRealAndroid) 1 else 0)
 
-    TestCrudType.withEntityPersistence(crudContext) { _.delete(TestEntityType.toUri(id)) }
+    crudContext.withEntityPersistence(TestEntityType) { _.delete(TestEntityType.toUri(id)) }
     //it must have refreshed the listAdapter
     listAdapter.getCount must be (0)
   }

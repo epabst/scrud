@@ -24,8 +24,7 @@ class SampleApplicationSpec extends FunSpec with MustMatchers with MockitoSugar 
 
   describe("Author") {
     it("must have the right children") {
-      application.AuthorCrudType.childEntities(application) must
-              be (List[CrudType](application.BookCrudType))
+      application.childEntityNames(Author) must be(List(Book))
     }
 
     it("must calculate the book count") {
@@ -34,11 +33,10 @@ class SampleApplicationSpec extends FunSpec with MustMatchers with MockitoSugar 
         override val activityState = new State {}
       }
       val factory = GeneratedPersistenceFactory(new ListBufferCrudPersistence(Map.empty[String, Any], _, crudContext))
-      val bookCrudType = new CrudType(BookEntityType, factory)
-      val bookPersistence = bookCrudType.openEntityPersistence(crudContext).asInstanceOf[ListBufferCrudPersistence[Map[String,Any]]]
+      val bookPersistence = factory.createEntityPersistence(BookEntityType, crudContext).asInstanceOf[ListBufferCrudPersistence[Map[String,Any]]]
       bookPersistence.buffer += Map.empty[String,Any] += Map.empty[String,Any]
 
-      stub(application.crudType(BookEntityType)).toReturn(bookCrudType)
+      stub(application.persistenceFactory(BookEntityType)).toReturn(factory)
       val authorData = AuthorEntityType.copyAndUpdate(GetterInput(AuthorEntityType.toUri(100L), crudContext), Map.empty[String,Any])
       authorData must be (Map[String,Any](idFieldName -> 100L, "bookCount" -> 2))
     }

@@ -6,7 +6,7 @@ import android.content.ContentValues
 import com.github.scrud.platform.PlatformTypes._
 import persistence._
 import scala.None
-import collection.mutable.SynchronizedQueue
+import collection.mutable
 import android.app.backup.BackupManager
 import android.database.sqlite.{SQLiteOpenHelper, SQLiteDatabase}
 import com.github.triangle.{GetterInput, PortableField, Logging}
@@ -26,7 +26,7 @@ class SQLiteEntityPersistence(val entityType: EntityType, val crudContext: CrudC
   lazy val entityTypePersistedInfo = EntityTypePersistedInfo(entityType)
   private lazy val backupManager = new BackupManager(crudContext.activityContext)
   private lazy val deletedEntityIdCrudType = DeletedEntityIdCrudType
-  private val cursors = new SynchronizedQueue[Cursor]
+  private val cursors = new mutable.SynchronizedQueue[Cursor]
   private def toOption(string: String): Option[String] = if (string == "") None else Some(string)
 
   def findAll(criteria: SQLiteCriteria): CursorStream = {
@@ -108,9 +108,7 @@ class GeneratedDatabaseSetup(crudContext: CrudContext)
 
   private def createMissingTables(db: SQLiteDatabase) {
     val application = crudContext.application
-    for (entityType <- application.allCrudTypes.collect {
-      case c if c.persistenceFactory.canSave => c
-    }.map(_.entityType)) {
+    application.allEntityTypes.filter(application.isSavable(_)).foreach { entityType =>
       val buffer = new StringBuffer
       buffer.append("CREATE TABLE IF NOT EXISTS ").append(SQLitePersistenceFactory.toTableName(entityType.entityName)).append(" (").
         append(BaseColumns._ID).append(" INTEGER PRIMARY KEY AUTOINCREMENT")

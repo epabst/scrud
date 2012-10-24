@@ -1,9 +1,8 @@
 package com.github.scrud
 
-import android.persistence.CursorField
+import android.persistence.CursorField.PersistedId
 import com.github.triangle._
 import platform.PlatformTypes._
-import CursorField.PersistedId
 import util.Common
 
 /** An entity configuration that provides information needed to map data to and from persistence.
@@ -13,6 +12,8 @@ import util.Common
   */
 abstract class EntityType(val entityName: EntityName) extends FieldList with Logging {
   override lazy val logTag = Common.tryToEvaluate(entityName.name).getOrElse(Common.logTag)
+
+  trace("Instantiated EntityType: " + this)
 
   def UriPathId = entityName.UriPathId
 

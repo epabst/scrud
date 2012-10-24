@@ -35,7 +35,7 @@ class CrudActivitySpec extends CrudMockitoSugar with MustMatchers {
     val entity = Map[String,Any]("name" -> "Bob", "age" -> 25)
     val uri = UriPath(_crudType.entityType.entityName)
     val activity = new CrudActivity {
-      override lazy val crudType = _crudType
+      override lazy val entityType = _crudType.entityType
       override def crudApplication = application
 
       override lazy val currentAction = UpdateActionName
@@ -56,7 +56,7 @@ class CrudActivitySpec extends CrudMockitoSugar with MustMatchers {
     val entity = mutable.Map[String,Any]("name" -> "Bob", "age" -> 25)
     val uri = UriPath(_crudType.entityType.entityName)
     val activity = new CrudActivity {
-      override lazy val crudType = _crudType
+      override lazy val entityType = _crudType.entityType
       override def crudApplication = application
 
       override lazy val currentAction = UpdateActionName
@@ -78,7 +78,7 @@ class CrudActivitySpec extends CrudMockitoSugar with MustMatchers {
     val uri = UriPath(_crudType.entityType.entityName) / 101
     stub(persistence.find(uri)).toReturn(Some(entity))
     val activity = new CrudActivity {
-      override lazy val crudType = _crudType
+      override lazy val entityType = _crudType.entityType
       override def crudApplication = application
 
       override lazy val currentAction = UpdateActionName
@@ -100,7 +100,7 @@ class CrudActivitySpec extends CrudMockitoSugar with MustMatchers {
     val _crudType = new MyCrudType(persistence)
     val application = MyCrudApplication(_crudType)
     val activity = new CrudActivity {
-      override lazy val crudType = _crudType
+      override lazy val entityType = _crudType.entityType
       override def crudApplication = application
     }
     activity.crudContext.withEntityPersistence(_crudType.entityType) { p => p.findAll(UriPath.EMPTY) }
@@ -112,7 +112,7 @@ class CrudActivitySpec extends CrudMockitoSugar with MustMatchers {
     val _crudType = new MyCrudType(persistence)
     val application = MyCrudApplication(_crudType)
     val activity = new CrudActivity {
-      override lazy val crudType = _crudType
+      override lazy val entityType = _crudType.entityType
       override def crudApplication = application
     }
     try {
@@ -130,7 +130,7 @@ class CrudActivitySpec extends CrudMockitoSugar with MustMatchers {
     val _crudType = new MyCrudType(persistence)
     val application = MyCrudApplication(_crudType)
     val activity = new CrudActivity {
-      override lazy val crudType = _crudType
+      override lazy val entityType = _crudType.entityType
       override def crudApplication = application
     }
     //should not throw an exception
@@ -146,7 +146,7 @@ class CrudActivitySpec extends CrudMockitoSugar with MustMatchers {
     when(persistence.find(uri)).thenReturn(None)
     stub(persistence.save(None, mutable.Map[String,Any]("name" -> "Bob", "age" -> 25, "uri" -> uri.toString))).toReturn(101)
     val activity = new CrudActivity {
-      override lazy val crudType = _crudType
+      override lazy val entityType = _crudType.entityType
       override def crudApplication = application
 
       override def future[T](body: => T): Future[T] = new ReadyFuture[T](body)

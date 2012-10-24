@@ -30,7 +30,7 @@ class CrudListActivity extends ListActivity with BaseCrudActivity { self =>
       setListAdapterUsingUri(crudContext, this)
       future {
         populateFromParentEntities()
-        crudType.persistenceFactory.addListener(new DataListener {
+        persistenceFactory.addListener(new DataListener {
           def onChanged(uri: UriPath) {
             //Some of the parent fields may be calculated from the children
             populateFromParentEntities()
@@ -43,7 +43,8 @@ class CrudListActivity extends ListActivity with BaseCrudActivity { self =>
   private[scrud] def populateFromParentEntities() {
     val uriPath = currentUriPath
     //copy each parent Entity's data to the Activity if identified in the currentUriPath
-    crudType.parentEntityTypes(crudApplication).foreach { parentType =>
+    entityType.parentEntityNames.foreach { parentEntityName =>
+      val parentType = crudApplication.entityType(parentEntityName)
       if (crudApplication.maySpecifyEntityInstance(uriPath, parentType)) {
         populateFromUri(parentType, uriPath)
       }

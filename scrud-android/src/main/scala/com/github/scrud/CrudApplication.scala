@@ -46,8 +46,8 @@ trait CrudApplication extends Logging {
   def classNamePrefix: String = getClass.getSimpleName.replace("$", "").stripSuffix("Application")
   def packageName: String = getClass.getPackage.getName
 
-  /** All entities in the application, in priority order of most interesting first. */
-  def allCrudTypes: Seq[CrudType]
+  /** All entities in the application, in order as shown to users. */
+  protected def allCrudTypes: Seq[CrudType]
   def allEntityTypes: Seq[EntityType] = allCrudTypes.map(_.entityType)
 
   /** The EntityType for the first page of the App. */
@@ -61,19 +61,26 @@ trait CrudApplication extends Logging {
   // The first EntityType is used as the default starting point.
   lazy val defaultContentUri = UriPath("content://" + contentProviderAuthority) / primaryEntityType.entityName
 
-  def childEntityTypes(entityType: EntityType): Seq[EntityType] = crudType(entityType).childEntityTypes(this)
+  def childEntityNames(entityName: EntityName): Seq[EntityName] = childEntityTypes(entityType(entityName)).map(_.entityName)
 
-  final def withEntityPersistence[T](entityType: EntityType, activity: ActivityWithState)(f: CrudPersistence => T): T = {
-    crudType(entityType).withEntityPersistence(new CrudContext(activity, this))(f)
+  def childEntityTypes(entityType: EntityType): Seq[EntityType] = {
+    trace("childEntities: allCrudTypes=" + allEntityTypes + " self=" + entityType)
+    allEntityTypes.filter { nextEntity =>
+      val parentEntityNames = nextEntity.parentEntityNames
+      trace("childEntities: parents of " + nextEntity + " are " + parentEntityNames)
+      parentEntityNames.contains(entityType.entityName)
+    }
   }
 
-  def crudType(entityType: EntityType): CrudType =
-    allCrudTypes.find(_.entityType == entityType).getOrElse(throw new NoSuchElementException(entityType + " not found"))
+  final def withEntityPersistence[T](entityType: EntityType, activity: ActivityWithState)(f: CrudPersistence => T): T = {
+    new CrudContext(activity, this).withEntityPersistence(entityType)(f)
+  }
 
-  def crudType(entityName: EntityName): CrudType = crudType(entityType(entityName))
+  private def crudType(entityName: EntityName): CrudType =
+    allCrudTypes.find(_.entityType.entityName == entityName).getOrElse(throw new NoSuchElementException(entityName + " not found"))
 
-  private def persistenceFactory(entityName: EntityName): PersistenceFactory = crudType(entityName).persistenceFactory
-  private def persistenceFactory(entityType: EntityType): PersistenceFactory = persistenceFactory(entityType.entityName)
+  def persistenceFactory(entityName: EntityName): PersistenceFactory = crudType(entityName).persistenceFactory
+  def persistenceFactory(entityType: EntityType): PersistenceFactory = persistenceFactory(entityType.entityName)
 
   def newWritable(entityType: EntityType): AnyRef = persistenceFactory(entityType).newWritable
 

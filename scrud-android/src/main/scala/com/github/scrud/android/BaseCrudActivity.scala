@@ -11,7 +11,7 @@ import com.github.scrud.platform.PlatformTypes._
 import com.github.scrud.android.view.AndroidConversions._
 import android.os.Bundle
 import com.github.triangle._
-import persistence.{CursorStream, EntityTypePersistedInfo}
+import persistence.{EntityTypePersistedInfo, CursorStream}
 import view.AndroidResourceAnalyzer._
 import view._
 import android.app.Activity
@@ -42,21 +42,18 @@ trait BaseCrudActivity extends ActivityWithState with OptionsMenuActivity with L
 
   def crudApplication: CrudApplication = super.getApplication.asInstanceOf[CrudAndroidApplication].application
 
-  lazy val crudType: CrudType = crudApplication.allCrudTypes.find(crudType => Some(crudType.entityName.name) == currentUriPath.lastEntityNameOption).getOrElse {
+  lazy val entityType = crudApplication.allEntityTypes.find(entityType => Some(entityType.entityName.name) == currentUriPath.lastEntityNameOption).getOrElse {
     throw new IllegalStateException("No valid entityName in " + currentUriPath)
   }
 
-  final def entityType = crudType.entityType
   def entityName = entityType.entityName
-
-  lazy val entityTypePersistedInfo = EntityTypePersistedInfo(entityType)
 
   /** Instantiates a data buffer which can be saved by EntityPersistence.
     * The fields must support copying into this object.
     */
   def newWritable = persistenceFactory.newWritable
 
-  protected def persistenceFactory: PersistenceFactory = crudType.persistenceFactory
+  protected lazy val persistenceFactory: PersistenceFactory = crudApplication.persistenceFactory(entityType)
 
   override def setIntent(newIntent: Intent) {
     info("Current Intent: " + newIntent)
@@ -87,7 +84,7 @@ trait BaseCrudActivity extends ActivityWithState with OptionsMenuActivity with L
 
   lazy val currentAction: String = getIntent.getAction
 
-  def uriWithId(id: ID): UriPath = currentUriPath.specify(entityType.entityName, id)
+  def uriWithId(id: ID): UriPath = currentUriPath.specify(entityName, id)
 
   lazy val crudContext = new CrudContext(this, crudApplication)
 
@@ -249,7 +246,7 @@ trait BaseCrudActivity extends ActivityWithState with OptionsMenuActivity with L
   }
 
   def addDataListener(listener: DataListener, crudContext: CrudContext) {
-    crudType.persistenceFactory.addListener(listener, entityType, crudContext)
+    persistenceFactory.addListener(listener, entityType, crudContext)
   }
 
   final def setListAdapterUsingUri(crudContext: CrudContext, activity: CrudListActivity) {
@@ -257,6 +254,7 @@ trait BaseCrudActivity extends ActivityWithState with OptionsMenuActivity with L
   }
 
   private def createAdapter[A <: Adapter](persistence: CrudPersistence, uriPath: UriPath, entityType: EntityType, crudContext: CrudContext, contextItems: GetterInput, activity: Activity, itemLayout: LayoutKey, adapterView: AdapterView[A]): AdapterCaching = {
+    val entityTypePersistedInfo = EntityTypePersistedInfo(entityType)
     val findAllResult = persistence.findAll(uriPath)
     findAllResult match {
       case CursorStream(cursor, _) =>

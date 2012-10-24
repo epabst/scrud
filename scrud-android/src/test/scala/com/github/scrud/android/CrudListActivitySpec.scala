@@ -84,7 +84,7 @@ class CrudListActivitySpec extends MustMatchers with CrudMockitoSugar {
     val _crudType = MyCrudType
     val application = MyCrudApplication(_crudType)
     val activity = new CrudListActivity {
-      override lazy val crudType = _crudType
+      override lazy val entityType = _crudType.entityType
       override def crudApplication = application
     }
     activity.onCreateContextMenu(contextMenu, ignoredView, ignoredMenuInfo)
@@ -102,7 +102,7 @@ class CrudListActivitySpec extends MustMatchers with CrudMockitoSugar {
       override def actionsForEntity(entityType: EntityType) = Nil
     }
     val activity = new CrudListActivity {
-      override lazy val crudType = _crudType
+      override lazy val entityType = _crudType.entityType
       override def crudApplication = application
     }
     //shouldn't do anything
@@ -127,7 +127,7 @@ class CrudListActivitySpec extends MustMatchers with CrudMockitoSugar {
     val _crudType = new MyCrudType(entityType, persistenceFactory)
     val application = MyCrudApplication(_crudType)
     class MyCrudListActivity extends CrudListActivity {
-      override lazy val crudType = _crudType
+      override lazy val entityType = _crudType.entityType
       override def crudApplication = application
 
       //make it public for testing
@@ -155,7 +155,7 @@ class CrudListActivitySpec extends MustMatchers with CrudMockitoSugar {
     val application = mock[CrudApplication]
     val _crudType = MyCrudType
     val activity = new CrudListActivity {
-      override lazy val crudType = _crudType
+      override lazy val entityType = _crudType.entityType
       override def crudApplication = application
     }
     // should do nothing

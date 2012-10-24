@@ -22,8 +22,6 @@ case class SingletonWithChangeLogCrudPersistence(manyPersistence: CrudPersistenc
     def onChanged(uri: UriPath) { cachedFindAll.clear() }
   }
 
-  def crudType = manyPersistence.crudContext.application.crudType(entityType)
-
   private lazy val cachedFindAll: CachedFunction[UriPath,Seq[AnyRef]] = {
     val function = CachedFunction((uri: UriPath) => manyPersistence.findAll(uri).take(1))
     listenerHolder.addListener(cacheClearingListener)

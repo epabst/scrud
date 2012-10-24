@@ -19,7 +19,7 @@ class CrudTypeActionsSpec extends MustMatchers with CrudMockitoSugar {
   val isShadowing = true
   val application = MyCrudApplication(MyCrudType)
 
-  import MyCrudType.entityName
+  import MyEntityType.entityName
 
   val Action(_, createOperation: StartActivityOperation) = application.actionToCreate(MyEntityType).get
   val Action(_, listOperation: StartActivityOperation) = application.actionToList(MyEntityType).get
