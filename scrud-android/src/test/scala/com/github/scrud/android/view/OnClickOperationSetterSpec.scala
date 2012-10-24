@@ -7,7 +7,7 @@ import org.scalatest.mock.MockitoSugar
 import org.mockito.Mockito._
 import org.mockito.Matchers._
 import android.view.View
-import com.github.scrud.android.action.{ActivityWithState, Operation}
+import com.github.scrud.android.action.{ActivityWithState, AndroidOperation}
 import com.github.scrud.CrudApplication
 import com.github.scrud.android.CrudContext
 import com.github.triangle.{GetterInput, PortableField}
@@ -20,7 +20,7 @@ import com.github.scrud.UriPath
 class OnClickOperationSetterSpec extends MockitoSugar {
   @Test
   def itMustSetOnClickListenerWhenClicableIsTrue() {
-    val operation = mock[Operation]
+    val operation = mock[AndroidOperation]
     val view = mock[View]
     stub(view.isClickable).toReturn(true)
     val setter = OnClickOperationSetter[Unit](_ => operation)
@@ -30,7 +30,7 @@ class OnClickOperationSetterSpec extends MockitoSugar {
 
   @Test
   def itMustNotSetOnClickListenerWhenClickableIsFalse() {
-    val operation = mock[Operation]
+    val operation = mock[AndroidOperation]
     val view = mock[View]
     stub(view.isClickable).toReturn(false)
     val setter = OnClickOperationSetter[Unit](_ => operation)

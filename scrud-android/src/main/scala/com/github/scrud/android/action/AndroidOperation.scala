@@ -28,12 +28,12 @@ case class Command(icon: Option[ImgKey], title: Option[SKey], viewRef: Option[Vi
 }
 
 /** Represents an operation that a user can initiate. */
-trait Operation {
+trait AndroidOperation {
   /** Runs the operation, given the uri and the current state of the application. */
   def invoke(uri: UriPath, activity: ActivityWithState)
 }
 
-object Operation {
+object AndroidOperation {
   val CreateActionName = Intent.ACTION_INSERT
   val ListActionName = Intent.ACTION_PICK
   val DisplayActionName = Intent.ACTION_VIEW
@@ -53,7 +53,7 @@ object Operation {
 /** Represents an action that a user can initiate.
   * It's equals/hashCode MUST be implemented in order to suppress the action that is already happening.
   */
-case class Action(command: Command, operation: Operation) {
+case class Action(command: Command, operation: AndroidOperation) {
   def commandId: CommandId = command.commandId
 
   def invoke(uri: UriPath, activity: ActivityWithState) {
@@ -65,7 +65,7 @@ case class RichIntent(intent: Intent) {
   def uriPath: UriPath = intent.getData
 }
 
-trait StartActivityOperation extends Operation {
+trait StartActivityOperation extends AndroidOperation {
   def determineIntent(uri: UriPath, activity: ActivityWithState): Intent
 
   def invoke(uri: UriPath, activity: ActivityWithState) {
@@ -78,7 +78,7 @@ trait BaseStartActivityOperation extends StartActivityOperation {
 
   def activityClass: Class[_ <: Activity]
 
-  def determineIntent(uri: UriPath, activity: ActivityWithState): Intent = Operation.constructIntent(action, uri, activity, activityClass)
+  def determineIntent(uri: UriPath, activity: ActivityWithState): Intent = AndroidOperation.constructIntent(action, uri, activity, activityClass)
 }
 
 /** An Operation that starts an Activity using the provided Intent.
@@ -90,7 +90,7 @@ class StartActivityOperationFromIntent(intent: => Intent) extends StartActivityO
 //final to guarantee equality is correct
 final case class StartNamedActivityOperation(action: String, activityClass: Class[_ <: Activity]) extends BaseStartActivityOperation
 
-trait EntityOperation extends Operation {
+trait EntityOperation extends AndroidOperation {
   def entityName: EntityName
   def action: String
 }

@@ -4,7 +4,7 @@ import com.github.scrud.EntityType
 
 /**
  * An Create, Read, Update, or Delete operation on an EntityType.
- * This is related to [[com.github.scrud.android.action.Operation]] but this one does not assume the Android platform.
+ * This is related to [[com.github.scrud.android.action.AndroidOperation]] but this one does not assume the Android platform.
  * @author Eric Pabst (epabst@gmail.com)
  * Date: 10/3/12
  * Time: 6:42 PM

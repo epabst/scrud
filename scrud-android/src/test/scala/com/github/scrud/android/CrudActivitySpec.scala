@@ -1,13 +1,13 @@
 package com.github.scrud.android
 
-import action.Operation
+import action.AndroidOperation
 import org.junit.Test
 import org.junit.runner.RunWith
 import com.xtremelabs.robolectric.RobolectricTestRunner
 import persistence.CursorField
 import scala.collection.mutable
 import org.scalatest.matchers.MustMatchers
-import Operation._
+import AndroidOperation._
 import android.widget.ListAdapter
 import java.lang.IllegalStateException
 import com.github.scrud.UriPath
@@ -151,7 +151,7 @@ class CrudActivitySpec extends CrudMockitoSugar with MustMatchers {
 
       override def future[T](body: => T): Future[T] = new ReadyFuture[T](body)
     }
-    activity.setIntent(constructIntent(Operation.CreateActionName, uri, activity, null))
+    activity.setIntent(constructIntent(AndroidOperation.CreateActionName, uri, activity, null))
     activity.onCreate(null)
     //simulate a user entering data
     _crudType.entityType.copy(entity, activity)

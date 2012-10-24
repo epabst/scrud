@@ -1,6 +1,6 @@
 package com.github.scrud.android
 
-import action.{Operation, ActivityWithState}
+import action.{AndroidOperation, ActivityWithState}
 import com.github.scrud.{UriPath, CrudApplication, EntityType}
 import com.github.scrud.persistence.CrudPersistence
 
@@ -8,7 +8,7 @@ import com.github.scrud.persistence.CrudPersistence
   * The CrudContext is available as persistence.crudContext to implementing classes.
   * @author Eric Pabst (epabst@gmail.com)
   */
-abstract class PersistenceOperation(entityType: EntityType, val application: CrudApplication) extends Operation {
+abstract class PersistenceOperation(entityType: EntityType, val application: CrudApplication) extends AndroidOperation {
   def invoke(uri: UriPath, persistence: CrudPersistence)
 
   def invoke(uri: UriPath, activity: ActivityWithState) {

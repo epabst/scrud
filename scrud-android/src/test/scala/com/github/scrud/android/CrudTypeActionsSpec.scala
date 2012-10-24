@@ -7,7 +7,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import com.xtremelabs.robolectric.RobolectricTestRunner
 import org.scalatest.matchers.MustMatchers
-import com.github.scrud.android.action.Operation.toRichItent
+import com.github.scrud.android.action.AndroidOperation.toRichItent
 import com.github.scrud.util.CrudMockitoSugar
 
 /** A test for [[com.github.scrud.android.CrudListActivity]].

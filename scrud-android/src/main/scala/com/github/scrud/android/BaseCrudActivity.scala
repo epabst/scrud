@@ -73,13 +73,13 @@ trait BaseCrudActivity extends ActivityWithState with OptionsMenuActivity with L
   def currentCrudOperation: CrudOperation = CrudOperation(entityType, currentCrudOperationType)
 
   private def currentCrudOperationType: CrudOperationType.Value = currentAction match {
-    case Operation.CreateActionName => CrudOperationType.Create
-    case Operation.ListActionName => CrudOperationType.List
+    case AndroidOperation.CreateActionName => CrudOperationType.Create
+    case AndroidOperation.ListActionName => CrudOperationType.List
     // This would normally be Operation.ListActionName, but it is the starting intent.
     case Intent.ACTION_MAIN => CrudOperationType.List
-    case Operation.DisplayActionName => CrudOperationType.Read
-    case Operation.UpdateActionName => CrudOperationType.Update
-    case Operation.DeleteActionName => CrudOperationType.Delete
+    case AndroidOperation.DisplayActionName => CrudOperationType.Read
+    case AndroidOperation.UpdateActionName => CrudOperationType.Update
+    case AndroidOperation.DeleteActionName => CrudOperationType.Delete
   }
 
   lazy val currentAction: String = getIntent.getAction
@@ -313,4 +313,4 @@ trait BaseCrudActivity extends ActivityWithState with OptionsMenuActivity with L
   * @param closeOperation  An operation that releases any resources, and is guaranteed to be called.
   *           For example, deleting related entities if undo was not called.
   */
-case class Undoable(undoAction: Action, closeOperation: Option[Operation] = None)
+case class Undoable(undoAction: Action, closeOperation: Option[AndroidOperation] = None)
