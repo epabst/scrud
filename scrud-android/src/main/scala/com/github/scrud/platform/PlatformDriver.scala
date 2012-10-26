@@ -1,6 +1,7 @@
 package com.github.scrud.platform
 
 import com.github.triangle.Logging
+import com.github.scrud.persistence.PersistenceFactory
 
 /**
  * An API for an app to interact with the host platform such as Android.
@@ -16,6 +17,8 @@ import com.github.triangle.Logging
  *         Time: 9:57 PM
  */
 trait PlatformDriver extends Logging {
+
+  def localDatabasePersistenceFactory: PersistenceFactory
 
   /**
    * Display a message to the user temporarily.

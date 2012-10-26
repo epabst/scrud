@@ -16,6 +16,8 @@ import com.github.scrud.platform.PlatformDriver
 class AndroidPlatformDriver(activityContext: Context, val logTag: String) extends PlatformDriver with Timing {
   def platformDriver = this
 
+  lazy val localDatabasePersistenceFactory = new SQLitePersistenceFactory
+
   def displayMessageToUser(message: String) {
     Toast.makeText(activityContext, message, Toast.LENGTH_LONG).show()
   }
