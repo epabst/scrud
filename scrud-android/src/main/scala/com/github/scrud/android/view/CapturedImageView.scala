@@ -12,7 +12,7 @@ import android.graphics.BitmapFactory
 import android.graphics.drawable.{BitmapDrawable, Drawable}
 import com.github.scrud.android.action._
 import com.github.scrud.state.ApplicationVar
-import com.github.scrud.android.{CrudContext, CrudContextField}
+import com.github.scrud.{CrudContext, CrudContextField}
 import com.github.scrud.util.{Common, CachedFunction}
 
 /** A ViewField for an image that can be captured using the camera.

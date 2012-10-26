@@ -7,11 +7,8 @@ import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import org.scalatest.mock.MockitoSugar
 import org.mockito.Mockito._
-import com.github.scrud.android._
-import com.github.scrud.state.State
-import action.ContextWithState
 import com.github.triangle.GetterInput
-import com.github.scrud.CrudApplication
+import com.github.scrud.{SimpleCrudContext, CrudApplication}
 import com.github.scrud.persistence._
 
 /** A behavior specification for [[com.github.scrud.android.sample.AuthorEntityType]]
@@ -29,9 +26,7 @@ class SampleApplicationSpec extends FunSpec with MustMatchers with MockitoSugar 
 
     it("must calculate the book count") {
       val application = mock[CrudApplication]
-      val crudContext = new CrudContext(mock[ContextWithState], application) {
-        override val activityState = new State {}
-      }
+      val crudContext = SimpleCrudContext(application, null)
       val factory = GeneratedPersistenceFactory(new ListBufferCrudPersistence(Map.empty[String, Any], _, crudContext))
       val bookPersistence = factory.createEntityPersistence(BookEntityType, crudContext).asInstanceOf[ListBufferCrudPersistence[Map[String,Any]]]
       bookPersistence.buffer += Map.empty[String,Any] += Map.empty[String,Any]

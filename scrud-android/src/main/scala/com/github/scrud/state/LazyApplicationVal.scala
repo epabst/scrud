@@ -1,6 +1,6 @@
 package com.github.scrud.state
 
-import com.github.scrud.android.CrudContext
+import com.github.scrud.CrudContext
 
 /** Similar to ApplicationVar but allows specifying an initial value, evaluated when first accessed. */
 class LazyApplicationVal[T](lazyExpression: => T) {

@@ -1,9 +1,9 @@
 package com.github.scrud.android.state
 
 import android.os.Bundle
-import com.github.scrud.state.ActivityVar
 import com.github.scrud.util.CachedFunction
-import com.github.scrud.android.CrudContext
+import com.github.scrud.CrudContext
+import com.github.scrud.android.AndroidCrudContext
 
 /** A Function whose results are cached in each Activity. */
 trait CachedActivityFunction[A, B] {
@@ -12,7 +12,7 @@ trait CachedActivityFunction[A, B] {
   /** Specify the actual function to use when the result has not been cached for a given Activity. */
   protected def evaluate(input: A): B
 
-  private def cachedFunction(crudContext: CrudContext) = cachedFunctionVar.getOrSet(crudContext, {
+  private def cachedFunction(crudContext: AndroidCrudContext) = cachedFunctionVar.getOrSet(crudContext, {
     val cachedFunction = CachedFunction[A, B](evaluate)
     crudContext.addCachedActivityStateListener(new CachedStateListener {
       /** Save any cached state into the given bundle before switching context. */
@@ -29,12 +29,12 @@ trait CachedActivityFunction[A, B] {
     cachedFunction
   })
 
-  def apply(crudContext: CrudContext, input: A): B = {
+  def apply(crudContext: AndroidCrudContext, input: A): B = {
     val function = cachedFunction(crudContext)
     function.apply(input)
   }
 
-  def setResult(crudContext: CrudContext, input: A, result: B) {
+  def setResult(crudContext: AndroidCrudContext, input: A, result: B) {
     cachedFunction(crudContext).setResult(input, result)
   }
 

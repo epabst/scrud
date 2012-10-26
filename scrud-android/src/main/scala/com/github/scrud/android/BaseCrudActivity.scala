@@ -86,7 +86,7 @@ trait BaseCrudActivity extends ActivityWithState with OptionsMenuActivity with L
 
   def uriWithId(id: ID): UriPath = currentUriPath.specify(entityName, id)
 
-  lazy val crudContext = new CrudContext(this, crudApplication)
+  lazy val crudContext = new AndroidCrudContext(this, crudApplication)
 
   def contextItems = GetterInput(currentUriPath, crudContext, PortableField.UseDefaults)
 
@@ -155,7 +155,7 @@ trait BaseCrudActivity extends ActivityWithState with OptionsMenuActivity with L
         }
       }
       //todo delete childEntities recursively
-      val context = persistence.crudContext.activityContext
+      val context = crudContext.activityContext
       context match {
         case activity: BaseCrudActivity =>
           activity.allowUndo(Undoable(Action(commandToUndoDelete, undoDeleteOperation), None))
@@ -245,15 +245,15 @@ trait BaseCrudActivity extends ActivityWithState with OptionsMenuActivity with L
     debug("Waited for work in progress for " + (System.currentTimeMillis() - start) + "ms")
   }
 
-  def addDataListener(listener: DataListener, crudContext: CrudContext) {
+  def addDataListener(listener: DataListener, crudContext: AndroidCrudContext) {
     persistenceFactory.addListener(listener, entityType, crudContext)
   }
 
-  final def setListAdapterUsingUri(crudContext: CrudContext, activity: CrudListActivity) {
+  final def setListAdapterUsingUri(crudContext: AndroidCrudContext, activity: CrudListActivity) {
     setListAdapter(activity.getListView, entityType, activity.currentUriPath, crudContext, activity.contextItems, activity, rowLayout)
   }
 
-  private def createAdapter[A <: Adapter](persistence: CrudPersistence, uriPath: UriPath, entityType: EntityType, crudContext: CrudContext, contextItems: GetterInput, activity: Activity, itemLayout: LayoutKey, adapterView: AdapterView[A]): AdapterCaching = {
+  private def createAdapter[A <: Adapter](persistence: CrudPersistence, uriPath: UriPath, entityType: EntityType, crudContext: AndroidCrudContext, contextItems: GetterInput, activity: Activity, itemLayout: LayoutKey, adapterView: AdapterView[A]): AdapterCaching = {
     val entityTypePersistedInfo = EntityTypePersistedInfo(entityType)
     val findAllResult = persistence.findAll(uriPath)
     findAllResult match {
@@ -265,7 +265,7 @@ trait BaseCrudActivity extends ActivityWithState with OptionsMenuActivity with L
           }
         }, crudContext)
         new ResourceCursorAdapter(activity, itemLayout, cursor) with AdapterCaching {
-          def platformDriver = persistence.platformDriver
+          def platformDriver = self.platformDriver
 
           def entityType = self.entityType
 
@@ -277,11 +277,11 @@ trait BaseCrudActivity extends ActivityWithState with OptionsMenuActivity with L
             bindViewFromCacheOrItems(view, cursor.getPosition, row, adapterView, crudContext, contextItems)
           }
         }
-      case _ => new EntityAdapter(entityType, findAllResult, itemLayout, contextItems, persistence.platformDriver, activity.getLayoutInflater)
+      case _ => new EntityAdapter(entityType, findAllResult, itemLayout, contextItems, self.platformDriver, activity.getLayoutInflater)
     }
   }
 
-  private def setListAdapter[A <: Adapter](adapterView: AdapterView[A], persistence: CrudPersistence, uriPath: UriPath, entityType: EntityType, crudContext: CrudContext, contextItems: GetterInput, activity: Activity, itemLayout: LayoutKey) {
+  private def setListAdapter[A <: Adapter](adapterView: AdapterView[A], persistence: CrudPersistence, uriPath: UriPath, entityType: EntityType, crudContext: AndroidCrudContext, contextItems: GetterInput, activity: Activity, itemLayout: LayoutKey) {
     addDataListener(new DataListener {
       def onChanged(uri: UriPath) {
         crudContext.application.FuturePortableValueCache.get(crudContext).clear()
@@ -292,10 +292,10 @@ trait BaseCrudActivity extends ActivityWithState with OptionsMenuActivity with L
     }
     val adapter = callCreateAdapter()
     adapterView.setAdapter(adapter)
-    crudContext.addCachedActivityStateListener(new AdapterCachingStateListener(adapterView, entityType, persistence.platformDriver, crudContext, adapterFactory = callCreateAdapter()))
+    crudContext.addCachedActivityStateListener(new AdapterCachingStateListener(adapterView, entityType, self.platformDriver, crudContext, adapterFactory = callCreateAdapter()))
   }
 
-  def setListAdapter[A <: Adapter](adapterView: AdapterView[A], entityType: EntityType, uriPath: UriPath, crudContext: CrudContext, contextItems: GetterInput, activity: Activity, itemLayout: LayoutKey) {
+  def setListAdapter[A <: Adapter](adapterView: AdapterView[A], entityType: EntityType, uriPath: UriPath, crudContext: AndroidCrudContext, contextItems: GetterInput, activity: Activity, itemLayout: LayoutKey) {
     val persistence = crudContext.openEntityPersistence(entityType)
     crudContext.activityState.addListener(new DestroyStateListener {
       def onDestroyState() {

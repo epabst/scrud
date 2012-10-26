@@ -3,7 +3,7 @@ package com.github.scrud.persistence
 import com.github.scrud.util.CachedFunction
 import com.github.scrud.EntityType
 import collection.mutable
-import com.github.scrud.android.CrudContext
+import com.github.scrud.CrudContext
 
 /**
  * A PersistenceFactory for storing in-memory.

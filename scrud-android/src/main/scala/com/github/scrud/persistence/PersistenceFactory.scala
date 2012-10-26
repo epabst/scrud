@@ -1,7 +1,7 @@
 package com.github.scrud.persistence
 
 import com.github.scrud.{UriPath, EntityType}
-import com.github.scrud.android.CrudContext
+import com.github.scrud.CrudContext
 import com.github.scrud.util.ListenerHolder
 
 /** A factory for EntityPersistence specific to a storage type such as SQLite.

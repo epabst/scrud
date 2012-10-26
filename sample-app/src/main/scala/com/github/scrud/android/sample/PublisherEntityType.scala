@@ -1,9 +1,8 @@
 package com.github.scrud.android.sample
 
 import com.github.scrud
-import scrud.android._
 import scrud.android.persistence.CursorField._
-import scrud.{EntityName, UriField, EntityType}
+import scrud.{CrudContextField, EntityName, UriField, EntityType}
 import scrud.android.view.ViewField._
 import com.github.triangle._
 import scrud.Validation._

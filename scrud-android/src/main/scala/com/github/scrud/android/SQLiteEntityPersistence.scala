@@ -17,7 +17,7 @@ import com.github.scrud.persistence.{CrudPersistence, DataListener}
 /** EntityPersistence for SQLite.
   * @author Eric Pabst (epabst@gmail.com)
   */
-class SQLiteEntityPersistence(val entityType: EntityType, val crudContext: CrudContext, databaseSetup: SQLiteOpenHelper,
+class SQLiteEntityPersistence(val entityType: EntityType, val crudContext: AndroidCrudContext, databaseSetup: SQLiteOpenHelper,
                               protected val listenerSet: ListenerSet[DataListener])
   extends CrudPersistence with DelegatingListenerSet[DataListener] with Logging {
 
@@ -101,7 +101,7 @@ class SQLiteEntityPersistence(val entityType: EntityType, val crudContext: CrudC
   }
 }
 
-class GeneratedDatabaseSetup(crudContext: CrudContext)
+class GeneratedDatabaseSetup(crudContext: AndroidCrudContext)
   extends SQLiteOpenHelper(crudContext.activityContext, crudContext.application.nameId, null, crudContext.application.dataVersion) with Logging {
 
   protected lazy val logTag = Common.tryToEvaluate(crudContext.application.logTag).getOrElse(Common.logTag)

@@ -74,13 +74,13 @@ class CrudBackupAgent(application: CrudApplication) extends BackupAgent with Con
   def onBackup(oldState: ParcelFileDescriptor, data: BackupTarget, newState: ParcelFileDescriptor) {
     info("Backing up " + application)
     DeletedEntityIdCrudType.writeEntityRemovals(data, this)
-    val crudContext = new CrudContext(this, application)
+    val crudContext = new AndroidCrudContext(this, application)
     application.allEntityTypes.filter(application.isSavable(_)).foreach { entityType =>
       onBackup(entityType, data, crudContext)
     }
   }
 
-  def onBackup(entityType: EntityType, data: BackupTarget, crudContext: CrudContext) {
+  def onBackup(entityType: EntityType, data: BackupTarget, crudContext: AndroidCrudContext) {
     crudContext.withEntityPersistence[Unit](entityType) { persistence =>
       persistence.findAll(UriPath.EMPTY).foreach { entity =>
         val map = entityType.copyAndUpdate(entity, Map[String,Any]())
@@ -121,7 +121,7 @@ class CrudBackupAgent(application: CrudApplication) extends BackupAgent with Con
 
   def onRestore(data: Iterator[RestoreItem], appVersionCode: Int, newState: ParcelFileDescriptor) {
     info("Restoring backup of " + application)
-    val crudContext = new CrudContext(this, application)
+    val crudContext = new AndroidCrudContext(this, application)
     val entityTypes = application.allEntityTypes
     data.foreach(restoreItem => {
       val nameOfEntity = restoreItem.key.substring(0, restoreItem.key.lastIndexOf("#"))
@@ -131,7 +131,7 @@ class CrudBackupAgent(application: CrudApplication) extends BackupAgent with Con
     })
   }
 
-  def onRestore(entityType: EntityType, restoreItem: RestoreItem, crudContext: CrudContext) {
+  def onRestore(entityType: EntityType, restoreItem: RestoreItem, crudContext: AndroidCrudContext) {
     debug("Restoring " + restoreItem.key + " <- " + restoreItem.map)
     val id = restoreItem.key.substring(restoreItem.key.lastIndexOf("#") + 1).toLong
     val writable = entityType.copyAndUpdate(restoreItem.map, crudContext.application.newWritable(entityType))
@@ -175,7 +175,7 @@ object DeletedEntityIdCrudType extends CrudType(DeletedEntityIdEntityType, SQLit
     * just like any new entity being added.
     */
   def recordDeletion(entityType: EntityType, id: ID, context: ContextWithState) {
-    val crudContext = new CrudContext(context, application)
+    val crudContext = new AndroidCrudContext(context, application)
     val writable = DeletedEntityIdEntityType.copyAndUpdate(
       Map(DeletedEntityIdEntityType.entityNameField.name -> entityType.entityName.name,
         DeletedEntityIdEntityType.entityIdField.name -> id), crudContext.application.newWritable(entityType))
@@ -183,7 +183,7 @@ object DeletedEntityIdCrudType extends CrudType(DeletedEntityIdEntityType, SQLit
   }
 
   def writeEntityRemovals(data: BackupTarget, context: ContextWithState) {
-    val crudContext = new CrudContext(context, application)
+    val crudContext = new AndroidCrudContext(context, application)
     crudContext.withEntityPersistence(entityType) { persistence =>
       persistence.findAll(UriPath.EMPTY).foreach { entity =>
         val deletedEntityName: String = DeletedEntityIdEntityType.entityNameField.getRequired(entity)

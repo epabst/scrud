@@ -1,7 +1,7 @@
 package com.github.scrud.persistence
 
 import com.github.scrud.{UriPath, EntityType}
-import com.github.scrud.android.CrudContext
+import com.github.scrud.CrudContext
 
 /** A PersistenceFactory that is derived from related CrudType persistence(s).
   * @author Eric Pabst (epabst@gmail.com)

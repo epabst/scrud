@@ -2,7 +2,7 @@ package com.github.scrud.android.sample
 
 import com.github.scrud.android._
 import persistence.CursorField._
-import com.github.scrud.{EntityName, UriField, EntityType}
+import com.github.scrud.{CrudContextField, EntityName, UriField, EntityType}
 import view.ViewField._
 import com.github.triangle._
 import com.github.scrud.Validation._

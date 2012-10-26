@@ -3,7 +3,7 @@ package com.github.scrud.persistence
 import com.github.scrud.util.{CachedFunction, MutableListenerSet}
 import com.github.scrud.EntityType
 import com.github.scrud.state.LazyApplicationVal
-import com.github.scrud.android.CrudContext
+import com.github.scrud.CrudContext
 
 /**
  * A holder of DataListeners.

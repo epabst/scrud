@@ -8,7 +8,7 @@ import android.widget.{Adapter, AdapterView, BaseAdapter}
 import com.github.scrud.platform.PlatformTypes._
 import scala.Some
 import com.github.scrud.action.Timing
-import com.github.scrud.android.{CrudContext, AndroidPlatformDriver}
+import com.github.scrud.android.{AndroidCrudContext, AndroidPlatformDriver}
 import com.github.scrud.android.state.CachedStateListener
 
 trait AdapterCaching extends Logging with Timing { self: BaseAdapter =>
@@ -30,15 +30,15 @@ trait AdapterCaching extends Logging with Timing { self: BaseAdapter =>
     case _ => position
   }
 
-  protected[scrud] def bindViewFromCacheOrItems(view: View, position: Int, parent: ViewGroup, crudContext: CrudContext, contextItems: GetterInput) {
+  protected[scrud] def bindViewFromCacheOrItems(view: View, position: Int, parent: ViewGroup, crudContext: AndroidCrudContext, contextItems: GetterInput) {
     bindViewFromCacheOrItems(view, position, getItem(position), parent, crudContext, contextItems)
   }
 
-  protected[scrud] def bindViewFromCacheOrItems(view: View, position: Int, entityData: AnyRef, parent: ViewGroup, crudContext: CrudContext, contextItems: GetterInput) {
+  protected[scrud] def bindViewFromCacheOrItems(view: View, position: Int, entityData: AnyRef, parent: ViewGroup, crudContext: AndroidCrudContext, contextItems: GetterInput) {
     bindViewFromCacheOrItems(view, entityData, crudContext, contextItems, baseUriPath / getItemId(entityData, position), parent)
   }
 
-  protected[scrud] def bindViewFromCacheOrItems(view: View, entityData: AnyRef, crudContext: CrudContext, contextItems: GetterInput, uriPath: UriPath, adapterView: ViewGroup) {
+  protected[scrud] def bindViewFromCacheOrItems(view: View, entityData: AnyRef, crudContext: AndroidCrudContext, contextItems: GetterInput, uriPath: UriPath, adapterView: ViewGroup) {
     view.setTag(uriPath)
     val application = crudContext.application
     val futurePortableValue = application.futurePortableValue(entityType, uriPath, entityData, crudContext)
@@ -59,7 +59,7 @@ trait AdapterCaching extends Logging with Timing { self: BaseAdapter =>
 }
 
 class AdapterCachingStateListener[A <: Adapter](adapterView: AdapterView[A], entityType: EntityType,
-                                                platformDriver: AndroidPlatformDriver, crudContext: CrudContext, adapterFactory: => A) extends CachedStateListener with Logging {
+                                                platformDriver: AndroidPlatformDriver, crudContext: AndroidCrudContext, adapterFactory: => A) extends CachedStateListener with Logging {
   protected def logTag = entityType.logTag
 
   def onSaveState(outState: Bundle) {

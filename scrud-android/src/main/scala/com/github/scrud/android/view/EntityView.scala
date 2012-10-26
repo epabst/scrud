@@ -1,6 +1,6 @@
 package com.github.scrud.android.view
 
-import com.github.scrud.{UriField, EntityType}
+import com.github.scrud.{CrudContextField, UriField, EntityType}
 import com.github.scrud.platform.PlatformTypes.ID
 import com.github.triangle.PortableField._
 import com.github.triangle._
@@ -8,8 +8,8 @@ import android.widget._
 import android.view.View
 import android.app.Activity
 import xml.NodeSeq
-import com.github.scrud.android.{CrudContextField, BaseCrudActivity}
-import com.github.scrud.android.CrudContext
+import com.github.scrud.android.BaseCrudActivity
+import com.github.scrud.android.AndroidCrudContext
 import scala.Some
 
 /** A ViewField that allows choosing a specific entity of a given EntityType or displaying its fields' values.
@@ -29,7 +29,7 @@ case class EntityView(entityType: EntityType)
   }
 
   protected val delegate = Getter[AdapterView[BaseAdapter], ID](v => Option(v.getSelectedItemId)) + Setter[ID] {
-    case UpdaterInput(adapterView: AdapterView[BaseAdapter], idOpt, UriField(Some(uri)) && CrudContextField(Some(crudContext @ CrudContext(crudActivity: BaseCrudActivity, _)))) =>
+    case UpdaterInput(adapterView: AdapterView[BaseAdapter], idOpt, UriField(Some(uri)) && CrudContextField(Some(crudContext @ AndroidCrudContext(crudActivity: BaseCrudActivity, _)))) =>
       if (idOpt.isDefined || adapterView.getAdapter == null) {
         //don't do it again if already done from a previous time
         if (adapterView.getAdapter == null) {

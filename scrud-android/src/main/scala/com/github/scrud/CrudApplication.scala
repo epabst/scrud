@@ -73,7 +73,7 @@ trait CrudApplication extends Logging {
   }
 
   final def withEntityPersistence[T](entityType: EntityType, activity: ActivityWithState)(f: CrudPersistence => T): T = {
-    new CrudContext(activity, this).withEntityPersistence(entityType)(f)
+    new AndroidCrudContext(activity, this).withEntityPersistence(entityType)(f)
   }
 
   private def crudType(entityName: EntityName): CrudType =

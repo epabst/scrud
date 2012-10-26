@@ -167,7 +167,7 @@ class CrudActivitySpec extends CrudMockitoSugar with MustMatchers {
   def itMustDeleteWithUndoPossibilityWhichMustBeClosable() {
     val persistence = mock[CrudPersistence]
     val activity = mock[CrudActivity]
-    val crudContext = mock[CrudContext]
+    val crudContext = mock[AndroidCrudContext]
     stub(crudContext.activityState).toReturn(new State {})
     val entity = new MyEntityType
     val readable = mutable.Map[String,Any]()
@@ -188,7 +188,7 @@ class CrudActivitySpec extends CrudMockitoSugar with MustMatchers {
   def undoOfDeleteMustWork() {
     val persistence = mock[CrudPersistence]
     val activity = mock[CrudActivity]
-    val crudContext = mock[CrudContext]
+    val crudContext = mock[AndroidCrudContext]
     val entity = MyEntityType
     val readable = mutable.Map[String,Any](CursorField.idFieldName -> 345L, "name" -> "George")
     val uri = UriPath(entity.entityName) / 345L

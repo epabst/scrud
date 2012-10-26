@@ -1,7 +1,7 @@
 package com.github.scrud.android
 
 import org.mockito.Mockito
-import com.github.scrud.{EntityName, CrudApplication, EntityType}
+import com.github.scrud.{CrudContext, EntityName, CrudApplication, EntityType}
 import com.github.scrud.persistence.{PersistenceFactory, CrudPersistence, DataListenerSetValHolder}
 
 /** A simple CrudType for testing.

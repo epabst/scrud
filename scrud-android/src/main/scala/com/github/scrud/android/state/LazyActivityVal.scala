@@ -1,6 +1,6 @@
-package com.github.scrud.state
+package com.github.scrud.android.state
 
-import com.github.scrud.android.CrudContext
+import com.github.scrud.CrudContext
 
 /** Similar to ActivityVar but allows specifying an initial value, evaluated when first accessed. */
 class LazyActivityVal[T](lazyExpression: => T) {

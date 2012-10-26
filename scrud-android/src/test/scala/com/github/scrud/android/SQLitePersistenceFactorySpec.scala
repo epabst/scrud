@@ -64,7 +64,7 @@ class SQLitePersistenceFactorySpec extends MustMatchers with CrudMockitoSugar wi
 
   @Test
   def shouldUseCorrectColumnNamesForFindAll() {
-    val crudContext = mock[CrudContext]
+    val crudContext = mock[AndroidCrudContext]
     stub(crudContext.application).toReturn(application)
 
     val persistence = new SQLiteEntityPersistence(TestEntityType, crudContext, mock[SQLiteOpenHelper], listenerSet)
@@ -74,7 +74,7 @@ class SQLitePersistenceFactorySpec extends MustMatchers with CrudMockitoSugar wi
 
   @Test
   def shouldCloseCursorsWhenClosing() {
-    val crudContext = mock[CrudContext]
+    val crudContext = mock[AndroidCrudContext]
     stub(crudContext.activityState).toReturn(new State {})
     stub(crudContext.application).toReturn(application)
 
@@ -109,7 +109,7 @@ class SQLitePersistenceFactorySpec extends MustMatchers with CrudMockitoSugar wi
     }
     val observer = mock[DataSetObserver]
 
-    val crudContext = new CrudContext(activity, application)
+    val crudContext = new AndroidCrudContext(activity, application)
     activity.setListAdapterUsingUri(crudContext, activity)
     val listAdapter = activity.getListView.getAdapter
     listAdapter.getCount must be (0)
@@ -146,7 +146,7 @@ class SQLitePersistenceFactorySpec extends MustMatchers with CrudMockitoSugar wi
   @Test
   def onCreateShouldCreateTables() {
     val context = mock[MyContextWithVars]
-    val dbSetup = new GeneratedDatabaseSetup(CrudContext(context, application))
+    val dbSetup = new GeneratedDatabaseSetup(AndroidCrudContext(context, application))
     val db = mock[SQLiteDatabase]
     dbSetup.onCreate(db)
     verify(db, times(1)).execSQL(Matchers.contains("CREATE TABLE IF NOT EXISTS"))
@@ -155,7 +155,7 @@ class SQLitePersistenceFactorySpec extends MustMatchers with CrudMockitoSugar wi
   @Test
   def onUpgradeShouldCreateMissingTables() {
     val context = mock[MyContextWithVars]
-    val dbSetup = new GeneratedDatabaseSetup(CrudContext(context, application))
+    val dbSetup = new GeneratedDatabaseSetup(AndroidCrudContext(context, application))
     val db = mock[SQLiteDatabase]
     dbSetup.onUpgrade(db, 1, 2)
     verify(db, times(1)).execSQL(Matchers.contains("CREATE TABLE IF NOT EXISTS"))

@@ -9,7 +9,7 @@ import org.mockito.Matchers._
 import android.view.View
 import com.github.scrud.android.action.{ActivityWithState, AndroidOperation}
 import com.github.scrud.CrudApplication
-import com.github.scrud.android.CrudContext
+import com.github.scrud.android.AndroidCrudContext
 import com.github.triangle.{GetterInput, PortableField}
 import com.github.scrud.UriPath
 
@@ -24,7 +24,7 @@ class OnClickOperationSetterSpec extends MockitoSugar {
     val view = mock[View]
     stub(view.isClickable).toReturn(true)
     val setter = OnClickOperationSetter[Unit](_ => operation)
-    setter.updateWithValue(view, None, GetterInput(UriPath.EMPTY, CrudContext(mock[MyActivityWithState], mock[CrudApplication]), PortableField.UseDefaults))
+    setter.updateWithValue(view, None, GetterInput(UriPath.EMPTY, AndroidCrudContext(mock[MyActivityWithState], mock[CrudApplication]), PortableField.UseDefaults))
     verify(view).setOnClickListener(any())
   }
 
@@ -34,7 +34,7 @@ class OnClickOperationSetterSpec extends MockitoSugar {
     val view = mock[View]
     stub(view.isClickable).toReturn(false)
     val setter = OnClickOperationSetter[Unit](_ => operation)
-    setter.updateWithValue(view, None, GetterInput(UriPath.EMPTY, CrudContext(mock[MyActivityWithState], mock[CrudApplication]), PortableField.UseDefaults))
+    setter.updateWithValue(view, None, GetterInput(UriPath.EMPTY, AndroidCrudContext(mock[MyActivityWithState], mock[CrudApplication]), PortableField.UseDefaults))
     verify(view, never()).setOnClickListener(any())
   }
 }

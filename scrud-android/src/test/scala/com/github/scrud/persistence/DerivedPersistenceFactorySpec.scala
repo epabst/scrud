@@ -7,9 +7,9 @@ import org.scalatest.matchers.MustMatchers
 import org.mockito.Mockito._
 import org.mockito.Matchers
 import com.github.scrud.state.State
-import com.github.scrud.android.{CrudContext, MyEntityType}
+import com.github.scrud.android.MyEntityType
 import com.github.scrud.util.{CrudMockitoSugar, ListenerHolder}
-import com.github.scrud.{UriPath, EntityType}
+import com.github.scrud.{CrudContext, UriPath, EntityType}
 
 /** A specification for [[com.github.scrud.persistence.DerivedPersistenceFactory]].
   * @author Eric Pabst (epabst@gmail.com)
@@ -30,7 +30,6 @@ class DerivedPersistenceFactorySpec extends FunSpec with MustMatchers with CrudM
       }
     }
     val crudContext = mock[CrudContext]
-    stub(crudContext.activityState).toReturn(new State {})
     stub(crudContext.applicationState).toReturn(new State {})
     stub(crudContext.dataListenerHolder(Matchers.any())).toReturn(dataListenerHolder)
     when(crudContext.openEntityPersistence(entityType1)).thenReturn(persistence1)
@@ -46,7 +45,6 @@ class DerivedPersistenceFactorySpec extends FunSpec with MustMatchers with CrudM
       def findAll(entityType: EntityType, uri: UriPath, delegatePersistenceMap: Map[EntityType, CrudPersistence]) = Nil
     }
     val crudContext = mock[CrudContext]
-    stub(crudContext.activityState).toReturn(new State {})
     stub(crudContext.applicationState).toReturn(new State {})
     stub(crudContext.dataListenerHolder(Matchers.any())).toReturn(dataListenerHolder)
     val persistence1 = mock[CrudPersistence]

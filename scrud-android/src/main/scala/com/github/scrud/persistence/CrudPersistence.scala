@@ -5,7 +5,7 @@ import com.github.triangle.Logging
 import com.github.scrud.util.{Common, ListenerSet}
 import com.github.scrud.{IdPk, UriPath, EntityType}
 import com.github.scrud.action.Timing
-import com.github.scrud.android.CrudContext
+import com.github.scrud.CrudContext
 
 /** An EntityPersistence for a CrudType.
   * @author Eric Pabst (epabst@gmail.com)

@@ -13,9 +13,9 @@ import android.view.LayoutInflater
 import android.widget.{BaseAdapter, AdapterView, ListAdapter}
 import com.github.triangle.GetterInput
 import com.github.scrud.state.State
-import com.github.scrud.{EntityType, EntityName, UriPath}
+import com.github.scrud.{CrudContext, EntityType, EntityName, UriPath}
 import com.github.scrud.util.{ListenerHolder, CrudMockitoSugar}
-import com.github.scrud.android.{CrudListActivity, CrudContext}
+import com.github.scrud.android.{AndroidCrudContext, CrudListActivity}
 
 /** A behavior specification for [[com.github.scrud.persistence.GeneratedPersistenceFactory]].
   * @author Eric Pabst (epabst@gmail.com)
@@ -28,7 +28,7 @@ class GeneratedPersistenceFactorySpec extends MustMatchers with CrudMockitoSugar
   val activity = mock[Activity]
   val listAdapterCapture = capturingAnswer[Unit] { Unit }
   val generatedEntityName = EntityName("Generated")
-  val crudContext = mock[CrudContext]
+  val crudContext = mock[AndroidCrudContext]
   val layoutInflater = mock[LayoutInflater]
   val dataListenerHolder = mock[ListenerHolder[DataListener]]
 

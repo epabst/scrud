@@ -1,6 +1,6 @@
 package com.github.scrud.state
 
-import com.github.scrud.android.CrudContext
+import com.github.scrud.CrudContext
 
 /**
  * A variable stored by CrudContext.
