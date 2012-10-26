@@ -18,6 +18,7 @@ trait PersistenceFactory {
   /**
    * Indicates if an entity can be created.
    * It uses canDelete because it assumes that if it can be deleted, it can be created as well.
+   * canCreate uses canDelete because if canList is false, then canDelete is more relevant than canCreate.
    */
   def canCreate: Boolean = canDelete
 
