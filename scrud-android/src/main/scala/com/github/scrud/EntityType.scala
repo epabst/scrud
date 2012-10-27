@@ -2,6 +2,7 @@ package com.github.scrud
 
 import android.persistence.CursorField.PersistedId
 import com.github.triangle._
+import persistence.CrudPersistence
 import platform.PlatformTypes._
 import util.Common
 
@@ -42,6 +43,14 @@ abstract class EntityType(val entityName: EntityName) extends FieldList with Log
   def parentEntityNames: Seq[EntityName] = parentFields.map(_.entityName)
 
   def toUri(id: ID) = UriPath(entityName, id)
+
+  /**
+   * Available to be overridden as needed by applications.
+   * This is especially useful to create any initial data.
+   * @param lowLevelPersistence The CrudPersistence as provided by [[com.github.scrud.platform.PlatformDriver.localDatabasePersistenceFactory]].
+   *                            It is not wrapped by any other CrudPersistence so it may be matched as needed for additional access depending on the platform and implementation.
+   */
+  def onCreateDatabase(lowLevelPersistence: CrudPersistence) {}
 
   lazy val loadingValue: PortableValue = copyFrom(LoadingIndicator)
 

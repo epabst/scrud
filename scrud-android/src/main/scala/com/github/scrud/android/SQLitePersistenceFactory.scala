@@ -25,16 +25,11 @@ class SQLitePersistenceFactory extends PersistenceFactory with DataListenerSetVa
     }
     val persistence = new SQLiteEntityPersistence(entityType, androidCrudContext, databaseSetup, listenerSet(entityType, crudContext))
     if (initialCreate) {
-      onCreateDatabase(persistence)
+      entityType.onCreateDatabase(persistence)
+      persistence.preventRollbackOfPriorOperations()
     }
     persistence
   }
-
-  /**
-   * Available to be overridden as needed by applications.
-   * This is especially useful to create any initial data.
-   */
-  protected def onCreateDatabase(persistence: SQLiteEntityPersistence) {}
 
   def toTableName(entityName: EntityName): String = SQLiteUtil.toNonReservedWord(entityName.name)
 }

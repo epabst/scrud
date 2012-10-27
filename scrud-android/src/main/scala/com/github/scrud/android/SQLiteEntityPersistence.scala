@@ -95,6 +95,10 @@ class SQLiteEntityPersistence(val entityType: EntityType, val crudContext: Andro
     }
   }
 
+  def preventRollbackOfPriorOperations() {
+    // once transactions are supported, this method should end the current one and start a new one
+  }
+
   def close() {
     cursors.map(_.close())
     database.close()
