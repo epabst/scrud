@@ -1,6 +1,6 @@
 package com.github.scrud.action
 
-import com.github.scrud.EntityType
+import com.github.scrud.EntityName
 
 /**
  * An Create, Read, Update, or Delete operation on an EntityType.
@@ -9,7 +9,7 @@ import com.github.scrud.EntityType
  * Date: 10/3/12
  * Time: 6:42 PM
  */
-case class CrudOperation(entityType: EntityType, operationType: CrudOperationType.Value)
+case class CrudOperation(entityName: EntityName, operationType: CrudOperationType.Value)
 
 object CrudOperationType extends Enumeration {
   val Create = Value("Create")

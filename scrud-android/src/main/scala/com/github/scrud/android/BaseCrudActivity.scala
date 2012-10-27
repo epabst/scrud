@@ -62,7 +62,7 @@ trait BaseCrudActivity extends ActivityWithState with OptionsMenuActivity with L
     }).getOrElse(defaultContentUri)
   }
 
-  def currentCrudOperation: CrudOperation = CrudOperation(entityType, currentCrudOperationType)
+  def currentCrudOperation: CrudOperation = CrudOperation(entityName, currentCrudOperationType)
 
   private def currentCrudOperationType: CrudOperationType.Value = currentAction match {
     case AndroidOperation.CreateActionName => CrudOperationType.Create
