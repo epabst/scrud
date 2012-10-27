@@ -8,8 +8,10 @@ import com.github.scrud.persistence.ListBufferPersistenceFactory
  *         Date: 8/28/12
  *         Time: 1:27 PM
  */
-object TestingPlatformDriver extends PlatformDriver {
+class TestingPlatformDriver extends PlatformDriver {
   protected def logTag = getClass.getSimpleName
 
   val localDatabasePersistenceFactory = new ListBufferPersistenceFactory[AnyRef](Map.empty[String,Any])
 }
+
+object TestingPlatformDriver extends TestingPlatformDriver
