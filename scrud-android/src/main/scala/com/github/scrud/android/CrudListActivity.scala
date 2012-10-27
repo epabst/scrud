@@ -18,7 +18,7 @@ class CrudListActivity extends ListActivity with BaseCrudActivity { self =>
 
   override def onCreate(savedInstanceState: Bundle) {
     super.onCreate(savedInstanceState)
-    withExceptionReporting {
+    crudContext.withExceptionReporting {
       setContentView(listLayout)
 
       val view = getListView
@@ -28,7 +28,7 @@ class CrudListActivity extends ListActivity with BaseCrudActivity { self =>
       registerForContextMenu(getListView)
 
       setListAdapterUsingUri(crudContext, this)
-      future {
+      crudContext.future {
         populateFromParentEntities()
         persistenceFactory.addListener(new DataListener {
           def onChanged(uri: UriPath) {
@@ -58,7 +58,7 @@ class CrudListActivity extends ListActivity with BaseCrudActivity { self =>
 
   override def onCreateContextMenu(menu: ContextMenu, v: View, menuInfo: ContextMenuInfo) {
     super.onCreateContextMenu(menu, v, menuInfo)
-    withExceptionReporting {
+    crudContext.withExceptionReporting {
       val commands = contextMenuActions.map(_.command)
       for ((command, index) <- commands.zip(Stream.from(0)))
         menu.add(0, command.commandId, index, command.title.get)
@@ -66,7 +66,7 @@ class CrudListActivity extends ListActivity with BaseCrudActivity { self =>
   }
 
   override def onContextItemSelected(item: MenuItem) = {
-    withExceptionReportingHavingDefaultReturnValue(exceptionalReturnValue = true) {
+    crudContext.withExceptionReportingHavingDefaultReturnValue(exceptionalReturnValue = true) {
       val actions = contextMenuActions
       val info = item.getMenuInfo.asInstanceOf[AdapterContextMenuInfo]
       actions.find(_.commandId == item.getItemId) match {
@@ -79,7 +79,7 @@ class CrudListActivity extends ListActivity with BaseCrudActivity { self =>
   protected lazy val normalActions = crudApplication.actionsForList(entityType)
 
   override def onListItemClick(l: ListView, v: View, position: Int, id: ID) {
-    withExceptionReporting {
+    crudContext.withExceptionReporting {
       if (id >= 0) {
         crudApplication.actionsForEntity(entityType).headOption.map(_.invoke(uriWithId(id), this)).getOrElse {
           warn("There are no entity actions defined for " + entityType)

@@ -5,14 +5,14 @@ import com.github.scrud.platform.PlatformTypes._
 import android.view.{LayoutInflater, ViewGroup, View}
 import com.github.triangle.GetterInput
 import com.github.scrud
-import scrud.android.{AndroidCrudContext, AndroidPlatformDriver}
+import scrud.android.AndroidCrudContext
 import scrud.{CrudContextField, UriField, EntityType}
 
 /** An Android Adapter for an EntityType with the result of EntityPersistence.findAll.
   * @author Eric Pabst (epabst@gmail.com)
   */
 class EntityAdapter(val entityType: EntityType, values: Seq[AnyRef], rowLayout: ViewKey,
-                    contextItems: GetterInput, val platformDriver: AndroidPlatformDriver, layoutInflater: LayoutInflater) extends BaseAdapter with AdapterCaching {
+                    contextItems: GetterInput, layoutInflater: LayoutInflater) extends BaseAdapter with AdapterCaching {
 
   /** The UriPath that does not contain the entities. */
   protected lazy val uriPathWithoutEntityId = UriField(contextItems).getOrElse(sys.error("no UriPath provided"))

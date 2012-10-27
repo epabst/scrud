@@ -3,7 +3,6 @@ package com.github.scrud.android.action
 import android.view.Menu
 import java.lang.reflect.Method
 import java.util.concurrent.atomic.AtomicBoolean
-import com.github.scrud.action.Timing
 import com.github.scrud.state.StateVar
 
 /** An Activity that has an options menu.
@@ -12,7 +11,9 @@ import com.github.scrud.state.StateVar
   * When the options menu changes, invoke {{{this.optionsMenuCommands = ...}}}
   * @author Eric Pabst (epabst@gmail.com)
   */
-trait OptionsMenuActivity extends ActivityWithState with Timing {
+trait OptionsMenuActivity extends ActivityWithState with AndroidNotification {
+  def activityContext = this
+
   protected def initialOptionsMenuCommands: List[Command]
 
   // Use a StateVar to make it thread-safe

@@ -17,4 +17,10 @@ object Common {
     try { f(closeable) }
     finally { closeable.close() }
   }
+
+  def toRunnable(operation: => Unit): Runnable = new Runnable {
+    def run() {
+      operation
+    }
+  }
 }

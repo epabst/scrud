@@ -12,7 +12,6 @@ import android.widget.ListAdapter
 import java.lang.IllegalStateException
 import com.github.scrud.UriPath
 import org.mockito.Mockito._
-import actors.Future
 import com.github.scrud.persistence._
 import com.github.scrud.util.{CrudMockitoSugar, ReadyFuture}
 import com.github.scrud.state.State
@@ -40,7 +39,9 @@ class CrudActivitySpec extends CrudMockitoSugar with MustMatchers {
 
       override lazy val currentAction = UpdateActionName
       override def currentUriPath = uri
-      override def future[T](body: => T) = new ReadyFuture[T](body)
+      override lazy val crudContext = new AndroidCrudContext(this, crudApplication) {
+        override def future[T](body: => T) = new ReadyFuture[T](body)
+      }
     }
     activity.onCreate(null)
     _crudType.entityType.copy(entity, activity)
@@ -61,7 +62,9 @@ class CrudActivitySpec extends CrudMockitoSugar with MustMatchers {
 
       override lazy val currentAction = UpdateActionName
       override def currentUriPath = uri
-      override def future[T](body: => T) = new ReadyFuture[T](body)
+      override lazy val crudContext = new AndroidCrudContext(this, crudApplication) {
+        override def future[T](body: => T) = new ReadyFuture[T](body)
+      }
     }
     when(persistence.find(uri)).thenReturn(None)
     activity.onCreate(null)
@@ -83,7 +86,9 @@ class CrudActivitySpec extends CrudMockitoSugar with MustMatchers {
 
       override lazy val currentAction = UpdateActionName
       override lazy val currentUriPath = uri
-      override def future[T](body: => T) = new ReadyFuture[T](body)
+      override lazy val crudContext = new AndroidCrudContext(this, crudApplication) {
+        override def future[T](body: => T) = new ReadyFuture[T](body)
+      }
     }
     activity.onCreate(null)
     val viewData = _crudType.entityType.copyAndUpdate(activity, mutable.Map[String,Any]())
@@ -149,7 +154,9 @@ class CrudActivitySpec extends CrudMockitoSugar with MustMatchers {
       override lazy val entityType = _crudType.entityType
       override def crudApplication = application
 
-      override def future[T](body: => T): Future[T] = new ReadyFuture[T](body)
+      override lazy val crudContext = new AndroidCrudContext(this, crudApplication) {
+        override def future[T](body: => T) = new ReadyFuture[T](body)
+      }
     }
     activity.setIntent(constructIntent(AndroidOperation.CreateActionName, uri, activity, null))
     activity.onCreate(null)

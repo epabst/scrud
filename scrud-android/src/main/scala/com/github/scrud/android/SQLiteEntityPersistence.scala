@@ -87,7 +87,7 @@ class SQLiteEntityPersistence(val entityType: EntityType, val crudContext: Andro
       database.delete(tableName, BaseColumns._ID + "=" + id, Nil.toArray)
       id
     }
-    future {
+    crudContext.future {
       ids.foreach { id =>
         deletedEntityIdCrudType.recordDeletion(entityType, id, crudContext.activityContext)
       }

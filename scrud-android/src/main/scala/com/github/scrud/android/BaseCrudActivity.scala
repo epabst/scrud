@@ -3,7 +3,7 @@ package com.github.scrud.android
 import action._
 import action.Action
 import action.Command
-import com.github.scrud.action.{Timing, CrudOperationType}
+import com.github.scrud.action.CrudOperationType
 import android.view.{View, MenuItem}
 import android.content.{Context, Intent}
 import com.github.scrud.util.Common
@@ -29,16 +29,8 @@ import view.OnClickOperationSetter
   * @author Eric Pabst (epabst@gmail.com)
   */
 
-trait BaseCrudActivity extends ActivityWithState with OptionsMenuActivity with Logging with Timing { self =>
-  lazy val platformDriver = new AndroidPlatformDriver(this, logTag)
-
-  def runOnUiThread[T](view: View)(body: => T) {
-    platformDriver.runOnUiThread(view)(trackWorkInProgress(body).apply())
-  }
-
-  def runOnUiThread[T](activity: Activity)(body: => T) {
-    platformDriver.runOnUiThread(activity)(trackWorkInProgress(body).apply())
-  }
+trait BaseCrudActivity extends ActivityWithState with OptionsMenuActivity with Logging { self =>
+  lazy val platformDriver = AndroidPlatformDriver
 
   def crudApplication: CrudApplication = super.getApplication.asInstanceOf[CrudAndroidApplication].application
 
@@ -105,7 +97,7 @@ trait BaseCrudActivity extends ActivityWithState with OptionsMenuActivity with L
     } else {
       entityType.loadingValue.update(updaterInput)
       futurePortableValue.foreach { portableValue =>
-        platformDriver.runOnUiThread(self) {
+        crudContext.runOnUiThread {
           portableValue.update(updaterInput)
         }
       }
@@ -193,7 +185,7 @@ trait BaseCrudActivity extends ActivityWithState with OptionsMenuActivity with L
   def initialOptionsMenuCommands = generateOptionsMenu.map(_.command)
 
   override def onOptionsItemSelected(item: MenuItem): Boolean = {
-    withExceptionReportingHavingDefaultReturnValue(exceptionalReturnValue = true) {
+    crudContext.withExceptionReportingHavingDefaultReturnValue(exceptionalReturnValue = true) {
       val actions = generateOptionsMenu
       actions.find(_.commandId == item.getItemId) match {
         case Some(action) =>
@@ -210,14 +202,14 @@ trait BaseCrudActivity extends ActivityWithState with OptionsMenuActivity with L
 
   override def onSaveInstanceState(outState: Bundle) {
     super.onSaveInstanceState(outState)
-    withExceptionReporting {
+    crudContext.withExceptionReporting {
       // This is after the super call so that outState can be overridden if needed.
       crudContext.onSaveActivityState(outState)
     }
   }
 
   override def onRestoreInstanceState(savedInstanceState: Bundle) {
-    withExceptionReporting {
+    crudContext.withExceptionReporting {
       // This is before the super call to be the opposite order as onSaveInstanceState.
       crudContext.onRestoreActivityState(savedInstanceState)
     }
@@ -225,7 +217,7 @@ trait BaseCrudActivity extends ActivityWithState with OptionsMenuActivity with L
   }
 
   override def onResume() {
-    withExceptionReporting {
+    crudContext.withExceptionReporting {
       trace("onResume")
       crudContext.onClearActivityState(stayActive = true)
     }
@@ -233,16 +225,10 @@ trait BaseCrudActivity extends ActivityWithState with OptionsMenuActivity with L
   }
 
   override def onDestroy() {
-    withExceptionReporting {
+    crudContext.withExceptionReporting {
       crudContext.activityState.onDestroyState()
     }
     super.onDestroy()
-  }
-
-  override def waitForWorkInProgress() {
-    val start = System.currentTimeMillis()
-    super.waitForWorkInProgress()
-    debug("Waited for work in progress for " + (System.currentTimeMillis() - start) + "ms")
   }
 
   def addDataListener(listener: DataListener, crudContext: AndroidCrudContext) {
@@ -265,7 +251,7 @@ trait BaseCrudActivity extends ActivityWithState with OptionsMenuActivity with L
           }
         }, crudContext)
         new ResourceCursorAdapter(activity, itemLayout, cursor) with AdapterCaching {
-          def platformDriver = self.platformDriver
+          def crudContext = self.crudContext
 
           def entityType = self.entityType
 
@@ -274,10 +260,10 @@ trait BaseCrudActivity extends ActivityWithState with OptionsMenuActivity with L
 
           def bindView(view: View, context: Context, cursor: Cursor) {
             val row = entityTypePersistedInfo.copyRowToMap(cursor)
-            bindViewFromCacheOrItems(view, cursor.getPosition, row, adapterView, crudContext, contextItems)
+            bindViewFromCacheOrItems(view, cursor.getPosition, row, adapterView, self.crudContext, contextItems)
           }
         }
-      case _ => new EntityAdapter(entityType, findAllResult, itemLayout, contextItems, self.platformDriver, activity.getLayoutInflater)
+      case _ => new EntityAdapter(entityType, findAllResult, itemLayout, contextItems, activity.getLayoutInflater)
     }
   }
 
@@ -292,7 +278,7 @@ trait BaseCrudActivity extends ActivityWithState with OptionsMenuActivity with L
     }
     val adapter = callCreateAdapter()
     adapterView.setAdapter(adapter)
-    crudContext.addCachedActivityStateListener(new AdapterCachingStateListener(adapterView, entityType, self.platformDriver, crudContext, adapterFactory = callCreateAdapter()))
+    crudContext.addCachedActivityStateListener(new AdapterCachingStateListener(adapterView, entityType, crudContext, adapterFactory = callCreateAdapter()))
   }
 
   def setListAdapter[A <: Adapter](adapterView: AdapterView[A], entityType: EntityType, uriPath: UriPath, crudContext: AndroidCrudContext, contextItems: GetterInput, activity: Activity, itemLayout: LayoutKey) {
@@ -304,6 +290,8 @@ trait BaseCrudActivity extends ActivityWithState with OptionsMenuActivity with L
     })
     setListAdapter(adapterView, persistence, uriPath, entityType, crudContext, contextItems, activity, itemLayout)
   }
+
+  def waitForWorkInProgress() = crudContext.waitForWorkInProgress()
 
   override def toString = getClass.getSimpleName + "@" + System.identityHashCode(this)
 }

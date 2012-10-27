@@ -18,7 +18,8 @@ import com.github.scrud.platform.StubPlatformDriver
 class OptionsMenuActivitySpec extends MustMatchers with MockitoSugar {
   class StubOptionsMenuActivity extends Activity with OptionsMenuActivity {
     protected def initialOptionsMenuCommands = Nil
-    def platformDriver = StubPlatformDriver
+
+    protected def logTag = "log"
   }
 
   @Test

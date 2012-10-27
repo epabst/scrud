@@ -53,7 +53,7 @@ class CrudListActivitySpec extends MustMatchers with CrudMockitoSugar {
     val application = MyCrudApplication(crudType)
     when(persistence.findAll(any())).thenReturn(Seq(Map[String,Any]("name" -> "Bob", "age" -> 25)))
     val activity = new CrudListActivity {
-      override lazy val platformDriver = new AndroidPlatformDriver(this, logTag) {
+      override lazy val crudContext = new AndroidCrudContext(this, application) {
         /**
          * Handle the exception by communicating it to the user and developers.
          */

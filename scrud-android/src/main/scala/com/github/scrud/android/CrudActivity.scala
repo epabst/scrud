@@ -19,7 +19,7 @@ class CrudActivity extends BaseCrudActivity { self =>
   override def onCreate(savedInstanceState: Bundle) {
     super.onCreate(savedInstanceState)
 
-    withExceptionReporting {
+    crudContext.withExceptionReporting {
       if (savedInstanceState == null) {
         setContentView(entryLayout)
         val currentPath = currentUriPath
@@ -44,7 +44,7 @@ class CrudActivity extends BaseCrudActivity { self =>
 
           def onRestoreState(savedInstanceState: Bundle) {
             val portableValue = entityType.copyFrom(savedInstanceState)
-            runOnUiThread(self) { portableValue.update(this, contextItems) }
+            crudContext.runOnUiThread { portableValue.update(this, contextItems) }
           }
         })
       }
@@ -52,7 +52,7 @@ class CrudActivity extends BaseCrudActivity { self =>
   }
 
   override def onBackPressed() {
-    withExceptionReporting {
+    crudContext.withExceptionReporting {
       // Save before going back so that the Activity being activated will read the correct data from persistence.
       val writable = crudApplication.newWritable(entityType)
       crudContext.withEntityPersistence(entityType) { persistence =>
@@ -85,7 +85,7 @@ class CrudActivity extends BaseCrudActivity { self =>
 
   override def onActivityResult(requestCode: Int, resultCode: Int, data: Intent) {
     super.onActivityResult(requestCode, resultCode, data)
-    withExceptionReporting {
+    crudContext.withExceptionReporting {
       if (resultCode == Activity.RESULT_OK) {
         //"this" is included in the list so that existing data isn't cleared.
         entityType.copy(GetterInput(OperationResponse(requestCode, data), crudContext, this), this)

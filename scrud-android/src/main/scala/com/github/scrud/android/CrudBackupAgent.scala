@@ -12,7 +12,6 @@ import com.github.scrud.platform.PlatformTypes._
 import com.github.scrud.{UriPath, EntityType, EntityName, CrudApplication}
 import com.github.scrud.util.{CalculatedIterator, Common}
 import com.github.scrud.state.State
-import com.github.scrud.action.Timing
 
 object CrudBackupAgent {
   private val backupStrategyVersion: Int = 1
@@ -46,15 +45,15 @@ object CrudBackupAgent {
 
 import CrudBackupAgent._
 
-class CrudBackupAgent(application: CrudApplication) extends BackupAgent with ContextWithState with Logging with Timing {
-  lazy val platformDriver = new AndroidPlatformDriver(this, logTag)
+class CrudBackupAgent(application: CrudApplication) extends BackupAgent with ContextWithState with Logging {
+  val crudContext = new AndroidCrudContext(this, application)
 
   protected def logTag = Common.tryToEvaluate(application.logTag).getOrElse(Common.logTag)
 
   def applicationState: State = getApplicationContext.asInstanceOf[CrudAndroidApplication]
 
   final def onBackup(oldState: ParcelFileDescriptor, data: BackupDataOutput, newState: ParcelFileDescriptor) {
-    withExceptionReporting {
+    crudContext.withExceptionReporting {
       onBackup(oldState, new BackupTarget {
         def writeEntity(key: String, mapOpt: Option[Map[String,Any]]) {
           debug("Backing up " + key + " <- " + mapOpt)
@@ -91,7 +90,7 @@ class CrudBackupAgent(application: CrudApplication) extends BackupAgent with Con
   }
 
   final def onRestore(data: BackupDataInput, appVersionCode: Int, newState: ParcelFileDescriptor) {
-    withExceptionReporting {
+    crudContext.withExceptionReporting {
       onRestore(new CalculatedIterator[RestoreItem] {
         def calculateNextValue(): Option[RestoreItem] = {
           if (data.readNextHeader) {

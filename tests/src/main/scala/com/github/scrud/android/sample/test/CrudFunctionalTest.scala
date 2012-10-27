@@ -5,11 +5,11 @@ import android.test.ActivityInstrumentationTestCase2
 import com.github.scrud.android.{BaseCrudActivity, CrudListActivity, CrudActivity, sample}
 import sample.{BookEntityType, SampleApplication, AuthorEntityType}
 import com.jayway.android.robotium.solo.Solo
-import com.github.scrud.action.Timing._
 import com.github.triangle.PortableValue
 import com.github.scrud.EntityType
 import android.app.Instrumentation
 import com.github.scrud.action.{CrudOperationType, CrudOperation}
+import com.github.scrud.util.Common
 
 class CrudFunctionalTest extends ActivityInstrumentationTestCase2(classOf[CrudListActivity]) {
   var instrumentation: Instrumentation = _
@@ -91,14 +91,14 @@ class CrudFunctionalTest extends ActivityInstrumentationTestCase2(classOf[CrudLi
 
   def copyToCurrentActivity(portableValue: PortableValue) {
     val currentCrudActivity = this.currentCrudActivity
-    instrumentation.runOnMainSync(toRunnable {
+    instrumentation.runOnMainSync(Common.toRunnable {
       portableValue.update(currentCrudActivity)
     })
   }
 
   def copyFromCurrentActivity(entityType: EntityType): PortableValue = {
     var result: Option[PortableValue] = None
-    instrumentation.runOnMainSync(toRunnable {
+    instrumentation.runOnMainSync(Common.toRunnable {
       result = Some(entityType.copyFrom(currentCrudActivity))
     })
     result.get

@@ -1,6 +1,6 @@
 package com.github.scrud.android
 
-import action.ContextWithState
+import action.{AndroidNotification, ContextWithState}
 import com.github.scrud.state._
 import com.github.scrud.{CrudContext, CrudApplication}
 import state.{CachedStateListeners, CachedStateListener}
@@ -13,8 +13,8 @@ import android.telephony.TelephonyManager
  * A context which can store data for the duration of a single Activity.
  * @author Eric Pabst (epabst@gmail.com)
  */
-case class AndroidCrudContext(activityContext: ContextWithState, application: CrudApplication) extends CrudContext {
-  lazy val platformDriver = new AndroidPlatformDriver(activityContext, application.logTag)
+case class AndroidCrudContext(activityContext: ContextWithState, application: CrudApplication) extends CrudContext with AndroidNotification {
+  lazy val platformDriver = AndroidPlatformDriver
   def activityState: State = activityContext
   lazy val applicationState: State = activityContext.applicationState
 

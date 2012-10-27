@@ -7,12 +7,11 @@ import android.os.Bundle
 import android.widget.{Adapter, AdapterView, BaseAdapter}
 import com.github.scrud.platform.PlatformTypes._
 import scala.Some
-import com.github.scrud.action.Timing
-import com.github.scrud.android.{AndroidCrudContext, AndroidPlatformDriver}
+import com.github.scrud.android.{AndroidPlatformDriver, AndroidCrudContext}
 import com.github.scrud.android.state.CachedStateListener
 
-trait AdapterCaching extends Logging with Timing { self: BaseAdapter =>
-  def platformDriver: AndroidPlatformDriver
+trait AdapterCaching extends Logging { self: BaseAdapter =>
+  final def platformDriver = AndroidPlatformDriver
 
   def entityType: EntityType
 
@@ -48,7 +47,7 @@ trait AdapterCaching extends Logging with Timing { self: BaseAdapter =>
     } else {
       entityType.loadingValue.update(updaterInput)
       futurePortableValue.foreach { portableValue =>
-        platformDriver.runOnUiThread(view) {
+        crudContext.runOnUiThread {
           if (view.getTag == uriPath) {
             portableValue.update(updaterInput)
           }
@@ -58,8 +57,7 @@ trait AdapterCaching extends Logging with Timing { self: BaseAdapter =>
   }
 }
 
-class AdapterCachingStateListener[A <: Adapter](adapterView: AdapterView[A], entityType: EntityType,
-                                                platformDriver: AndroidPlatformDriver, crudContext: AndroidCrudContext, adapterFactory: => A) extends CachedStateListener with Logging {
+class AdapterCachingStateListener[A <: Adapter](adapterView: AdapterView[A], entityType: EntityType, crudContext: AndroidCrudContext, adapterFactory: => A) extends CachedStateListener with Logging {
   protected def logTag = entityType.logTag
 
   def onSaveState(outState: Bundle) {
