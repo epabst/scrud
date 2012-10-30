@@ -1,6 +1,5 @@
 package com.github.scrud.android
 
-import action.Action
 import android.widget.ListView
 import android.app.ListActivity
 import android.os.Bundle
@@ -10,6 +9,7 @@ import android.widget.AdapterView.AdapterContextMenuInfo
 import com.github.scrud.UriPath
 import com.github.scrud.platform.PlatformTypes._
 import com.github.scrud.persistence.DataListener
+import com.github.scrud.action.Action
 
 /** A generic ListActivity for CRUD operations
   * @author Eric Pabst (epabst@gmail.com)
@@ -70,7 +70,7 @@ class CrudListActivity extends ListActivity with BaseCrudActivity { self =>
       val actions = contextMenuActions
       val info = item.getMenuInfo.asInstanceOf[AdapterContextMenuInfo]
       actions.find(_.commandId == item.getItemId) match {
-        case Some(action) => action.invoke(uriWithId(info.id), this); true
+        case Some(action) => action.invoke(uriWithId(info.id), crudContext); true
         case None => super.onContextItemSelected(item)
       }
     }
@@ -81,7 +81,7 @@ class CrudListActivity extends ListActivity with BaseCrudActivity { self =>
   override def onListItemClick(l: ListView, v: View, position: Int, id: ID) {
     crudContext.withExceptionReporting {
       if (id >= 0) {
-        crudApplication.actionsForEntity(entityType).headOption.map(_.invoke(uriWithId(id), this)).getOrElse {
+        crudApplication.actionsForEntity(entityType).headOption.map(_.invoke(uriWithId(id), crudContext)).getOrElse {
           warn("There are no entity actions defined for " + entityType)
         }
       } else {

@@ -1,9 +1,8 @@
 package com.github.scrud.android
 
 import action._
-import action.Action
 import action.Command
-import com.github.scrud.action.CrudOperationType
+import com.github.scrud.action.{PersistenceOperation, Action, CrudOperationType, CrudOperation}
 import android.view.{View, MenuItem}
 import android.content.{Context, Intent}
 import com.github.scrud.util.Common
@@ -22,7 +21,6 @@ import android.widget.{ResourceCursorAdapter, AdapterView, Adapter}
 import android.database.Cursor
 import com.github.scrud.EntityName
 import scala.Some
-import com.github.scrud.action.CrudOperation
 import view.OnClickOperationSetter
 
 /** Support for the different Crud Activity's.
@@ -189,7 +187,7 @@ trait BaseCrudActivity extends ActivityWithState with OptionsMenuActivity with L
       val actions = generateOptionsMenu
       actions.find(_.commandId == item.getItemId) match {
         case Some(action) =>
-          action.invoke(currentUriPath, this)
+          action.invoke(currentUriPath, crudContext)
           if (LastUndoable.get(this).exists(_.undoAction.commandId == item.getItemId)) {
             LastUndoable.clear(this)
             optionsMenuCommands = generateOptionsMenu.map(_.command)

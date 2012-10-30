@@ -210,7 +210,7 @@ class CrudActivitySpec extends CrudMockitoSugar with MustMatchers {
     when(activity.allowUndo(notNull.asInstanceOf[Undoable])).thenAnswer(answerWithInvocation { invocationOnMock =>
       val currentArguments = invocationOnMock.getArguments
       val undoable = currentArguments(0).asInstanceOf[Undoable]
-      undoable.undoAction.invoke(uri, activity)
+      undoable.undoAction.invoke(uri, crudContext)
     })
     new CrudActivity().startDelete(entity, uri, activity)
     verify(persistence).delete(uri)

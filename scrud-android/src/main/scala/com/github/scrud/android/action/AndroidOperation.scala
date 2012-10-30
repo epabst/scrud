@@ -8,8 +8,9 @@ import android.view.View
 import com.github.triangle.Field
 import com.github.triangle.PortableField._
 import com.github.scrud.android.view.ViewRef
-import com.github.scrud.{EntityType, UriPath, EntityName}
-import com.github.scrud.android.BaseCrudActivity
+import com.github.scrud.{CrudContext, EntityType, UriPath, EntityName}
+import com.github.scrud.android.{AndroidCrudContext, BaseCrudActivity}
+import com.github.scrud.action.Operation
 
 /** Represents something that a user can initiate.
   * @author Eric Pabst (epabst@gmail.com)
@@ -28,7 +29,12 @@ case class Command(icon: Option[ImgKey], title: Option[SKey], viewRef: Option[Vi
 }
 
 /** Represents an operation that a user can initiate. */
-trait AndroidOperation {
+trait AndroidOperation extends Operation {
+  /** Runs the operation, given the uri and the current CrudContext. */
+  def invoke(uri: UriPath, crudContext: CrudContext) {
+    invoke(uri, crudContext.asInstanceOf[AndroidCrudContext].activityContext.asInstanceOf[ActivityWithState])
+  }
+
   /** Runs the operation, given the uri and the current state of the application. */
   def invoke(uri: UriPath, activity: ActivityWithState)
 }
@@ -47,17 +53,6 @@ object AndroidOperation {
     val intent = new Intent(action, uriPath)
     intent.setClass(context, clazz)
     intent
-  }
-}
-
-/** Represents an action that a user can initiate.
-  * It's equals/hashCode MUST be implemented in order to suppress the action that is already happening.
-  */
-case class Action(command: Command, operation: AndroidOperation) {
-  def commandId: CommandId = command.commandId
-
-  def invoke(uri: UriPath, activity: ActivityWithState) {
-    operation.invoke(uri, activity)
   }
 }
 
