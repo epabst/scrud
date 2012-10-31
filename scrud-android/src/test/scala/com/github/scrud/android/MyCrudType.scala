@@ -3,6 +3,7 @@ package com.github.scrud.android
 import org.mockito.Mockito
 import com.github.scrud.{CrudContext, EntityName, CrudApplication, EntityType}
 import com.github.scrud.persistence.{PersistenceFactory, CrudPersistence, DataListenerSetValHolder}
+import com.github.scrud.platform.TestingPlatformDriver
 
 /** A simple CrudType for testing.
   * @author Eric Pabst (epabst@gmail.com)
@@ -33,7 +34,7 @@ class MyPersistenceFactory(persistence: CrudPersistence) extends PersistenceFact
   def createEntityPersistence(entityType: EntityType, crudContext: CrudContext) = persistence
 }
 
-case class MyCrudApplication(crudTypes: CrudType*) extends CrudApplication {
+case class MyCrudApplication(crudTypes: CrudType*) extends CrudApplication(TestingPlatformDriver) {
   def name = "test app"
 
   override def primaryEntityType = crudTypes.head.entityType

@@ -10,6 +10,7 @@ import org.mockito.Mockito._
 import com.github.triangle.GetterInput
 import com.github.scrud.{SimpleCrudContext, CrudApplication}
 import com.github.scrud.persistence._
+import com.github.scrud.platform.TestingPlatformDriver
 
 /** A behavior specification for [[com.github.scrud.android.sample.AuthorEntityType]]
   * within [[com.github.scrud.android.sample.SampleApplication]].
@@ -17,7 +18,7 @@ import com.github.scrud.persistence._
   */
 @RunWith(classOf[JUnitRunner])
 class SampleApplicationSpec extends FunSpec with MustMatchers with MockitoSugar {
-  val application = new SampleApplication
+  val application = new SampleApplication(TestingPlatformDriver)
 
   describe("Author") {
     it("must have the right children") {

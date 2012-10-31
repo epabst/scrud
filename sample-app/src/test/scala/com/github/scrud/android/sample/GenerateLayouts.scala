@@ -1,6 +1,7 @@
 package com.github.scrud.android.sample
 
 import com.github.scrud.android.generate.CrudUIGenerator
+import com.github.scrud.android.AndroidPlatformDriver
 
 /** A layout generator for the application.
   * @author Eric Pabst (epabst@gmail.com)
@@ -8,6 +9,6 @@ import com.github.scrud.android.generate.CrudUIGenerator
 
 object GenerateLayouts {
   def main(args: Array[String]) {
-    CrudUIGenerator.generateLayouts(new SampleApplication, classOf[SampleAndroidApplication])
+    CrudUIGenerator.generateLayouts(new SampleApplication(AndroidPlatformDriver), classOf[SampleAndroidApplication])
   }
 }

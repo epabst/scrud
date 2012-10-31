@@ -51,7 +51,7 @@ class SQLitePersistenceFactorySpec extends MustMatchers with CrudMockitoSugar wi
 
   object TestCrudType extends CrudType(TestEntityType, SQLitePersistenceFactory)
 
-  object TestApplication extends CrudApplication {
+  object TestApplication extends CrudApplication(AndroidPlatformDriver) {
     val name = "Test Application"
 
     def allCrudTypes = List(TestCrudType)

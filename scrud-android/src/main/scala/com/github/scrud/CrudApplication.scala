@@ -7,6 +7,7 @@ import com.github.scrud.android._
 import com.github.scrud.android.action._
 import com.github.scrud.android.action.AndroidOperation._
 import persistence.{PersistenceFactory, CrudPersistence}
+import platform.PlatformDriver
 import platform.PlatformTypes._
 import state.LazyApplicationVal
 import util.{Common, UrgentFutureExecutor}
@@ -31,7 +32,7 @@ import PortableField.toSome
  * Time: 4:50 PM
  */
 
-trait CrudApplication extends Logging {
+abstract class CrudApplication(platformDriver: PlatformDriver) extends Logging {
   def logTag = Common.tryToEvaluate(nameId).getOrElse(Common.logTag)
 
   trace("Instantiated CrudApplication: " + this)

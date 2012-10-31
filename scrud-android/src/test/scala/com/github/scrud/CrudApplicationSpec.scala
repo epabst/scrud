@@ -5,6 +5,7 @@ import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import org.scalatest.matchers.MustMatchers
 import org.scalatest.FunSpec
+import platform.TestingPlatformDriver
 
 /** A behavior specification for [[com.github.scrud.CrudApplication]].
   * @author Eric Pabst (epabst@gmail.com)
@@ -13,7 +14,7 @@ import org.scalatest.FunSpec
 class CrudApplicationSpec extends FunSpec with MustMatchers {
 
   it("must provide a valid nameId") {
-    val application = new CrudApplication {
+    val application = new CrudApplication(TestingPlatformDriver) {
       def name = "A diFFicult name to use as an ID"
       def allCrudTypes = List()
       def dataVersion = 1

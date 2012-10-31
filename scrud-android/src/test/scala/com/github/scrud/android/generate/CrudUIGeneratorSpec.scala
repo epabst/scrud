@@ -63,7 +63,7 @@ class CrudUIGeneratorSpec extends FunSpec with MustMatchers with MockitoSugar {
       val myEntityType = new MyEntityType {
         override def valueFields = List(persisted[String]("model") + viewId(classOf[R], "model", textView))
       }
-      val application = new CrudApplication {
+      val application = new CrudApplication(AndroidPlatformDriver) {
         def allCrudTypes = List(new MyCrudType(myEntityType))
         def dataVersion = 1
         def name = "Test App"
@@ -77,7 +77,7 @@ class CrudUIGeneratorSpec extends FunSpec with MustMatchers with MockitoSugar {
       val myEntityType = new MyEntityType {
         override def valueFields = List(bundleField[String]("model"))
       }
-      val application = new CrudApplication {
+      val application = new CrudApplication(AndroidPlatformDriver) {
         def allCrudTypes = List(new MyCrudType(myEntityType))
         def dataVersion = 1
         def name = "Test App"
@@ -92,7 +92,7 @@ class CrudUIGeneratorSpec extends FunSpec with MustMatchers with MockitoSugar {
       val _entityType = new MyEntityType {
         override def valueFields = List(bundleField[String]("model"))
       }
-      val application = new CrudApplication {
+      val application = new CrudApplication(AndroidPlatformDriver) {
         def allCrudTypes = List(new MyCrudType(_entityType))
         def dataVersion = 1
         def name = "Test App"

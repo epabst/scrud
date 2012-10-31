@@ -160,7 +160,7 @@ object DeletedEntityIdEntityType extends EntityType(DeletedEntityId) {
   * It is intended to be in a separate database owned by the scrud-android framework.
   */
 object DeletedEntityIdCrudType extends CrudType(DeletedEntityIdEntityType, SQLitePersistenceFactory) {
-  private val application = new CrudApplication {
+  private val application = new CrudApplication(AndroidPlatformDriver) {
     def name = "scrud.android_deleted"
 
     def allCrudTypes = List(DeletedEntityIdCrudType)
