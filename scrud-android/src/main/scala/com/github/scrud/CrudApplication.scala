@@ -1,12 +1,11 @@
 package com.github.scrud
 
 import _root_.android.R
-import _root_.android.app.Activity
 import action.Action
-import com.github.scrud.android._
-import com.github.scrud.android.action._
-import com.github.scrud.android.action.AndroidOperation._
-import persistence.{PersistenceFactory, CrudPersistence}
+import com.github.scrud
+import scrud.android.{CrudType,NamingConventions,res}
+import scrud.android.action._
+import persistence.PersistenceFactory
 import platform.PlatformDriver
 import platform.PlatformTypes._
 import state.LazyApplicationVal
@@ -17,8 +16,8 @@ import scala.actors.Future
 import collection.mutable
 import java.util.concurrent.ConcurrentHashMap
 import scala.collection.JavaConversions._
-import view.AndroidResourceAnalyzer._
-import view.ViewRef
+import scrud.android.view.AndroidResourceAnalyzer._
+import scrud.android.view.ViewRef
 import PortableField.toSome
 
 /**
@@ -74,10 +73,6 @@ abstract class CrudApplication(platformDriver: PlatformDriver) extends Logging {
     }
   }
 
-  final def withEntityPersistence[T](entityType: EntityType, activity: ActivityWithState)(f: CrudPersistence => T): T = {
-    new AndroidCrudContext(activity, this).withEntityPersistence(entityType)(f)
-  }
-
   private def crudType(entityName: EntityName): CrudType =
     allCrudTypes.find(_.entityType.entityName == entityName).getOrElse(throw new NoSuchElementException(entityName + " not found"))
 
@@ -101,9 +96,6 @@ abstract class CrudApplication(platformDriver: PlatformDriver) extends Logging {
 
   def isDeletable(entityType: EntityType): Boolean = persistenceFactory(entityType).canDelete
   def isDeletable(entityName: EntityName): Boolean = persistenceFactory(entityName).canDelete
-
-  def activityClass = classOf[CrudActivity]
-  def listActivityClass = classOf[CrudListActivity]
 
   private lazy val classInApplicationPackage: Class[_] = allEntityTypes.head.getClass
   def rStringClasses: Seq[Class[_]] = detectRStringClasses(classInApplicationPackage)
@@ -138,9 +130,6 @@ abstract class CrudApplication(platformDriver: PlatformDriver) extends Logging {
 
   def displayLayoutFor(entityName: EntityName): Option[LayoutKey] = findResourceIdWithName(rLayoutClassesVal, entityNameLayoutPrefixFor(entityName) + "_display")
   def hasDisplayPage(entityName: EntityName) = displayLayoutFor(entityName).isDefined
-
-  protected def entityOperation(entityName: EntityName, action: String, activityClass: Class[_ <: Activity]) =
-    new StartEntityIdActivityOperation(entityName, action, activityClass)
 
   /**
    * Gets the actions that a user can perform from a specific entity instance.
@@ -193,7 +182,7 @@ abstract class CrudApplication(platformDriver: PlatformDriver) extends Logging {
     */
   def actionToCreate(entityName: EntityName): Option[Action] = {
     if (isCreatable(entityName))
-      Some(Action(commandToAddItem(entityName), new StartEntityActivityOperation(entityName, CreateActionName, activityClass)))
+      Some(Action(commandToAddItem(entityName), platformDriver.operationToShowCreateUI(entityName)))
     else
       None
   }
@@ -201,7 +190,7 @@ abstract class CrudApplication(platformDriver: PlatformDriver) extends Logging {
   /** Gets the action to display a UI for a user to edit data for an entity given its id in the UriPath. */
   def actionToUpdate(entityType: EntityType): Option[Action] = actionToUpdate(entityType.entityName)
   def actionToUpdate(entityName: EntityName): Option[Action] = {
-    if (isSavable(entityName)) Some(Action(commandToEditItem(entityName), entityOperation(entityName, UpdateActionName, activityClass)))
+    if (isSavable(entityName)) Some(Action(commandToEditItem(entityName), platformDriver.operationToShowUpdateUI(entityName)))
     else None
   }
 
@@ -215,7 +204,7 @@ abstract class CrudApplication(platformDriver: PlatformDriver) extends Logging {
   def actionToList(entityType: EntityType): Option[Action] = actionToList(entityType.entityName)
   /** Gets the action to display the list that matches the criteria copied from criteriaSource using entityType.copy. */
   def actionToList(entityName: EntityName): Option[Action] =
-    Some(Action(commandToListItems(entityName), new StartEntityActivityOperation(entityName, ListActionName, listActivityClass)))
+    Some(Action(commandToListItems(entityName), platformDriver.operationToShowListUI(entityName)))
 
   /** Gets the action to display the entity given the id in the UriPath. */
   def actionToDisplay(entityType: EntityType): Option[Action] = actionToDisplay(entityType.entityName)
@@ -223,7 +212,7 @@ abstract class CrudApplication(platformDriver: PlatformDriver) extends Logging {
   /** Gets the action to display the entity given the id in the UriPath. */
   def actionToDisplay(entityName: EntityName): Option[Action] = {
     if (hasDisplayPage(entityName)) {
-      Some(Action(commandToDisplayItem(entityName), entityOperation(entityName, DisplayActionName, activityClass)))
+      Some(Action(commandToDisplayItem(entityName), platformDriver.operationToShowDisplayUI(entityName)))
     } else None
   }
 

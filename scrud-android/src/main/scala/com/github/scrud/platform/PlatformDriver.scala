@@ -1,6 +1,8 @@
 package com.github.scrud.platform
 
 import com.github.scrud.persistence.PersistenceFactory
+import com.github.scrud.action.Operation
+import com.github.scrud.EntityName
 
 /**
  * An API for an app to interact with the host platform such as Android.
@@ -16,6 +18,17 @@ import com.github.scrud.persistence.PersistenceFactory
  *         Time: 9:57 PM
  */
 trait PlatformDriver {
-
   def localDatabasePersistenceFactory: PersistenceFactory
+
+  /** An Operation that will show the UI to the user for creating an entity instance. */
+  def operationToShowCreateUI(entityName: EntityName): Operation
+
+  /** An Operation that will show the UI to the user that lists the entity instances. */
+  def operationToShowListUI(entityName: EntityName): Operation
+
+  /** An Operation that will show the UI to the user that displays an entity instance. */
+  def operationToShowDisplayUI(entityName: EntityName): Operation
+
+  /** An Operation that will show the UI to the user for updating an entity instance. */
+  def operationToShowUpdateUI(entityName: EntityName): Operation
 }
