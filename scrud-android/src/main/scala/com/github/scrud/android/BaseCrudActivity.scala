@@ -88,8 +88,11 @@ trait BaseCrudActivity extends ActivityWithState with OptionsMenuActivity with L
   protected def normalActions: Seq[Action]
 
   def populateFromUri(entityType: EntityType, uri: UriPath) {
+    populateFromUri(entityType, uri, UpdaterInput(this, contextItems))
+  }
+
+  def populateFromUri(entityType: EntityType, uri: UriPath, updaterInput: UpdaterInput[AnyRef,Nothing]) {
     val futurePortableValue = crudApplication.futurePortableValue(entityType, uri, crudContext)
-    val updaterInput = UpdaterInput(this, contextItems)
     if (futurePortableValue.isSet) {
       futurePortableValue().update(updaterInput)
     } else {
