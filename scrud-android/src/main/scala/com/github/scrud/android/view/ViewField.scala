@@ -13,16 +13,18 @@ import android.view.View
 /** A Map of ViewKey with values.
   * Wraps a map so that it is distinguished from persisted fields.
   */
-case class ViewKeyMap(map: Map[ViewKey,Any]) {
+case class ViewKeyMap(map: Map[ViewKey,Option[Any]]) {
+  def contains(key: ViewKey) = map.contains(key)
+  def apply(key: ViewKey) = map.apply(key)
   def get(key: ViewKey) = map.get(key)
   def iterator = map.iterator
   def -(key: ViewKey) = ViewKeyMap(map - key)
-  def +[B1 >: Any](kv: (ViewKey, B1)) = ViewKeyMap(map + kv)
+  def +[B1 >: Any](kv: (ViewKey, Option[B1])) = ViewKeyMap(map + kv)
 }
 
 object ViewKeyMap {
   def empty = ViewKeyMap()
-  def apply(elems: (ViewKey,Any)*): ViewKeyMap = new ViewKeyMap(Map(elems: _*))
+  def apply(elems: (ViewKey,Option[Any])*): ViewKeyMap = new ViewKeyMap(Map(elems: _*))
 }
 
 /** An extractor to get the View from the items being copied from. */

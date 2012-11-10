@@ -47,7 +47,7 @@ class ViewFieldSpec extends MustMatchers with MockitoSugar {
   def itMustPopulateAViewKeyMap() {
     val stringField = persisted[String]("name") + viewId(101, textView)
     val map = stringField.copyAndUpdate(Map("name" -> "George"), ViewKeyMap())
-    map must be (ViewKeyMap(101 -> "George"))
+    map must be (ViewKeyMap(101 -> Some("George")))
   }
 
   @Test

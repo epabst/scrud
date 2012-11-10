@@ -3,14 +3,16 @@ package com.github.scrud.android.view
 import com.github.triangle.PortableField._
 import android.view.View
 import android.app.Activity
-import com.github.triangle.{Getter, PartialDelegatingField, PortableField}
+import com.github.triangle._
 import com.github.scrud.android.action.OperationResponse
 
 /** PortableField for a View resource within a given parent View */
 class ViewIdField[T](val viewRef: ViewRef, childViewField: PortableField[T]) extends PartialDelegatingField[T] {
   private lazy val viewKeyMapField: PortableField[T] =
     viewRef.viewKeyOpt.map { key =>
-      Getter[ViewKeyMap,T](_.get(key).map(_.asInstanceOf[T])).withUpdater(map => value => map + (key -> value), _ - key)
+      Getter.single[T]({
+        case map: ViewKeyMap if map.contains(key) =>  map.apply(key).asInstanceOf[Option[T]]
+      }) + Updater((m: ViewKeyMap) => (valueOpt: Option[T]) => m + (key -> valueOpt))
     }.getOrElse(emptyField)
 
   def withViewKeyMapField: PortableField[T] = this + viewKeyMapField
