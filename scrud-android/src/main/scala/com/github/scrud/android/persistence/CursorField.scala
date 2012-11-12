@@ -81,7 +81,7 @@ class CursorField[T](val name: String)(implicit val persistedType: PersistedType
     }
   }
 
-  override def toString = "persisted(\"" + name + "\")"
+  override val toString = "persisted(\"" + name + "\")"
 }
 
 object SQLiteUtil {

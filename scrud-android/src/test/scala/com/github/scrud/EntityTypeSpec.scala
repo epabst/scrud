@@ -23,7 +23,7 @@ class EntityTypeSpec extends FunSpec with MustMatchers {
 
   it("must force having an id field on subtypes") {
     val entityType = new MyEntityType {
-      override def valueFields = List(mapField[String]("name"))
+      override val valueFields = List(mapField[String]("name"))
     }
     entityType.deepCollect {
       case f if f == entityType.UriPathId => Some(true)

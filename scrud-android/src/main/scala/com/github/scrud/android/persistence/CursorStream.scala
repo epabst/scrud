@@ -32,7 +32,8 @@ case class CursorStream(cursor: Cursor, entityTypePersistedInfo: EntityTypePersi
 
   override def isEmpty : scala.Boolean = headOption.isEmpty
   override def head = headOption.get
-  override def length = cursor.getCount
+  // this assumes that the Cursor should be treated as immutable
+  override lazy val length = cursor.getCount
 
   def tailDefined = !isEmpty
   // Must be a val so that we don't create more than one CursorStream.

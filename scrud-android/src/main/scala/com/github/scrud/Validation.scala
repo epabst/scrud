@@ -28,11 +28,11 @@ object Validation {
     Validation(value => value.isDefined && !invalidValues.contains(value.get))
 
   /** A Validation that requires that the value not be empty (after trimming). */
-  def requiredString: Validation[String] = Validation(_.map(s => s.trim != "").getOrElse(false))
+  lazy val requiredString: Validation[String] = Validation(_.map(s => s.trim != "").getOrElse(false))
 }
 
 case class ValidationResult(numInvalid: Int) {
-  def isValid: Boolean = numInvalid == 0
+  val isValid: Boolean = numInvalid == 0
 
   def +(isValid: Boolean): ValidationResult = if (isValid) this else ValidationResult(numInvalid + 1)
 }

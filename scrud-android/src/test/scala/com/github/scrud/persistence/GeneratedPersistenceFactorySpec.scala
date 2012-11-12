@@ -38,7 +38,7 @@ class GeneratedPersistenceFactorySpec extends MustMatchers with CrudMockitoSugar
       def createEntityPersistence(entityType: EntityType, crudContext: CrudContext) = seqPersistence
     }
     val entityType = new EntityType(generatedEntityName) {
-      override protected def idField = mapField[ID]("longId") + super.idField
+      override protected val idField = mapField[ID]("longId") + super.idField
       def valueFields = Nil
     }
     stub(activity.getLayoutInflater).toReturn(layoutInflater)

@@ -13,13 +13,13 @@ abstract class FieldLayout { self =>
   def editXml: NodeSeq
   /** Returns a similar FieldLayout but where the editXml is overridden to be empty. */
   lazy val suppressEdit: FieldLayout = new FieldLayout {
-    def displayXml = self.displayXml
+    val displayXml = self.displayXml
     def editXml = NodeSeq.Empty
   }
   /** Returns a similar FieldLayout but where the displayXml is overridden to be empty. */
   lazy val suppressDisplay: FieldLayout = new FieldLayout {
     def displayXml = NodeSeq.Empty
-    def editXml = self.editXml
+    val editXml = self.editXml
   }
 }
 
@@ -34,8 +34,8 @@ object FieldLayout {
   }
 
   def textLayout(inputType: String) = new FieldLayout {
-    def displayXml = <TextView/>
-    def editXml = <EditText android:inputType={inputType}/>
+    val displayXml = <TextView/>
+    val editXml = <EditText android:inputType={inputType}/>
   }
 
   lazy val noLayout = FieldLayout(NodeSeq.Empty, NodeSeq.Empty)
@@ -45,8 +45,8 @@ object FieldLayout {
   lazy val doubleLayout = textLayout("numberDecimal|numberSigned")
   lazy val currencyLayout = textLayout("numberDecimal|numberSigned")
   lazy val datePickerLayout = new FieldLayout {
-    def displayXml = <TextView/>
-    def editXml = <DatePicker/>
+    val displayXml = <TextView/>
+    val editXml = <DatePicker/>
   }
   lazy val dateTextLayout = textLayout("date")
 

@@ -13,11 +13,11 @@ import scala.collection.JavaConversions._
  *         Time: 5:27 PM
  */
 class ListBufferPersistenceFactory[T <: AnyRef](instantiateItem: => T) extends PersistenceFactory with DataListenerSetValHolder {
-  def canSave = true
+  val canSave = true
 
   private val persistenceByEntityType: mutable.ConcurrentMap[EntityType,ListBufferCrudPersistence[T]] = new ConcurrentHashMap[EntityType,ListBufferCrudPersistence[T]]()
 
-  def newWritable = instantiateItem
+  def newWritable() = instantiateItem
 
   // synchronized so that only one persistence instance is used and onCreateDatabase completes before any thread uses the instance.
   def createEntityPersistence(entityType: EntityType, crudContext: CrudContext) = synchronized {

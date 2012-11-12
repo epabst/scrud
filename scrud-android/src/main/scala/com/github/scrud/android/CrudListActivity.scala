@@ -51,7 +51,7 @@ class CrudListActivity extends ListActivity with BaseCrudActivity { self =>
     }
   }
 
-  protected def contextMenuActions: Seq[Action] = crudApplication.actionsForEntity(entityType) match {
+  protected lazy val contextMenuActions: Seq[Action] = crudApplication.actionsForEntity(entityType) match {
     case _ :: tail => tail.filter(_.command.title.isDefined)
     case Nil => Nil
   }

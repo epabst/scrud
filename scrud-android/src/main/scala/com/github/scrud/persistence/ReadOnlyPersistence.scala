@@ -10,7 +10,7 @@ import com.github.scrud.UriPath
  *         Time: 4:57 PM
  */
 trait ReadOnlyPersistence extends EntityPersistence {
-  def newWritable = throw new UnsupportedOperationException("write not supported")
+  def newWritable() = throw new UnsupportedOperationException("write not supported")
 
   def doSave(id: Option[ID], data: AnyRef): ID = throw new UnsupportedOperationException("write not supported")
 

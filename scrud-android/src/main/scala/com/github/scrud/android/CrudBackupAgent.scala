@@ -48,9 +48,9 @@ import CrudBackupAgent._
 class CrudBackupAgent(application: CrudApplication) extends BackupAgent with ContextWithState with Logging {
   val crudContext = new AndroidCrudContext(this, application)
 
-  protected def logTag = Common.tryToEvaluate(application.logTag).getOrElse(Common.logTag)
+  protected lazy val logTag = Common.tryToEvaluate(application.logTag).getOrElse(Common.logTag)
 
-  def applicationState: State = getApplicationContext.asInstanceOf[CrudAndroidApplication]
+  lazy val applicationState: State = getApplicationContext.asInstanceOf[CrudAndroidApplication]
 
   final def onBackup(oldState: ParcelFileDescriptor, data: BackupDataOutput, newState: ParcelFileDescriptor) {
     crudContext.withExceptionReporting {
@@ -150,6 +150,7 @@ object DeletedEntityId extends EntityName("DeletedEntityId")
 object DeletedEntityIdEntityType extends EntityType(DeletedEntityId) {
   val entityNameField = persisted[String]("entityName")
   val entityIdField = persisted[ID]("entityId")
+  // not a val since not used enough to store
   def valueFields = List(entityNameField, entityIdField)
 }
 
@@ -161,11 +162,11 @@ object DeletedEntityIdEntityType extends EntityType(DeletedEntityId) {
   */
 object DeletedEntityIdCrudType extends CrudType(DeletedEntityIdEntityType, SQLitePersistenceFactory) {
   private val application = new CrudApplication(AndroidPlatformDriver) {
-    def name = "scrud.android_deleted"
+    val name = "scrud.android_deleted"
 
-    def allCrudTypes = List(DeletedEntityIdCrudType)
+    val allCrudTypes = List(DeletedEntityIdCrudType)
 
-    def dataVersion = 1
+    val dataVersion = 1
   }
 
   /** Records that a deletion happened so that it is deleted from the Backup Service.

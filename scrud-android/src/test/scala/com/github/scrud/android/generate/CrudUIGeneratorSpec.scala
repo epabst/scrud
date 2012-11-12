@@ -61,12 +61,12 @@ class CrudUIGeneratorSpec extends FunSpec with MustMatchers with MockitoSugar {
   describe("generateValueStrings") {
     it("must include 'list', 'add' and 'edit' strings for modifiable entities") {
       val myEntityType = new MyEntityType {
-        override def valueFields = List(persisted[String]("model") + viewId(classOf[R], "model", textView))
+        override val valueFields = List(persisted[String]("model") + viewId(classOf[R], "model", textView))
       }
       val application = new CrudApplication(AndroidPlatformDriver) {
-        def allCrudTypes = List(new MyCrudType(myEntityType))
-        def dataVersion = 1
-        def name = "Test App"
+        val allCrudTypes = List(new MyCrudType(myEntityType))
+        val dataVersion = 1
+        val name = "Test App"
       }
       val valueStrings = CrudUIGenerator.generateValueStrings(EntityTypeViewInfo(myEntityType), application)
       valueStrings.foreach(println(_))
@@ -75,12 +75,12 @@ class CrudUIGeneratorSpec extends FunSpec with MustMatchers with MockitoSugar {
 
     it("must not include an 'add' string for unaddable entities") {
       val myEntityType = new MyEntityType {
-        override def valueFields = List(bundleField[String]("model"))
+        override val valueFields = List(bundleField[String]("model"))
       }
       val application = new CrudApplication(AndroidPlatformDriver) {
-        def allCrudTypes = List(new MyCrudType(myEntityType))
-        def dataVersion = 1
-        def name = "Test App"
+        val allCrudTypes = List(new MyCrudType(myEntityType))
+        val dataVersion = 1
+        val name = "Test App"
         override def isCreatable(entityType: EntityType) = false
       }
       val valueStrings = CrudUIGenerator.generateValueStrings(EntityTypeViewInfo(myEntityType), application)
@@ -93,9 +93,9 @@ class CrudUIGeneratorSpec extends FunSpec with MustMatchers with MockitoSugar {
         override def valueFields = List(bundleField[String]("model"))
       }
       val application = new CrudApplication(AndroidPlatformDriver) {
-        def allCrudTypes = List(new MyCrudType(_entityType))
-        def dataVersion = 1
-        def name = "Test App"
+        val allCrudTypes = List(new MyCrudType(_entityType))
+        val dataVersion = 1
+        val name = "Test App"
         override def isCreatable(entityType: EntityType) = false
         override def isSavable(entityType: EntityType) = false
       }

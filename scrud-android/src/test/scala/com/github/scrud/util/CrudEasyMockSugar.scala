@@ -25,7 +25,7 @@ trait CrudEasyMockSugar extends EasyMockSugar {
   def capturingAnswer[T](result: => T): CapturingAnswer[T] = new CapturingAnswer({ result })
 
   def answer[T](result: => T) = new IAnswer[T] {
-    def answer = result
+    def answer() = result
   }
 
   def eql[T](value: T): T = org.easymock.EasyMock.eq(value)

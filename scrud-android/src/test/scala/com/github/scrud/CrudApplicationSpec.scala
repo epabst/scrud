@@ -15,9 +15,9 @@ class CrudApplicationSpec extends FunSpec with MustMatchers {
 
   it("must provide a valid nameId") {
     val application = new CrudApplication(TestingPlatformDriver) {
-      def name = "A diFFicult name to use as an ID"
-      def allCrudTypes = List()
-      def dataVersion = 1
+      val name = "A diFFicult name to use as an ID"
+      val allCrudTypes = List()
+      val dataVersion = 1
     }
     application.nameId must be ("a_difficult_name_to_use_as_an_id")
   }
@@ -25,7 +25,7 @@ class CrudApplicationSpec extends FunSpec with MustMatchers {
   it("must get the correct entity actions with child entities") {
     val parentEntityType = new MyEntityType(new EntityName("Entity1"))
     val childEntityType = new MyEntityType {
-      override lazy val valueFields = ParentField(parentEntityType) :: super.valueFields
+      override val valueFields = ParentField(parentEntityType) :: super.valueFields
     }
     val childCrudType = new MyCrudType(childEntityType)
     val parentCrudType = new MyCrudType(parentEntityType)

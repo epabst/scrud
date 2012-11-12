@@ -10,9 +10,9 @@ import com.github.scrud.persistence.{DataListenerSetValHolder, PersistenceFactor
   * @author Eric Pabst (epabst@gmail.com)
   */
 class SQLitePersistenceFactory extends PersistenceFactory with DataListenerSetValHolder {
-  def canSave = true
+  val canSave = true
 
-  def newWritable = new ContentValues
+  def newWritable() = new ContentValues
 
   def createEntityPersistence(entityType: EntityType, crudContext: CrudContext) = {
     val androidCrudContext = crudContext.asInstanceOf[AndroidCrudContext]

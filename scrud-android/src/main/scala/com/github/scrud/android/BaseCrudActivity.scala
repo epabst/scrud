@@ -30,7 +30,7 @@ import view.OnClickOperationSetter
 trait BaseCrudActivity extends ActivityWithState with OptionsMenuActivity with Logging { self =>
   lazy val platformDriver = AndroidPlatformDriver
 
-  def crudApplication: CrudApplication = super.getApplication.asInstanceOf[CrudAndroidApplication].application
+  lazy val crudApplication: CrudApplication = super.getApplication.asInstanceOf[CrudAndroidApplication].application
 
   lazy val entityType = crudApplication.allEntityTypes.find(entityType => Some(entityType.entityName.name) == currentUriPath.lastEntityNameOption).getOrElse {
     throw new IllegalStateException("No valid entityName in " + currentUriPath)
@@ -41,7 +41,7 @@ trait BaseCrudActivity extends ActivityWithState with OptionsMenuActivity with L
   /** Instantiates a data buffer which can be saved by EntityPersistence.
     * The fields must support copying into this object.
     */
-  def newWritable = persistenceFactory.newWritable
+  def newWritable() = persistenceFactory.newWritable()
 
   protected lazy val persistenceFactory: PersistenceFactory = crudApplication.persistenceFactory(entityType)
 
@@ -50,7 +50,7 @@ trait BaseCrudActivity extends ActivityWithState with OptionsMenuActivity with L
     super.setIntent(newIntent)
   }
 
-  def currentUriPath: UriPath = {
+  lazy val currentUriPath: UriPath = {
     val defaultContentUri = crudApplication.defaultContentUri
     Option(getIntent).map(intent => Option(intent.getData).map(toUriPath(_)).getOrElse {
       // If no data was given in the intent (because we were started
@@ -60,8 +60,9 @@ trait BaseCrudActivity extends ActivityWithState with OptionsMenuActivity with L
     }).getOrElse(defaultContentUri)
   }
 
-  def currentCrudOperation: CrudOperation = CrudOperation(entityName, currentCrudOperationType)
+  lazy val currentCrudOperation: CrudOperation = CrudOperation(entityName, currentCrudOperationType)
 
+  // not a val because it isn't worth storing
   private def currentCrudOperationType: CrudOperationType.Value = currentAction match {
     case AndroidOperation.CreateActionName => CrudOperationType.Create
     case AndroidOperation.ListActionName => CrudOperationType.List
@@ -78,8 +79,9 @@ trait BaseCrudActivity extends ActivityWithState with OptionsMenuActivity with L
 
   lazy val crudContext = new AndroidCrudContext(this, crudApplication)
 
-  def contextItems = GetterInput(currentUriPath, crudContext, PortableField.UseDefaults)
+  lazy val contextItems = GetterInput(currentUriPath, crudContext, PortableField.UseDefaults)
 
+  // not a val because not used enough to store
   def contextItemsWithoutUseDefaults = GetterInput(currentUriPath, crudContext)
 
   protected lazy val logTag = Common.tryToEvaluate(crudApplication.name).getOrElse(Common.logTag)
@@ -107,18 +109,18 @@ trait BaseCrudActivity extends ActivityWithState with OptionsMenuActivity with L
 
   lazy val entityNameLayoutPrefix = crudApplication.entityNameLayoutPrefixFor(entityName)
 
-  private lazy val rLayoutClassesVal = crudApplication.rLayoutClassesVal
+  private def rLayoutClasses = crudApplication.rLayoutClasses
 
   protected def getLayoutKey(layoutName: String): LayoutKey =
-    findResourceIdWithName(rLayoutClassesVal, layoutName).getOrElse {
-      rLayoutClassesVal.foreach(layoutClass => logError("Contents of " + layoutClass + " are " + layoutClass.getFields.mkString(", ")))
+    findResourceIdWithName(rLayoutClasses, layoutName).getOrElse {
+      rLayoutClasses.foreach(layoutClass => logError("Contents of " + layoutClass + " are " + layoutClass.getFields.mkString(", ")))
       throw new IllegalStateException("R.layout." + layoutName + " not found.  You may want to run the CrudUIGenerator.generateLayouts." +
-              rLayoutClassesVal.mkString("(layout classes: ", ",", ")"))
+              rLayoutClasses.mkString("(layout classes: ", ",", ")"))
     }
 
   lazy val headerLayout: LayoutKey = getLayoutKey(entityNameLayoutPrefix + "_header")
   lazy val listLayout: LayoutKey =
-    findResourceIdWithName(rLayoutClassesVal, entityNameLayoutPrefix + "_list").getOrElse(getLayoutKey("entity_list"))
+    findResourceIdWithName(rLayoutClasses, entityNameLayoutPrefix + "_list").getOrElse(getLayoutKey("entity_list"))
   lazy val rowLayout: LayoutKey = getLayoutKey(entityNameLayoutPrefix + "_row")
   /** The layout used for each entity when allowing the user to pick one of them. */
   lazy val pickLayout: LayoutKey = pickLayoutFor(entityName)
@@ -126,7 +128,7 @@ trait BaseCrudActivity extends ActivityWithState with OptionsMenuActivity with L
 
   /** The layout used for each entity when allowing the user to pick one of them. */
   def pickLayoutFor(entityName: EntityName): LayoutKey = {
-    findResourceIdWithName(rLayoutClassesVal, crudApplication.entityNameLayoutPrefixFor(entityName) + "_pick").getOrElse(
+    findResourceIdWithName(rLayoutClasses, crudApplication.entityNameLayoutPrefixFor(entityName) + "_pick").getOrElse(
       _root_.android.R.layout.simple_spinner_dropdown_item)
   }
 
@@ -168,6 +170,7 @@ trait BaseCrudActivity extends ActivityWithState with OptionsMenuActivity with L
     optionsMenuCommands = generateOptionsMenu.map(_.command)
   }
 
+  // not a val because it is dynamic
   protected def applicableActions: List[Action] = LastUndoable.get(this).map(_.undoAction).toList ++ normalActions
 
   protected lazy val normalOperationSetters: FieldList = {
@@ -180,9 +183,11 @@ trait BaseCrudActivity extends ActivityWithState with OptionsMenuActivity with L
     normalOperationSetters.defaultValue.update(this, contextItems)
   }
 
+  // not a val because it is dynamic
   protected def generateOptionsMenu: List[Action] =
     applicableActions.filter(action => action.command.title.isDefined || action.command.icon.isDefined)
 
+  // not a val because it is dynamic
   def initialOptionsMenuCommands = generateOptionsMenu.map(_.command)
 
   override def onOptionsItemSelected(item: MenuItem): Boolean = {
@@ -292,9 +297,11 @@ trait BaseCrudActivity extends ActivityWithState with OptionsMenuActivity with L
     setListAdapter(adapterView, persistence, uriPath, entityType, crudContext, contextItems, activity, itemLayout)
   }
 
-  def waitForWorkInProgress() = crudContext.waitForWorkInProgress()
+  def waitForWorkInProgress() {
+    crudContext.waitForWorkInProgress()
+  }
 
-  override def toString = getClass.getSimpleName + "@" + System.identityHashCode(this)
+  override val toString = getClass.getSimpleName + "@" + System.identityHashCode(this)
 }
 
 /** An undo of an operation.  The operation should have already completed, but it can be undone or accepted.

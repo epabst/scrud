@@ -25,7 +25,7 @@ case class Command(icon: Option[ImgKey], title: Option[SKey], viewRef: Option[Vi
   /** A CommandID that can be used to identify if it's the same as another in a list.
     * It uses the title or else the icon or else the hash code.
     */
-  def commandId: CommandId = title.orElse(icon).getOrElse(##)
+  val commandId: CommandId = title.orElse(icon).getOrElse(##)
 }
 
 /** Represents an operation that a user can initiate. */
@@ -57,7 +57,7 @@ object AndroidOperation {
 }
 
 case class RichIntent(intent: Intent) {
-  def uriPath: UriPath = intent.getData
+  val uriPath: UriPath = intent.getData
 }
 
 trait StartActivityOperation extends AndroidOperation {
@@ -128,7 +128,7 @@ trait StartActivityForResultOperation extends StartActivityOperation {
 object StartActivityForResultOperation {
   def apply(view: View, intent: => Intent): StartActivityForResultOperation =
     new StartActivityOperationFromIntent(intent) with StartActivityForResultOperation {
-      def viewIdToRespondTo = view.getId
+      val viewIdToRespondTo = view.getId
     }
 }
 

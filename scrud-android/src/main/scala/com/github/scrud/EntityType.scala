@@ -12,16 +12,17 @@ import util.Common
   * @param entityName  this is used to identify the EntityType and for internationalized strings
   */
 abstract class EntityType(val entityName: EntityName) extends FieldList with Logging {
-  override lazy val logTag = Common.tryToEvaluate(entityName.name).getOrElse(Common.logTag)
+  override val logTag = Common.tryToEvaluate(entityName.name).getOrElse(Common.logTag)
 
   trace("Instantiated EntityType: " + this)
 
-  def UriPathId = entityName.UriPathId
+  val UriPathId = entityName.UriPathId
 
   /** This should only be used in order to override this.  IdField should be used instead of this.
     * A field that uses IdPk.id is NOT included here because it could match a related entity that also extends IdPk,
     * which results in many problems.
     */
+  // not a val so that subclasses can use super.idField
   protected def idField: PortableField[ID] = UriPathId + PersistedId
   object IdField extends Field[ID](idField)
 
@@ -40,7 +41,7 @@ abstract class EntityType(val entityName: EntityName) extends FieldList with Log
     case parentField: ParentField => parentField
   }
 
-  def parentEntityNames: Seq[EntityName] = parentFields.map(_.entityName)
+  lazy val parentEntityNames: Seq[EntityName] = parentFields.map(_.entityName)
 
   def toUri(id: ID) = UriPath(entityName, id)
 

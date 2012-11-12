@@ -16,9 +16,9 @@ import android.view.{MenuItem, Menu}
 @RunWith(classOf[RobolectricTestRunner])
 class OptionsMenuActivitySpec extends MustMatchers with MockitoSugar {
   class StubOptionsMenuActivity extends Activity with OptionsMenuActivity {
-    protected def initialOptionsMenuCommands = Nil
+    protected val initialOptionsMenuCommands = Nil
 
-    protected def logTag = "log"
+    protected val logTag = "log"
   }
 
   @Test

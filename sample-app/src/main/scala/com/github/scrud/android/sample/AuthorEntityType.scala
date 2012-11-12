@@ -10,7 +10,7 @@ import com.github.scrud.Validation._
 object Author extends EntityName("Author")
 
 object AuthorEntityType extends EntityType(Author) {
-  def valueFields = List(
+  val valueFields = List(
     persisted[String]("name") + viewId(classOf[R], "name", textView) + requiredString,
 
     viewId(classOf[R], "bookCount", intView) +

@@ -25,7 +25,7 @@ trait EntityPersistence extends ListenerSet[DataListener] {
   def findAll(uri: UriPath): Seq[AnyRef]
 
   /** Should delegate to PersistenceFactory.newWritable. */
-  def newWritable: AnyRef
+  def newWritable(): AnyRef
 
   /** Save a created or updated entity. */
   final def save(idOption: Option[ID], writable: AnyRef): ID = {

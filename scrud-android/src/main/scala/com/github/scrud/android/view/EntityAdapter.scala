@@ -22,6 +22,7 @@ class EntityAdapter(val entityType: EntityType, values: Seq[AnyRef], rowLayout: 
 
   def getItemId(position: Int): ID = getItemId(getItem(position), position)
 
+  // Not a val because values may or may not be immutable
   def getCount: Int = values.size
 
   def getItem(position: Int) = values(position)

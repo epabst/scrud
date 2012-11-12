@@ -6,7 +6,7 @@ import actors.{InputChannel, Future}
   * @author Eric Pabst (epabst@gmail.com)
   */
 class ReadyFuture[+T](val readyValue: T) extends Future[T] {
-  def isSet = true
+  val isSet = true
 
   def apply() = readyValue
 

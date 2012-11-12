@@ -50,5 +50,5 @@ case class EntityView(entityType: EntityType)
       }
   }
 
-  override def toString = "EntityView(" + entityType.entityName + ")"
+  override lazy val toString = "EntityView(" + entityType.entityName + ")"
 }

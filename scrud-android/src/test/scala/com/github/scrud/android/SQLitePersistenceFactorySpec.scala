@@ -29,7 +29,7 @@ import com.github.scrud.EntityName
   */
 @RunWith(classOf[RobolectricTestRunner])
 class SQLitePersistenceFactorySpec extends MustMatchers with CrudMockitoSugar with Logging {
-  protected def logTag = getClass.getSimpleName
+  protected val logTag = getClass.getSimpleName
 
   val runningOnRealAndroid: Boolean = try {
     debug("Seeing if running on Real Android...")
@@ -54,9 +54,9 @@ class SQLitePersistenceFactorySpec extends MustMatchers with CrudMockitoSugar wi
   object TestApplication extends CrudApplication(AndroidPlatformDriver) {
     val name = "Test Application"
 
-    def allCrudTypes = List(TestCrudType)
+    val allCrudTypes = List(TestCrudType)
 
-    def dataVersion = 1
+    val dataVersion = 1
   }
   val application = TestApplication
   val listenerSet = mock[ListenerSet[DataListener]]
@@ -104,7 +104,7 @@ class SQLitePersistenceFactorySpec extends MustMatchers with CrudMockitoSugar wi
   def shouldRefreshCursorWhenDeletingAndSaving() {
     val activity = new CrudListActivity {
       override val applicationState = new State {}
-      override def crudApplication = application
+      override lazy val crudApplication = application
       override val getListView: ListView = new ListView(this)
     }
     val observer = mock[DataSetObserver]

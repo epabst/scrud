@@ -19,6 +19,7 @@ abstract class ListBufferEntityPersistence[T <: AnyRef](newWritableFunction: => 
       Setter((e: MutableIdPk) => e.id = _) + CursorField.PersistedId)
   val buffer = mutable.ListBuffer[T]()
 
+  // not a val since dynamic
   def listeners = listenerSet.listeners
 
   val nextId = new AtomicLong(10000L)
@@ -27,7 +28,7 @@ abstract class ListBufferEntityPersistence[T <: AnyRef](newWritableFunction: => 
   //def findAll(uri: UriPath) = buffer.toList.filter(item => uri.segments.containsSlice(toUri(IdField(item)).segments))
   def findAll(uri: UriPath) = buffer.toList
 
-  def newWritable = newWritableFunction
+  def newWritable() = newWritableFunction
 
   def doSave(id: Option[ID], item: AnyRef) = {
     val newId = id.getOrElse {

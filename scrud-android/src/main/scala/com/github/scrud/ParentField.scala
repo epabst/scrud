@@ -11,7 +11,7 @@ case class ParentField(entityName: EntityName) extends DelegatingPortableField[I
 
   protected val delegate = entityName.UriPathId
 
-  override def toString = "ParentField(" + entityName + ")"
+  override val toString = "ParentField(" + entityName + ")"
 }
 
 object ParentField {

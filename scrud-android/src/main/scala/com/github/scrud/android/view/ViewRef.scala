@@ -32,7 +32,7 @@ object ViewRef {
 }
 
 private case class ViewRefUsingViewKey(viewKey: ViewKey) extends ViewRef {
-  def viewKeyOpt = Some(viewKey)
+  val viewKeyOpt = Some(viewKey)
 
   def viewKeyOrError = viewKey
 
@@ -44,9 +44,9 @@ private case class ViewRefUsingViewKey(viewKey: ViewKey) extends ViewRef {
 }
 
 private case class ViewRefUsingName(viewResourceIdName: String, rIdClasses: Seq[Class[_]]) extends ViewRef {
-  def viewKeyOpt = findResourceIdWithName(rIdClasses, viewResourceIdName)
+  lazy val viewKeyOpt = findResourceIdWithName(rIdClasses, viewResourceIdName)
 
-  def viewKeyOrError = resourceIdWithName(rIdClasses, viewResourceIdName)
+  lazy val viewKeyOrError = resourceIdWithName(rIdClasses, viewResourceIdName)
 
   def fieldName(rIdClasses: Seq[Class[_]]): String = viewResourceIdName
 

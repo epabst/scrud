@@ -20,8 +20,8 @@ case class EntityFieldInfo(field: BaseField, rIdClasses: Seq[Class[_]]) {
   }
 
   lazy val isDisplayable: Boolean = !displayableViewIdFieldInfos.isEmpty
-  def isPersisted: Boolean = !updateablePersistedFields.isEmpty
-  def isUpdateable: Boolean = isDisplayable && isPersisted
+  lazy val isPersisted: Boolean = !updateablePersistedFields.isEmpty
+  lazy val isUpdateable: Boolean = isDisplayable && isPersisted
 
   lazy val nestedEntityTypeViewInfos: Seq[EntityTypeViewInfo] = field.deepCollect {
     case entityView: EntityView => EntityTypeViewInfo(entityView.entityType)
@@ -44,7 +44,7 @@ case class ViewIdFieldInfo(id: String, displayName: String, field: PortableField
     case matchingField: ViewField[_] => matchingField
   }
 
-  def layout: FieldLayout = viewFields.headOption.map(_.defaultLayout).getOrElse(FieldLayout.noLayout)
+  lazy val layout: FieldLayout = viewFields.headOption.map(_.defaultLayout).getOrElse(FieldLayout.noLayout)
 }
 
 object ViewIdFieldInfo {
@@ -53,11 +53,11 @@ object ViewIdFieldInfo {
 }
 
 case class EntityTypeViewInfo(entityType: EntityType) {
-  def entityName = entityType.entityName
+  val entityName = entityType.entityName
   lazy val layoutPrefix = NamingConventions.toLayoutPrefix(entityType.entityName)
   lazy val rIdClasses: Seq[Class[_]] = detectRIdClasses(entityType.getClass)
   lazy val entityFieldInfos: List[EntityFieldInfo] = entityType.fields.map(EntityFieldInfo(_, rIdClasses))
   lazy val displayableViewIdFieldInfos: List[ViewIdFieldInfo] = entityFieldInfos.flatMap(_.displayableViewIdFieldInfos)
   lazy val updateableViewIdFieldInfos: List[ViewIdFieldInfo] = entityFieldInfos.flatMap(_.updateableViewIdFieldInfos)
-  def isUpdateable: Boolean = !updateableViewIdFieldInfos.isEmpty
+  lazy val isUpdateable: Boolean = !updateableViewIdFieldInfos.isEmpty
 }

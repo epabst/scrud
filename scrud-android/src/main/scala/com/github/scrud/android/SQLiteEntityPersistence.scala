@@ -50,7 +50,7 @@ class SQLiteEntityPersistence(val entityType: EntityType, val crudContext: Andro
     debug("Notified BackupManager that data changed.")
   }
 
-  def newWritable = SQLitePersistenceFactory.newWritable
+  def newWritable() = SQLitePersistenceFactory.newWritable()
 
   def doSave(idOption: Option[ID], writable: AnyRef): ID = {
     val contentValues = writable.asInstanceOf[ContentValues]

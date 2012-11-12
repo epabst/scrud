@@ -11,9 +11,9 @@ import com.github.scrud.CrudContext
  *         Time: 5:05 PM
  */
 trait GeneratedPersistenceFactory[T <: AnyRef] extends PersistenceFactory with DataListenerSetValHolder {
-  def canSave = false
+  val canSave = false
 
-  def newWritable: T = throw new UnsupportedOperationException("not supported")
+  def newWritable(): T = throw new UnsupportedOperationException("not supported")
 
   def createEntityPersistence(entityType: EntityType, crudContext: CrudContext): SeqCrudPersistence[T]
 }

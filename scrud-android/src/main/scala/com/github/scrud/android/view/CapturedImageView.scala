@@ -21,12 +21,12 @@ import com.github.scrud.util.{Common, CachedFunction}
   * @author Eric Pabst (epabst@gmail.com)
   */
 object CapturedImageView extends ViewField[Uri](new FieldLayout {
-  def displayXml = <ImageView android:adjustViewBounds="true"/>
-  def editXml = <ImageView android:adjustViewBounds="true" android:clickable="true"/>
+  val displayXml = <ImageView android:adjustViewBounds="true"/>
+  val editXml = <ImageView android:adjustViewBounds="true" android:clickable="true"/>
 }) {
   private object DrawableByUriCache extends ApplicationVar[CachedFunction[Uri,Drawable]]
 
-  private def bitmapFactoryOptions = {
+  private lazy val bitmapFactoryOptions = {
     val options = new BitmapFactory.Options
     options.inDither = true
     //todo make this depend on the actual image's dimensions

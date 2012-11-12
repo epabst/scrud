@@ -88,7 +88,7 @@ class CrudBackupAgentSpec extends MustMatchers with CrudMockitoSugar {
     when(applicationB.persistenceFactory(entityTypeB)).thenReturn(new MyPersistenceFactory(persistenceB))
     when(applicationB.persistenceFactory(entityType2B)).thenReturn(new MyPersistenceFactory(persistence2B))
     val backupAgent = new CrudBackupAgent(application) {
-      override val applicationState = new State {}
+      override lazy val applicationState = new State {}
     }
     backupAgent.onCreate()
     backupAgent.onBackup(state0, backupTarget, state1)
@@ -126,7 +126,7 @@ class CrudBackupAgentSpec extends MustMatchers with CrudMockitoSugar {
     val persistence = new MyEntityPersistence
     val entityType = new MyEntityType
     val generatedType = new EntityType(EntityName("Generated")) {
-      def valueFields = List[BaseField](ParentField(MyEntityType), default[Int](100))
+      val valueFields = List[BaseField](ParentField(MyEntityType), default[Int](100))
     }
     val state0 = null
     when(application.entityNameLayoutPrefixFor(entityType.entityName)).thenReturn("test")
@@ -135,7 +135,7 @@ class CrudBackupAgentSpec extends MustMatchers with CrudMockitoSugar {
     when(application.persistenceFactory(any[EntityName]())).thenReturn(new MyPersistenceFactory(persistence))
     //shouldn't call any methods on generatedPersistence
     val backupAgent = new CrudBackupAgent(application) {
-      override val applicationState = new State {}
+      override lazy val applicationState = new State {}
     }
     backupAgent.onCreate()
     //shouldn't fail even though one is generated

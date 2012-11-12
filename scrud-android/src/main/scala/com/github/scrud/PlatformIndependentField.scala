@@ -15,12 +15,12 @@ object PlatformIndependentField {
    * It is activated by copying from [[com.github.scrud.LoadingIndicator]].
    */
   def loadingIndicator[T](value: => T): PortableField[T] = new SingleGetter[T] {
-    def singleGetter = {
+    val singleGetter: PartialFunction[AnyRef,Option[T]] = {
       case LoadingIndicator =>
         Some(value)
     }
 
-    override def toString = "loadingValue(" + value + ")"
+    override val toString = "loadingValue(" + value + ")"
   }
 }
 

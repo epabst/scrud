@@ -28,6 +28,7 @@ class CrudFunctionalTest extends ActivityInstrumentationTestCase2(classOf[CrudLi
     super.tearDown()
   }
 
+  // not a val since dynamic
   def currentCrudActivity: BaseCrudActivity = solo.getCurrentActivity.asInstanceOf[BaseCrudActivity]
 
   def testAddEditDelete() {

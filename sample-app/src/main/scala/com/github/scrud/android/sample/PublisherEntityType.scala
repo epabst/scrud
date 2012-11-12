@@ -10,7 +10,7 @@ import scrud.Validation._
 object Publisher extends EntityName("Publisher")
 
 object PublisherEntityType extends EntityType(Publisher) {
-  def valueFields = List(
+  val valueFields = List(
     persisted[String]("name") + viewId(classOf[R], "publisher_name", textView) + requiredString,
 
     viewId(classOf[R], "bookCount", intView) + bundleField[Int]("bookCount") + Getter[Int] {

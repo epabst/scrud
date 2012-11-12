@@ -9,13 +9,13 @@ import com.github.scrud.CrudContext
  * @author Eric Pabst (epabst@gmail.com)
  */
 class SingletonWithChangeLogPersistenceFactory(delegate: PersistenceFactory) extends PersistenceFactory {
-  def canSave = delegate.canSave
+  val canSave = delegate.canSave
 
-  override def canDelete = false
+  override val canDelete = false
 
-  override def canList = false
+  override val canList = false
 
-  def newWritable = delegate.newWritable
+  def newWritable() = delegate.newWritable()
 
   def createEntityPersistence(entityType: EntityType, crudContext: CrudContext) =
     new SingletonWithChangeLogCrudPersistence(delegate.createEntityPersistence(entityType, crudContext),

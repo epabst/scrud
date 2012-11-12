@@ -25,5 +25,5 @@ case class EnumerationView[E <: Enumeration#Value](enum: Enumeration)
       adapterView.setSelection(valueOpt.map(valueArray.indexOf(_)).getOrElse(AdapterView.INVALID_POSITION))
     } + formatted[E](enumFormat(enum), ViewField.textView)
 
-  override def toString = "EnumerationView(" + enum.getClass.getSimpleName + ")"
+  override lazy val toString = "EnumerationView(" + enum.getClass.getSimpleName + ")"
 }

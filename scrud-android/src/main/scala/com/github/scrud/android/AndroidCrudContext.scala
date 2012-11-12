@@ -19,7 +19,7 @@ case class AndroidCrudContext(activityContext: ContextWithState, application: Cr
   lazy val applicationState: State = activityContext.applicationState
 
   /** The ISO 2 country such as "US". */
-  def isoCountry = {
+  lazy val isoCountry = {
     Option(activityContext.getSystemService(Context.TELEPHONY_SERVICE)).map(_.asInstanceOf[TelephonyManager]).
         flatMap(tm => Option(tm.getSimCountryIso)).getOrElse(java.util.Locale.getDefault.getCountry)
   }

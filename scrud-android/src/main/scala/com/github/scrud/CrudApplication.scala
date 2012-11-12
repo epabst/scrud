@@ -32,7 +32,7 @@ import PortableField.toSome
  */
 
 abstract class CrudApplication(platformDriver: PlatformDriver) extends Logging {
-  def logTag = Common.tryToEvaluate(nameId).getOrElse(Common.logTag)
+  lazy val logTag = Common.tryToEvaluate(nameId).getOrElse(Common.logTag)
 
   trace("Instantiated CrudApplication: " + this)
 
@@ -44,15 +44,15 @@ abstract class CrudApplication(platformDriver: PlatformDriver) extends Logging {
   //this will be used for programmatic uses such as a database name
   lazy val nameId: String = name.replace(" ", "_").toLowerCase
 
-  def classNamePrefix: String = getClass.getSimpleName.replace("$", "").stripSuffix("Application")
-  def packageName: String = getClass.getPackage.getName
+  val classNamePrefix: String = getClass.getSimpleName.replace("$", "").stripSuffix("Application")
+  val packageName: String = getClass.getPackage.getName
 
   /** All entities in the application, in order as shown to users. */
   protected def allCrudTypes: Seq[CrudType]
   def allEntityTypes: Seq[EntityType] = allCrudTypes.map(_.entityType)
 
   /** The EntityType for the first page of the App. */
-  def primaryEntityType: EntityType = allEntityTypes.head
+  lazy val primaryEntityType: EntityType = allEntityTypes.head
 
   def entityType(entityName: EntityName): EntityType = allEntityTypes.find(_.entityName == entityName).getOrElse {
     throw new IllegalArgumentException("Unknown entity: entityName=" + entityName)
@@ -79,7 +79,7 @@ abstract class CrudApplication(platformDriver: PlatformDriver) extends Logging {
   def persistenceFactory(entityName: EntityName): PersistenceFactory = crudType(entityName).persistenceFactory
   def persistenceFactory(entityType: EntityType): PersistenceFactory = persistenceFactory(entityType.entityName)
 
-  def newWritable(entityType: EntityType): AnyRef = persistenceFactory(entityType).newWritable
+  def newWritable(entityType: EntityType): AnyRef = persistenceFactory(entityType).newWritable()
 
   /** Returns true if the URI is worth calling EntityPersistence.find to try to get an entity instance. */
   def maySpecifyEntityInstance(uri: UriPath, entityType: EntityType): Boolean =
@@ -98,37 +98,34 @@ abstract class CrudApplication(platformDriver: PlatformDriver) extends Logging {
   def isDeletable(entityName: EntityName): Boolean = persistenceFactory(entityName).canDelete
 
   private lazy val classInApplicationPackage: Class[_] = allEntityTypes.head.getClass
-  def rStringClasses: Seq[Class[_]] = detectRStringClasses(classInApplicationPackage)
-  private lazy val rStringClassesVal = rStringClasses
-  def rIdClasses: Seq[Class[_]] = detectRIdClasses(classInApplicationPackage)
-  private lazy val rIdClassesVal = rIdClasses
-  def rLayoutClasses: Seq[Class[_]] = detectRLayoutClasses(classInApplicationPackage)
-  lazy val rLayoutClassesVal = rLayoutClasses
+  lazy val rStringClasses: Seq[Class[_]] = detectRStringClasses(classInApplicationPackage)
+  lazy val rIdClasses: Seq[Class[_]] = detectRIdClasses(classInApplicationPackage)
+  lazy val rLayoutClasses: Seq[Class[_]] = detectRLayoutClasses(classInApplicationPackage)
 
   protected def getStringKey(stringName: String): SKey =
-    findResourceIdWithName(rStringClassesVal, stringName).getOrElse {
-      rStringClassesVal.foreach(rStringClass => logError("Contents of " + rStringClass + " are " + rStringClass.getFields.mkString(", ")))
+    findResourceIdWithName(rStringClasses, stringName).getOrElse {
+      rStringClasses.foreach(rStringClass => logError("Contents of " + rStringClass + " are " + rStringClass.getFields.mkString(", ")))
       throw new IllegalStateException("R.string." + stringName + " not found.  You may want to run the CrudUIGenerator.generateLayouts." +
-              rStringClassesVal.mkString("(string classes: ", ",", ")"))
+              rStringClasses.mkString("(string classes: ", ",", ")"))
     }
 
   def entityNameLayoutPrefixFor(entityName: EntityName) = NamingConventions.toLayoutPrefix(entityName)
 
   def commandToListItems(entityName: EntityName): Command = Command(None,
-    findResourceIdWithName(rStringClassesVal, entityNameLayoutPrefixFor(entityName) + "_list"), None)
+    findResourceIdWithName(rStringClasses, entityNameLayoutPrefixFor(entityName) + "_list"), None)
 
   def commandToDisplayItem(entityName: EntityName): Command = Command(None, None, None)
 
   def commandToAddItem(entityName: EntityName): Command = Command(R.drawable.ic_menu_add,
     getStringKey("add_" + entityNameLayoutPrefixFor(entityName)),
-    Some(ViewRef("add_" + entityNameLayoutPrefixFor(entityName) + "_command", rIdClassesVal)))
+    Some(ViewRef("add_" + entityNameLayoutPrefixFor(entityName) + "_command", rIdClasses)))
 
   def commandToEditItem(entityName: EntityName): Command = Command(R.drawable.ic_menu_edit,
     getStringKey("edit_" + entityNameLayoutPrefixFor(entityName)), None)
 
   def commandToDeleteItem(entityName: EntityName): Command = Command(R.drawable.ic_menu_delete, res.R.string.delete_item, None)
 
-  def displayLayoutFor(entityName: EntityName): Option[LayoutKey] = findResourceIdWithName(rLayoutClassesVal, entityNameLayoutPrefixFor(entityName) + "_display")
+  def displayLayoutFor(entityName: EntityName): Option[LayoutKey] = findResourceIdWithName(rLayoutClasses, entityNameLayoutPrefixFor(entityName) + "_display")
   def hasDisplayPage(entityName: EntityName) = displayLayoutFor(entityName).isDefined
 
   /**

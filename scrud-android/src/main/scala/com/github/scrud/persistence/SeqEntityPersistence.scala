@@ -5,7 +5,7 @@ package com.github.scrud.persistence
   */
 
 trait SeqEntityPersistence[T <: AnyRef] extends EntityPersistence {
-  def newWritable: T
+  def newWritable(): T
 }
 
 

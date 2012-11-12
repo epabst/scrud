@@ -14,8 +14,8 @@ import com.github.scrud.EntityName
 object AndroidPlatformDriver extends PlatformDriver {
   lazy val localDatabasePersistenceFactory = new SQLitePersistenceFactory
 
-  def activityClass = classOf[CrudActivity]
-  def listActivityClass = classOf[CrudListActivity]
+  val activityClass = classOf[CrudActivity]
+  val listActivityClass = classOf[CrudListActivity]
 
   /** An Operation that will show the UI to the user for creating an entity instance. */
   def operationToShowCreateUI(entityName: EntityName) =

@@ -14,7 +14,7 @@ case class SingletonWithChangeLogCrudPersistence(manyPersistence: CrudPersistenc
 
   protected def listenerSet: ListenerSet[DataListener] = manyPersistence
 
-  def entityType = manyPersistence.entityType
+  val entityType = manyPersistence.entityType
 
   def crudContext = manyPersistence.crudContext
 
@@ -30,7 +30,7 @@ case class SingletonWithChangeLogCrudPersistence(manyPersistence: CrudPersistenc
 
   def findAll(uri: UriPath) = cachedFindAll(uri)
 
-  def newWritable = manyPersistence.newWritable
+  def newWritable() = manyPersistence.newWritable()
 
   // Intentionally save without reusing the ID so that existing instances are never modified since a change-log
   def doSave(id: Option[PlatformTypes.ID], writable: AnyRef) = {

@@ -10,9 +10,9 @@ import com.github.scrud.CrudContext
   * @author Eric Pabst (epabst@gmail.com)
   */
 trait CrudPersistence extends EntityPersistence with ListenerSet[DataListener] with Logging {
-  override protected def logTag: String = Common.tryToEvaluate(entityType.logTag).getOrElse(Common.logTag)
+  override protected lazy val logTag: String = Common.tryToEvaluate(entityType.logTag).getOrElse(Common.logTag)
 
-  def platformDriver = crudContext.platformDriver
+  val platformDriver = crudContext.platformDriver
 
   def entityType: EntityType
 
@@ -37,7 +37,7 @@ trait CrudPersistence extends EntityPersistence with ListenerSet[DataListener] w
 
   /** Saves the entity.  This assumes that the entityType's fields support copying from the given modelEntity. */
   def save(modelEntity: IdPk): ID = {
-    val writable = newWritable
+    val writable = newWritable()
     save(modelEntity.id, entityType.copyAndUpdate(modelEntity, writable))
   }
 }

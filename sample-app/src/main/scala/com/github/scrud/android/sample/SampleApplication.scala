@@ -15,9 +15,9 @@ class SampleApplication(platformDriver: PlatformDriver) extends CrudApplication(
   val BookCrudType = new CrudType(BookEntityType, SQLitePersistenceFactory)
   val PublisherCrudType = new CrudType(PublisherEntityType, SQLitePersistenceFactory)
 
-  def allCrudTypes = List(AuthorCrudType, BookCrudType, PublisherCrudType)
+  val allCrudTypes = List(AuthorCrudType, BookCrudType, PublisherCrudType)
 
-  def dataVersion = 2
+  val dataVersion = 2
 }
 
 class SampleAndroidApplication extends CrudAndroidApplication(new SampleApplication(AndroidPlatformDriver))

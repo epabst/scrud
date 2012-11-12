@@ -49,6 +49,7 @@ private class MyFuturePromise[T] extends Future[T] {
   private val result = new AtomicReference[Either[T,Throwable]]()
   private val responders = new ConcurrentLinkedQueue[(T) => Unit]()
 
+  // not a val since dynamic
   def isSet = latch.getCount == 0
 
   def apply() = {

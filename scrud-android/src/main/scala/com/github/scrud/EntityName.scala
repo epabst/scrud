@@ -10,7 +10,7 @@ import com.github.scrud.platform.PlatformTypes._
  * Time: 4:42 PM
  */
 case class EntityName(name: String) {
-  override def toString = name
+  override val toString = name
 
   object UriPathId extends Field[ID](UriPath.uriIdField(this))
 }

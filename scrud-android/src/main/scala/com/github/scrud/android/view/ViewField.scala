@@ -23,7 +23,7 @@ case class ViewKeyMap(map: Map[ViewKey,Option[Any]]) {
 }
 
 object ViewKeyMap {
-  def empty = ViewKeyMap()
+  val empty = ViewKeyMap()
   def apply(elems: (ViewKey,Option[Any])*): ViewKeyMap = new ViewKeyMap(Map(elems: _*))
 }
 
@@ -62,7 +62,7 @@ object ViewField {
 
   val textView: ViewField[String] = new ViewField[String](nameLayout) {
     val delegate = Getter[TextView,String](v => toOption(v.getText.toString.trim)).withSetter(v => v.setText(_), _.setText(""))
-    override def toString = "textView"
+    override val toString = "textView"
   }
   def formattedTextView[T](toDisplayString: Converter[T,String], toEditString: Converter[T,String],
                            fromString: Converter[String,T], defaultLayout: FieldLayout = nameLayout): ViewField[T] =
@@ -73,7 +73,7 @@ object ViewField {
           case UpdaterInput(view: TextView, valueOpt, _) => view.setText(valueOpt.flatMap(toDisplayString.convert(_)).getOrElse(""))
         }
 
-      override def toString = "formattedTextView"
+      override val toString = "formattedTextView"
     }
   def textViewWithInputType(inputType: String): ViewField[String] = textView.withDefaultLayout(textLayout(inputType))
   lazy val phoneView: ViewField[String] = textViewWithInputType("phone")
@@ -94,12 +94,12 @@ object ViewField {
   implicit val dateView: ViewField[Date] = new ViewField[Date](datePickerLayout) {
     val delegate = formattedTextView(dateToDisplayString, dateToString, stringToDate) +
       converted(dateToCalendar, calendarPickerField, calendarToDate)
-    override def toString = "dateView"
+    override val toString = "dateView"
   }
 
   val calendarDateView: ViewField[Calendar] = new ViewField[Calendar](datePickerLayout) {
     val delegate = converted(calendarToDate, dateView, dateToCalendar)
-    override def toString = "calendarDateView"
+    override val toString = "calendarDateView"
   }
 
   @deprecated("use EnumerationView")

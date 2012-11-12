@@ -16,7 +16,7 @@ import scala.collection.JavaConversions._
  * @author Eric Pabst (epabst@gmail.com)
  */
 trait CrudContext extends Notification with Logging {
-  protected def logTag = application.logTag
+  protected lazy val logTag = application.logTag
 
   def application: CrudApplication
 

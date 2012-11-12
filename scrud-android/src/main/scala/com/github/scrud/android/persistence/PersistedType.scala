@@ -26,7 +26,7 @@ trait PersistedType[T] {
 private class ConvertedPersistedType[T,P](toValue: P => Option[T], toPersisted: T => P)
                                           (implicit persistedType: PersistedType[P], implicit val valueManifest: Manifest[T])
         extends PersistedType[T] {
-  def sqliteType = persistedType.sqliteType
+  val sqliteType = persistedType.sqliteType
 
   def putValue(contentValues: ContentValues, name: String, value: T) {
     persistedType.putValue(contentValues, name, toPersisted(value))

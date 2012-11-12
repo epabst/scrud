@@ -15,7 +15,7 @@ class ViewIdField[T](val viewRef: ViewRef, childViewField: PortableField[T]) ext
       }) + Updater((m: ViewKeyMap) => (valueOpt: Option[T]) => m + (key -> valueOpt))
     }.getOrElse(emptyField)
 
-  def withViewKeyMapField: PortableField[T] = this + viewKeyMapField
+  lazy val withViewKeyMapField: PortableField[T] = this + viewKeyMapField
 
   object ChildView {
     def unapply(target: Any): Option[View] = target match {
@@ -35,12 +35,12 @@ class ViewIdField[T](val viewRef: ViewRef, childViewField: PortableField[T]) ext
 
   private lazy val GivenViewId = viewRef.viewKeyOpt.getOrElse(View.NO_ID)
 
-  protected def subjectGetter = {
+  protected val subjectGetter: PartialFunction[AnyRef,AnyRef] = {
     case ChildView(childView) =>
       childView
     case actionResponse @ OperationResponse(GivenViewId, _) =>
       actionResponse
   }
 
-  override def toString = "viewId(" + viewRef + ", " + childViewField + ")"
+  override lazy val toString = "viewId(" + viewRef + ", " + childViewField + ")"
 }

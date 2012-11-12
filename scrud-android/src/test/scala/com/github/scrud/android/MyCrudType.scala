@@ -27,21 +27,21 @@ case class MyCrudType(override val entityType: EntityType, override val persiste
 object MyCrudType extends MyCrudType(Mockito.mock(classOf[CrudPersistence]))
 
 class MyPersistenceFactory(persistence: CrudPersistence) extends PersistenceFactory with DataListenerSetValHolder {
-  def canSave = true
+  val canSave = true
 
-  override def newWritable = Map.empty[String,Any]
+  override def newWritable() = Map.empty[String,Any]
 
   def createEntityPersistence(entityType: EntityType, crudContext: CrudContext) = persistence
 }
 
 case class MyCrudApplication(crudTypes: CrudType*) extends CrudApplication(TestingPlatformDriver) {
-  def name = "test app"
+  val name = "test app"
 
-  override def primaryEntityType = crudTypes.head.entityType
+  override lazy val primaryEntityType = crudTypes.head.entityType
 
-  def allCrudTypes = crudTypes.toList
+  val allCrudTypes = crudTypes.toList
 
   override def entityNameLayoutPrefixFor(entityName: EntityName) = "test"
 
-  def dataVersion = 1
+  val dataVersion = 1
 }
