@@ -1,5 +1,6 @@
 package com.github.scrud.android.sample
 
+import com.github.triangle.PortableField._
 import com.github.scrud.android._
 import persistence.CursorField._
 import com.github.scrud.{EntityName, EntityType}
@@ -20,7 +21,8 @@ object BookEntityType extends EntityType(Book) {
 
     persisted[Int]("edition") + viewId(classOf[R], "edition", intView),
 
-    persistedEnum[Genre.Value]("genre", Genre) + viewId(classOf[R], "genre", EnumerationView[Genre.Value](Genre)),
+    persistedEnum[Genre.Value]("genre", Genre) + viewId(classOf[R], "genre", EnumerationView[Genre.Value](Genre)) +
+      default(Genre.Fantasy),
 
     foreignKey(PublisherEntityType) + viewId(classOf[R], "publisher", EntityView(PublisherEntityType)),
 
