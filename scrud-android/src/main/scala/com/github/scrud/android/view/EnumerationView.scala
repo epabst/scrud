@@ -13,7 +13,7 @@ case class EnumerationView[E <: Enumeration#Value](enum: Enumeration)
   extends ViewField[E](FieldLayout(displayXml = <TextView/>, editXml = <Spinner android:drawSelectorOnTop = "true"/>)) {
 
   private val itemViewResourceId = _root_.android.R.layout.simple_spinner_dropdown_item
-  private val valueArray: List[E] = enum.values.toList.asInstanceOf[List[E]]
+  private val valueArray: java.util.List[E] = enum.values.toSeq.map(_.asInstanceOf[E])
 
   protected val delegate = Getter[AdapterView[BaseAdapter],E](v => Option(v.getSelectedItem.asInstanceOf[E])).
     withSetter { adapterView => valueOpt =>
