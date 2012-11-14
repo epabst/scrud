@@ -55,9 +55,9 @@ class CrudFunctionalTest extends ActivityInstrumentationTestCase2(classOf[CrudLi
     assertEquals(CrudOperation(Book, CrudOperationType.Create), currentCrudActivity.currentCrudOperation)
 
     solo.enterText(0, "Ender's Game")
-    val bookData = copyFromCurrentActivity(BookEntityType).update(Map.empty[String, Any])
-    assertEquals(Some("Ender's Game"), bookData.get("name"))
-    assertTrue("There should be a default Genre", bookData.get("genre").isDefined)
+    val bookData = copyFromCurrentActivity(BookEntityType).update(Map.empty[String, Option[Any]])
+    assertEquals(Some("Ender's Game"), bookData.apply("name"))
+    assertTrue("There should be a default Genre", bookData.apply("genre").isDefined)
 
     solo.goBack()
     solo.waitForText("Saved", 1, 5000)
@@ -73,11 +73,11 @@ class CrudFunctionalTest extends ActivityInstrumentationTestCase2(classOf[CrudLi
     solo.clickOnText("Edit Author")
     solo.waitForActivity(classOf[CrudActivity].getSimpleName)
     assertEquals(CrudOperation(Author, CrudOperationType.Update), currentCrudActivity.currentCrudOperation)
-    assertEquals(Some("Orson Scott Card"), copyFromCurrentActivity(AuthorEntityType).update(Map.empty[String,Any]).get("name"))
+    assertEquals(Some("Orson Scott Card"), copyFromCurrentActivity(AuthorEntityType).update(Map.empty[String,Option[Any]]).apply("name"))
 
     solo.clearEditText(0)
     solo.enterText(0, "Mark Twain")
-    assertEquals(Some("Mark Twain"), copyFromCurrentActivity(AuthorEntityType).update(Map.empty[String,Any]).get("name"))
+    assertEquals(Some("Mark Twain"), copyFromCurrentActivity(AuthorEntityType).update(Map.empty[String,Option[Any]]).apply("name"))
 
     solo.goBack()
     solo.waitForText("Saved", 1, 5000)

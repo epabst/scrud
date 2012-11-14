@@ -28,13 +28,13 @@ class SampleApplicationSpec extends FunSpec with MustMatchers with MockitoSugar 
     it("must calculate the book count") {
       val application = mock[CrudApplication]
       val crudContext = SimpleCrudContext(application, null)
-      val factory = GeneratedPersistenceFactory(new ListBufferCrudPersistence(Map.empty[String, Any], _, crudContext))
-      val bookPersistence = factory.createEntityPersistence(BookEntityType, crudContext).asInstanceOf[ListBufferCrudPersistence[Map[String,Any]]]
-      bookPersistence.buffer += Map.empty[String,Any] += Map.empty[String,Any]
+      val factory = GeneratedPersistenceFactory(new ListBufferCrudPersistence(Map.empty[String, Option[Any]], _, crudContext))
+      val bookPersistence = factory.createEntityPersistence(BookEntityType, crudContext).asInstanceOf[ListBufferCrudPersistence[Map[String,Option[Any]]]]
+      bookPersistence.buffer += Map.empty[String,Option[Any]] += Map.empty[String,Option[Any]]
 
       stub(application.persistenceFactory(BookEntityType)).toReturn(factory)
-      val authorData = AuthorEntityType.copyAndUpdate(GetterInput(AuthorEntityType.toUri(100L), crudContext), Map.empty[String,Any])
-      authorData must be (Map[String,Any](idFieldName -> 100L, "bookCount" -> 2))
+      val authorData = AuthorEntityType.copyAndUpdate(GetterInput(AuthorEntityType.toUri(100L), crudContext), Map.empty[String,Option[Any]])
+      authorData must be (Map[String,Option[Any]](idFieldName -> Some(100L), "bookCount" -> Some(2)))
     }
   }
 }

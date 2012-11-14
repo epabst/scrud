@@ -17,7 +17,7 @@ case class SQLiteCriteria(selection: List[String] = Nil, selectionArgs: List[Str
 object CursorField {
   def bundleField[T](name: String)(implicit persistedType: PersistedType[T]) =
     Getter[Bundle,T](b => persistedType.getValue(b, name)).withSetter(b => persistedType.putValue(b, name, _), noSetterForEmpty) +
-    mapField[T](name)
+    optionMapField[T](name)
 
   def persisted[T](name: String)(implicit persistedType: PersistedType[T]): CursorField[T] = {
     new CursorField[T](name)(persistedType)
@@ -65,8 +65,10 @@ import CursorField._
 
 /** Also supports accessing a scala Map (mutable.Map for writing) using the same name. */
 class CursorField[T](val name: String)(implicit val persistedType: PersistedType[T]) extends DelegatingPortableField[T] with Logging {
-  protected val delegate = Getter[Cursor,T](getFromCursor) +
-    Setter((c: ContentValues) => (value: T) => persistedType.putValue(c, columnName, value), noSetterForEmpty) +
+  protected val delegate = Getter.single[T] {
+    case cursor: Cursor if cursor.getColumnIndex(columnName) >= 0 =>
+      persistedType.getValue(cursor, cursor.getColumnIndex(columnName))
+  } + Setter((c: ContentValues) => (value: T) => persistedType.putValue(c, columnName, value), (c: ContentValues) => c.putNull(columnName)) +
     bundleField[T](name)
 
   lazy val columnName = SQLiteUtil.toNonReservedWord(name)

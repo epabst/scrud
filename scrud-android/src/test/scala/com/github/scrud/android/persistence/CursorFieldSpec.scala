@@ -8,15 +8,17 @@ import com.github.triangle._
 import PortableField._
 import CursorField._
 import org.scalatest.matchers.MustMatchers
-import org.scalatest.mock.EasyMockSugar
+import org.scalatest.mock.MockitoSugar
 import android.database.Cursor
 import com.github.scrud.platform.PlatformTypes._
+import android.content.ContentValues
+import org.mockito.Mockito._ 
 
 /** A specification for [[com.github.scrud.android.persistence.CursorField]].
   * @author Eric Pabst (epabst@gmail.com)
   */
 @RunWith(classOf[RobolectricTestRunner])
-class CursorFieldSpec extends MustMatchers with EasyMockSugar {
+class CursorFieldSpec extends MustMatchers with MockitoSugar {
   @Test
   def shouldGetColumnsForQueryCorrectly() {
     val foreign = persisted[ID]("foreignID")
@@ -27,15 +29,36 @@ class CursorFieldSpec extends MustMatchers with EasyMockSugar {
   }
 
   @Test
-  def persistedShouldReturnNoneIfColumnNotInCursor() {
+  def persistedShouldReturnNoneIfNullInCursor() {
     val cursor = mock[Cursor]
-    expecting {
-      call(cursor.getColumnIndex("name")).andReturn(-1)
-    }
-    whenExecuting(cursor) {
-      val field = persisted[String]("name")
-      field.getValue(cursor) must be (None)
-    }
+    when(cursor.getColumnIndex("name")).thenReturn(1)
+    when(cursor.isNull(1)).thenReturn(true)
+    val field = persisted[String]("name")
+    field.getValue(cursor) must be (None)
+  }
+
+  @Test
+  def persistedFieldShouldNotBeDefinedIfColumnNotInCursor() {
+    val cursor = mock[Cursor]
+    when(cursor.getColumnIndex("name")).thenReturn(-1)
+    val field = persisted[String]("name")
+    field.getterVal.isDefinedAt(GetterInput.single(cursor)) must be (false)
+  }
+
+  @Test
+  def persistedShouldPutNullIntoContentValuesForNoValue() {
+    val contentValues = mock[ContentValues]
+    val field = persisted[String]("name")
+    field.updateWithValue(contentValues, None)
+    verify(contentValues).putNull("name")
+  }
+
+  @Test
+  def persistedShouldNotPutAnythingIntoContentValuesForUndefined() {
+    val contentValues = mock[ContentValues]
+    val field = persisted[String]("name")
+    field.copyAndUpdate(new Object, contentValues)
+    verifyNoMoreInteractions(contentValues)
   }
 
   @Test

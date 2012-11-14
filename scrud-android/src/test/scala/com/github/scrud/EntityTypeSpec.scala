@@ -17,7 +17,7 @@ class EntityTypeSpec extends FunSpec with MustMatchers {
   describe("loadingValue") {
     it("must include loading values") {
       val loadingValue = MyEntityType.loadingValue
-      loadingValue.update(Map.empty[String,Any]) must be (Map("name" -> "..."))
+      loadingValue.update(Map.empty[String,Option[Any]]) must be (Map("name" -> Some("...")))
     }
   }
 
