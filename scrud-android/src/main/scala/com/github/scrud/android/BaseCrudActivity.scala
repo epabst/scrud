@@ -142,7 +142,7 @@ trait BaseCrudActivity extends ActivityWithState with OptionsMenuActivity with L
   private[scrud] def undoableDelete(uri: UriPath)(persistence: CrudPersistence) {
     persistence.find(uri).foreach { readable =>
       val id = entityType.IdField.getValue(readable)
-      val writable = entityType.copyAndUpdate(readable, newWritable)
+      val writable = entityType.copyAndUpdate(readable, newWritable())
       persistence.delete(uri)
       val undoDeleteOperation = new PersistenceOperation(entityType, persistence.crudContext.application) {
         def invoke(uri: UriPath, persistence: CrudPersistence) {
