@@ -86,8 +86,7 @@ trait BaseCrudActivity extends ActivityWithState with OptionsMenuActivity with L
 
   protected lazy val logTag = Common.tryToEvaluate(crudApplication.name).getOrElse(Common.logTag)
 
-  /** This should be a lazy val in subclasses. */
-  protected def normalActions: Seq[Action]
+  protected lazy val normalActions = crudApplication.actionsFromCrudOperation(currentCrudOperation)
 
   def populateFromUri(entityType: EntityType, uri: UriPath) {
     populateFromUri(entityType, uri, UpdaterInput(this, contextItems))

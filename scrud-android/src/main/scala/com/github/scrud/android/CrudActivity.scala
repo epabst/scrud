@@ -1,6 +1,6 @@
 package com.github.scrud.android
 
-import action.{OperationResponse, EntityOperation}
+import action.OperationResponse
 import android.os.Bundle
 import com.github.triangle.{GetterInput, PortableField}
 import android.content.Intent
@@ -76,11 +76,6 @@ class CrudActivity extends BaseCrudActivity { self =>
       Toast.makeText(this, res.R.string.data_saved_notification, Toast.LENGTH_SHORT).show()
       if (idOpt.isEmpty) setIntent(getIntent.setData(uriWithId(newId)))
     } catch { case e: Throwable => logError("onPause: Unable to store " + writable, e) }
-  }
-
-  protected lazy val normalActions = crudApplication.actionsForEntity(entityType).filter {
-    case action: EntityOperation => action.entityName != entityType.entityName || action.action != currentAction
-    case _ => true
   }
 
   override def onActivityResult(requestCode: Int, resultCode: Int, data: Intent) {

@@ -1,7 +1,7 @@
 package com.github.scrud
 
 import _root_.android.R
-import action.Action
+import action.{CrudOperationType, CrudOperation, Action}
 import com.github.scrud
 import scrud.android.{CrudType,NamingConventions,res}
 import scrud.android.action._
@@ -129,31 +129,22 @@ abstract class CrudApplication(platformDriver: PlatformDriver) extends Logging {
   def hasDisplayPage(entityName: EntityName) = displayLayoutFor(entityName).isDefined
 
   /**
-   * Gets the actions that a user can perform from a specific entity instance.
-   * The first one is the one that will be used when the item is clicked on.
+   * Gets the actions that a user can perform from a given CrudOperation.
    * May be overridden to modify the list of actions.
    */
-  def actionsForEntity(entityType: EntityType): Seq[Action] =
-    getReadOnlyEntityActions(entityType) ++ actionToUpdate(entityType).toSeq ++
-      actionToDelete(entityType).toSeq
+  def actionsFromCrudOperation(crudOperation: CrudOperation): Seq[Action] = (crudOperation match {
+    case CrudOperation(entityName, CrudOperationType.Create) =>
+      actionToDelete(entityName).toSeq
+    case CrudOperation(entityName, CrudOperationType.Read) =>
+      childEntityNames(entityName).flatMap(actionToList(_)) ++
+          actionToUpdate(entityName).toSeq ++ actionToDelete(entityName).toSeq
+    case CrudOperation(entityName, CrudOperationType.List) =>
+      actionToCreate(entityName).toSeq ++ actionsToUpdateAndListChildrenOfOnlyParentWithoutDisplayAction(entityName)
+    case CrudOperation(entityName, CrudOperationType.Update) =>
+      actionToDisplay(entityName).toSeq ++ actionToDelete(entityName).toSeq
+  })
 
-  protected def getReadOnlyEntityActions(entityType: EntityType): Seq[Action] =
-    actionToDisplay(entityType).toSeq ++ childEntityTypes(entityType).flatMap(actionToList(_))
-
-  /**
-   * Gets the actions that a user can perform from a list of the entities.
-   * May be overridden to modify the list of actions.
-   */
-  def actionsForList(entityType: EntityType): Seq[Action] = actionsForList(entityType.entityName)
-
-  /**
-   * Gets the actions that a user can perform from a list of the entities.
-   * May be overridden to modify the list of actions.
-   */
-  def actionsForList(entityName: EntityName): Seq[Action] =
-    readOnlyActionsForList(entityName) ++ actionToCreate(entityName).toSeq
-
-  protected def readOnlyActionsForList(entityName: EntityName): Seq[Action] = {
+  protected def actionsToUpdateAndListChildrenOfOnlyParentWithoutDisplayAction(entityName: EntityName): Seq[Action] = {
     val thisEntity = entityType(entityName)
     (thisEntity.parentFields match {
       //exactly one parent w/o a display page
@@ -191,6 +182,7 @@ abstract class CrudApplication(platformDriver: PlatformDriver) extends Logging {
     else None
   }
 
+  def actionToDelete(entityName: EntityName): Option[Action] = actionToDelete(entityType(entityName))
   def actionToDelete(entityType: EntityType): Option[Action] = {
     if (isDeletable(entityType)) {
       Some(Action(commandToDeleteItem(entityType.entityName), StartEntityDeleteOperation(entityType)))

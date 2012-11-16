@@ -9,7 +9,7 @@ import android.widget.AdapterView.AdapterContextMenuInfo
 import com.github.scrud.UriPath
 import com.github.scrud.platform.PlatformTypes._
 import com.github.scrud.persistence.DataListener
-import com.github.scrud.action.Action
+import com.github.scrud.action.{CrudOperationType, CrudOperation, Action}
 
 /** A generic ListActivity for CRUD operations
   * @author Eric Pabst (epabst@gmail.com)
@@ -51,9 +51,12 @@ class CrudListActivity extends ListActivity with BaseCrudActivity { self =>
     }
   }
 
-  protected lazy val contextMenuActions: Seq[Action] = crudApplication.actionsForEntity(entityType) match {
-    case _ :: tail => tail.filter(_.command.title.isDefined)
-    case Nil => Nil
+  protected lazy val contextMenuActions: Seq[Action] = {
+    val actions = crudApplication.actionsFromCrudOperation(CrudOperation(entityName, CrudOperationType.Read))
+    actions match {
+      case _ :: tail => tail.filter(_.command.title.isDefined)
+      case Nil => Nil
+    }
   }
 
   override def onCreateContextMenu(menu: ContextMenu, v: View, menuInfo: ContextMenuInfo) {
@@ -76,12 +79,10 @@ class CrudListActivity extends ListActivity with BaseCrudActivity { self =>
     }
   }
 
-  protected lazy val normalActions = crudApplication.actionsForList(entityType)
-
   override def onListItemClick(l: ListView, v: View, position: Int, id: ID) {
     crudContext.withExceptionReporting {
       if (id >= 0) {
-        crudApplication.actionsForEntity(entityType).headOption.map(_.invoke(uriWithId(id), crudContext)).getOrElse {
+        crudApplication.actionsFromCrudOperation(CrudOperation(entityName, CrudOperationType.Read)).headOption.map(_.invoke(uriWithId(id), crudContext)).getOrElse {
           warn("There are no entity actions defined for " + entityType)
         }
       } else {

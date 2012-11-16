@@ -14,6 +14,7 @@ import android.util.SparseArray
 import com.github.scrud.state.State
 import com.github.scrud.persistence.{CrudPersistence, PersistenceFactory}
 import com.github.scrud.util.CrudMockitoSugar
+import com.github.scrud.action.CrudOperation
 
 /** A test for [[com.github.scrud.android.CrudListActivity]].
   * @author Eric Pabst (epabst@gmail.com)
@@ -99,7 +100,7 @@ class CrudListActivitySpec extends MustMatchers with CrudMockitoSugar {
 
     val _crudType = new MyCrudType(new MyEntityType)
     val application = new MyCrudApplication(_crudType) {
-      override def actionsForEntity(entityType: EntityType) = Nil
+      override def actionsFromCrudOperation(crudOperation: CrudOperation) = Nil
     }
     val activity = new CrudListActivity {
       override lazy val entityType = _crudType.entityType

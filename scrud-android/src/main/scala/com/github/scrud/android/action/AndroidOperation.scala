@@ -40,11 +40,11 @@ trait AndroidOperation extends Operation {
 }
 
 object AndroidOperation {
-  val CreateActionName = Intent.ACTION_INSERT
-  val ListActionName = Intent.ACTION_PICK
-  val DisplayActionName = Intent.ACTION_VIEW
-  val UpdateActionName = Intent.ACTION_EDIT
-  val DeleteActionName = Intent.ACTION_DELETE
+  val CreateActionName: String = Intent.ACTION_INSERT
+  val ListActionName: String = Intent.ACTION_PICK
+  val DisplayActionName: String = Intent.ACTION_VIEW
+  val UpdateActionName: String = Intent.ACTION_EDIT
+  val DeleteActionName: String = Intent.ACTION_DELETE
 
   implicit def toRichItent(intent: Intent) = new RichIntent(intent)
 
