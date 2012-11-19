@@ -15,9 +15,11 @@ private[scrud] trait CalculatedIterator[T] extends BufferedIterator[T] {
     calculatedNextValue.get
   }
 
-  lazy val hasNext = determineNextValue().isDefined
+  // not a val since dynamic
+  def hasNext = determineNextValue().isDefined
 
-  lazy val head = determineNextValue().get
+  // not a val since dynamic
+  def head = determineNextValue().get
 
   def next() = {
     val next = head
