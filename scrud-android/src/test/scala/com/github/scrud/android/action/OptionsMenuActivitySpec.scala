@@ -9,12 +9,13 @@ import org.scalatest.mock.MockitoSugar
 import org.mockito.Mockito._
 import org.mockito.Matchers.{eq => eql, _}
 import android.view.{MenuItem, Menu}
+import org.scalatest.junit.JUnitSuite
 
 /** A behavior specification for [[com.github.scrud.android.action.OptionsMenuActivity]].
   * @author Eric Pabst (epabst@gmail.com)
   */
 @RunWith(classOf[RobolectricTestRunner])
-class OptionsMenuActivitySpec extends MustMatchers with MockitoSugar {
+class OptionsMenuActivitySpec extends JUnitSuite with MustMatchers with MockitoSugar {
   class StubOptionsMenuActivity extends Activity with OptionsMenuActivity {
     protected val initialOptionsMenuCommands = Nil
 

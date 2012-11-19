@@ -20,13 +20,14 @@ import com.github.scrud.android.view.FieldLayout._
 import android.content.Context
 import xml.NodeSeq
 import com.github.scrud.EntityName
+import org.scalatest.junit.JUnitSuite
 
 /** A behavior specification for [[com.github.scrud.android.view.ViewField]].
   * @author Eric Pabst (epabst@gmail.com)
   */
 
 @RunWith(classOf[RobolectricTestRunner])
-class ViewFieldSpec extends MustMatchers with MockitoSugar {
+class ViewFieldSpec extends JUnitSuite with MustMatchers with MockitoSugar {
   class MyEntity(var string: String, var number: Int)
   val context = mock[Context]
   val itemLayoutId = android.R.layout.simple_spinner_dropdown_item

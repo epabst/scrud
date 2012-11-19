@@ -13,13 +13,14 @@ import android.net.Uri
 import android.content.Intent
 import android.widget.ImageView
 import com.github.triangle.GetterInput
+import org.scalatest.junit.JUnitSuite
 
 /** A behavior specification for [[com.github.scrud.android.view.ViewField]].
   * @author Eric Pabst (epabst@gmail.com)
   */
 
 @RunWith(classOf[RobolectricTestRunner])
-class CapturedImageViewSpec extends MustMatchers with MockitoSugar {
+class CapturedImageViewSpec extends JUnitSuite with MustMatchers with MockitoSugar {
   @Test
   def capturedImageViewMustGetImageUriFromOperationResponse() {
     val uri = Uri.parse("file://foo/bar.jpg")

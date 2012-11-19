@@ -19,12 +19,13 @@ import com.github.scrud.util.{CalculatedIterator, CrudMockitoSugar}
 import com.github.scrud.persistence.ListBufferCrudPersistence
 import com.github.scrud.EntityName
 import scala.Some
+import org.scalatest.junit.JUnitSuite
 
 /** A test for [[com.github.scrud.android.CrudBackupAgent]].
   * @author Eric Pabst (epabst@gmail.com)
   */
 @RunWith(classOf[RobolectricTestRunner])
-class CrudBackupAgentSpec extends MustMatchers with CrudMockitoSugar {
+class CrudBackupAgentSpec extends JUnitSuite with MustMatchers with CrudMockitoSugar {
   @Test
   def calculatedIteratorShouldWork() {
     val values = List("a", "b", "c").toIterator

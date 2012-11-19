@@ -12,12 +12,13 @@ import com.github.scrud.CrudApplication
 import com.github.scrud.android.AndroidCrudContext
 import com.github.triangle.{GetterInput, PortableField}
 import com.github.scrud.UriPath
+import org.scalatest.junit.JUnitSuite
 
 /** A specification of [[com.github.scrud.android.view.OnClickOperationSetter]].
   * @author Eric Pabst (epabst@gmail.com)
   */
 @RunWith(classOf[RobolectricTestRunner])
-class OnClickOperationSetterSpec extends MockitoSugar {
+class OnClickOperationSetterSpec extends JUnitSuite with MockitoSugar {
   @Test
   def itMustSetOnClickListenerWhenClicableIsTrue() {
     val operation = mock[AndroidOperation]

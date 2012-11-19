@@ -9,13 +9,14 @@ import org.scalatest.mock.MockitoSugar
 import android.widget._
 import java.util.Locale
 import android.content.Context
+import org.scalatest.junit.JUnitSuite
 
 /** A behavior specification for [[com.github.scrud.android.view.ViewField]].
   * @author Eric Pabst (epabst@gmail.com)
   */
 
 @RunWith(classOf[RobolectricTestRunner])
-class EnumerationViewSpec extends MustMatchers with MockitoSugar {
+class EnumerationViewSpec extends JUnitSuite with MustMatchers with MockitoSugar {
   class MyEntity(var string: String, var number: Int)
   val context = mock[Context]
   val itemLayoutId = android.R.layout.simple_spinner_dropdown_item

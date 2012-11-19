@@ -16,13 +16,14 @@ import com.github.scrud.state.State
 import com.github.scrud.{CrudContext, EntityType, EntityName, UriPath}
 import com.github.scrud.util.{ListenerHolder, CrudMockitoSugar}
 import com.github.scrud.android.{AndroidCrudContext, CrudListActivity}
+import org.scalatest.junit.JUnitSuite
 
 /** A behavior specification for [[com.github.scrud.persistence.GeneratedPersistenceFactory]].
   * @author Eric Pabst (epabst@gmail.com)
   */
 
 @RunWith(classOf[RobolectricTestRunner])
-class GeneratedPersistenceFactorySpec extends MustMatchers with CrudMockitoSugar {
+class GeneratedPersistenceFactorySpec extends JUnitSuite with MustMatchers with CrudMockitoSugar {
   val seqPersistence = mock[SeqCrudPersistence[Map[String,Any]]]
   val adapterView = mock[AdapterView[BaseAdapter]]
   val activity = mock[Activity]
@@ -50,7 +51,8 @@ class GeneratedPersistenceFactorySpec extends MustMatchers with CrudMockitoSugar
     when(crudContext.openEntityPersistence(entityType)).thenReturn(persistence)
     val uri = UriPath.EMPTY
     when(persistence.findAll(uri)).thenReturn(List(Map("longId" -> 456L)))
-    new CrudListActivity().setListAdapter(adapterView, entityType, uri, crudContext, GetterInput.empty, activity, 123)
+    val listActivity = new CrudListActivity()
+    listActivity.setListAdapter(adapterView, entityType, uri, crudContext, GetterInput.empty, activity, 123)
     verify(adapterView).setAdapter(anyObject())
     val listAdapter = listAdapterCapture.params(0).asInstanceOf[ListAdapter]
     listAdapter.getItemId(0) must be (456L)

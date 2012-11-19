@@ -17,12 +17,13 @@ import com.github.scrud.util.{CrudMockitoSugar, ReadyFuture}
 import com.github.scrud.state.State
 import org.mockito.Matchers._
 import scala.Some
+import org.scalatest.junit.JUnitSuite
 
 /** A test for [[com.github.scrud.android.CrudListActivity]].
   * @author Eric Pabst (epabst@gmail.com)
   */
 @RunWith(classOf[RobolectricTestRunner])
-class CrudActivitySpec extends CrudMockitoSugar with MustMatchers {
+class CrudActivitySpec extends JUnitSuite with CrudMockitoSugar with MustMatchers {
   val persistenceFactory = mock[PersistenceFactory]
   val persistence = mock[CrudPersistence]
   val listAdapter = mock[ListAdapter]
@@ -31,7 +32,7 @@ class CrudActivitySpec extends CrudMockitoSugar with MustMatchers {
   def shouldSupportAddingWithoutEverFinding() {
     val _crudType = new MyCrudType(persistence)
     val application = MyCrudApplication(_crudType)
-    val entity = Map[String,Any]("name" -> "Bob", "age" -> 25)
+    val entity = Map[String,Option[Any]]("name" -> Some("Bob"), "age" -> Some(25))
     val uri = UriPath(_crudType.entityType.entityName)
     val activity = new CrudActivity {
       override lazy val entityType = _crudType.entityType
@@ -46,7 +47,7 @@ class CrudActivitySpec extends CrudMockitoSugar with MustMatchers {
     activity.onCreate(null)
     _crudType.entityType.copy(entity, activity)
     activity.onBackPressed()
-    verify(persistence).save(None, Map[String,Any]("name" -> "Bob", "age" -> 25, "uri" -> uri.toString))
+    verify(persistence).save(None, Map[String,Option[Any]]("name" -> Some("Bob"), "age" -> Some(25), "uri" -> Some(uri.toString)))
     verify(persistence, never()).find(uri)
   }
 
@@ -54,7 +55,7 @@ class CrudActivitySpec extends CrudMockitoSugar with MustMatchers {
   def shouldAddIfIdNotFound() {
     val _crudType = new MyCrudType(persistence)
     val application = MyCrudApplication(_crudType)
-    val entity = mutable.Map[String,Any]("name" -> "Bob", "age" -> 25)
+    val entity = mutable.Map[String,Option[Any]]("name" -> Some("Bob"), "age" -> Some(25))
     val uri = UriPath(_crudType.entityType.entityName)
     val activity = new CrudActivity {
       override lazy val entityType = _crudType.entityType
@@ -70,14 +71,14 @@ class CrudActivitySpec extends CrudMockitoSugar with MustMatchers {
     activity.onCreate(null)
     _crudType.entityType.copy(entity, activity)
     activity.onBackPressed()
-    verify(persistence).save(None, mutable.Map[String,Any]("name" -> "Bob", "age" -> 25, "uri" -> uri.toString))
+    verify(persistence).save(None, mutable.Map[String,Option[Any]]("name" -> Some("Bob"), "age" -> Some(25), "uri" -> Some(uri.toString)))
   }
 
   @Test
   def shouldAllowUpdating() {
     val _crudType = new MyCrudType(persistence)
     val application = MyCrudApplication(_crudType)
-    val entity = mutable.Map[String,Any]("name" -> "Bob", "age" -> 25)
+    val entity = mutable.Map[String,Option[Any]]("name" -> Some("Bob"), "age" -> Some(25))
     val uri = UriPath(_crudType.entityType.entityName) / 101
     stub(persistence.find(uri)).toReturn(Some(entity))
     val activity = new CrudActivity {
@@ -91,13 +92,13 @@ class CrudActivitySpec extends CrudMockitoSugar with MustMatchers {
       }
     }
     activity.onCreate(null)
-    val viewData = _crudType.entityType.copyAndUpdate(activity, mutable.Map[String,Any]())
-    viewData.get("name") must be (Some("Bob"))
-    viewData.get("age") must be (Some(25))
+    val viewData = _crudType.entityType.copyAndUpdate(activity, mutable.Map[String,Option[Any]]())
+    viewData.apply("name") must be (Some("Bob"))
+    viewData.apply("age") must be (Some(25))
 
     activity.onBackPressed()
     verify(persistence).save(Some(101),
-      mutable.Map[String,Any]("name" -> "Bob", "age" -> 25, "uri" -> uri.toString, CursorField.idFieldName -> 101))
+      mutable.Map[String,Option[Any]]("name" -> Some("Bob"), "age" -> Some(25), "uri" -> Some(uri.toString), CursorField.idFieldName -> Some(101)))
   }
 
   @Test
@@ -146,10 +147,10 @@ class CrudActivitySpec extends CrudMockitoSugar with MustMatchers {
   def onPauseShouldNotCreateANewIdEveryTime() {
     val _crudType = new MyCrudType(persistence)
     val application = MyCrudApplication(_crudType)
-    val entity = mutable.Map[String,Any]("name" -> "Bob", "age" -> 25)
+    val entity = mutable.Map[String,Option[Any]]("name" -> Some("Bob"), "age" -> Some(25))
     val uri = UriPath(_crudType.entityType.entityName)
     when(persistence.find(uri)).thenReturn(None)
-    stub(persistence.save(None, mutable.Map[String,Any]("name" -> "Bob", "age" -> 25, "uri" -> uri.toString))).toReturn(101)
+    stub(persistence.save(None, mutable.Map[String,Option[Any]]("name" -> Some("Bob"), "age" -> Some(25), "uri" -> Some(uri.toString)))).toReturn(101)
     val activity = new CrudActivity {
       override lazy val entityType = _crudType.entityType
       override lazy val crudApplication = application
@@ -164,10 +165,10 @@ class CrudActivitySpec extends CrudMockitoSugar with MustMatchers {
     _crudType.entityType.copy(entity, activity)
     activity.onBackPressed()
     activity.onBackPressed()
-    verify(persistence, times(1)).save(None, mutable.Map[String,Any]("name" -> "Bob", "age" -> 25, "uri" -> uri.toString))
+    verify(persistence, times(1)).save(None, mutable.Map[String,Option[Any]]("name" -> Some("Bob"), "age" -> Some(25), "uri" -> Some(uri.toString)))
     //all but the first time should provide an id
-    verify(persistence).save(Some(101), mutable.Map[String,Any]("name" -> "Bob", "age" -> 25, "uri" -> (uri / 101).toString,
-      CursorField.idFieldName -> 101))
+    verify(persistence).save(Some(101), mutable.Map[String,Option[Any]]("name" -> Some("Bob"), "age" -> Some(25), "uri" -> Some((uri / 101).toString),
+      CursorField.idFieldName -> Some(101)))
   }
 
   @Test
@@ -177,7 +178,7 @@ class CrudActivitySpec extends CrudMockitoSugar with MustMatchers {
     val crudContext = mock[AndroidCrudContext]
     stub(crudContext.activityState).toReturn(new State {})
     val entity = new MyEntityType
-    val readable = mutable.Map[String,Any]()
+    val readable = mutable.Map[String,Option[Any]]()
     val uri = UriPath(entity.entityName) / 345L
     stub(activity.crudContext).toReturn(crudContext)
     stub(persistence.crudContext).toReturn(crudContext)
@@ -197,7 +198,7 @@ class CrudActivitySpec extends CrudMockitoSugar with MustMatchers {
     val activity = mock[CrudActivity]
     val crudContext = mock[AndroidCrudContext]
     val entity = MyEntityType
-    val readable = mutable.Map[String,Any](CursorField.idFieldName -> 345L, "name" -> "George")
+    val readable = mutable.Map[String,Option[Any]](CursorField.idFieldName -> Some(345L), "name" -> Some("George"))
     val uri = UriPath(entity.entityName) / 345L
     stub(activity.crudContext).toReturn(crudContext)
     val vars = new State {}
@@ -214,6 +215,6 @@ class CrudActivitySpec extends CrudMockitoSugar with MustMatchers {
     })
     new CrudActivity().startDelete(entity, uri, activity)
     verify(persistence).delete(uri)
-    verify(persistence).save(Some(345L), mutable.Map(CursorField.idFieldName -> 345L, "name" -> "George"))
+    verify(persistence).save(Some(345L), mutable.Map(CursorField.idFieldName -> Some(345L), "name" -> Some("George")))
   }
 }
