@@ -12,7 +12,7 @@ import com.github.scrud.CrudContext
 trait CrudPersistence extends EntityPersistence with ListenerSet[DataListener] with Logging {
   override protected lazy val logTag: String = Common.tryToEvaluate(entityType.logTag).getOrElse(Common.logTag)
 
-  val platformDriver = crudContext.platformDriver
+  lazy val platformDriver = crudContext.platformDriver
 
   def entityType: EntityType
 
