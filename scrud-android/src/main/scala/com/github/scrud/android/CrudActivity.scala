@@ -74,7 +74,11 @@ class CrudActivity extends BaseCrudActivity { self =>
       val idOpt = entityType.IdField(currentUriPath)
       val newId = persistence.save(idOpt, writable)
       Toast.makeText(this, res.R.string.data_saved_notification, Toast.LENGTH_SHORT).show()
-      if (idOpt.isEmpty) setIntent(getIntent.setData(uriWithId(newId)))
+      if (idOpt.isEmpty) {
+        Option(getIntent).foreach { intent =>
+          setIntent(intent.setData(uriWithId(newId)))
+        }
+      }
     } catch { case e: Throwable => logError("onPause: Unable to store " + writable, e) }
   }
 
