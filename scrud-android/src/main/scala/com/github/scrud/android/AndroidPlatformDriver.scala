@@ -1,7 +1,7 @@
 package com.github.scrud.android
 
 import action.AndroidOperation._
-import action.StartEntityActivityOperation
+import action.{StartEntityIdActivityOperation, StartEntityActivityOperation}
 import com.github.scrud.platform.PlatformDriver
 import com.github.scrud.EntityName
 
@@ -28,10 +28,10 @@ object AndroidPlatformDriver extends PlatformDriver {
 
   /** An Operation that will show the UI to the user that displays an entity instance. */
   def operationToShowDisplayUI(entityName: EntityName) =
-    new StartEntityActivityOperation(entityName, DisplayActionName, activityClass)
+    new StartEntityIdActivityOperation(entityName, DisplayActionName, activityClass)
 
   /** An Operation that will show the UI to the user for updating an entity instance. */
   def operationToShowUpdateUI(entityName: EntityName) =
-    new StartEntityActivityOperation(entityName, UpdateActionName, activityClass)
+    new StartEntityIdActivityOperation(entityName, UpdateActionName, activityClass)
 
 }
