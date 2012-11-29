@@ -17,11 +17,12 @@ import android.app.Activity
 import com.github.scrud.{EntityType, UriPath, CrudApplication}
 import com.github.scrud.state.{DestroyStateListener, StateVar}
 import com.github.scrud.persistence.{DataListener, CrudPersistence, PersistenceFactory}
-import android.widget.{ResourceCursorAdapter, AdapterView, Adapter}
+import android.widget.{Toast, ResourceCursorAdapter, AdapterView, Adapter}
 import android.database.Cursor
 import com.github.scrud.EntityName
 import scala.Some
 import view.OnClickOperationSetter
+import java.util.concurrent.atomic.AtomicReference
 
 /** Support for the different Crud Activity's.
   * @author Eric Pabst (epabst@gmail.com)
@@ -45,20 +46,22 @@ trait BaseCrudActivity extends ActivityWithState with OptionsMenuActivity with L
 
   protected lazy val persistenceFactory: PersistenceFactory = crudApplication.persistenceFactory(entityType)
 
+  private[this] val createdId: AtomicReference[Option[ID]] = new AtomicReference(None)
+
   override def setIntent(newIntent: Intent) {
     info("Current Intent: " + newIntent)
     super.setIntent(newIntent)
   }
 
-  lazy val currentUriPath: UriPath = {
+  private[this] lazy val initialUriPath: UriPath = {
     val defaultContentUri = crudApplication.defaultContentUri
-    Option(getIntent).map(intent => Option(intent.getData).map(toUriPath(_)).getOrElse {
-      // If no data was given in the intent (because we were started
-      // as a MAIN activity), then use our default content provider.
-      intent.setData(defaultContentUri)
-      defaultContentUri
-    }).getOrElse(defaultContentUri)
+    // If no data was given in the intent (e.g. because we were started as a MAIN activity),
+    // then use our default content provider.
+    Option(getIntent).flatMap(intent => Option(intent.getData).map(toUriPath(_))).getOrElse(defaultContentUri)
   }
+
+  /** not a lazy val since dynamic in that CrudActivity.saveBasedOnUserAction sets the ID. */
+  def currentUriPath: UriPath = createdId.get().map(initialUriPath / _).getOrElse(initialUriPath)
 
   lazy val currentCrudOperation: CrudOperation = CrudOperation(entityName, currentCrudOperationType)
 
@@ -104,6 +107,17 @@ trait BaseCrudActivity extends ActivityWithState with OptionsMenuActivity with L
         }
       }
     }
+  }
+
+  protected[scrud] def saveBasedOnUserAction(persistence: CrudPersistence, writable: AnyRef) {
+    try {
+      val idOpt = entityType.IdField(currentUriPath)
+      val newId = persistence.save(idOpt, writable)
+      Toast.makeText(this, res.R.string.data_saved_notification, Toast.LENGTH_SHORT).show()
+      if (idOpt.isEmpty) {
+        createdId.set(Some(newId))
+      }
+    } catch { case e: Exception => logError("onPause: Unable to store " + writable, e) }
   }
 
   lazy val entityNameLayoutPrefix = crudApplication.entityNameLayoutPrefixFor(entityName)

@@ -5,11 +5,9 @@ import android.os.Bundle
 import com.github.triangle.{GetterInput, PortableField}
 import android.content.Intent
 import android.app.Activity
-import com.github.scrud.android.view.AndroidConversions._
 import android.widget.Toast
 import com.github.scrud.ValidationResult
 import state.CachedStateListener
-import com.github.scrud.persistence.CrudPersistence
 
 /** A generic Activity for CRUD operations
   * @author Eric Pabst (epabst@gmail.com)
@@ -67,19 +65,6 @@ class CrudActivity extends BaseCrudActivity { self =>
       }
     }
     super.onBackPressed()
-  }
-
-  private[scrud] def saveBasedOnUserAction(persistence: CrudPersistence, writable: AnyRef) {
-    try {
-      val idOpt = entityType.IdField(currentUriPath)
-      val newId = persistence.save(idOpt, writable)
-      Toast.makeText(this, res.R.string.data_saved_notification, Toast.LENGTH_SHORT).show()
-      if (idOpt.isEmpty) {
-        Option(getIntent).foreach { intent =>
-          setIntent(intent.setData(uriWithId(newId)))
-        }
-      }
-    } catch { case e: Throwable => logError("onPause: Unable to store " + writable, e) }
   }
 
   override def onActivityResult(requestCode: Int, resultCode: Int, data: Intent) {
