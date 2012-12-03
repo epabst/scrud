@@ -9,7 +9,7 @@ import org.scalatest.matchers.MustMatchers
 import android.view.{View, ContextMenu}
 import org.mockito.Mockito._
 import org.mockito.Matchers._
-import com.github.scrud.{EntityType, CrudApplication, EntityName}
+import com.github.scrud.{CrudApplication, EntityName}
 import android.util.SparseArray
 import com.github.scrud.state.State
 import com.github.scrud.persistence.{CrudPersistence, PersistenceFactory}
@@ -40,9 +40,7 @@ class CrudListActivitySpec extends JUnitSuite with MustMatchers with CrudMockito
     val application = MyCrudApplication(crudType, parentCrudType)
     stub(persistenceFactory.maySpecifyEntityInstance(eql(entityType), any())).toReturn(false)
 
-    val activity = new CrudListActivity {
-      override lazy val crudApplication = application
-    }
+    val activity = new MyCrudListActivity(application)
     activity.populateFromParentEntities()
     verify(persistenceFactory, never()).createEntityPersistence(any(), any())
   }
@@ -54,7 +52,7 @@ class CrudListActivitySpec extends JUnitSuite with MustMatchers with CrudMockito
     val crudType = new MyCrudType(entityType, persistence)
     val application = MyCrudApplication(crudType)
     when(persistence.findAll(any())).thenReturn(Seq(Map[String,Any]("name" -> "Bob", "age" -> 25)))
-    val activity = new CrudListActivity {
+    val activity = new MyCrudListActivity(application) {
       override lazy val crudContext = new AndroidCrudContext(this, application) {
         /**
          * Handle the exception by communicating it to the user and developers.
@@ -64,8 +62,6 @@ class CrudListActivitySpec extends JUnitSuite with MustMatchers with CrudMockito
         }
       }
       override val applicationState = new State {}
-
-      override lazy val crudApplication = application
     }
     activity.setIntent(new Intent(Intent.ACTION_MAIN))
     activity.onCreate(null)
@@ -85,9 +81,8 @@ class CrudListActivitySpec extends JUnitSuite with MustMatchers with CrudMockito
     val ignoredMenuInfo: ContextMenu.ContextMenuInfo = null
     val _crudType = MyCrudType
     val application = MyCrudApplication(_crudType)
-    val activity = new CrudListActivity {
+    val activity = new MyCrudListActivity(application) {
       override lazy val entityType = _crudType.entityType
-      override lazy val crudApplication = application
     }
     activity.onCreateContextMenu(contextMenu, ignoredView, ignoredMenuInfo)
     verify(contextMenu).add(0, res.R.string.delete_item, 0, res.R.string.delete_item)
@@ -103,9 +98,8 @@ class CrudListActivitySpec extends JUnitSuite with MustMatchers with CrudMockito
     val application = new MyCrudApplication(_crudType) {
       override def actionsFromCrudOperation(crudOperation: CrudOperation) = Nil
     }
-    val activity = new CrudListActivity {
+    val activity = new MyCrudListActivity(application) {
       override lazy val entityType = _crudType.entityType
-      override lazy val crudApplication = application
     }
     //shouldn't do anything
     activity.onCreateContextMenu(contextMenu, ignoredView, ignoredMenuInfo)
@@ -128,9 +122,8 @@ class CrudListActivitySpec extends JUnitSuite with MustMatchers with CrudMockito
     val entityType = new MyEntityType
     val _crudType = new MyCrudType(entityType, persistenceFactory)
     val application = MyCrudApplication(_crudType)
-    class MyCrudListActivity extends CrudListActivity {
+    class SomeCrudListActivity extends MyCrudListActivity(application) {
       override lazy val entityType = _crudType.entityType
-      override lazy val crudApplication = application
 
       //make it public for testing
       override def onPause() {
@@ -142,7 +135,7 @@ class CrudListActivitySpec extends JUnitSuite with MustMatchers with CrudMockito
         super.onResume()
       }
     }
-    val activity = new MyCrudListActivity
+    val activity = new SomeCrudListActivity
     activity.setIntent(new Intent(Intent.ACTION_MAIN))
     activity.onCreate(null)
     activity.onPause()
@@ -156,9 +149,8 @@ class CrudListActivitySpec extends JUnitSuite with MustMatchers with CrudMockito
   def shouldIgnoreClicksOnHeader() {
     val application = mock[CrudApplication]
     val _crudType = MyCrudType
-    val activity = new CrudListActivity {
+    val activity = new MyCrudListActivity(application) {
       override lazy val entityType = _crudType.entityType
-      override lazy val crudApplication = application
     }
     // should do nothing
     activity.onListItemClick(null, null, -1, -1)

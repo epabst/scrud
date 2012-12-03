@@ -3,6 +3,7 @@ package com.github.scrud.platform
 import com.github.scrud.persistence.ListBufferPersistenceFactory
 import com.github.scrud.{CrudContext, UriPath, EntityName}
 import com.github.scrud.action.{Operation, CrudOperationType}
+import com.github.scrud.android.action.Command
 
 /**
  * A simple PlatformDriver for testing.
@@ -30,6 +31,9 @@ class TestingPlatformDriver extends PlatformDriver {
   /** An Operation that will show the UI to the user for updating an entity instance. */
   def operationToShowUpdateUI(entityName: EntityName) =
     ShowEntityUIOperationForTesting(entityName, CrudOperationType.Update)
+
+  /** The command to undo the last delete. */
+  def commandToUndoDelete = Command(None, None)
 }
 
 object TestingPlatformDriver extends TestingPlatformDriver

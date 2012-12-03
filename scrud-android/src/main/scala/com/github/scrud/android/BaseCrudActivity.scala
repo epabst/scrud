@@ -1,8 +1,7 @@
 package com.github.scrud.android
 
 import action._
-import action.Command
-import com.github.scrud.action.{PersistenceOperation, Action, CrudOperationType, CrudOperation}
+import com.github.scrud.action._
 import android.view.{View, MenuItem}
 import android.content.{Context, Intent}
 import com.github.scrud.util.Common
@@ -19,10 +18,12 @@ import com.github.scrud.state.{DestroyStateListener, StateVar}
 import com.github.scrud.persistence.{DataListener, CrudPersistence, PersistenceFactory}
 import android.widget.{Toast, ResourceCursorAdapter, AdapterView, Adapter}
 import android.database.Cursor
+import java.util.concurrent.atomic.AtomicReference
 import com.github.scrud.EntityName
 import scala.Some
+import com.github.scrud.action.Action
+import com.github.scrud.action.CrudOperation
 import view.OnClickOperationSetter
-import java.util.concurrent.atomic.AtomicReference
 
 /** Support for the different Crud Activity's.
   * @author Eric Pabst (epabst@gmail.com)
@@ -38,11 +39,6 @@ trait BaseCrudActivity extends ActivityWithState with OptionsMenuActivity with L
   }
 
   def entityName = entityType.entityName
-
-  /** Instantiates a data buffer which can be saved by EntityPersistence.
-    * The fields must support copying into this object.
-    */
-  def newWritable() = persistenceFactory.newWritable()
 
   protected lazy val persistenceFactory: PersistenceFactory = crudApplication.persistenceFactory(entityType)
 
@@ -145,39 +141,12 @@ trait BaseCrudActivity extends ActivityWithState with OptionsMenuActivity with L
       _root_.android.R.layout.simple_spinner_dropdown_item)
   }
 
-  lazy val commandToUndoDelete = Command(None, Some(res.R.string.undo_delete), None)
-
-  /** Delete an entity by Uri with an undo option.  It can be overridden to do a confirmation box if desired. */
-  def startDelete(entityType: EntityType, uri: UriPath, activity: BaseCrudActivity) {
-    crudContext.withEntityPersistence(entityType)(undoableDelete(uri))
-  }
-
-  private[scrud] def undoableDelete(uri: UriPath)(persistence: CrudPersistence) {
-    persistence.find(uri).foreach { readable =>
-      val id = entityType.IdField.getValue(readable)
-      val writable = entityType.copyAndUpdate(readable, newWritable())
-      persistence.delete(uri)
-      val undoDeleteOperation = new PersistenceOperation(entityType, persistence.crudContext.application) {
-        def invoke(uri: UriPath, persistence: CrudPersistence) {
-          persistence.save(id, writable)
-        }
-      }
-      //todo delete childEntities recursively
-      val context = crudContext.activityContext
-      context match {
-        case activity: BaseCrudActivity =>
-          activity.allowUndo(Undoable(Action(commandToUndoDelete, undoDeleteOperation), None))
-        case _ =>
-      }
-    }
-  }
-
   /** A StateVar that holds an undoable Action if present. */
   private object LastUndoable extends StateVar[Undoable]
 
   def allowUndo(undoable: Undoable) {
     // Finish any prior undoable first.  This could be re-implemented to support a stack of undoable operations.
-    LastUndoable.clear(this).foreach(_.closeOperation.foreach(_.invoke(currentUriPath, this)))
+    LastUndoable.clear(this).foreach(_.closeOperation.foreach(_.invoke(currentUriPath, crudContext)))
     // Remember the new undoable operation
     LastUndoable.set(this, undoable)
     optionsMenuCommands = generateOptionsMenu.map(_.command)
@@ -316,10 +285,3 @@ trait BaseCrudActivity extends ActivityWithState with OptionsMenuActivity with L
 
   override val toString = getClass.getSimpleName + "@" + System.identityHashCode(this)
 }
-
-/** An undo of an operation.  The operation should have already completed, but it can be undone or accepted.
-  * @param undoAction  An Action that reverses the operation.
-  * @param closeOperation  An operation that releases any resources, and is guaranteed to be called.
-  *           For example, deleting related entities if undo was not called.
-  */
-case class Undoable(undoAction: Action, closeOperation: Option[AndroidOperation] = None)

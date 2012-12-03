@@ -59,21 +59,17 @@ class CrudBackupAgentSpec extends JUnitSuite with MustMatchers with CrudMockitoS
     val state1b = mock[ParcelFileDescriptor]
 
     val persistence = new MyEntityPersistence
-    persistence.save(Some(100L), mutable.Map("name" -> "Joe", "age" -> 30))
-    persistence.save(Some(101L), mutable.Map("name" -> "Mary", "age" -> 28))
+    persistence.save(Some(100L), mutable.Map("name" -> Some("Joe"), "age" -> Some(30)))
+    persistence.save(Some(101L), mutable.Map("name" -> Some("Mary"), "age" -> Some(28)))
     val persistence2 = new MyEntityPersistence
-    persistence2.save(Some(101L), mutable.Map("city" -> "Los Angeles", "state" -> "CA"))
-    persistence2.save(Some(104L), mutable.Map("city" -> "Chicago", "state" -> "IL"))
+    persistence2.save(Some(101L), mutable.Map("city" -> Some("Los Angeles"), "state" -> Some("CA")))
+    persistence2.save(Some(104L), mutable.Map("city" -> Some("Chicago"), "state" -> Some("IL")))
     val entityType = new MyEntityType
-    val entityType2 = new MyEntityType {
-      override val entityName = EntityName("OtherMap")
-    }
+    val entityType2 = new MyEntityType(EntityName("OtherMap"))
     val persistenceB = new MyEntityPersistence
     val persistence2B = new MyEntityPersistence
     val entityTypeB = new MyEntityType
-    val entityType2B = new MyEntityType {
-      override val entityName = EntityName("OtherMap")
-    }
+    val entityType2B = new MyEntityType(EntityName("OtherMap"))
     val state0 = null
     val restoreItems = mutable.ListBuffer[RestoreItem]()
     when(application.allEntityTypes).thenReturn(List[EntityType](entityType, entityType2))
@@ -145,4 +141,4 @@ class CrudBackupAgentSpec extends JUnitSuite with MustMatchers with CrudMockitoS
   }
 }
 
-class MyEntityPersistence extends ListBufferCrudPersistence(Map.empty[String, Any], null, null)
+class MyEntityPersistence extends ListBufferCrudPersistence(Map.empty[String, Option[Any]], null, null)

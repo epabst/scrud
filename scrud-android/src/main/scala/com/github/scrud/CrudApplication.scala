@@ -1,7 +1,7 @@
 package com.github.scrud
 
 import _root_.android.R
-import action.{CrudOperationType, CrudOperation, Action}
+import action.{StartEntityDeleteOperation, CrudOperationType, CrudOperation, Action}
 import com.github.scrud
 import scrud.android.{CrudType,NamingConventions,res}
 import scrud.android.action._
@@ -78,8 +78,6 @@ abstract class CrudApplication(platformDriver: PlatformDriver) extends Logging {
 
   def persistenceFactory(entityName: EntityName): PersistenceFactory = crudType(entityName).persistenceFactory
   def persistenceFactory(entityType: EntityType): PersistenceFactory = persistenceFactory(entityType.entityName)
-
-  def newWritable(entityType: EntityType): AnyRef = persistenceFactory(entityType).newWritable()
 
   /** Returns true if the URI is worth calling EntityPersistence.find to try to get an entity instance. */
   def maySpecifyEntityInstance(uri: UriPath, entityType: EntityType): Boolean =
@@ -185,7 +183,7 @@ abstract class CrudApplication(platformDriver: PlatformDriver) extends Logging {
   def actionToDelete(entityName: EntityName): Option[Action] = actionToDelete(entityType(entityName))
   def actionToDelete(entityType: EntityType): Option[Action] = {
     if (isDeletable(entityType)) {
-      Some(Action(commandToDeleteItem(entityType.entityName), StartEntityDeleteOperation(entityType)))
+      Some(Action(commandToDeleteItem(entityType.entityName), StartEntityDeleteOperation(entityType, this)))
     } else None
   }
 

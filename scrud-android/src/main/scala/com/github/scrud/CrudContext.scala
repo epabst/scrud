@@ -1,5 +1,6 @@
 package com.github.scrud
 
+import action.Undoable
 import com.github.triangle.{Logging, Field}
 import com.github.triangle.PortableField._
 import persistence.{DataListener, CrudPersistence}
@@ -48,6 +49,8 @@ trait CrudContext extends Notification with Logging {
     debug("Waited for work in progress for " + (System.currentTimeMillis() - start) + "ms")
   }
 
+  def newWritable(entityType: EntityType): AnyRef = application.persistenceFactory(entityType).newWritable()
+
   def dataListenerHolder(entityType: EntityType): ListenerHolder[DataListener] =
     application.persistenceFactory(entityType).listenerHolder(entityType, this)
 
@@ -59,6 +62,9 @@ trait CrudContext extends Notification with Logging {
     try f(persistence)
     finally persistence.close()
   }
+
+  /** Provides a way for the user to undo an operation. */
+  def allowUndo(undoable: Undoable)
 }
 
 case class SimpleCrudContext(application: CrudApplication, platformDriver: PlatformDriver) extends CrudContext {
@@ -73,6 +79,11 @@ case class SimpleCrudContext(application: CrudApplication, platformDriver: Platf
    */
   def displayMessageToUser(message: String) {
     println("Message to User: " + message)
+  }
+
+  /** Provides a way for the user to undo an operation. */
+  def allowUndo(undoable: Undoable) {
+    println("Allowed Undo: " + undoable)
   }
 }
 

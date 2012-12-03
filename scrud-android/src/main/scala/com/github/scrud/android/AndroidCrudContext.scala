@@ -7,6 +7,7 @@ import state.{CachedStateListeners, CachedStateListener}
 import android.os.Bundle
 import android.content.Context
 import android.telephony.TelephonyManager
+import com.github.scrud.action.Undoable
 
 /**
  * The context and state for the application code to interact with.
@@ -22,6 +23,14 @@ case class AndroidCrudContext(activityContext: ContextWithState, application: Cr
   lazy val isoCountry = {
     Option(activityContext.getSystemService(Context.TELEPHONY_SERVICE)).map(_.asInstanceOf[TelephonyManager]).
         flatMap(tm => Option(tm.getSimCountryIso)).getOrElse(java.util.Locale.getDefault.getCountry)
+  }
+
+  /** Provides a way for the user to undo an operation. */
+  def allowUndo(undoable: Undoable) {
+    activityContext match {
+      case crudActivity: BaseCrudActivity =>
+        crudActivity.allowUndo(undoable)
+    }
   }
 
   def addCachedActivityStateListener(listener: CachedStateListener) {

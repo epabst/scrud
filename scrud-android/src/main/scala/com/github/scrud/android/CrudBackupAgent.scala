@@ -133,7 +133,7 @@ class CrudBackupAgent(application: CrudApplication) extends BackupAgent with Con
   def onRestore(entityType: EntityType, restoreItem: RestoreItem, crudContext: AndroidCrudContext) {
     debug("Restoring " + restoreItem.key + " <- " + restoreItem.map)
     val id = restoreItem.key.substring(restoreItem.key.lastIndexOf("#") + 1).toLong
-    val writable = entityType.copyAndUpdate(restoreItem.map, crudContext.application.newWritable(entityType))
+    val writable = entityType.copyAndUpdate(restoreItem.map, crudContext.newWritable(entityType))
     crudContext.withEntityPersistence(entityType) { _.save(Some(id), writable) }
     Unit
   }
@@ -178,7 +178,7 @@ object DeletedEntityIdCrudType extends CrudType(DeletedEntityIdEntityType, SQLit
     val crudContext = new AndroidCrudContext(context, application)
     val writable = DeletedEntityIdEntityType.copyAndUpdate(
       Map(DeletedEntityIdEntityType.entityNameField.name -> entityType.entityName.name,
-        DeletedEntityIdEntityType.entityIdField.name -> id), crudContext.application.newWritable(entityType))
+        DeletedEntityIdEntityType.entityIdField.name -> id), crudContext.newWritable(entityType))
     crudContext.withEntityPersistence(entityType) { _.save(None, writable) }
   }
 

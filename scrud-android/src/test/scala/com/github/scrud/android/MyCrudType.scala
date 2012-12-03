@@ -1,9 +1,12 @@
 package com.github.scrud.android
 
+import action.AndroidOperation._
 import org.mockito.Mockito
-import com.github.scrud.{CrudContext, EntityName, CrudApplication, EntityType}
+import com.github.scrud.{CrudContext, CrudApplication, EntityType}
 import com.github.scrud.persistence.{PersistenceFactory, CrudPersistence, DataListenerSetValHolder}
 import com.github.scrud.platform.{PlatformDriver, TestingPlatformDriver}
+import com.github.scrud.EntityName
+import com.github.scrud.state.State
 
 /** A simple CrudType for testing.
   * @author Eric Pabst (epabst@gmail.com)
@@ -47,3 +50,13 @@ class MyCrudApplicationSpecifyingPlatform(platformDriver: PlatformDriver, crudTy
 }
 
 case class MyCrudApplication(crudTypes: CrudType*) extends MyCrudApplicationSpecifyingPlatform(TestingPlatformDriver, crudTypes: _*)
+
+class MyCrudListActivity(_crudApplication: CrudApplication) extends CrudListActivity {
+  override lazy val crudApplication = _crudApplication
+}
+
+class MyCrudActivity(_crudApplication: CrudApplication) extends CrudActivity {
+  override lazy val crudApplication = _crudApplication
+  override lazy val currentAction = UpdateActionName
+  override lazy val applicationState = new State {}
+}

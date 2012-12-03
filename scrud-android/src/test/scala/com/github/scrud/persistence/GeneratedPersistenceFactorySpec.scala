@@ -8,15 +8,19 @@ import org.mockito.Mockito._
 import org.mockito.Matchers._
 import com.github.triangle.PortableField._
 import com.github.scrud.platform.PlatformTypes._
-import android.app.Activity
-import android.view.LayoutInflater
-import android.widget.{BaseAdapter, AdapterView, ListAdapter}
+import _root_.android.app.Activity
+import _root_.android.view.LayoutInflater
+import _root_.android.widget.{BaseAdapter, AdapterView, ListAdapter}
 import com.github.triangle.GetterInput
 import com.github.scrud.state.State
-import com.github.scrud.{CrudContext, EntityType, EntityName, UriPath}
+import com.github.scrud._
+import android._
+import android.AndroidCrudContext
+import android.CrudType
+import android.MyCrudApplication
 import com.github.scrud.util.{ListenerHolder, CrudMockitoSugar}
-import com.github.scrud.android.{AndroidCrudContext, CrudListActivity}
 import org.scalatest.junit.JUnitSuite
+import com.github.scrud.EntityName
 
 /** A behavior specification for [[com.github.scrud.persistence.GeneratedPersistenceFactory]].
   * @author Eric Pabst (epabst@gmail.com)
@@ -42,6 +46,7 @@ class GeneratedPersistenceFactorySpec extends JUnitSuite with MustMatchers with 
       override protected val idField = mapField[ID]("longId") + super.idField
       def valueFields = Nil
     }
+    val _crudApplication = MyCrudApplication(CrudType(entityType, factory))
     stub(activity.getLayoutInflater).toReturn(layoutInflater)
     stub(crudContext.activityState).toReturn(new State {})
     stub(crudContext.applicationState).toReturn(new State {})
@@ -51,7 +56,7 @@ class GeneratedPersistenceFactorySpec extends JUnitSuite with MustMatchers with 
     when(crudContext.openEntityPersistence(entityType)).thenReturn(persistence)
     val uri = UriPath.EMPTY
     when(persistence.findAll(uri)).thenReturn(List(Map("longId" -> 456L)))
-    val listActivity = new CrudListActivity()
+    val listActivity = new MyCrudListActivity(_crudApplication)
     listActivity.setListAdapter(adapterView, entityType, uri, crudContext, GetterInput.empty, activity, 123)
     verify(adapterView).setAdapter(anyObject())
     val listAdapter = listAdapterCapture.params(0).asInstanceOf[ListAdapter]

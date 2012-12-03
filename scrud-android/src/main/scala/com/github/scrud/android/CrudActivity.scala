@@ -52,7 +52,7 @@ class CrudActivity extends BaseCrudActivity { self =>
   override def onBackPressed() {
     crudContext.withExceptionReporting {
       // Save before going back so that the Activity being activated will read the correct data from persistence.
-      val writable = crudApplication.newWritable(entityType)
+      val writable = crudContext.newWritable(entityType)
       crudContext.withEntityPersistence(entityType) { persistence =>
         val copyableFields = entityType.copyableTo(writable, contextItemsWithoutUseDefaults)
         val portableValue = copyableFields.copyFrom(this +: contextItemsWithoutUseDefaults)

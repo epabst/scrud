@@ -2,7 +2,7 @@ package com.github.scrud.android
 
 import _root_.android.content.Intent
 import action.StartActivityOperation
-import com.github.scrud.UriPath
+import com.github.scrud.{EntityName, UriPath}
 import org.junit.Test
 import org.junit.runner.RunWith
 import com.xtremelabs.robolectric.RobolectricTestRunner
@@ -19,7 +19,9 @@ import org.scalatest.junit.JUnitSuite
 class AndroidPlatformDriverSpec extends JUnitSuite with MustMatchers with CrudMockitoSugar {
   //todo determine if shadowing, and run tests on real Android device as well.
   val isShadowing = true
-  val application = new MyCrudApplicationSpecifyingPlatform(AndroidPlatformDriver, MyCrudType)
+  val application = new MyCrudApplicationSpecifyingPlatform(AndroidPlatformDriver, MyCrudType) {
+    override def hasDisplayPage(entityName: EntityName) = true
+  }
 
   import MyEntityType.entityName
 

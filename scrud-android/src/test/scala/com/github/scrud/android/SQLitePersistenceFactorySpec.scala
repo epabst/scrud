@@ -88,7 +88,7 @@ class SQLitePersistenceFactorySpec extends JUnitSuite with MustMatchers with Cru
         result
       }
     }
-    val writable = application.newWritable(TestEntityType)
+    val writable = SQLitePersistenceFactory.newWritable()
     TestEntityType.copy(PortableField.UseDefaults, writable)
     val id = persistence.save(None, writable)
     val uri = persistence.toUri(id)
@@ -103,9 +103,8 @@ class SQLitePersistenceFactorySpec extends JUnitSuite with MustMatchers with Cru
 
   @Test
   def shouldRefreshCursorWhenDeletingAndSaving() {
-    val activity = new CrudListActivity {
+    val activity = new MyCrudListActivity(application) {
       override val applicationState = new State {}
-      override lazy val crudApplication = application
       override val getListView: ListView = new ListView(this)
     }
     val observer = mock[DataSetObserver]
@@ -115,7 +114,7 @@ class SQLitePersistenceFactorySpec extends JUnitSuite with MustMatchers with Cru
     val listAdapter = activity.getListView.getAdapter
     listAdapter.getCount must be (0)
 
-    val writable = application.newWritable(TestEntityType)
+    val writable = SQLitePersistenceFactory.newWritable()
     TestEntityType.copy(PortableField.UseDefaults, writable)
     val id = crudContext.withEntityPersistence(TestEntityType) { _.save(None, writable) }
     //it must have refreshed the listAdapter

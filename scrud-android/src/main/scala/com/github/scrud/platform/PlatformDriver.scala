@@ -3,6 +3,7 @@ package com.github.scrud.platform
 import com.github.scrud.persistence.PersistenceFactory
 import com.github.scrud.action.Operation
 import com.github.scrud.EntityName
+import com.github.scrud.android.action.Command
 
 /**
  * An API for an app to interact with the host platform such as Android.
@@ -31,4 +32,7 @@ trait PlatformDriver {
 
   /** An Operation that will show the UI to the user for updating an entity instance. */
   def operationToShowUpdateUI(entityName: EntityName): Operation
+
+  /** The command to undo the last delete. */
+  def commandToUndoDelete: Command
 }
