@@ -227,7 +227,7 @@ trait BaseCrudActivity extends ActivityWithState with OptionsMenuActivity with L
     setListAdapter(activity.getListView, entityType, activity.currentUriPath, crudContext, activity.contextItems, activity, rowLayout)
   }
 
-  private def createAdapter[A <: Adapter](persistence: CrudPersistence, uriPath: UriPath, crudContext: AndroidCrudContext, contextItems: GetterInput, activity: Activity, itemLayout: LayoutKey, adapterView: AdapterView[A]): AdapterCaching = {
+  private def createAdapter[A <: Adapter](persistence: CrudPersistence, uriPath: UriPath, crudContext: AndroidCrudContext, contextItems: GetterInput, activity: Activity, itemLayout: LayoutKey): AdapterCaching = {
     val entityTypePersistedInfo = EntityTypePersistedInfo(persistence.entityType)
     val findAllResult = persistence.findAll(uriPath)
     findAllResult match {
@@ -248,7 +248,7 @@ trait BaseCrudActivity extends ActivityWithState with OptionsMenuActivity with L
 
           def bindView(view: View, context: Context, cursor: Cursor) {
             val row = entityTypePersistedInfo.copyRowToMap(cursor)
-            bindViewFromCacheOrItems(view, cursor.getPosition, row, adapterView, self.crudContext, contextItems)
+            bindViewFromCacheOrItems(view, cursor.getPosition, row, self.crudContext, contextItems)
           }
         }
       case _ => new EntityAdapter(persistence.entityType, findAllResult, itemLayout, contextItems, activity.getLayoutInflater)
@@ -262,7 +262,7 @@ trait BaseCrudActivity extends ActivityWithState with OptionsMenuActivity with L
       }
     }, crudContext)
     def callCreateAdapter(): A = {
-      createAdapter(persistence, uriPath, crudContext, contextItems, activity, itemLayout, adapterView).asInstanceOf[A]
+      createAdapter(persistence, uriPath, crudContext, contextItems, activity, itemLayout).asInstanceOf[A]
     }
     val adapter = callCreateAdapter()
     adapterView.setAdapter(adapter)

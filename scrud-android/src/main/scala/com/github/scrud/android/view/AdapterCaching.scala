@@ -2,7 +2,7 @@ package com.github.scrud.android.view
 
 import com.github.triangle.{UpdaterInput, GetterInput, Logging}
 import com.github.scrud.{UriPath, EntityType}
-import android.view.{ViewGroup, View}
+import android.view.View
 import android.os.Bundle
 import android.widget.{Adapter, AdapterView, BaseAdapter}
 import com.github.scrud.platform.PlatformTypes._
@@ -29,15 +29,15 @@ trait AdapterCaching extends Logging { self: BaseAdapter =>
     case _ => position
   }
 
-  protected[scrud] def bindViewFromCacheOrItems(view: View, position: Int, parent: ViewGroup, crudContext: AndroidCrudContext, contextItems: GetterInput) {
-    bindViewFromCacheOrItems(view, position, getItem(position), parent, crudContext, contextItems)
+  protected[scrud] def bindViewFromCacheOrItems(view: View, position: Int, crudContext: AndroidCrudContext, contextItems: GetterInput) {
+    bindViewFromCacheOrItems(view, position, getItem(position), crudContext, contextItems)
   }
 
-  protected[scrud] def bindViewFromCacheOrItems(view: View, position: Int, entityData: AnyRef, parent: ViewGroup, crudContext: AndroidCrudContext, contextItems: GetterInput) {
-    bindViewFromCacheOrItems(view, entityData, crudContext, contextItems, baseUriPath / getItemId(entityData, position), parent)
+  protected[scrud] def bindViewFromCacheOrItems(view: View, position: Int, entityData: AnyRef, crudContext: AndroidCrudContext, contextItems: GetterInput) {
+    bindViewFromCacheOrItems(view, entityData, crudContext, contextItems, baseUriPath / getItemId(entityData, position))
   }
 
-  protected[scrud] def bindViewFromCacheOrItems(view: View, entityData: AnyRef, crudContext: AndroidCrudContext, contextItems: GetterInput, uriPath: UriPath, adapterView: ViewGroup) {
+  protected[scrud] def bindViewFromCacheOrItems(view: View, entityData: AnyRef, crudContext: AndroidCrudContext, contextItems: GetterInput, uriPath: UriPath) {
     view.setTag(uriPath)
     val application = crudContext.application
     val futurePortableValue = application.futurePortableValue(entityType, uriPath, entityData, crudContext)

@@ -29,7 +29,7 @@ class EntityAdapter(val entityType: EntityType, values: Seq[AnyRef], rowLayout: 
 
   def getView(position: Int, convertView: View, parent: ViewGroup): View = {
     val view = if (convertView == null) layoutInflater.inflate(rowLayout, parent, false) else convertView
-    bindViewFromCacheOrItems(view, position, parent, crudContext, contextItems)
+    bindViewFromCacheOrItems(view, position, crudContext, contextItems)
     view
   }
 }
