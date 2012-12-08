@@ -227,8 +227,8 @@ trait BaseCrudActivity extends ActivityWithState with OptionsMenuActivity with L
     setListAdapter(activity.getListView, entityType, activity.currentUriPath, crudContext, activity.contextItems, activity, rowLayout)
   }
 
-  private def createAdapter[A <: Adapter](persistence: CrudPersistence, uriPath: UriPath, entityType: EntityType, crudContext: AndroidCrudContext, contextItems: GetterInput, activity: Activity, itemLayout: LayoutKey, adapterView: AdapterView[A]): AdapterCaching = {
-    val entityTypePersistedInfo = EntityTypePersistedInfo(entityType)
+  private def createAdapter[A <: Adapter](persistence: CrudPersistence, uriPath: UriPath, crudContext: AndroidCrudContext, contextItems: GetterInput, activity: Activity, itemLayout: LayoutKey, adapterView: AdapterView[A]): AdapterCaching = {
+    val entityTypePersistedInfo = EntityTypePersistedInfo(persistence.entityType)
     val findAllResult = persistence.findAll(uriPath)
     findAllResult match {
       case CursorStream(cursor, _) =>
@@ -251,22 +251,22 @@ trait BaseCrudActivity extends ActivityWithState with OptionsMenuActivity with L
             bindViewFromCacheOrItems(view, cursor.getPosition, row, adapterView, self.crudContext, contextItems)
           }
         }
-      case _ => new EntityAdapter(entityType, findAllResult, itemLayout, contextItems, activity.getLayoutInflater)
+      case _ => new EntityAdapter(persistence.entityType, findAllResult, itemLayout, contextItems, activity.getLayoutInflater)
     }
   }
 
-  private def setListAdapter[A <: Adapter](adapterView: AdapterView[A], persistence: CrudPersistence, uriPath: UriPath, entityType: EntityType, crudContext: AndroidCrudContext, contextItems: GetterInput, activity: Activity, itemLayout: LayoutKey) {
+  private def setListAdapter[A <: Adapter](adapterView: AdapterView[A], persistence: CrudPersistence, uriPath: UriPath, crudContext: AndroidCrudContext, contextItems: GetterInput, activity: Activity, itemLayout: LayoutKey) {
     addDataListener(new DataListener {
       def onChanged(uri: UriPath) {
         crudContext.application.FuturePortableValueCache.get(crudContext).clear()
       }
     }, crudContext)
     def callCreateAdapter(): A = {
-      createAdapter(persistence, uriPath, entityType, crudContext, contextItems, activity, itemLayout, adapterView).asInstanceOf[A]
+      createAdapter(persistence, uriPath, crudContext, contextItems, activity, itemLayout, adapterView).asInstanceOf[A]
     }
     val adapter = callCreateAdapter()
     adapterView.setAdapter(adapter)
-    crudContext.addCachedActivityStateListener(new AdapterCachingStateListener(adapterView, entityType, crudContext, adapterFactory = callCreateAdapter()))
+    crudContext.addCachedActivityStateListener(new AdapterCachingStateListener(adapterView, persistence.entityType, crudContext, adapterFactory = callCreateAdapter()))
   }
 
   def setListAdapter[A <: Adapter](adapterView: AdapterView[A], entityType: EntityType, uriPath: UriPath, crudContext: AndroidCrudContext, contextItems: GetterInput, activity: Activity, itemLayout: LayoutKey) {
@@ -276,7 +276,7 @@ trait BaseCrudActivity extends ActivityWithState with OptionsMenuActivity with L
         persistence.close()
       }
     })
-    setListAdapter(adapterView, persistence, uriPath, entityType, crudContext, contextItems, activity, itemLayout)
+    setListAdapter(adapterView, persistence, uriPath, crudContext, contextItems, activity, itemLayout)
   }
 
   def waitForWorkInProgress() {
