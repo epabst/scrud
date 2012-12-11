@@ -11,7 +11,6 @@ import com.github.scrud.platform.PlatformTypes._
 import _root_.android.app.Activity
 import _root_.android.view.LayoutInflater
 import _root_.android.widget.{BaseAdapter, AdapterView, ListAdapter}
-import com.github.triangle.GetterInput
 import com.github.scrud.state.State
 import com.github.scrud._
 import android._
@@ -57,7 +56,7 @@ class GeneratedPersistenceFactorySpec extends JUnitSuite with MustMatchers with 
     val uri = UriPath.EMPTY
     when(persistence.findAll(uri)).thenReturn(List(Map("longId" -> 456L)))
     val listActivity = new MyCrudListActivity(_crudApplication)
-    listActivity.setListAdapter(adapterView, entityType, uri, crudContext, GetterInput.empty, activity, 123)
+    listActivity.setListAdapter(adapterView, entityType, uri, crudContext, new CrudContextItems(uri, crudContext), activity, 123)
     verify(adapterView).setAdapter(anyObject())
     val listAdapter = listAdapterCapture.params(0).asInstanceOf[ListAdapter]
     listAdapter.getItemId(0) must be (456L)

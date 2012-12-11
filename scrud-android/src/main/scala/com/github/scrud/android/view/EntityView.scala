@@ -2,7 +2,6 @@ package com.github.scrud.android.view
 
 import com.github.scrud.{CrudContextField, UriField, EntityType}
 import com.github.scrud.platform.PlatformTypes.ID
-import com.github.triangle.PortableField._
 import com.github.triangle._
 import android.widget._
 import android.view.View
