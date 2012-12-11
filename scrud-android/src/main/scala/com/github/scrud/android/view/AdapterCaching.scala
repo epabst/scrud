@@ -1,7 +1,7 @@
 package com.github.scrud.android.view
 
 import com.github.triangle.{UpdaterInput, GetterInput, Logging}
-import com.github.scrud.{UriPath, EntityType}
+import com.github.scrud.{CrudContext, UriPath, EntityType}
 import android.view.View
 import android.os.Bundle
 import android.widget.{Adapter, AdapterView, BaseAdapter}
@@ -9,6 +9,7 @@ import com.github.scrud.platform.PlatformTypes._
 import scala.Some
 import com.github.scrud.android.{AndroidPlatformDriver, AndroidCrudContext}
 import com.github.scrud.android.state.CachedStateListener
+import com.github.scrud.util.Common
 
 trait AdapterCaching extends Logging { self: BaseAdapter =>
   final def platformDriver = AndroidPlatformDriver
@@ -33,11 +34,11 @@ trait AdapterCaching extends Logging { self: BaseAdapter =>
     bindViewFromCacheOrItems(view, position, getItem(position), crudContext, contextItems)
   }
 
-  protected[scrud] def bindViewFromCacheOrItems(view: View, position: Int, entityData: AnyRef, crudContext: AndroidCrudContext, contextItems: GetterInput) {
+  protected[scrud] def bindViewFromCacheOrItems(view: View, position: Int, entityData: AnyRef, crudContext: CrudContext, contextItems: GetterInput) {
     bindViewFromCacheOrItems(view, entityData, crudContext, contextItems, baseUriPath / getItemId(entityData, position))
   }
 
-  protected[scrud] def bindViewFromCacheOrItems(view: View, entityData: AnyRef, crudContext: AndroidCrudContext, contextItems: GetterInput, uriPath: UriPath) {
+  protected[scrud] def bindViewFromCacheOrItems(view: View, entityData: AnyRef, crudContext: CrudContext, contextItems: GetterInput, uriPath: UriPath) {
     view.setTag(uriPath)
     val application = crudContext.application
     val futurePortableValue = application.futurePortableValue(entityType, uriPath, entityData, crudContext)
@@ -47,11 +48,11 @@ trait AdapterCaching extends Logging { self: BaseAdapter =>
     } else {
       entityType.loadingValue.update(updaterInput)
       futurePortableValue.foreach { portableValue =>
-        crudContext.runOnUiThread {
+        view.post(Common.toRunnable {
           if (view.getTag == uriPath) {
             portableValue.update(updaterInput)
           }
-        }
+        })
       }
     }
   }

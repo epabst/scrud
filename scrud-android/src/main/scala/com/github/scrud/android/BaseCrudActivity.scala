@@ -2,23 +2,20 @@ package com.github.scrud.android
 
 import com.github.scrud.android.action._
 import com.github.scrud.action._
-import _root_.android.view.{View, MenuItem}
-import _root_.android.content.{Context, Intent}
+import _root_.android.view.MenuItem
+import _root_.android.content.Intent
 import com.github.scrud.util.Common
 import com.github.scrud.platform.PlatformTypes._
 import com.github.scrud.android.view.AndroidConversions._
 import _root_.android.os.Bundle
 import com.github.triangle._
-import com.github.scrud.android.persistence.EntityTypePersistedInfo
-import persistence.CursorStream
 import view.AndroidResourceAnalyzer._
 import view._
 import _root_.android.app.Activity
 import com.github.scrud._
 import com.github.scrud.state.{DestroyStateListener, StateVar}
 import com.github.scrud.persistence.{DataListener, CrudPersistence, PersistenceFactory}
-import _root_.android.widget.{Toast, ResourceCursorAdapter, AdapterView, Adapter}
-import _root_.android.database.Cursor
+import _root_.android.widget.{Toast, AdapterView, Adapter}
 import java.util.concurrent.atomic.AtomicReference
 import com.github.scrud.EntityName
 import scala.Some
@@ -229,32 +226,8 @@ trait BaseCrudActivity extends ActivityWithState with OptionsMenuActivity with L
     setListAdapter(activity.getListView, entityType, activity.currentUriPath, crudContext, activity.contextItems, activity, rowLayout)
   }
 
-  private def createAdapter[A <: Adapter](persistence: CrudPersistence, contextItems: CrudContextItems, activity: Activity, itemLayout: LayoutKey): AdapterCaching = {
-    val entityTypePersistedInfo = EntityTypePersistedInfo(persistence.entityType)
-    val findAllResult = persistence.findAll(contextItems.currentUriPath)
-    findAllResult match {
-      case CursorStream(cursor, _) =>
-        activity.startManagingCursor(cursor)
-        addDataListener(new DataListener {
-          def onChanged(uri: UriPath) {
-            cursor.requery()
-          }
-        }, contextItems.crudContext)
-        new ResourceCursorAdapter(activity, itemLayout, cursor) with AdapterCaching {
-          def crudContext = self.crudContext
-
-          def entityType = self.entityType
-
-          /** The UriPath that does not contain the entities. */
-          protected def uriPathWithoutEntityId = contextItems.currentUriPath
-
-          def bindView(view: View, context: Context, cursor: Cursor) {
-            val row = entityTypePersistedInfo.copyRowToMap(cursor)
-            bindViewFromCacheOrItems(view, cursor.getPosition, row, self.crudContext, contextItems)
-          }
-        }
-      case _ => new EntityAdapter(persistence.entityType, findAllResult, itemLayout, contextItems, activity.getLayoutInflater)
-    }
+  private def createAdapter(persistence: CrudPersistence, contextItems: CrudContextItems, activity: Activity, itemLayout: LayoutKey): AdapterCaching = {
+    new EntityAdapterFactory().createAdapter(persistence, contextItems, activity, itemLayout)
   }
 
   private def setListAdapter[A <: Adapter](adapterView: AdapterView[A], persistence: CrudPersistence, crudContext: AndroidCrudContext, contextItems: CrudContextItems, activity: Activity, itemLayout: LayoutKey) {
