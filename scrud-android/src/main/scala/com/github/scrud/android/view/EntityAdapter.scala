@@ -2,17 +2,17 @@ package com.github.scrud.android.view
 
 import android.widget.BaseAdapter
 import com.github.scrud.platform.PlatformTypes._
-import android.view.{LayoutInflater, ViewGroup, View}
+import android.view.{ViewGroup, View}
 import com.github.triangle.GetterInput
 import com.github.scrud
 import scrud.android.AndroidCrudContext
-import scrud.{CrudContextField, UriField, EntityType}
+import scrud.{CrudContextItems, CrudContextField, UriField, EntityType}
 
 /** An Android Adapter for an EntityType with the result of EntityPersistence.findAll.
   * @author Eric Pabst (epabst@gmail.com)
   */
-class EntityAdapter(val entityType: EntityType, values: Seq[AnyRef], rowLayout: ViewKey,
-                    contextItems: GetterInput, layoutInflater: LayoutInflater) extends BaseAdapter with AdapterCaching {
+class EntityAdapter(val entityType: EntityType, values: Seq[AnyRef], rowViewInflater: ViewInflater,
+                    contextItems: CrudContextItems) extends BaseAdapter with AdapterCaching {
 
   /** The UriPath that does not contain the entities. */
   protected lazy val uriPathWithoutEntityId = UriField(contextItems).getOrElse(sys.error("no UriPath provided"))
@@ -28,7 +28,7 @@ class EntityAdapter(val entityType: EntityType, values: Seq[AnyRef], rowLayout: 
   def getItem(position: Int) = values(position)
 
   def getView(position: Int, convertView: View, parent: ViewGroup): View = {
-    val view = if (convertView == null) layoutInflater.inflate(rowLayout, parent, false) else convertView
+    val view = if (convertView == null) rowViewInflater.inflate(parent) else convertView
     bindViewFromCacheOrItems(view, position, crudContext, contextItems)
     view
   }

@@ -18,6 +18,8 @@ trait CrudPersistence extends EntityPersistence with ListenerSet[DataListener] w
 
   def crudContext: CrudContext
 
+  private[scrud] lazy val persistenceFactory: PersistenceFactory = crudContext.application.persistenceFactory(entityType)
+
   def toUri(id: ID) = entityType.toUri(id)
 
   def find[T <: AnyRef](uri: UriPath, instantiateItem: => T): Option[T] =

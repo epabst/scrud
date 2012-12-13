@@ -227,7 +227,8 @@ trait BaseCrudActivity extends ActivityWithState with OptionsMenuActivity with L
   }
 
   private def createAdapter(persistence: CrudPersistence, contextItems: CrudContextItems, activity: Activity, itemLayout: LayoutKey): AdapterCaching = {
-    new EntityAdapterFactory().createAdapter(persistence, contextItems, activity, itemLayout)
+    val itemViewInflater = new ViewInflater(itemLayout, activity.getLayoutInflater)
+    new EntityAdapterFactory().createAdapter(persistence, contextItems, itemViewInflater)
   }
 
   private def setListAdapter[A <: Adapter](adapterView: AdapterView[A], persistence: CrudPersistence, crudContext: AndroidCrudContext, contextItems: CrudContextItems, activity: Activity, itemLayout: LayoutKey) {

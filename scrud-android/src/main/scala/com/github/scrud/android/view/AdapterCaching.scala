@@ -1,7 +1,7 @@
 package com.github.scrud.android.view
 
-import com.github.triangle.{UpdaterInput, GetterInput, Logging}
-import com.github.scrud.{CrudContext, UriPath, EntityType}
+import com.github.triangle.{UpdaterInput, Logging}
+import com.github.scrud.{CrudContextItems, UriPath, EntityType}
 import android.view.View
 import android.os.Bundle
 import android.widget.{Adapter, AdapterView, BaseAdapter}
@@ -30,18 +30,19 @@ trait AdapterCaching extends Logging { self: BaseAdapter =>
     case _ => position
   }
 
-  protected[scrud] def bindViewFromCacheOrItems(view: View, position: Int, crudContext: AndroidCrudContext, contextItems: GetterInput) {
-    bindViewFromCacheOrItems(view, position, getItem(position), crudContext, contextItems)
+  protected[scrud] def bindViewFromCacheOrItems(view: View, position: Int, contextItems: CrudContextItems) {
+    bindViewFromCacheOrItems(view, position, getItem(position), contextItems)
   }
 
-  protected[scrud] def bindViewFromCacheOrItems(view: View, position: Int, entityData: AnyRef, crudContext: CrudContext, contextItems: GetterInput) {
-    bindViewFromCacheOrItems(view, entityData, crudContext, contextItems, baseUriPath / getItemId(entityData, position))
+  protected[scrud] def bindViewFromCacheOrItems(view: View, position: Int, entityData: AnyRef, contextItems: CrudContextItems) {
+    bindViewFromCacheOrItems(view, entityData, contextItems.copy(currentUriPath = baseUriPath / getItemId(entityData, position)))
   }
 
-  protected[scrud] def bindViewFromCacheOrItems(view: View, entityData: AnyRef, crudContext: CrudContext, contextItems: GetterInput, uriPath: UriPath) {
+  protected[scrud] def bindViewFromCacheOrItems(view: View, entityData: AnyRef, contextItems: CrudContextItems) {
+    val uriPath = contextItems.currentUriPath
     view.setTag(uriPath)
-    val application = crudContext.application
-    val futurePortableValue = application.futurePortableValue(entityType, uriPath, entityData, crudContext)
+    val application = contextItems.crudContext.application
+    val futurePortableValue = application.futurePortableValue(entityType, uriPath, entityData, contextItems.crudContext)
     val updaterInput = UpdaterInput(view, contextItems)
     if (futurePortableValue.isSet) {
       futurePortableValue().update(updaterInput)

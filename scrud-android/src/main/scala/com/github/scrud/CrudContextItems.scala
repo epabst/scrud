@@ -11,4 +11,6 @@ import com.github.triangle.GetterInput
  * Time: 11:32 PM
  */
 class CrudContextItems(val currentUriPath: UriPath, val crudContext: CrudContext, items: AnyRef*)
-    extends GetterInput(currentUriPath +: crudContext +: items)
+    extends GetterInput(currentUriPath +: crudContext +: items) {
+  def copy(currentUriPath: UriPath): CrudContextItems = new CrudContextItems(currentUriPath, crudContext, items: _*)
+}
