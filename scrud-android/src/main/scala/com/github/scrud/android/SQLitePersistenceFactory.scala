@@ -4,7 +4,7 @@ import android.content.ContentValues
 import persistence.SQLiteUtil
 import android.database.sqlite.SQLiteDatabase
 import com.github.scrud.{CrudContext, EntityType, EntityName}
-import com.github.scrud.persistence.{DataListenerSetValHolder, PersistenceFactory}
+import com.github.scrud.persistence.{CrudPersistenceUsingThin, DataListenerSetValHolder, PersistenceFactory}
 
 /** A PersistenceFactory for SQLite.
   * @author Eric Pabst (epabst@gmail.com)
@@ -23,12 +23,18 @@ class SQLitePersistenceFactory extends PersistenceFactory with DataListenerSetVa
         initialCreate = true
       }
     }
-    val persistence = new SQLiteEntityPersistence(entityType, androidCrudContext, databaseSetup, listenerSet(entityType, crudContext))
+    val thinPersistence = new SQLiteThinEntityPersistence(entityType, databaseSetup, androidCrudContext)
+    val persistence = new CrudPersistenceUsingThin(entityType, thinPersistence, androidCrudContext, listenerSet(entityType, crudContext))
     if (initialCreate) {
       entityType.onCreateDatabase(persistence)
-      persistence.preventRollbackOfPriorOperations()
+      preventRollbackOfPriorOperations(persistence)
     }
     persistence
+  }
+
+
+  private def preventRollbackOfPriorOperations(persistence: CrudPersistenceUsingThin) {
+    // once transactions are supported, this method should end the current one and start a new one
   }
 
   def toTableName(entityName: EntityName): String = SQLiteUtil.toNonReservedWord(entityName.name)

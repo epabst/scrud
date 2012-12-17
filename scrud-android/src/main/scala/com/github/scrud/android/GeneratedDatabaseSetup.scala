@@ -1,0 +1,47 @@
+package com.github.scrud.android
+
+import android.database.sqlite.{SQLiteOpenHelper, SQLiteDatabase}
+import com.github.scrud.util.Common
+import com.github.triangle.Logging
+import android.provider.BaseColumns
+import persistence.EntityTypePersistedInfo
+
+/**
+ * An SQLiteOpenHelper for scrud.
+ * @author Eric Pabst (epabst@gmail.com)
+ *         Date: 12/17/12
+ *         Time: 11:45 AM
+ */
+class GeneratedDatabaseSetup(crudContext: AndroidCrudContext)
+  extends SQLiteOpenHelper(crudContext.activityContext, crudContext.application.nameId, null, crudContext.application.dataVersion) with Logging {
+
+  protected lazy val logTag = Common.tryToEvaluate(crudContext.application.logTag).getOrElse(Common.logTag)
+
+  private def createMissingTables(db: SQLiteDatabase) {
+    val application = crudContext.application
+    application.allEntityTypes.filter(application.isSavable(_)).foreach { entityType =>
+      val buffer = new StringBuffer
+      buffer.append("CREATE TABLE IF NOT EXISTS ").append(SQLitePersistenceFactory.toTableName(entityType.entityName)).append(" (").
+        append(BaseColumns._ID).append(" INTEGER PRIMARY KEY AUTOINCREMENT")
+      EntityTypePersistedInfo(entityType).persistedFields.filter(_.columnName != BaseColumns._ID).foreach { persisted =>
+        buffer.append(", ").append(persisted.columnName).append(" ").append(persisted.persistedType.sqliteType)
+      }
+      buffer.append(")")
+      execSQL(db, buffer.toString)
+    }
+  }
+
+  def onCreate(db: SQLiteDatabase) {
+    createMissingTables(db)
+  }
+
+  private def execSQL(db: SQLiteDatabase, sql: String) {
+    debug("execSQL: " + sql)
+    db.execSQL(sql)
+  }
+
+  def onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
+    // Steps to upgrade the database for the new version ...
+    createMissingTables(db)
+  }
+}

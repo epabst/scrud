@@ -4,8 +4,9 @@ import _root_.android.provider.BaseColumns
 import _root_.android.app.Activity
 import _root_.android.database.{Cursor, DataSetObserver}
 import _root_.android.widget.ListView
-import _root_.android.database.sqlite.{SQLiteOpenHelper, SQLiteDatabase}
+import _root_.android.database.sqlite.SQLiteDatabase
 import action.ContextWithState
+import com.github.scrud
 import com.github.scrud.state._
 import com.github.scrud.persistence._
 import org.junit.Test
@@ -14,13 +15,12 @@ import com.xtremelabs.robolectric.RobolectricTestRunner
 import org.scalatest.matchers.MustMatchers
 import com.github.triangle._
 import com.github.scrud.android.persistence.CursorField._
-import persistence.CursorStream
-import persistence.SQLiteCriteria
+import persistence.{EntityTypePersistedInfo, CursorStream}
 import PortableField._
 import scala.collection._
 import org.mockito.{Mockito, Matchers}
 import Mockito._
-import com.github.scrud.util.{ListenerSet, CrudMockitoSugar}
+import scrud.util.{MutableListenerSet, CrudMockitoSugar}
 import com.github.scrud._
 import com.github.scrud.EntityName
 import org.scalatest.junit.JUnitSuite
@@ -60,7 +60,7 @@ class SQLitePersistenceFactorySpec extends JUnitSuite with MustMatchers with Cru
     val dataVersion = 1
   }
   val application = TestApplication
-  val listenerSet = mock[ListenerSet[DataListener]]
+  val listenerSet = mock[MutableListenerSet[DataListener]]
   when(listenerSet.listeners).thenReturn(Set.empty[DataListener])
 
   @Test
@@ -68,9 +68,9 @@ class SQLitePersistenceFactorySpec extends JUnitSuite with MustMatchers with Cru
     val crudContext = mock[AndroidCrudContext]
     stub(crudContext.application).toReturn(application)
 
-    val persistence = new SQLiteEntityPersistence(TestEntityType, crudContext, mock[SQLiteOpenHelper], listenerSet)
-    persistence.entityTypePersistedInfo.queryFieldNames must contain(BaseColumns._ID)
-    persistence.entityTypePersistedInfo.queryFieldNames must contain("age")
+    val entityTypePersistedInfo = EntityTypePersistedInfo(TestEntityType)
+    entityTypePersistedInfo.queryFieldNames must contain(BaseColumns._ID)
+    entityTypePersistedInfo.queryFieldNames must contain("age")
   }
 
   @Test
@@ -80,20 +80,22 @@ class SQLitePersistenceFactorySpec extends JUnitSuite with MustMatchers with Cru
     stub(crudContext.application).toReturn(application)
 
     val cursors = mutable.Buffer[Cursor]()
-    val persistence = new SQLiteEntityPersistence(TestEntityType, crudContext, new GeneratedDatabaseSetup(crudContext), listenerSet) {
-      override def findAll(criteria: SQLiteCriteria) = {
-        val result = super.findAll(criteria)
+    val thinPersistence = new SQLiteThinEntityPersistence(TestEntityType, new GeneratedDatabaseSetup(crudContext), crudContext)
+    val persistence = new CrudPersistenceUsingThin(TestEntityType, thinPersistence, crudContext, listenerSet) {
+      override def findAll(uri: UriPath) = {
+        val result = super.findAll(uri)
         val CursorStream(cursor, _) = result
         cursors += cursor
         result
       }
     }
     val writable = SQLitePersistenceFactory.newWritable()
+    //UseDefaults is provided here in the item list for the sake of PortableField.adjustment[SQLiteCriteria] fields
     TestEntityType.copy(PortableField.UseDefaults, writable)
     val id = persistence.save(None, writable)
     val uri = persistence.toUri(id)
     persistence.find(uri)
-    persistence.findAll(new SQLiteCriteria())
+    persistence.findAll(UriPath.EMPTY)
     cursors.size must be (2)
     persistence.close()
     for (cursor <- cursors.toList) {
