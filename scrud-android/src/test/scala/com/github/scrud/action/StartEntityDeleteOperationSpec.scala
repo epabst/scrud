@@ -27,8 +27,7 @@ class StartEntityDeleteOperationSpec extends FunSpec with CrudMockitoSugar {
     val readable = mutable.Map[String,Option[Any]](CursorField.idFieldName -> Some(345L), "name" -> Some("George"))
     val uri = UriPath(entity.entityName) / 345L
     val persistence = mock[CrudPersistence]
-    stub(persistence.crudContext).toReturn(crudContext)
-    stub(persistence.platformDriver).toReturn(platformDriver)
+    stub(crudContext.platformDriver).toReturn(platformDriver)
     stub(persistence.find(uri)).toReturn(Some(readable))
     stub(crudContext.allowUndo(notNull.asInstanceOf[Undoable])).toAnswer(answerWithInvocation { invocationOnMock =>
       val currentArguments = invocationOnMock.getArguments
@@ -37,8 +36,8 @@ class StartEntityDeleteOperationSpec extends FunSpec with CrudMockitoSugar {
     })
     val application = MyCrudApplication(new MyCrudType(entity, persistence))
     application.actionToDelete(entity).get.invoke(uri, crudContext)
-    val operation = new StartEntityDeleteOperation(entity, application)
-    operation.invoke(uri, persistence)
+    val operation = new StartEntityDeleteOperation(entity)
+    operation.invoke(uri, persistence, crudContext)
     verify(persistence).delete(uri)
   }
 
@@ -47,8 +46,7 @@ class StartEntityDeleteOperationSpec extends FunSpec with CrudMockitoSugar {
     val readable = mutable.Map[String,Option[Any]](CursorField.idFieldName -> Some(345L), "name" -> Some("George"))
     val uri = UriPath(entity.entityName) / 345L
     val persistence = mock[CrudPersistence]
-    stub(persistence.crudContext).toReturn(crudContext)
-    stub(persistence.platformDriver).toReturn(platformDriver)
+    stub(crudContext.platformDriver).toReturn(platformDriver)
     stub(persistence.find(uri)).toReturn(Some(readable))
     stub(persistence.newWritable()).toReturn(mutable.Map.empty[String,Option[Any]])
     stub(crudContext.allowUndo(notNull.asInstanceOf[Undoable])).toAnswer(answerWithInvocation { invocationOnMock =>
@@ -61,9 +59,8 @@ class StartEntityDeleteOperationSpec extends FunSpec with CrudMockitoSugar {
       val function = currentArguments(1).asInstanceOf[CrudPersistence => Any]
       function.apply(persistence)
     })
-    val application = MyCrudApplication(new MyCrudType(entity, persistence))
-    val operation = new StartEntityDeleteOperation(entity, application)
-    operation.invoke(uri, persistence)
+    val operation = new StartEntityDeleteOperation(entity)
+    operation.invoke(uri, persistence, crudContext)
     verify(persistence).delete(uri)
     verify(persistence).save(Some(345L), mutable.Map(CursorField.idFieldName -> Some(345L), "name" -> Some("George")))
   }

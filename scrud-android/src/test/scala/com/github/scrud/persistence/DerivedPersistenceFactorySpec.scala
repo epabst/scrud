@@ -24,7 +24,7 @@ class DerivedPersistenceFactorySpec extends FunSpec with MustMatchers with CrudM
     val persistence1 = mock[CrudPersistence]
     val persistence2 = mock[CrudPersistence]
     val factory = new DerivedPersistenceFactory[String](entityType1, entityType2) {
-      def findAll(entityType: EntityType, uri: UriPath, delegatePersistenceMap: Map[EntityType, CrudPersistence]) = {
+      def findAll(entityType: EntityType, uri: UriPath, crudContext: CrudContext, delegatePersistenceMap: Map[EntityType, CrudPersistence]) = {
         delegatePersistenceMap must be (Map(entityType1 -> persistence1, entityType2 -> persistence2))
         List("findAll", "was", "called")
       }
@@ -42,7 +42,7 @@ class DerivedPersistenceFactorySpec extends FunSpec with MustMatchers with CrudM
     val entityType1 = mock[EntityType]
     val entityType2 = mock[EntityType]
     val factory = new DerivedPersistenceFactory[String](entityType1, entityType2) {
-      def findAll(entityType: EntityType, uri: UriPath, delegatePersistenceMap: Map[EntityType, CrudPersistence]) = Nil
+      def findAll(entityType: EntityType, uri: UriPath, crudContext: CrudContext, delegatePersistenceMap: Map[EntityType, CrudPersistence]) = Nil
     }
     val crudContext = mock[CrudContext]
     stub(crudContext.applicationState).toReturn(new State {})

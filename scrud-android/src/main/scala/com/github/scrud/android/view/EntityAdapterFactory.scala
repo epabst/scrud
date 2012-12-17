@@ -25,7 +25,7 @@ class EntityAdapterFactory {
       case CursorStream(cursor, _) =>
         val activity: Activity = getActivity(contextItems)
         activity.startManagingCursor(cursor)
-        val persistenceFactory = persistence.persistenceFactory
+        val persistenceFactory = contextItems.persistenceFactory(_entityType.entityName)
         val listener = new DataListener {
           def onChanged(uri: UriPath) {
             cursor.requery()

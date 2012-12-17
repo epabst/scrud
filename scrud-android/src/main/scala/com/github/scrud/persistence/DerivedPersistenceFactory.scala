@@ -7,13 +7,13 @@ import com.github.scrud.CrudContext
   * @author Eric Pabst (epabst@gmail.com)
   */
 abstract class DerivedPersistenceFactory[T <: AnyRef](delegates: EntityType*) extends GeneratedPersistenceFactory[T] { self =>
-  def findAll(entityType: EntityType, uri: UriPath, delegatePersistenceMap: Map[EntityType,CrudPersistence]): Seq[T]
+  def findAll(entityType: EntityType, uri: UriPath, crudContext: CrudContext, delegatePersistenceMap: Map[EntityType,CrudPersistence]): Seq[T]
 
   def createEntityPersistence(_entityType: EntityType, crudContext: CrudContext) = {
     new DerivedCrudPersistence[T](crudContext, listenerSet(_entityType, crudContext), delegates: _*) {
       def entityType = _entityType
 
-      def findAll(uri: UriPath): Seq[T] = self.findAll(_entityType, uri, delegatePersistenceMap)
+      def findAll(uri: UriPath): Seq[T] = self.findAll(_entityType, uri, crudContext, delegatePersistenceMap)
     }
   }
 }

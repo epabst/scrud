@@ -1,6 +1,7 @@
 package com.github.scrud
 
 import com.github.triangle.GetterInput
+import persistence.PersistenceFactory
 
 /**
  * The main GetterInput items that are used when copying data.
@@ -13,4 +14,8 @@ import com.github.triangle.GetterInput
 class CrudContextItems(val currentUriPath: UriPath, val crudContext: CrudContext, items: AnyRef*)
     extends GetterInput(currentUriPath +: crudContext +: items) {
   def copy(currentUriPath: UriPath): CrudContextItems = new CrudContextItems(currentUriPath, crudContext, items: _*)
+
+  def application: CrudApplication = crudContext.application
+
+  def persistenceFactory(entityName: EntityName): PersistenceFactory = application.persistenceFactory(entityName)
 }

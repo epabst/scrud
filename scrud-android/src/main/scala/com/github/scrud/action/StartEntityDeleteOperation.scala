@@ -1,6 +1,6 @@
 package com.github.scrud.action
 
-import com.github.scrud.{UriPath, CrudApplication, EntityType}
+import com.github.scrud.{CrudContext, UriPath, EntityType}
 import com.github.scrud.persistence.CrudPersistence
 
 /**
@@ -10,19 +10,19 @@ import com.github.scrud.persistence.CrudPersistence
  * Time: 7:51 AM
  */
 //final to guarantee equality is correct
-final case class StartEntityDeleteOperation(entityType: EntityType, override val application: CrudApplication) extends PersistenceOperation(entityType, application) {
+final case class StartEntityDeleteOperation(entityType: EntityType) extends PersistenceOperation(entityType) {
 
-  def invoke(uri: UriPath, persistence: CrudPersistence) {
+  def invoke(uri: UriPath, persistence: CrudPersistence, crudContext: CrudContext) {
     persistence.find(uri).foreach { readable =>
       val id = entityType.IdField.getValue(readable)
       val writable = entityType.copyAndUpdate(readable, persistence.newWritable())
       persistence.delete(uri)
-      val undoDeleteOperation = new PersistenceOperation(entityType, persistence.crudContext.application) {
-        def invoke(uri: UriPath, persistence: CrudPersistence) {
+      val undoDeleteOperation = new PersistenceOperation(entityType) {
+        def invoke(uri: UriPath, persistence: CrudPersistence, crudContext: CrudContext) {
           persistence.save(id, writable)
         }
       }
-      persistence.crudContext.allowUndo(Undoable(Action(persistence.platformDriver.commandToUndoDelete, undoDeleteOperation), None))
+      crudContext.allowUndo(Undoable(Action(crudContext.platformDriver.commandToUndoDelete, undoDeleteOperation), None))
     }
   }
 }

@@ -18,7 +18,7 @@ class CrudPersistenceSpec extends FunSpec with MustMatchers {
   }
   val persistence = new SeqCrudPersistence[MyEntity] with ReadOnlyPersistence {
     val entityType = MyEntityType
-    def crudContext = SimpleCrudContext(null, null)
+
     def findAll(uri: UriPath) = Seq(new MyEntity(entityType.UriPathId.getValue(uri)))
     def listeners = Set.empty
   }
