@@ -54,6 +54,7 @@ class GeneratedPersistenceFactorySpec extends JUnitSuite with MustMatchers with 
     val persistence = mock[CrudPersistence]
     when(crudContext.openEntityPersistence(entityType)).thenReturn(persistence)
     val uri = UriPath.EMPTY
+    when(persistence.entityType).thenReturn(entityType)
     when(persistence.findAll(uri)).thenReturn(List(Map("longId" -> 456L)))
     val listActivity = new MyCrudListActivity(_crudApplication)
     listActivity.setListAdapter(adapterView, entityType, uri, crudContext, new CrudContextItems(uri, crudContext), activity, 123)

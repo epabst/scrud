@@ -51,6 +51,7 @@ class CrudListActivitySpec extends JUnitSuite with MustMatchers with CrudMockito
     val entityType = new MyEntityType
     val crudType = new MyCrudType(entityType, persistence)
     val application = MyCrudApplication(crudType)
+    when(persistence.entityType).thenReturn(entityType)
     when(persistence.findAll(any())).thenReturn(Seq(Map[String,Any]("name" -> "Bob", "age" -> 25)))
     val activity = new MyCrudListActivity(application) {
       override lazy val crudContext = new AndroidCrudContext(this, application) {
