@@ -13,7 +13,7 @@ import view.AndroidResourceAnalyzer._
 import view._
 import _root_.android.app.Activity
 import com.github.scrud._
-import com.github.scrud.state.{DestroyStateListener, StateVar}
+import com.github.scrud.state.DestroyStateListener
 import com.github.scrud.persistence.{DataListener, CrudPersistence, PersistenceFactory}
 import _root_.android.widget.{AdapterView, Adapter}
 import java.util.concurrent.atomic.AtomicReference
@@ -21,7 +21,6 @@ import com.github.scrud.EntityName
 import scala.Some
 import com.github.scrud.action.Action
 import com.github.scrud.action.CrudOperation
-import com.github.scrud.action.Undoable
 import view.OnClickOperationSetter
 
 /** Support for the different Crud Activity's.
@@ -129,19 +128,8 @@ trait BaseCrudActivity extends ActivityWithState with OptionsMenuActivity with L
       _root_.android.R.layout.simple_spinner_dropdown_item)
   }
 
-  /** A StateVar that holds an undoable Action if present. */
-  private object LastUndoable extends StateVar[Undoable]
-
-  def allowUndo(undoable: Undoable) {
-    // Finish any prior undoable first.  This could be re-implemented to support a stack of undoable operations.
-    LastUndoable.clear(this).foreach(_.closeOperation.foreach(_.invoke(currentUriPath, crudContext)))
-    // Remember the new undoable operation
-    LastUndoable.set(this, undoable)
-    optionsMenuCommands = generateOptionsMenu.map(_.command)
-  }
-
   // not a val because it is dynamic
-  protected def applicableActions: List[Action] = LastUndoable.get(this).map(_.undoAction).toList ++ normalActions
+  protected def applicableActions: List[Action] = LastUndoable.get(crudContext).map(_.undoAction).toList ++ normalActions
 
   protected lazy val normalOperationSetters: FieldList = {
     val setters = normalActions.filter(_.command.viewRef.isDefined).map(action =>
@@ -153,12 +141,16 @@ trait BaseCrudActivity extends ActivityWithState with OptionsMenuActivity with L
     normalOperationSetters.defaultValue.update(this, contextItems)
   }
 
+  private[android] def onCommandsChanged() {
+    optionsMenuCommands = generateOptionsMenu.map(_.command)
+  }
+
   // not a val because it is dynamic
   protected def generateOptionsMenu: List[Action] =
     applicableActions.filter(action => action.command.title.isDefined || action.command.icon.isDefined)
 
   // not a val because it is dynamic
-  def initialOptionsMenuCommands = generateOptionsMenu.map(_.command)
+  def defaultOptionsMenuCommands = generateOptionsMenu.map(_.command)
 
   override def onOptionsItemSelected(item: MenuItem): Boolean = {
     crudContext.withExceptionReportingHavingDefaultReturnValue(exceptionalReturnValue = true) {
@@ -166,9 +158,9 @@ trait BaseCrudActivity extends ActivityWithState with OptionsMenuActivity with L
       actions.find(_.commandId == item.getItemId) match {
         case Some(action) =>
           action.invoke(currentUriPath, crudContext)
-          if (LastUndoable.get(this).exists(_.undoAction.commandId == item.getItemId)) {
-            LastUndoable.clear(this)
-            optionsMenuCommands = generateOptionsMenu.map(_.command)
+          if (LastUndoable.get(crudContext).exists(_.undoAction.commandId == item.getItemId)) {
+            LastUndoable.clear(crudContext)
+            onCommandsChanged()
           }
           true
         case None => super.onOptionsItemSelected(item)

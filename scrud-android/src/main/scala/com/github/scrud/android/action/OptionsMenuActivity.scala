@@ -14,12 +14,13 @@ import com.github.scrud.state.StateVar
 trait OptionsMenuActivity extends ActivityWithState with AndroidNotification {
   def activityContext = this
 
-  protected def initialOptionsMenuCommands: List[Command]
+  /** The Commands to be used if they haven't been set yet. */
+  protected def defaultOptionsMenuCommands: List[Command]
 
   // Use a StateVar to make it thread-safe
   private object OptionsMenuCommandsVar extends StateVar[List[Command]]
 
-  final def optionsMenuCommands: List[Command] = OptionsMenuCommandsVar.get(this).getOrElse(initialOptionsMenuCommands)
+  final def optionsMenuCommands: List[Command] = OptionsMenuCommandsVar.get(this).getOrElse(defaultOptionsMenuCommands)
 
   def optionsMenuCommands_=(newValue: List[Command]) {
     OptionsMenuCommandsVar.set(this, newValue)

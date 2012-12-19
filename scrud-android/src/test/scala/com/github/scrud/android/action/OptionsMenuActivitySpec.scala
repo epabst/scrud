@@ -17,7 +17,7 @@ import org.scalatest.junit.JUnitSuite
 @RunWith(classOf[RobolectricTestRunner])
 class OptionsMenuActivitySpec extends JUnitSuite with MustMatchers with MockitoSugar {
   class StubOptionsMenuActivity extends Activity with OptionsMenuActivity {
-    protected val initialOptionsMenuCommands = Nil
+    protected val defaultOptionsMenuCommands = Nil
 
     protected val logTag = "log"
   }

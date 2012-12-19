@@ -2,8 +2,8 @@ package com.github.scrud.android
 
 import action.{AndroidNotification, ContextWithState}
 import com.github.scrud.state._
-import com.github.scrud.{CrudContext, CrudApplication}
-import state.{CachedStateListeners, CachedStateListener}
+import com.github.scrud.{UriPath, CrudContext, CrudApplication}
+import state.{ActivityVar, CachedStateListeners, CachedStateListener}
 import android.os.Bundle
 import android.content.Context
 import android.telephony.TelephonyManager
@@ -27,9 +27,14 @@ case class AndroidCrudContext(activityContext: ContextWithState, application: Cr
 
   /** Provides a way for the user to undo an operation. */
   def allowUndo(undoable: Undoable) {
+    // Finish any prior undoable first.  This could be re-implemented to support a stack of undoable operations.
+    LastUndoable.clear(this).foreach(_.closeOperation.foreach(_.invoke(UriPath.EMPTY, this)))
+    // Remember the new undoable operation
+    LastUndoable.set(this, undoable)
+
     activityContext match {
       case crudActivity: BaseCrudActivity =>
-        crudActivity.allowUndo(undoable)
+        crudActivity.onCommandsChanged()
     }
   }
 
@@ -49,3 +54,6 @@ case class AndroidCrudContext(activityContext: ContextWithState, application: Cr
     CachedStateListeners.get(this).foreach(_.onClearState(stayActive))
   }
 }
+
+/** A StateVar that holds an undoable Action if present. */
+private object LastUndoable extends ActivityVar[Undoable]
