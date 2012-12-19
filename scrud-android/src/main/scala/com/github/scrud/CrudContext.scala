@@ -4,7 +4,7 @@ import action.Undoable
 import com.github.triangle.{Logging, Field}
 import com.github.triangle.PortableField._
 import persistence.{DataListener, CrudPersistence}
-import platform.PlatformDriver
+import platform.{PlatformTypes, PlatformDriver}
 import state.State
 import util.ListenerHolder
 import collection.mutable
@@ -79,6 +79,14 @@ case class SimpleCrudContext(application: CrudApplication, platformDriver: Platf
    */
   def displayMessageToUser(message: String) {
     println("Message to User: " + message)
+  }
+
+  /**
+   * Display a message to the user temporarily.
+   * @param messageKey the key of the message to display
+   */
+  def displayMessageToUserBriefly(messageKey: PlatformTypes.SKey) {
+    println("Message Key to User: " + messageKey)
   }
 
   /** Provides a way for the user to undo an operation. */

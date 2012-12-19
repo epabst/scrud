@@ -6,6 +6,7 @@ import com.github.scrud.state.State
 import android.widget.Toast
 import com.github.scrud.util.Common
 import com.github.scrud.Notification
+import com.github.scrud.platform.PlatformTypes
 
 /**
  * The state for an Android context which has a reference to the application state as well.
@@ -27,6 +28,14 @@ trait AndroidNotification extends Notification {
 
   def displayMessageToUser(message: String) {
     Toast.makeText(activityContext, message, Toast.LENGTH_LONG).show()
+  }
+
+  /**
+   * Display a message to the user temporarily.
+   * @param messageKey the key of the message to display
+   */
+  def displayMessageToUserBriefly(messageKey: PlatformTypes.SKey) {
+    Toast.makeText(activityContext, messageKey, Toast.LENGTH_SHORT).show()
   }
 
   def runOnUiThread[T](body: => T) {

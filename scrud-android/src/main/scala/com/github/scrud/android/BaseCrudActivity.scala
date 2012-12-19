@@ -15,7 +15,7 @@ import _root_.android.app.Activity
 import com.github.scrud._
 import com.github.scrud.state.{DestroyStateListener, StateVar}
 import com.github.scrud.persistence.{DataListener, CrudPersistence, PersistenceFactory}
-import _root_.android.widget.{Toast, AdapterView, Adapter}
+import _root_.android.widget.{AdapterView, Adapter}
 import java.util.concurrent.atomic.AtomicReference
 import com.github.scrud.EntityName
 import scala.Some
@@ -41,7 +41,7 @@ trait BaseCrudActivity extends ActivityWithState with OptionsMenuActivity with L
 
   protected lazy val persistenceFactory: PersistenceFactory = crudApplication.persistenceFactory(entityType)
 
-  private[this] val createdId: AtomicReference[Option[ID]] = new AtomicReference(None)
+  protected[this] val createdId: AtomicReference[Option[ID]] = new AtomicReference(None)
 
   override def setIntent(newIntent: Intent) {
     info("Current Intent: " + newIntent)
@@ -102,17 +102,6 @@ trait BaseCrudActivity extends ActivityWithState with OptionsMenuActivity with L
         }
       }
     }
-  }
-
-  protected[scrud] def saveBasedOnUserAction(persistence: CrudPersistence, writable: AnyRef) {
-    try {
-      val idOpt = entityType.IdField(currentUriPath)
-      val newId = persistence.save(idOpt, writable)
-      Toast.makeText(this, res.R.string.data_saved_notification, Toast.LENGTH_SHORT).show()
-      if (idOpt.isEmpty) {
-        createdId.set(Some(newId))
-      }
-    } catch { case e: Exception => logError("onPause: Unable to store " + writable, e) }
   }
 
   lazy val entityNameLayoutPrefix = crudApplication.entityNameLayoutPrefixFor(entityName)

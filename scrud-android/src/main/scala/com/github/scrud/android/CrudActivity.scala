@@ -5,8 +5,6 @@ import android.os.Bundle
 import com.github.triangle.{GetterInput, PortableField}
 import android.content.Intent
 import android.app.Activity
-import android.widget.Toast
-import com.github.scrud.ValidationResult
 import state.CachedStateListener
 
 /** A generic Activity for CRUD operations
@@ -52,16 +50,10 @@ class CrudActivity extends BaseCrudActivity { self =>
   override def onBackPressed() {
     crudContext.withExceptionReporting {
       // Save before going back so that the Activity being activated will read the correct data from persistence.
-      val writable = crudContext.newWritable(entityType)
-      crudContext.withEntityPersistence(entityType) { persistence =>
-        val copyableFields = entityType.copyableTo(writable, contextItemsWithoutUseDefaults)
-        val portableValue = copyableFields.copyFrom(this +: contextItemsWithoutUseDefaults)
-        if (portableValue.update(ValidationResult.Valid).isValid) {
-          val updatedWritable = portableValue.update(writable)
-          saveBasedOnUserAction(persistence, updatedWritable)
-        } else {
-          Toast.makeText(this, res.R.string.data_not_saved_since_invalid_notification, Toast.LENGTH_SHORT).show()
-        }
+      val createId = crudApplication.saveIfValid(this, entityType, contextItemsWithoutUseDefaults)
+      val idOpt = entityType.IdField(currentUriPath)
+      if (idOpt.isEmpty) {
+        createId.foreach(id => createdId.set(Some(id)))
       }
     }
     super.onBackPressed()

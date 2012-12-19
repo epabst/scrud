@@ -9,7 +9,6 @@ import scala.collection.mutable
 import org.scalatest.matchers.MustMatchers
 import AndroidOperation._
 import android.widget.ListAdapter
-import java.lang.IllegalStateException
 import com.github.scrud.UriPath
 import org.mockito.Mockito._
 import com.github.scrud.persistence._
@@ -116,18 +115,6 @@ class CrudActivitySpec extends JUnitSuite with CrudMockitoSugar with MustMatcher
       case e: IllegalArgumentException => "expected"
     }
     verify(persistence).close()
-  }
-
-  @Test
-  def shouldHandleAnyExceptionWhenSaving() {
-    stub(persistence.save(None, "unsaveable data")).toThrow(new IllegalStateException("intentional"))
-    val _crudType = new MyCrudType(persistence)
-    val application = MyCrudApplication(_crudType)
-    val activity = new MyCrudActivity(application) {
-      override lazy val entityType = _crudType.entityType
-    }
-    //should not throw an exception
-    activity.saveBasedOnUserAction(persistence, "unsaveable data")
   }
 
   @Test

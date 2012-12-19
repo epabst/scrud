@@ -1,14 +1,17 @@
 package com.github.scrud
 
 import _root_.android.R
-import action.{StartEntityDeleteOperation, CrudOperationType, CrudOperation, Action}
+import action.Action
+import action.CrudOperation
+import action.CrudOperationType
+import action.StartEntityDeleteOperation
 import com.github.scrud
-import scrud.android.{CrudType,NamingConventions,res}
+import android._
 import scrud.android.action._
 import persistence.PersistenceFactory
 import platform.PlatformDriver
 import platform.PlatformTypes._
-import state.LazyApplicationVal
+import scrud.state.LazyApplicationVal
 import util.{Common, UrgentFutureExecutor}
 import java.util.NoSuchElementException
 import com.github.triangle.{PortableField, GetterInput, PortableValue, Logging}
@@ -19,6 +22,7 @@ import scala.collection.JavaConversions._
 import scrud.android.view.AndroidResourceAnalyzer._
 import scrud.android.view.ViewRef
 import PortableField.toSome
+import scala.Some
 
 /**
  * A stateless Application that uses Scrud.  It has all the configuration for how the application behaves,
@@ -205,6 +209,27 @@ abstract class CrudApplication(platformDriver: PlatformDriver) extends Logging {
 
   private[scrud] object FuturePortableValueCache
     extends LazyApplicationVal[mutable.ConcurrentMap[(EntityType, UriPath, CrudContext),Future[PortableValue]]](new ConcurrentHashMap[(EntityType, UriPath, CrudContext),Future[PortableValue]]())
+
+  /**
+   * Save the data into the persistence for entityType.
+   * If data is invalid (based on updating a ValidationResult), returns None, otherwise returns the created or updated ID.
+   */
+  def saveIfValid(data: AnyRef, entityType: EntityType, contextItems: CrudContextItems): Option[ID] = {
+    val crudContext = contextItems.crudContext
+    val writable = crudContext.newWritable(entityType)
+    val copyableFields = entityType.copyableTo(writable, contextItems)
+    val portableValue = copyableFields.copyFrom(data +: contextItems)
+    if (portableValue.update(ValidationResult.Valid).isValid) {
+      val updatedWritable = portableValue.update(writable)
+      val idOpt = entityType.IdField(contextItems.currentUriPath)
+      val newId = crudContext.withEntityPersistence(entityType)(_.save(idOpt, updatedWritable))
+      crudContext.displayMessageToUserBriefly(res.R.string.data_saved_notification)
+      Some(newId)
+    } else {
+      crudContext.displayMessageToUserBriefly(res.R.string.data_not_saved_since_invalid_notification)
+      None
+    }
+  }
 
   private lazy val executor = new UrgentFutureExecutor()
 

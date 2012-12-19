@@ -1,6 +1,7 @@
 package com.github.scrud
 
 import com.github.triangle.Logging
+import platform.PlatformTypes
 
 trait Notification extends Logging {
   /**
@@ -8,6 +9,12 @@ trait Notification extends Logging {
    * @param message the message to display
    */
   def displayMessageToUser(message: String)
+
+  /**
+   * Display a message to the user temporarily.
+   * @param messageKey the key of the message to display
+   */
+  def displayMessageToUserBriefly(messageKey: PlatformTypes.SKey)
 
   /**
    * Handle the exception by communicating it to the user and developers.
