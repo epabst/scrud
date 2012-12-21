@@ -64,7 +64,7 @@ class CrudListActivity extends ListActivity with BaseCrudActivity { self =>
     crudContext.withExceptionReporting {
       val commands = contextMenuActions.map(_.command)
       for ((command, index) <- commands.zip(Stream.from(0)))
-        menu.add(0, command.commandId, index, command.title.get)
+        menu.add(0, command.commandNumber, index, command.title.get)
     }
   }
 

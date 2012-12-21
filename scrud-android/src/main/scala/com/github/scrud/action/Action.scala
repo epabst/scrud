@@ -11,7 +11,7 @@ import com.github.scrud.{CrudContext, UriPath}
  * Time: 3:37 PM
  */
 case class Action(command: Command, operation: Operation) {
-  def commandId: CommandId = command.commandId
+  def commandId: CommandNumber = command.commandNumber
 
   def invoke(uri: UriPath, crudContext: CrudContext) {
     operation.invoke(uri, crudContext)

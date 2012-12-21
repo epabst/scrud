@@ -14,8 +14,8 @@ import com.github.scrud.platform.PlatformTypes
   *   then it can't be displayed in the main options menu, but can still be triggered as a default.
   */
 case class Command(icon: Option[ImgKey], title: Option[SKey], viewRef: Option[ViewRef] = None) {
-  /** A CommandID that can be used to identify if it's the same as another in a list.
+  /** A CommandNumber that can be used to identify if it's the same as another in a list.
     * It uses the title or else the icon or else the hash code.
     */
-  val commandId: PlatformTypes.CommandId = title.orElse(icon).getOrElse(##)
+  val commandNumber: PlatformTypes.CommandNumber = title.orElse(icon).getOrElse(##)
 }

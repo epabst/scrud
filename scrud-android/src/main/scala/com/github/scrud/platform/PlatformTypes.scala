@@ -16,5 +16,5 @@ object PlatformTypes {
   /** A view key, which is a single element of a layout. */
   type ViewKey = Int
   /** An ID for a command. */
-  type CommandId = Int
+  type CommandNumber = Int
 }

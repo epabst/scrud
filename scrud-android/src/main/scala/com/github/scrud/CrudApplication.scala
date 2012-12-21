@@ -5,14 +5,11 @@ import action._
 import action.Action
 import action.CrudOperation
 import action.StartEntityDeleteOperation
-import android.CrudType
 import com.github.scrud
 import android._
-import scrud.android.action._
 import persistence.PersistenceFactory
 import platform.PlatformDriver
 import platform.PlatformTypes._
-import scrud.EntityName
 import scrud.state.LazyApplicationVal
 import util.{Common, UrgentFutureExecutor}
 import java.util.NoSuchElementException
@@ -24,7 +21,6 @@ import scala.collection.JavaConversions._
 import scrud.android.view.AndroidResourceAnalyzer._
 import scrud.android.view.ViewRef
 import PortableField.toSome
-import scala.Some
 import scala.Some
 
 /**

@@ -35,7 +35,7 @@ trait OptionsMenuActivity extends ActivityWithState with AndroidNotification {
 
   private[action] def populateMenu(menu: Menu, commands: List[Command]) {
     for ((command, index) <- commands.zip(Stream.from(0))) {
-      val menuItem = command.title.map(menu.add(0, command.commandId, index, _)).getOrElse(menu.add(0, command.commandId, index, ""))
+      val menuItem = command.title.map(menu.add(0, command.commandNumber, index, _)).getOrElse(menu.add(0, command.commandNumber, index, ""))
       command.icon.map(icon => menuItem.setIcon(icon))
     }
   }
