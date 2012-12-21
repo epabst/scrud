@@ -2,7 +2,6 @@ package com.github.scrud.action
 
 import com.github.scrud.platform.PlatformTypes._
 import com.github.scrud.{CrudContext, UriPath}
-import com.github.scrud.android.action.Command
 
 /**
  * Represents an action that a user can initiate.

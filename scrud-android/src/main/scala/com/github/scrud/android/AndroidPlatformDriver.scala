@@ -1,6 +1,7 @@
 package com.github.scrud.android
 
 import action.AndroidOperation._
+import com.github.scrud.action.Command
 import action.{Command, StartEntityIdActivityOperation, StartEntityActivityOperation}
 import com.github.scrud.platform.PlatformDriver
 import com.github.scrud.EntityName

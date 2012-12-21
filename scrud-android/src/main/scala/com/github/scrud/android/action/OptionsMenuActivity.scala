@@ -4,6 +4,7 @@ import android.view.Menu
 import java.lang.reflect.Method
 import java.util.concurrent.atomic.AtomicBoolean
 import com.github.scrud.state.StateVar
+import com.github.scrud.action.Command
 
 /** An Activity that has an options menu.
   * This is intended to handle both Android 2 and 3.

@@ -3,7 +3,6 @@ package com.github.scrud.platform
 import com.github.scrud.persistence.ListBufferPersistenceFactory
 import com.github.scrud.{CrudContext, UriPath, EntityName}
 import com.github.scrud.action.{Operation, CrudOperationType}
-import com.github.scrud.android.action.Command
 
 /**
  * A simple PlatformDriver for testing.

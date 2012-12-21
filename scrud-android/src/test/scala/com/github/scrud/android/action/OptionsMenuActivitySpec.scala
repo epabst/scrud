@@ -10,6 +10,7 @@ import org.mockito.Mockito._
 import org.mockito.Matchers.{eq => eql, _}
 import android.view.{MenuItem, Menu}
 import org.scalatest.junit.JUnitSuite
+import com.github.scrud.action.Command
 
 /** A behavior specification for [[com.github.scrud.android.action.OptionsMenuActivity]].
   * @author Eric Pabst (epabst@gmail.com)

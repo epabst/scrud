@@ -1,9 +1,8 @@
 package com.github.scrud.platform
 
 import com.github.scrud.persistence.PersistenceFactory
-import com.github.scrud.action.Operation
+import com.github.scrud.action.{Command, Operation}
 import com.github.scrud.EntityName
-import com.github.scrud.android.action.Command
 
 /**
  * An API for an app to interact with the host platform such as Android.
