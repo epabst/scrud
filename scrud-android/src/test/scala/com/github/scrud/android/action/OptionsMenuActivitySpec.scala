@@ -10,7 +10,7 @@ import org.mockito.Mockito._
 import org.mockito.Matchers.{eq => eql, _}
 import android.view.{MenuItem, Menu}
 import org.scalatest.junit.JUnitSuite
-import com.github.scrud.action.Command
+import com.github.scrud.action.{CommandId, Command}
 
 /** A behavior specification for [[com.github.scrud.android.action.OptionsMenuActivity]].
   * @author Eric Pabst (epabst@gmail.com)
@@ -26,7 +26,7 @@ class OptionsMenuActivitySpec extends JUnitSuite with MustMatchers with MockitoS
   @Test
   def mustUseLatestOptionsMenuForCreate() {
     val activity = new StubOptionsMenuActivity
-    activity.optionsMenuCommands = List(Command(None, Some(10)))
+    activity.optionsMenuCommands = List(Command(CommandId("command1"), None, Some(10)))
 
     val menu = mock[Menu]
     val menuItem = mock[MenuItem]
@@ -38,7 +38,7 @@ class OptionsMenuActivitySpec extends JUnitSuite with MustMatchers with MockitoS
   @Test
   def mustUseLatestOptionsMenuForPrepare_Android2() {
     val activity = new StubOptionsMenuActivity
-    activity.optionsMenuCommands = List(Command(None, Some(10)))
+    activity.optionsMenuCommands = List(Command(CommandId("command1"), None, Some(10)))
 
     val menu = mock[Menu]
     activity.onPrepareOptionsMenu(menu)

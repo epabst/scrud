@@ -1,8 +1,9 @@
 package com.github.scrud.android
 
+import com.github.scrud
+import scrud.action.{CommandId, Command}
+import scrud.android.action.{StartEntityIdActivityOperation, StartEntityActivityOperation}
 import action.AndroidOperation._
-import com.github.scrud.action.Command
-import action.{Command, StartEntityIdActivityOperation, StartEntityActivityOperation}
 import com.github.scrud.platform.PlatformDriver
 import com.github.scrud.EntityName
 
@@ -36,5 +37,5 @@ object AndroidPlatformDriver extends PlatformDriver {
     new StartEntityIdActivityOperation(entityName, UpdateActionName, activityClass)
 
   /** The command to undo the last delete. */
-  lazy val commandToUndoDelete = Command(None, Some(res.R.string.undo_delete), None)
+  lazy val commandToUndoDelete = Command(CommandId("undo_delete"), None, Some(res.R.string.undo_delete))
 }

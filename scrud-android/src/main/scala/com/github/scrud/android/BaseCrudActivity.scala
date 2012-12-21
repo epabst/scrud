@@ -132,8 +132,9 @@ trait BaseCrudActivity extends ActivityWithState with OptionsMenuActivity with L
   protected def applicableActions: List[Action] = LastUndoable.get(crudContext).map(_.undoAction).toList ++ normalActions
 
   protected lazy val normalOperationSetters: FieldList = {
-    val setters = normalActions.filter(_.command.viewRef.isDefined).map(action =>
-      ViewField.viewId[Nothing](action.command.viewRef.get, OnClickOperationSetter(_ => action.operation)))
+    val setters = normalActions.map(action =>
+      ViewField.viewId[Nothing](ViewRef(action.command.commandId.idString + "_command", crudApplication.rIdClasses),
+        OnClickOperationSetter(_ => action.operation)))
     FieldList.toFieldList(setters)
   }
 

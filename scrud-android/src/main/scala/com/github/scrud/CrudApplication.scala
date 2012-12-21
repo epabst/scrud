@@ -112,19 +112,21 @@ abstract class CrudApplication(platformDriver: PlatformDriver) extends Logging {
 
   def entityNameLayoutPrefixFor(entityName: EntityName) = NamingConventions.toLayoutPrefix(entityName)
 
-  def commandToListItems(entityName: EntityName): Command = Command(None,
-    findResourceIdWithName(rStringClasses, entityNameLayoutPrefixFor(entityName) + "_list"), None)
+  def commandToListItems(entityName: EntityName): Command = Command(CommandId(entityNameLayoutPrefixFor(entityName) + "_list"), None,
+    findResourceIdWithName(rStringClasses, entityNameLayoutPrefixFor(entityName) + "_list"))
 
-  def commandToDisplayItem(entityName: EntityName): Command = Command(None, None, None)
+  def commandToDisplayItem(entityName: EntityName): Command = Command(CommandId("display_" + entityNameLayoutPrefixFor(entityName)),
+    None, None)
 
-  def commandToAddItem(entityName: EntityName): Command = Command(R.drawable.ic_menu_add,
-    getStringKey("add_" + entityNameLayoutPrefixFor(entityName)),
-    Some(ViewRef("add_" + entityNameLayoutPrefixFor(entityName) + "_command", rIdClasses)))
+  def commandToAddItem(entityName: EntityName): Command = Command(CommandId("add_" + entityNameLayoutPrefixFor(entityName)),
+    R.drawable.ic_menu_add,
+    getStringKey("add_" + entityNameLayoutPrefixFor(entityName)))
 
-  def commandToEditItem(entityName: EntityName): Command = Command(R.drawable.ic_menu_edit,
-    getStringKey("edit_" + entityNameLayoutPrefixFor(entityName)), None)
+  def commandToEditItem(entityName: EntityName): Command = Command(CommandId("edit_" + entityNameLayoutPrefixFor(entityName)),
+    R.drawable.ic_menu_edit, getStringKey("edit_" + entityNameLayoutPrefixFor(entityName)))
 
-  def commandToDeleteItem(entityName: EntityName): Command = Command(R.drawable.ic_menu_delete, res.R.string.delete_item, None)
+  def commandToDeleteItem(entityName: EntityName): Command = Command(CommandId("delete_" + entityNameLayoutPrefixFor(entityName)),
+    R.drawable.ic_menu_delete, res.R.string.delete_item)
 
   def displayLayoutFor(entityName: EntityName): Option[LayoutKey] = findResourceIdWithName(rLayoutClasses, entityNameLayoutPrefixFor(entityName) + "_display")
   def hasDisplayPage(entityName: EntityName) = displayLayoutFor(entityName).isDefined
