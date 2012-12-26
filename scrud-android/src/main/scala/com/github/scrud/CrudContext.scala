@@ -31,8 +31,10 @@ trait CrudContext extends Notification with Logging {
   private val workInProgress: mutable.ConcurrentMap[() => _,Unit] = new ConcurrentHashMap[() => _,Unit]()
 
   def future[T](body: => T): () => T = {
-    // Use this instead of scala.actors.Futures.future because it preserves exceptions
-    scala.concurrent.ops.future(trackWorkInProgress(propagateWithExceptionReporting(body))())
+    // Would prefer to use scala.concurrent.ops.future instead of scala.actors.Futures.future because it preserves exceptions
+    // However, scala.concurrent.ops.future has a problem with scala before 2.10.1 with missing sun.misc.Unsafe.throwException
+    //    scala.concurrent.ops.future(trackWorkInProgress(propagateWithExceptionReporting(body))())
+    scala.actors.Futures.future(body)
   }
 
   def trackWorkInProgress[T](body: => T): () => T = {
