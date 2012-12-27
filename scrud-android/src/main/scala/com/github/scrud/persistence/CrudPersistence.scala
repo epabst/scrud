@@ -35,4 +35,14 @@ trait CrudPersistence extends EntityPersistence with ListenerSet[DataListener] w
     val writable = newWritable()
     save(modelEntity.id, entityType.copyAndUpdate(modelEntity, writable))
   }
+
+  // Available for cases where logging needs to happen outside, based on the entityType known here.
+  override protected[scrud] def debug(f: => String) {
+    super.debug(f)
+  }
+
+  // Available for cases where logging needs to happen outside, based on the entityType known here.
+  override protected[scrud] def warn(f: => String) {
+    super.warn(f)
+  }
 }

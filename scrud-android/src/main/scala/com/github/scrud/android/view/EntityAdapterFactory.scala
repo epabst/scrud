@@ -21,6 +21,11 @@ class EntityAdapterFactory {
     val _entityType = persistence.entityType
     val entityTypePersistedInfo = EntityTypePersistedInfo(_entityType)
     val findAllResult = persistence.findAll(contextItems.currentUriPath)
+    if (findAllResult.isEmpty) {
+      persistence.warn("No results found for entityType=" + _entityType + " uri=" + contextItems.currentUriPath)
+    } else {
+      persistence.debug("found count=" + findAllResult.length + " for entityType=" + _entityType + " for uri=" + contextItems.currentUriPath)
+    }
     findAllResult match {
       case CursorStream(cursor, _) =>
         val activity: Activity = getActivity(contextItems)
