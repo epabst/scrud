@@ -16,25 +16,14 @@ class SQLitePersistenceFactory extends PersistenceFactory with DataListenerSetVa
 
   def createEntityPersistence(entityType: EntityType, crudContext: CrudContext) = {
     val androidCrudContext = crudContext.asInstanceOf[AndroidCrudContext]
-    var initialCreate = false
-    val databaseSetup = new GeneratedDatabaseSetup(androidCrudContext) {
-      override def onCreate(db: SQLiteDatabase) {
-        super.onCreate(db)
-        initialCreate = true
-      }
-    }
-    val thinPersistence = new SQLiteThinEntityPersistence(entityType, databaseSetup, androidCrudContext)
-    val persistence = new CrudPersistenceUsingThin(entityType, thinPersistence, androidCrudContext, listenerSet(entityType, crudContext))
-    if (initialCreate) {
-      entityType.onCreateDatabase(persistence)
-      preventRollbackOfPriorOperations(persistence)
-    }
-    persistence
+    val databaseSetup = new GeneratedDatabaseSetup(androidCrudContext, this)
+    val writableDatabase = databaseSetup.getWritableDatabase
+    createEntityPersistence(entityType, writableDatabase, androidCrudContext)
   }
 
-
-  private def preventRollbackOfPriorOperations(persistence: CrudPersistenceUsingThin) {
-    // once transactions are supported, this method should end the current one and start a new one
+  def createEntityPersistence(entityType: EntityType, writableDatabase: SQLiteDatabase, androidCrudContext: AndroidCrudContext): CrudPersistenceUsingThin = {
+    val thinPersistence = new SQLiteThinEntityPersistence(entityType, writableDatabase, androidCrudContext)
+    new CrudPersistenceUsingThin(entityType, thinPersistence, androidCrudContext, listenerSet(entityType, androidCrudContext))
   }
 
   def toTableName(entityName: EntityName): String = SQLiteUtil.toNonReservedWord(entityName.name)

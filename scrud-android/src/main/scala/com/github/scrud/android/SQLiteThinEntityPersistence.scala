@@ -1,7 +1,7 @@
 package com.github.scrud.android
 
 import com.github.scrud.{UriPath, EntityType}
-import android.database.sqlite.{SQLiteDatabase, SQLiteOpenHelper}
+import android.database.sqlite.SQLiteDatabase
 import com.github.scrud.persistence.ThinPersistence
 import com.github.triangle.{PortableField, GetterInput, Logging}
 import com.github.scrud.util.Common
@@ -19,11 +19,10 @@ import android.provider.BaseColumns
  *         Date: 12/17/12
  *         Time: 11:45 AM
  */
-class SQLiteThinEntityPersistence(entityType: EntityType, databaseSetup: SQLiteOpenHelper, crudContext: AndroidCrudContext)
+class SQLiteThinEntityPersistence(entityType: EntityType, database: SQLiteDatabase, crudContext: AndroidCrudContext)
     extends ThinPersistence with Logging {
   protected lazy val logTag: String = Common.tryToEvaluate(entityType.logTag).getOrElse(Common.logTag)
   private lazy val tableName = SQLitePersistenceFactory.toTableName(entityType.entityName)
-  private lazy val database: SQLiteDatabase = databaseSetup.getWritableDatabase
   private val cursors = new mutable.SynchronizedQueue[Cursor]
   private lazy val entityTypePersistedInfo = EntityTypePersistedInfo(entityType)
   private def queryFieldNames = entityTypePersistedInfo.queryFieldNames
