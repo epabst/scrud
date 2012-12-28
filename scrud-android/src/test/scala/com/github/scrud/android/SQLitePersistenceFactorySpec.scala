@@ -4,7 +4,6 @@ import _root_.android.provider.BaseColumns
 import _root_.android.app.Activity
 import _root_.android.database.{Cursor, DataSetObserver}
 import _root_.android.widget.ListView
-import _root_.android.database.sqlite.SQLiteDatabase
 import action.ContextWithState
 import com.github.scrud
 import com.github.scrud.state._
@@ -18,7 +17,7 @@ import com.github.scrud.android.persistence.CursorField._
 import persistence.{EntityTypePersistedInfo, CursorStream}
 import PortableField._
 import scala.collection._
-import org.mockito.{Mockito, Matchers}
+import org.mockito.Mockito
 import Mockito._
 import scrud.util.{MutableListenerSet, CrudMockitoSugar}
 import com.github.scrud._
@@ -78,9 +77,11 @@ class SQLitePersistenceFactorySpec extends JUnitSuite with MustMatchers with Cru
     val crudContext = mock[AndroidCrudContext]
     stub(crudContext.activityState).toReturn(new State {})
     stub(crudContext.application).toReturn(application)
+    val persistenceFactory = SQLitePersistenceFactory
 
     val cursors = mutable.Buffer[Cursor]()
-    val thinPersistence = new SQLiteThinEntityPersistence(TestEntityType, new GeneratedDatabaseSetup(crudContext), crudContext)
+    val database = new GeneratedDatabaseSetup(crudContext, persistenceFactory).getWritableDatabase
+    val thinPersistence = new SQLiteThinEntityPersistence(TestEntityType, database, crudContext)
     val persistence = new CrudPersistenceUsingThin(TestEntityType, thinPersistence, crudContext, listenerSet) {
       override def findAll(uri: UriPath) = {
         val result = super.findAll(uri)
@@ -89,7 +90,7 @@ class SQLitePersistenceFactorySpec extends JUnitSuite with MustMatchers with Cru
         result
       }
     }
-    val writable = SQLitePersistenceFactory.newWritable()
+    val writable = persistenceFactory.newWritable()
     //UseDefaults is provided here in the item list for the sake of PortableField.adjustment[SQLiteCriteria] fields
     TestEntityType.copy(PortableField.UseDefaults, writable)
     val id = persistence.save(None, writable)
@@ -143,24 +144,6 @@ class SQLitePersistenceFactorySpec extends JUnitSuite with MustMatchers with Cru
 
   def tableNameMustNotBeReservedWord(name: String) {
     SQLitePersistenceFactory.toTableName(EntityName(name)) must be (name + "0")
-  }
-
-  @Test
-  def onCreateShouldCreateTables() {
-    val context = mock[MyContextWithVars]
-    val dbSetup = new GeneratedDatabaseSetup(AndroidCrudContext(context, application))
-    val db = mock[SQLiteDatabase]
-    dbSetup.onCreate(db)
-    verify(db, times(1)).execSQL(Matchers.contains("CREATE TABLE IF NOT EXISTS"))
-  }
-
-  @Test
-  def onUpgradeShouldCreateMissingTables() {
-    val context = mock[MyContextWithVars]
-    val dbSetup = new GeneratedDatabaseSetup(AndroidCrudContext(context, application))
-    val db = mock[SQLiteDatabase]
-    dbSetup.onUpgrade(db, 1, 2)
-    verify(db, times(1)).execSQL(Matchers.contains("CREATE TABLE IF NOT EXISTS"))
   }
 }
 
