@@ -14,13 +14,12 @@ import org.mockito.Mockito._
 import com.github.scrud.persistence._
 import com.github.scrud.util.{CrudMockitoSugar, ReadyFuture}
 import scala.Some
-import org.scalatest.junit.JUnitSuite
 
 /** A test for [[com.github.scrud.android.CrudListActivity]].
   * @author Eric Pabst (epabst@gmail.com)
   */
 @RunWith(classOf[RobolectricTestRunner])
-class CrudActivitySpec extends JUnitSuite with CrudMockitoSugar with MustMatchers {
+class CrudActivitySpec extends CrudMockitoSugar with MustMatchers {
   val persistenceFactory = mock[PersistenceFactory]
   val persistence = mock[CrudPersistence]
   val listAdapter = mock[ListAdapter]

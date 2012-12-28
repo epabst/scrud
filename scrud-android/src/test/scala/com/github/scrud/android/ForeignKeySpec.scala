@@ -8,13 +8,12 @@ import com.github.scrud.{ParentField, UriPath}
 import org.scalatest.mock.EasyMockSugar
 import persistence.SQLiteCriteria
 import ForeignKey.foreignKey
-import org.scalatest.junit.JUnitSuite
 
 /** A specification for [[com.github.scrud.android.ForeignKey]].
   * @author Eric Pabst (epabst@gmail.com)
   */
 @RunWith(classOf[RobolectricTestRunner])
-class ForeignKeySpec extends JUnitSuite with MustMatchers with EasyMockSugar {
+class ForeignKeySpec extends MustMatchers with EasyMockSugar {
   @Test
   def shouldGetCriteriaCorrectlyForForeignKey() {
     val foreign = foreignKey(MyEntity)

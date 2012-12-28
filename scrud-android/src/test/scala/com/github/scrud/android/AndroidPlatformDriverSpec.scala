@@ -16,7 +16,7 @@ import org.scalatest.junit.JUnitSuite
   * @author Eric Pabst (epabst@gmail.com)
   */
 @RunWith(classOf[RobolectricTestRunner])
-class AndroidPlatformDriverSpec extends JUnitSuite with MustMatchers with CrudMockitoSugar {
+class AndroidPlatformDriverSpec extends MustMatchers with CrudMockitoSugar {
   //todo determine if shadowing, and run tests on real Android device as well.
   val isShadowing = true
   val application = new MyCrudApplicationSpecifyingPlatform(AndroidPlatformDriver, MyCrudType) {

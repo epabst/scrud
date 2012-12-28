@@ -18,7 +18,6 @@ import android.AndroidCrudContext
 import android.CrudType
 import android.MyCrudApplication
 import com.github.scrud.util.{ListenerHolder, CrudMockitoSugar}
-import org.scalatest.junit.JUnitSuite
 import com.github.scrud.EntityName
 
 /** A behavior specification for [[com.github.scrud.persistence.GeneratedPersistenceFactory]].
@@ -26,7 +25,7 @@ import com.github.scrud.EntityName
   */
 
 @RunWith(classOf[RobolectricTestRunner])
-class GeneratedPersistenceFactorySpec extends JUnitSuite with MustMatchers with CrudMockitoSugar {
+class GeneratedPersistenceFactorySpec extends MustMatchers with CrudMockitoSugar {
   val seqPersistence = mock[SeqCrudPersistence[Map[String,Any]]]
   val adapterView = mock[AdapterView[BaseAdapter]]
   val activity = mock[Activity]

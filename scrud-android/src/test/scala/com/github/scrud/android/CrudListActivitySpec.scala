@@ -15,13 +15,12 @@ import com.github.scrud.state.State
 import com.github.scrud.persistence.{CrudPersistence, PersistenceFactory}
 import com.github.scrud.util.CrudMockitoSugar
 import com.github.scrud.action.CrudOperation
-import org.scalatest.junit.JUnitSuite
 
 /** A test for [[com.github.scrud.android.CrudListActivity]].
   * @author Eric Pabst (epabst@gmail.com)
   */
 @RunWith(classOf[RobolectricTestRunner])
-class CrudListActivitySpec extends JUnitSuite with MustMatchers with CrudMockitoSugar {
+class CrudListActivitySpec extends MustMatchers with CrudMockitoSugar {
   @Test
   def mustBeConstructibleWithoutAnApplicationYet() {
     new CrudListActivity

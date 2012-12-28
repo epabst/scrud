@@ -22,13 +22,12 @@ import Mockito._
 import scrud.util.{MutableListenerSet, CrudMockitoSugar}
 import com.github.scrud._
 import com.github.scrud.EntityName
-import org.scalatest.junit.JUnitSuite
 
 /** A test for [[com.github.scrud.android.SQLitePersistenceFactorySpec]].
   * @author Eric Pabst (epabst@gmail.com)
   */
 @RunWith(classOf[RobolectricTestRunner])
-class SQLitePersistenceFactorySpec extends JUnitSuite with MustMatchers with CrudMockitoSugar with Logging {
+class SQLitePersistenceFactorySpec extends MustMatchers with CrudMockitoSugar with Logging {
   protected val logTag = getClass.getSimpleName
 
   val runningOnRealAndroid: Boolean = try {

@@ -13,13 +13,12 @@ import android.database.Cursor
 import com.github.scrud.platform.PlatformTypes._
 import android.content.ContentValues
 import org.mockito.Mockito._
-import org.scalatest.junit.JUnitSuite
 
 /** A specification for [[com.github.scrud.android.persistence.CursorField]].
   * @author Eric Pabst (epabst@gmail.com)
   */
 @RunWith(classOf[RobolectricTestRunner])
-class CursorFieldSpec extends JUnitSuite with MustMatchers with MockitoSugar {
+class CursorFieldSpec extends MustMatchers with MockitoSugar {
   @Test
   def shouldGetColumnsForQueryCorrectly() {
     val foreign = persisted[ID]("foreignID")
