@@ -2,7 +2,6 @@ package com.github.scrud.android
 
 import org.junit.Test
 import org.junit.runner.RunWith
-import com.xtremelabs.robolectric.RobolectricTestRunner
 import org.scalatest.matchers.MustMatchers
 import com.github.scrud.{ParentField, UriPath}
 import org.scalatest.mock.EasyMockSugar
@@ -12,7 +11,7 @@ import ForeignKey.foreignKey
 /** A specification for [[com.github.scrud.android.ForeignKey]].
   * @author Eric Pabst (epabst@gmail.com)
   */
-@RunWith(classOf[RobolectricTestRunner])
+@RunWith(classOf[CustomRobolectricTestRunner])
 class ForeignKeySpec extends MustMatchers with EasyMockSugar {
   @Test
   def shouldGetCriteriaCorrectlyForForeignKey() {

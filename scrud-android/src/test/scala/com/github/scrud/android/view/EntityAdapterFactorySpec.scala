@@ -5,10 +5,9 @@ import org.mockito.Matchers._
 import com.github.scrud.persistence.CrudPersistence
 import org.scalatest.matchers.MustMatchers
 import com.github.scrud.util.CrudMockitoSugar
-import com.github.scrud.android.MyEntityType
+import com.github.scrud.android.{CustomRobolectricTestRunner, MyEntityType}
 import com.github.scrud.{UriPath, CrudContextItems}
 import org.junit.runner.RunWith
-import com.xtremelabs.robolectric.RobolectricTestRunner
 import org.junit.Test
 import com.github.scrud.platform.PlatformTypes
 
@@ -18,7 +17,7 @@ import com.github.scrud.platform.PlatformTypes
  * Date: 12/11/12
  * Time: 3:18 PM
  */
-@RunWith(classOf[RobolectricTestRunner])
+@RunWith(classOf[CustomRobolectricTestRunner])
 class EntityAdapterFactorySpec extends MustMatchers with CrudMockitoSugar {
   val entityType = MyEntityType
 

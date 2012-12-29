@@ -5,17 +5,15 @@ import action.StartActivityOperation
 import com.github.scrud.{EntityName, UriPath}
 import org.junit.Test
 import org.junit.runner.RunWith
-import com.xtremelabs.robolectric.RobolectricTestRunner
 import org.scalatest.matchers.MustMatchers
 import com.github.scrud.android.action.AndroidOperation.toRichItent
 import com.github.scrud.util.CrudMockitoSugar
 import com.github.scrud.action.Action
-import org.scalatest.junit.JUnitSuite
 
 /** A test for [[com.github.scrud.android.AndroidPlatformDriver.]].
   * @author Eric Pabst (epabst@gmail.com)
   */
-@RunWith(classOf[RobolectricTestRunner])
+@RunWith(classOf[CustomRobolectricTestRunner])
 class AndroidPlatformDriverSpec extends MustMatchers with CrudMockitoSugar {
   //todo determine if shadowing, and run tests on real Android device as well.
   val isShadowing = true

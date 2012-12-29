@@ -4,7 +4,6 @@ import org.junit.runner.RunWith
 import org.scalatest.matchers.MustMatchers
 import ViewField._
 import android.view.View
-import com.xtremelabs.robolectric.RobolectricTestRunner
 import org.junit.Test
 import org.scalatest.mock.MockitoSugar
 import org.mockito.Mockito._
@@ -13,12 +12,13 @@ import android.net.Uri
 import android.content.Intent
 import android.widget.ImageView
 import com.github.triangle.GetterInput
+import com.github.scrud.android.CustomRobolectricTestRunner
 
 /** A behavior specification for [[com.github.scrud.android.view.ViewField]].
   * @author Eric Pabst (epabst@gmail.com)
   */
 
-@RunWith(classOf[RobolectricTestRunner])
+@RunWith(classOf[CustomRobolectricTestRunner])
 class CapturedImageViewSpec extends MustMatchers with MockitoSugar {
   @Test
   def capturedImageViewMustGetImageUriFromOperationResponse() {

@@ -3,7 +3,6 @@ package com.github.scrud.android
 import action.AndroidOperation
 import org.junit.Test
 import org.junit.runner.RunWith
-import com.xtremelabs.robolectric.RobolectricTestRunner
 import persistence.CursorField
 import scala.collection.mutable
 import org.scalatest.matchers.MustMatchers
@@ -18,7 +17,7 @@ import scala.Some
 /** A test for [[com.github.scrud.android.CrudListActivity]].
   * @author Eric Pabst (epabst@gmail.com)
   */
-@RunWith(classOf[RobolectricTestRunner])
+@RunWith(classOf[CustomRobolectricTestRunner])
 class CrudActivitySpec extends CrudMockitoSugar with MustMatchers {
   val persistenceFactory = mock[PersistenceFactory]
   val persistence = mock[CrudPersistence]

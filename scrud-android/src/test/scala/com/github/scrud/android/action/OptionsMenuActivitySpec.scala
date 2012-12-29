@@ -3,18 +3,18 @@ package com.github.scrud.android.action
 import org.junit.runner.RunWith
 import org.junit.Test
 import org.scalatest.matchers.MustMatchers
-import com.xtremelabs.robolectric.RobolectricTestRunner
 import android.app.Activity
 import org.scalatest.mock.MockitoSugar
 import org.mockito.Mockito._
 import org.mockito.Matchers.{eq => eql, _}
 import android.view.{MenuItem, Menu}
 import com.github.scrud.action.{CommandId, Command}
+import com.github.scrud.android.CustomRobolectricTestRunner
 
 /** A behavior specification for [[com.github.scrud.android.action.OptionsMenuActivity]].
   * @author Eric Pabst (epabst@gmail.com)
   */
-@RunWith(classOf[RobolectricTestRunner])
+@RunWith(classOf[CustomRobolectricTestRunner])
 class OptionsMenuActivitySpec extends MustMatchers with MockitoSugar {
   class StubOptionsMenuActivity extends Activity with OptionsMenuActivity {
     protected val defaultOptionsMenuCommands = Nil

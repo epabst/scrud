@@ -3,7 +3,6 @@ package com.github.scrud.android.persistence
 import android.provider.BaseColumns
 import org.junit.Test
 import org.junit.runner.RunWith
-import com.xtremelabs.robolectric.RobolectricTestRunner
 import com.github.triangle._
 import PortableField._
 import CursorField._
@@ -13,11 +12,12 @@ import android.database.Cursor
 import com.github.scrud.platform.PlatformTypes._
 import android.content.ContentValues
 import org.mockito.Mockito._
+import com.github.scrud.android.CustomRobolectricTestRunner
 
 /** A specification for [[com.github.scrud.android.persistence.CursorField]].
   * @author Eric Pabst (epabst@gmail.com)
   */
-@RunWith(classOf[RobolectricTestRunner])
+@RunWith(classOf[CustomRobolectricTestRunner])
 class CursorFieldSpec extends MustMatchers with MockitoSugar {
   @Test
   def shouldGetColumnsForQueryCorrectly() {

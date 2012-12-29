@@ -10,7 +10,6 @@ import com.github.scrud.state._
 import com.github.scrud.persistence._
 import org.junit.Test
 import org.junit.runner.RunWith
-import com.xtremelabs.robolectric.RobolectricTestRunner
 import org.scalatest.matchers.MustMatchers
 import com.github.triangle._
 import com.github.scrud.android.persistence.CursorField._
@@ -26,7 +25,7 @@ import com.github.scrud.EntityName
 /** A test for [[com.github.scrud.android.SQLitePersistenceFactorySpec]].
   * @author Eric Pabst (epabst@gmail.com)
   */
-@RunWith(classOf[RobolectricTestRunner])
+@RunWith(classOf[CustomRobolectricTestRunner])
 class SQLitePersistenceFactorySpec extends MustMatchers with CrudMockitoSugar with Logging {
   protected val logTag = getClass.getSimpleName
 

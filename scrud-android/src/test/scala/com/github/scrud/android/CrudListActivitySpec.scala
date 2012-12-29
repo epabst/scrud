@@ -3,7 +3,6 @@ package com.github.scrud.android
 import _root_.android.content.Intent
 import org.junit.Test
 import org.junit.runner.RunWith
-import com.xtremelabs.robolectric.RobolectricTestRunner
 import com.xtremelabs.robolectric.tester.android.view.TestMenu
 import org.scalatest.matchers.MustMatchers
 import android.view.{View, ContextMenu}
@@ -19,7 +18,7 @@ import com.github.scrud.action.CrudOperation
 /** A test for [[com.github.scrud.android.CrudListActivity]].
   * @author Eric Pabst (epabst@gmail.com)
   */
-@RunWith(classOf[RobolectricTestRunner])
+@RunWith(classOf[CustomRobolectricTestRunner])
 class CrudListActivitySpec extends MustMatchers with CrudMockitoSugar {
   @Test
   def mustBeConstructibleWithoutAnApplicationYet() {

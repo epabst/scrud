@@ -3,18 +3,18 @@ package com.github.scrud.android.view
 import org.junit.runner.RunWith
 import org.scalatest.matchers.MustMatchers
 import com.github.triangle.PortableField._
-import com.xtremelabs.robolectric.RobolectricTestRunner
 import org.junit.Test
 import org.scalatest.mock.MockitoSugar
 import android.widget._
 import java.util.Locale
 import android.content.Context
+import com.github.scrud.android.CustomRobolectricTestRunner
 
 /** A behavior specification for [[com.github.scrud.android.view.ViewField]].
   * @author Eric Pabst (epabst@gmail.com)
   */
 
-@RunWith(classOf[RobolectricTestRunner])
+@RunWith(classOf[CustomRobolectricTestRunner])
 class EnumerationViewSpec extends MustMatchers with MockitoSugar {
   class MyEntity(var string: String, var number: Int)
   val context = mock[Context]

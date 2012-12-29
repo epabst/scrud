@@ -1,6 +1,5 @@
 package com.github.scrud.android
 
-import com.xtremelabs.robolectric.RobolectricTestRunner
 import org.junit.{Before, Test}
 import org.junit.runner.RunWith
 import android.database.sqlite.SQLiteDatabase
@@ -18,7 +17,7 @@ import com.github.scrud.{EntityName, EntityType}
  *         Date: 12/27/12
  *         Time: 8:34 AM
  */
-@RunWith(classOf[RobolectricTestRunner])
+@RunWith(classOf[CustomRobolectricTestRunner])
 class GeneratedDatabaseSetupSpec extends CrudMockitoSugar with MustMatchers {
   val db = mock[SQLiteDatabase]
   val mockEntityType = mock[EntityType]

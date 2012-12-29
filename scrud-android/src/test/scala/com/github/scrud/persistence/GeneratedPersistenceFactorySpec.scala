@@ -2,7 +2,6 @@ package com.github.scrud.persistence
 
 import org.junit.runner.RunWith
 import org.scalatest.matchers.MustMatchers
-import com.xtremelabs.robolectric.RobolectricTestRunner
 import org.junit.Test
 import org.mockito.Mockito._
 import org.mockito.Matchers._
@@ -24,7 +23,7 @@ import com.github.scrud.EntityName
   * @author Eric Pabst (epabst@gmail.com)
   */
 
-@RunWith(classOf[RobolectricTestRunner])
+@RunWith(classOf[CustomRobolectricTestRunner])
 class GeneratedPersistenceFactorySpec extends MustMatchers with CrudMockitoSugar {
   val seqPersistence = mock[SeqCrudPersistence[Map[String,Any]]]
   val adapterView = mock[AdapterView[BaseAdapter]]

@@ -3,16 +3,16 @@ package com.github.scrud.android.persistence
 import org.junit.runner.RunWith
 import org.scalatest.matchers.MustMatchers
 import org.scalatest.mock.EasyMockSugar
-import com.xtremelabs.robolectric.RobolectricTestRunner
 import org.junit.Test
 import android.os.Bundle
+import com.github.scrud.android.CustomRobolectricTestRunner
 
 
 /** A behavior specification for [[com.github.scrud.android.persistence.PersistedType]].
   * @author Eric Pabst (epabst@gmail.com)
   */
 
-@RunWith(classOf[RobolectricTestRunner])
+@RunWith(classOf[CustomRobolectricTestRunner])
 class PersistedTypeSpec extends MustMatchers with EasyMockSugar {
   @Test
   def itMustReadAndWriteBundle() {

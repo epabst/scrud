@@ -6,7 +6,6 @@ import com.github.triangle.PortableField._
 import com.github.scrud.android.persistence.CursorField._
 import ViewField._
 import android.view.View
-import com.xtremelabs.robolectric.RobolectricTestRunner
 import org.junit.Test
 import org.scalatest.mock.MockitoSugar
 import org.mockito.Mockito._
@@ -20,12 +19,13 @@ import com.github.scrud.android.view.FieldLayout._
 import android.content.Context
 import xml.NodeSeq
 import com.github.scrud.EntityName
+import com.github.scrud.android.CustomRobolectricTestRunner
 
 /** A behavior specification for [[com.github.scrud.android.view.ViewField]].
   * @author Eric Pabst (epabst@gmail.com)
   */
 
-@RunWith(classOf[RobolectricTestRunner])
+@RunWith(classOf[CustomRobolectricTestRunner])
 class ViewFieldSpec extends MustMatchers with MockitoSugar {
   class MyEntity(var string: String, var number: Int)
   val context = mock[Context]

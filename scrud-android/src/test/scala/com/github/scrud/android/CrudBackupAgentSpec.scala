@@ -3,7 +3,6 @@ package com.github.scrud.android
 import _root_.android.os.ParcelFileDescriptor
 import org.junit.Test
 import org.junit.runner.RunWith
-import com.xtremelabs.robolectric.RobolectricTestRunner
 import org.scalatest.matchers.MustMatchers
 import com.github.scrud.android.persistence.CursorField.PersistedId
 import com.github.scrud._
@@ -23,7 +22,7 @@ import scala.Some
 /** A test for [[com.github.scrud.android.CrudBackupAgent]].
   * @author Eric Pabst (epabst@gmail.com)
   */
-@RunWith(classOf[RobolectricTestRunner])
+@RunWith(classOf[CustomRobolectricTestRunner])
 class CrudBackupAgentSpec extends MustMatchers with CrudMockitoSugar {
   @Test
   def calculatedIteratorShouldWork() {
