@@ -37,8 +37,6 @@ import scala.Some
 abstract class CrudApplication(platformDriver: PlatformDriver) extends Logging {
   lazy val logTag = Common.tryToEvaluate(nameId).getOrElse(Common.logTag)
 
-  trace("Instantiated CrudApplication: " + this)
-
   def name: String
 
   /** The version of the data such as a database.  This must be increased when new tables or columns need to be added, etc. */
