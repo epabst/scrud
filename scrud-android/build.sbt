@@ -24,7 +24,7 @@ libraryDependencies += "org.mockito" % "mockito-core" % "1.8.5" % "test"
 
 libraryDependencies += "junit" % "junit" % "4.8.2" % "test"
 
-libraryDependencies += "com.pivotallabs" % "robolectric" % "1.0" % "test"
+libraryDependencies += "com.pivotallabs" % "robolectric" % "1.1" % "test"
 
 libraryDependencies += "org.scalatest" %% "scalatest" % "1.8" % "test"
 
