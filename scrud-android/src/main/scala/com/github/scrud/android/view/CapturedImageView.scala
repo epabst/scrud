@@ -26,11 +26,10 @@ object CapturedImageView extends ViewField[Uri](new FieldLayout {
 }) {
   private object DrawableByUriCache extends ApplicationVar[CachedFunction[Uri,Drawable]]
 
-  private lazy val bitmapFactoryOptions = {
+  private def bitmapFactoryOptions(inSampleSize: Int) = {
     val options = new BitmapFactory.Options
     options.inDither = true
-    //todo make this depend on the actual image's dimensions
-    options.inSampleSize = 4
+    options.inSampleSize = inSampleSize
     options
   }
 
@@ -41,8 +40,18 @@ object CapturedImageView extends ViewField[Uri](new FieldLayout {
         imageView.setTag(uri.toString)
         val contentResolver = imageView.getContext.getContentResolver
         val cachingResolver = DrawableByUriCache.getOrSet(crudContext, CachedFunction(uri => {
+          val displayMetrics = imageView.getContext.getResources.getDisplayMetrics
+          val maxHeight: Int = displayMetrics.heightPixels
+          val maxWidth: Int = displayMetrics.widthPixels
+          val optionsToDecodeBounds = new BitmapFactory.Options()
+          optionsToDecodeBounds.inJustDecodeBounds = true
           Common.withCloseable(contentResolver.openInputStream(uri)) { stream =>
-            new BitmapDrawable(BitmapFactory.decodeStream(stream, null, bitmapFactoryOptions))
+            BitmapFactory.decodeStream(stream, null, optionsToDecodeBounds)
+          }
+          val ratio = math.min(optionsToDecodeBounds.outHeight / maxHeight, optionsToDecodeBounds.outWidth / maxWidth)
+          val inSampleSize = math.max(Integer.highestOneBit(ratio), 1)
+          Common.withCloseable(contentResolver.openInputStream(uri)) { stream =>
+            new BitmapDrawable(BitmapFactory.decodeStream(stream, null, bitmapFactoryOptions(inSampleSize)))
           }
         }))
         imageView.setImageDrawable(cachingResolver(uri))
