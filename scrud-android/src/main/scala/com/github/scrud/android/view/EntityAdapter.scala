@@ -3,7 +3,6 @@ package com.github.scrud.android.view
 import android.widget.BaseAdapter
 import com.github.scrud.platform.PlatformTypes._
 import android.view.{ViewGroup, View}
-import com.github.triangle.GetterInput
 import com.github.scrud
 import scrud.android.AndroidCrudContext
 import scrud.{CrudContextItems, CrudContextField, UriField, EntityType}
@@ -29,7 +28,7 @@ class EntityAdapter(val entityType: EntityType, values: Seq[AnyRef], rowViewInfl
 
   def getView(position: Int, convertView: View, parent: ViewGroup): View = {
     val view = if (convertView == null) rowViewInflater.inflate(parent) else convertView
-    bindViewFromCacheOrItems(view, position, crudContext, contextItems)
+    bindViewFromCacheOrItems(view, position, contextItems)
     view
   }
 }
