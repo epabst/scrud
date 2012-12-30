@@ -43,7 +43,7 @@ abstract class ViewField[T](val defaultLayout: FieldLayout) extends DelegatingPo
 
 object ViewField {
   def viewId[T](viewRef: ViewRef, childViewField: PortableField[T]): PortableField[T] =
-    new ViewIdField[T](viewRef, childViewField).withViewKeyMapField
+    new ViewIdField[T](viewRef, childViewField).withViewKeyMapField + defaultToNone
 
   def viewId[T](viewResourceId: ViewKey, childViewField: PortableField[T]): PortableField[T] =
     viewId(ViewRef(viewResourceId), childViewField)
@@ -61,7 +61,12 @@ object ViewField {
   }
 
   val textView: ViewField[String] = new ViewField[String](nameLayout) {
-    val delegate = Getter[TextView,String](v => toOption(v.getText.toString.trim)).withSetter(v => v.setText(_), _.setText(""))
+    val delegate = Getter[TextView,String] { v =>
+      toOption(v.getText.toString.trim)
+    }.withSetter({v => value =>
+      v.setText(value)
+    }, _.setText(""))
+
     override val toString = "textView"
   }
   def formattedTextView[T](toDisplayString: Converter[T,String], toEditString: Converter[T,String],

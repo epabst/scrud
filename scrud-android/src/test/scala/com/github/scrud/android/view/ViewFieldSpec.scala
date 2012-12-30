@@ -99,6 +99,13 @@ class ViewFieldSpec extends MustMatchers with MockitoSugar {
   }
 
   @Test
+  def itMustUseDefaultOfNoneIfNoValueGivenAndUseDefaultsIsProvided() {
+    val stringField = viewId(56, textView)
+    val result = stringField.copyAndUpdate(UseDefaults, ViewKeyMap.empty)
+    result.apply(56) must be (None)
+  }
+
+  @Test
   def itMustHandleUnparseableValues() {
     val intField = intView + Getter[MyEntity,Int](e => e.number).withSetter(e => e.number = _, noSetterForEmpty)
     val view = new TextView(context)
