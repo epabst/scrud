@@ -13,7 +13,7 @@ import com.github.scrud.EntityName
  *         Date: 8/28/12
  *         Time: 10:23 AM
  */
-object AndroidPlatformDriver extends PlatformDriver {
+class AndroidPlatformDriver(rClass: Class[_]) extends PlatformDriver {
   lazy val localDatabasePersistenceFactory = new SQLitePersistenceFactory
 
   val activityClass = classOf[CrudActivity]

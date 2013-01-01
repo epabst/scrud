@@ -28,9 +28,9 @@ import view.OnClickOperationSetter
   */
 
 trait BaseCrudActivity extends ActivityWithState with OptionsMenuActivity with Logging { self =>
-  lazy val platformDriver = AndroidPlatformDriver
-
   lazy val crudApplication: CrudApplication = super.getApplication.asInstanceOf[CrudAndroidApplication].application
+
+  lazy val platformDriver: AndroidPlatformDriver = crudApplication.platformDriver.asInstanceOf[AndroidPlatformDriver]
 
   lazy val entityType = crudApplication.allEntityTypes.find(entityType => Some(entityType.entityName.name) == currentUriPath.lastEntityNameOption).getOrElse {
     throw new IllegalStateException("No valid entityName in " + currentUriPath)

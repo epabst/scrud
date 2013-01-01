@@ -8,8 +8,8 @@ import com.github.scrud.android.persistence.CursorField._
 import com.github.scrud.android._
 import org.scalatest.mock.MockitoSugar
 import com.github.scrud.{CrudApplication, EntityType}
-import testres.R
-import view.ViewField
+import com.github.scrud.android.testres.R
+import com.github.scrud.android.view.ViewField
 import ViewField._
 
 /** A behavior specification for [[com.github.scrud.android.generate.CrudUIGenerator]].
@@ -17,6 +17,7 @@ import ViewField._
   */
 @RunWith(classOf[JUnitRunner])
 class CrudUIGeneratorSpec extends FunSpec with MustMatchers with MockitoSugar {
+  val platformDriver = new AndroidPlatformDriver(classOf[res.R])
   val displayName = "My Name"
   val viewIdFieldInfo = ViewIdFieldInfo("foo", displayName, textView)
 
@@ -63,7 +64,7 @@ class CrudUIGeneratorSpec extends FunSpec with MustMatchers with MockitoSugar {
       val myEntityType = new MyEntityType {
         override val valueFields = List(persisted[String]("model") + viewId(classOf[R], "model", textView))
       }
-      val application = new CrudApplication(AndroidPlatformDriver) {
+      val application = new CrudApplication(platformDriver) {
         val allCrudTypes = List(new MyCrudType(myEntityType))
         val dataVersion = 1
         val name = "Test App"
@@ -77,7 +78,7 @@ class CrudUIGeneratorSpec extends FunSpec with MustMatchers with MockitoSugar {
       val myEntityType = new MyEntityType {
         override val valueFields = List(bundleField[String]("model"))
       }
-      val application = new CrudApplication(AndroidPlatformDriver) {
+      val application = new CrudApplication(platformDriver) {
         val allCrudTypes = List(new MyCrudType(myEntityType))
         val dataVersion = 1
         val name = "Test App"
@@ -92,7 +93,7 @@ class CrudUIGeneratorSpec extends FunSpec with MustMatchers with MockitoSugar {
       val _entityType = new MyEntityType {
         override def valueFields = List(bundleField[String]("model"))
       }
-      val application = new CrudApplication(AndroidPlatformDriver) {
+      val application = new CrudApplication(platformDriver) {
         val allCrudTypes = List(new MyCrudType(_entityType))
         val dataVersion = 1
         val name = "Test App"

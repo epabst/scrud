@@ -10,14 +10,14 @@ import com.github.scrud.android.action.AndroidOperation.toRichItent
 import com.github.scrud.util.CrudMockitoSugar
 import com.github.scrud.action.Action
 
-/** A test for [[com.github.scrud.android.AndroidPlatformDriver.]].
+/** A test for [[com.github.scrud.android.AndroidPlatformDriver]].
   * @author Eric Pabst (epabst@gmail.com)
   */
 @RunWith(classOf[CustomRobolectricTestRunner])
 class AndroidPlatformDriverSpec extends MustMatchers with CrudMockitoSugar {
   //todo determine if shadowing, and run tests on real Android device as well.
   val isShadowing = true
-  val application = new MyCrudApplicationSpecifyingPlatform(AndroidPlatformDriver, MyCrudType) {
+  val application = new MyCrudApplicationSpecifyingPlatform(new AndroidPlatformDriver(classOf[res.R]), MyCrudType) {
     override def hasDisplayPage(entityName: EntityName) = true
   }
 

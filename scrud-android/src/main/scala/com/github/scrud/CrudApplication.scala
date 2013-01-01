@@ -34,7 +34,7 @@ import scala.Some
  * Time: 4:50 PM
  */
 
-abstract class CrudApplication(platformDriver: PlatformDriver) extends Logging {
+abstract class CrudApplication(val platformDriver: PlatformDriver) extends Logging {
   lazy val logTag = Common.tryToEvaluate(nameId).getOrElse(Common.logTag)
 
   def name: String

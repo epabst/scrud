@@ -7,13 +7,11 @@ import android.os.Bundle
 import android.widget.{Adapter, AdapterView, BaseAdapter}
 import com.github.scrud.platform.PlatformTypes._
 import scala.Some
-import com.github.scrud.android.{AndroidPlatformDriver, AndroidCrudContext}
+import com.github.scrud.android.AndroidCrudContext
 import com.github.scrud.android.state.CachedStateListener
 import com.github.scrud.util.Common
 
 trait AdapterCaching extends Logging { self: BaseAdapter =>
-  final def platformDriver = AndroidPlatformDriver
-
   def entityType: EntityType
 
   protected def logTag = entityType.logTag
