@@ -7,6 +7,7 @@ import persistence.CursorField._
 import res.R
 import com.github.scrud.Validation._
 import com.github.scrud.PlatformIndependentField._
+import com.github.scrud.platform.{PlatformDriver, TestingPlatformDriver}
 
 object MyEntity extends EntityName("MyMap")
 
@@ -14,7 +15,8 @@ object MyEntity extends EntityName("MyMap")
   * @author Eric Pabst (epabst@gmail.com)
   */
 
-class MyEntityType(entityName: EntityName = MyEntity) extends EntityType(entityName) {
+class MyEntityType(entityName: EntityName = MyEntity, platformDriver: PlatformDriver = TestingPlatformDriver)
+    extends EntityType(entityName, platformDriver) {
   def valueFields = List[BaseField](
     persisted[String]("name") + viewId(R.id.name, textView) + requiredString + loadingIndicator("..."),
     persisted[Int]("age") + viewId(R.id.age, intView),
@@ -22,4 +24,4 @@ class MyEntityType(entityName: EntityName = MyEntity) extends EntityType(entityN
     persisted[String]("uri") + Getter[UriPath,String](u => Some(u.toString)))
 }
 
-object MyEntityType extends MyEntityType(MyEntity)
+object MyEntityType extends MyEntityType(MyEntity, TestingPlatformDriver)

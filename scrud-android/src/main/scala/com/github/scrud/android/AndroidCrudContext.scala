@@ -15,7 +15,7 @@ import com.github.scrud.action.Undoable
  * @author Eric Pabst (epabst@gmail.com)
  */
 case class AndroidCrudContext(activityContext: ContextWithState, application: CrudApplication) extends CrudContext with AndroidNotification {
-  lazy val platformDriver: AndroidPlatformDriver = application.platformDriver.asInstanceOf[AndroidPlatformDriver]
+  lazy override val platformDriver: AndroidPlatformDriver = application.platformDriver.asInstanceOf[AndroidPlatformDriver]
   def activityState: State = activityContext
   lazy val applicationState: State = activityContext.applicationState
 

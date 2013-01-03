@@ -6,10 +6,14 @@ import com.github.scrud.{CrudContextField, EntityName, UriField, EntityType}
 import view.ViewField._
 import com.github.triangle._
 import com.github.scrud.Validation._
+import com.github.scrud.platform.PlatformDriver
 
 object Author extends EntityName("Author")
 
-object AuthorEntityType extends EntityType(Author) {
+//todo delete this
+object AuthorEntityType extends AuthorEntityType(new AndroidPlatformDriver(classOf[R]))
+
+class AuthorEntityType(platformDriver: PlatformDriver) extends EntityType(Author, platformDriver) {
   val valueFields = List(
     persisted[String]("name") + viewId(classOf[R], "name", textView) + requiredString,
 
@@ -18,7 +22,7 @@ object AuthorEntityType extends EntityType(Author) {
             Getter[Int] {
               case UriField(Some(uri)) && CrudContextField(Some(crudContext)) => {
                 println("calculating bookCount for " + uri + " and " + crudContext)
-                crudContext.withEntityPersistence(BookEntityType) { persistence =>
+                crudContext.withEntityPersistence(Book) { persistence =>
                   val books = persistence.findAll(uri)
                   Some(books.size)
                 }

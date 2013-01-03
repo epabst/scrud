@@ -12,6 +12,7 @@ import com.github.scrud.platform.PlatformTypes._
 import com.github.scrud.{UriPath, EntityType, EntityName, CrudApplication}
 import com.github.scrud.util.{CalculatedIterator, Common}
 import com.github.scrud.state.State
+import com.github.scrud.platform.PlatformDriver
 
 object CrudBackupAgent {
   private val backupStrategyVersion: Int = 1
@@ -72,7 +73,7 @@ class CrudBackupAgent(application: CrudApplication) extends BackupAgent with Con
 
   def onBackup(oldState: ParcelFileDescriptor, data: BackupTarget, newState: ParcelFileDescriptor) {
     info("Backing up " + application)
-    DeletedEntityIdCrudType.writeEntityRemovals(data, this)
+    DeletedEntityIdApplication.writeEntityRemovals(data, this)
     val crudContext = new AndroidCrudContext(this, application)
     application.allEntityTypes.filter(application.isSavable(_)).foreach { entityType =>
       onBackup(entityType, data, crudContext)
@@ -147,7 +148,7 @@ case class RestoreItem(key: String, map: Map[String,Any])
 
 object DeletedEntityId extends EntityName("DeletedEntityId")
 
-object DeletedEntityIdEntityType extends EntityType(DeletedEntityId) {
+class DeletedEntityIdEntityType(platformDriver: PlatformDriver) extends EntityType(DeletedEntityId, platformDriver) {
   val entityNameField = persisted[String]("entityName")
   val entityIdField = persisted[ID]("entityId")
   // not a val since not used enough to store
@@ -160,14 +161,14 @@ object DeletedEntityIdEntityType extends EntityType(DeletedEntityId) {
   * This entity is in its own CrudApplication by itself, separate from any other CrudApplication.
   * It is intended to be in a separate database owned by the scrud-android framework.
   */
-object DeletedEntityIdCrudType extends CrudType(DeletedEntityIdEntityType, SQLitePersistenceFactory) {
-  private val application = new CrudApplication(new AndroidPlatformDriver(classOf[res.R])) {
-    val name = "scrud.android_deleted"
+object DeletedEntityIdApplication extends CrudApplication(new AndroidPlatformDriver(classOf[res.R])) {
+  val name = "scrud.android_deleted"
 
-    val allCrudTypes = List(DeletedEntityIdCrudType)
+  val deletedEntityIdEntityType = new DeletedEntityIdEntityType(platformDriver)
 
-    val dataVersion = 1
-  }
+  val allCrudTypes = List(CrudType(deletedEntityIdEntityType, SQLitePersistenceFactory))
+
+  val dataVersion = 1
 
   /** Records that a deletion happened so that it is deleted from the Backup Service.
     * It's ok for this to happen immediately because if a delete is undone,
@@ -175,19 +176,19 @@ object DeletedEntityIdCrudType extends CrudType(DeletedEntityIdEntityType, SQLit
     * just like any new entity being added.
     */
   def recordDeletion(entityType: EntityType, id: ID, context: ContextWithState) {
-    val crudContext = new AndroidCrudContext(context, application)
-    val writable = DeletedEntityIdEntityType.copyAndUpdate(
-      Map(DeletedEntityIdEntityType.entityNameField.name -> entityType.entityName.name,
-        DeletedEntityIdEntityType.entityIdField.name -> id), crudContext.newWritable(entityType))
+    val crudContext = new AndroidCrudContext(context, this)
+    val writable = deletedEntityIdEntityType.copyAndUpdate(
+      Map(deletedEntityIdEntityType.entityNameField.name -> entityType.entityName.name,
+        deletedEntityIdEntityType.entityIdField.name -> id), crudContext.newWritable(entityType))
     crudContext.withEntityPersistence(entityType) { _.save(None, writable) }
   }
 
   def writeEntityRemovals(data: BackupTarget, context: ContextWithState) {
-    val crudContext = new AndroidCrudContext(context, application)
-    crudContext.withEntityPersistence(entityType) { persistence =>
+    val crudContext = new AndroidCrudContext(context, this)
+    crudContext.withEntityPersistence(deletedEntityIdEntityType) { persistence =>
       persistence.findAll(UriPath.EMPTY).foreach { entity =>
-        val deletedEntityName: String = DeletedEntityIdEntityType.entityNameField.getRequired(entity)
-        val deletedId: ID = DeletedEntityIdEntityType.entityIdField.getRequired(entity)
+        val deletedEntityName: String = deletedEntityIdEntityType.entityNameField.getRequired(entity)
+        val deletedId: ID = deletedEntityIdEntityType.entityIdField.getRequired(entity)
         data.writeEntity(deletedEntityName + "#" + deletedId, None)
       }
     }

@@ -10,12 +10,16 @@ import ForeignKey._
 import view.ViewField._
 import view.{EntityView, EnumerationView}
 import com.github.scrud.Validation._
+import com.github.scrud.platform.PlatformDriver
 
 object Book extends EntityName("Book")
 
-object BookEntityType extends EntityType(Book) {
+//todo delete this
+object BookEntityType extends BookEntityType(new AndroidPlatformDriver(classOf[R]))
+
+class BookEntityType(platformDriver: PlatformDriver) extends EntityType(Book, platformDriver) {
   val valueFields = List(
-    foreignKey(AuthorEntityType),
+    foreignKey(Author),
 
     persisted[String]("name") + viewId(classOf[R], "name", textView) + requiredString,
 
@@ -24,7 +28,7 @@ object BookEntityType extends EntityType(Book) {
     persistedEnum[Genre.Value]("genre", Genre) + viewId(classOf[R], "genre", EnumerationView[Genre.Value](Genre)) +
       default(Genre.Fantasy),
 
-    foreignKey(PublisherEntityType) + viewId(classOf[R], "publisher", EntityView(PublisherEntityType)),
+    foreignKey(Publisher) + viewId(classOf[R], "publisher", EntityView(Publisher)),
 
     persistedDate("publishDate") + viewId[Date](classOf[R], "publishDate", dateView)
   )

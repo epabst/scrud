@@ -6,6 +6,7 @@ import org.junit.runner.RunWith
 import org.scalatest.matchers.MustMatchers
 import com.github.scrud.android.persistence.CursorField.PersistedId
 import com.github.scrud._
+import platform.TestingPlatformDriver
 import scala.collection.mutable
 import org.mockito.Mockito._
 import org.mockito.Matchers._
@@ -120,7 +121,7 @@ class CrudBackupAgentSpec extends MustMatchers with CrudMockitoSugar {
     val state1 = mock[ParcelFileDescriptor]
     val persistence = new MyEntityPersistence
     val entityType = new MyEntityType
-    val generatedType = new EntityType(EntityName("Generated")) {
+    val generatedType = new EntityType(EntityName("Generated"), TestingPlatformDriver) {
       val valueFields = List[BaseField](ParentField(MyEntityType), default[Int](100))
     }
     val state0 = null

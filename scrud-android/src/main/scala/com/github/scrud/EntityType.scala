@@ -3,6 +3,7 @@ package com.github.scrud
 import android.persistence.CursorField.PersistedId
 import com.github.triangle._
 import persistence.CrudPersistence
+import platform.PlatformDriver
 import platform.PlatformTypes._
 import util.Common
 
@@ -11,7 +12,12 @@ import util.Common
   * @author Eric Pabst (epabst@gmail.com)
   * @param entityName  this is used to identify the EntityType and for internationalized strings
   */
-abstract class EntityType(val entityName: EntityName) extends FieldList with Logging {
+abstract class EntityType(val entityName: EntityName, platformDriver: PlatformDriver) extends FieldList with Logging {
+  //todo delete this constructor
+  def this(entityName: EntityName) {
+    this(entityName, null)
+  }
+
   override val logTag = Common.tryToEvaluate(entityName.name).getOrElse(Common.logTag)
 
   trace("Instantiated EntityType: " + this)

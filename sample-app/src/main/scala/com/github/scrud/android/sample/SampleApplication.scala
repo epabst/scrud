@@ -11,11 +11,14 @@ import com.github.scrud.platform.PlatformDriver
 class SampleApplication(platformDriver: PlatformDriver) extends CrudApplication(platformDriver) {
   val name = "Sample Application"
 
-  val AuthorCrudType = new CrudType(AuthorEntityType, SQLitePersistenceFactory)
-  val BookCrudType = new CrudType(BookEntityType, SQLitePersistenceFactory)
-  val PublisherCrudType = new CrudType(PublisherEntityType, SQLitePersistenceFactory)
+  val authorEntityType = new AuthorEntityType(platformDriver)
+  val bookEntityType = new BookEntityType(platformDriver)
+  val publisherEntityType = PublisherEntityType
 
-  val allCrudTypes = List(AuthorCrudType, BookCrudType, PublisherCrudType)
+  val allCrudTypes = List(
+    new CrudType(authorEntityType, platformDriver.localDatabasePersistenceFactory),
+    new CrudType(bookEntityType, platformDriver.localDatabasePersistenceFactory),
+    new CrudType(publisherEntityType, platformDriver.localDatabasePersistenceFactory))
 
   val dataVersion = 2
 }

@@ -12,5 +12,7 @@ import com.github.scrud.platform.PlatformTypes._
 case class EntityName(name: String) {
   override val toString = name
 
+  def toUri(id: ID) = UriPath(this, id)
+
   object UriPathId extends Field[ID](UriPath.uriIdField(this))
 }

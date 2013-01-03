@@ -26,7 +26,7 @@ class SQLiteThinEntityPersistence(entityType: EntityType, database: SQLiteDataba
   private val cursors = new mutable.SynchronizedQueue[Cursor]
   private lazy val entityTypePersistedInfo = EntityTypePersistedInfo(entityType)
   private def queryFieldNames = entityTypePersistedInfo.queryFieldNames
-  private lazy val deletedEntityIdCrudType = DeletedEntityIdCrudType
+  private lazy val deletedEntityIdCrudType = DeletedEntityIdApplication
   private def toOption(string: String): Option[String] = if (string == "") None else Some(string)
   private lazy val backupManager = new BackupManager(crudContext.activityContext)
 

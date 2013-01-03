@@ -6,7 +6,7 @@ import com.github.scrud.android.{BaseCrudActivity, CrudListActivity, CrudActivit
 import sample._
 import com.jayway.android.robotium.solo.Solo
 import com.github.triangle.PortableValue
-import com.github.scrud.EntityType
+import com.github.scrud.{EntityName, EntityType}
 import android.app.Instrumentation
 import com.github.scrud.action.CrudOperationType
 import com.github.scrud.util.Common
@@ -55,7 +55,7 @@ class CrudFunctionalTest extends ActivityInstrumentationTestCase2(classOf[CrudLi
     assertEquals(CrudOperation(Book, CrudOperationType.Create), currentCrudActivity.currentCrudOperation)
 
     solo.enterText(0, "Ender's Game")
-    val bookData = copyFromCurrentActivity(BookEntityType).update(Map.empty[String, Option[Any]])
+    val bookData = copyFromCurrentActivity(Book).update(Map.empty[String, Option[Any]])
     assertEquals(Some("Ender's Game"), bookData.apply("name"))
     assertTrue("There should be a default Genre", bookData.apply("genre").isDefined)
 
@@ -97,6 +97,10 @@ class CrudFunctionalTest extends ActivityInstrumentationTestCase2(classOf[CrudLi
     instrumentation.runOnMainSync(Common.toRunnable {
       portableValue.update(currentCrudActivity)
     })
+  }
+
+  def copyFromCurrentActivity(entityName: EntityName): PortableValue = {
+    copyFromCurrentActivity(currentCrudActivity.crudApplication.entityType(entityName))
   }
 
   def copyFromCurrentActivity(entityType: EntityType): PortableValue = {

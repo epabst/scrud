@@ -15,6 +15,7 @@ import com.github.triangle._
 import com.github.scrud.android.persistence.CursorField._
 import persistence.{EntityTypePersistedInfo, CursorStream}
 import PortableField._
+import res.R
 import scala.collection._
 import org.mockito.Mockito
 import Mockito._
@@ -41,15 +42,17 @@ class SQLitePersistenceFactorySpec extends MustMatchers with CrudMockitoSugar wi
     }
   }
 
+  val androidPlatformDriver = new AndroidPlatformDriver(classOf[R])
+
   object TestEntity extends EntityName("Test")
 
-  object TestEntityType extends EntityType(TestEntity) {
+  object TestEntityType extends EntityType(TestEntity, androidPlatformDriver) {
     val valueFields = List(persisted[Int]("age") + default(21))
   }
 
   object TestCrudType extends CrudType(TestEntityType, SQLitePersistenceFactory)
 
-  object TestApplication extends CrudApplication(new AndroidPlatformDriver(classOf[res.R])) {
+  object TestApplication extends CrudApplication(androidPlatformDriver) {
     val name = "Test Application"
 
     val allCrudTypes = List(TestCrudType)
@@ -74,6 +77,7 @@ class SQLitePersistenceFactorySpec extends MustMatchers with CrudMockitoSugar wi
   def shouldCloseCursorsWhenClosing() {
     val crudContext = mock[AndroidCrudContext]
     stub(crudContext.activityState).toReturn(new State {})
+    stub(crudContext.applicationState).toReturn(new State {})
     stub(crudContext.application).toReturn(application)
     val persistenceFactory = SQLitePersistenceFactory
 

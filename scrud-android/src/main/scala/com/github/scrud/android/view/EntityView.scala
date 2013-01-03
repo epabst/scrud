@@ -1,6 +1,6 @@
 package com.github.scrud.android.view
 
-import com.github.scrud.{CrudContextField, UriField, EntityType}
+import com.github.scrud.{EntityName, CrudContextField, UriField}
 import com.github.scrud.platform.PlatformTypes.ID
 import com.github.triangle._
 import android.widget._
@@ -16,7 +16,7 @@ import scala.Some
   * in the same way as referring to its own fields.  If both have a field of the same name, the behavior is undefined.
   * @author Eric Pabst (epabst@gmail.com)
   */
-case class EntityView(entityType: EntityType)
+case class EntityView(entityName: EntityName)
   extends ViewField[ID](FieldLayout(displayXml = NodeSeq.Empty, editXml = <Spinner android:drawSelectorOnTop = "true"/>)) {
 
   private object AndroidUIElement {
@@ -32,6 +32,7 @@ case class EntityView(entityType: EntityType)
       if (idOpt.isDefined || adapterView.getAdapter == null) {
         //don't do it again if already done from a previous time
         if (adapterView.getAdapter == null) {
+          val entityType = crudActivity.crudApplication.entityType(entityName)
           crudActivity.setListAdapter(adapterView, entityType, uri, crudContext, crudActivity.contextItems, crudActivity,
             crudActivity.pickLayoutFor(entityType.entityName))
         }
@@ -44,10 +45,11 @@ case class EntityView(entityType: EntityType)
     case UpdaterInput(AndroidUIElement(uiElement), idOpt, input @ UriField(Some(baseUri)) && CrudContextField(Some(crudContext @ AndroidCrudContext(crudActivity: BaseCrudActivity, _)))) =>
       val uriOpt = idOpt.map(baseUri / _)
       val updaterInput = UpdaterInput(uiElement, input)
+      val entityType = crudActivity.crudApplication.entityType(entityName)
       uriOpt.map(crudActivity.populateFromUri(entityType, _, updaterInput)).getOrElse {
         entityType.defaultValue.update(updaterInput)
       }
   }
 
-  override lazy val toString = "EntityView(" + entityType.entityName + ")"
+  override lazy val toString = "EntityView(" + entityName + ")"
 }

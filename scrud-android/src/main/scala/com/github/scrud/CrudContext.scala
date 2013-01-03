@@ -21,7 +21,7 @@ trait CrudContext extends Notification with Logging {
 
   def application: CrudApplication
 
-  def platformDriver: PlatformDriver
+  def platformDriver: PlatformDriver = application.platformDriver
 
   def applicationState: State
 
@@ -53,11 +53,21 @@ trait CrudContext extends Notification with Logging {
 
   def newWritable(entityType: EntityType): AnyRef = application.persistenceFactory(entityType).newWritable()
 
+  def dataListenerHolder(entityName: EntityName): ListenerHolder[DataListener] =
+    dataListenerHolder(application.entityType(entityName))
+
   def dataListenerHolder(entityType: EntityType): ListenerHolder[DataListener] =
     application.persistenceFactory(entityType).listenerHolder(entityType, this)
 
+  def openEntityPersistence(entityName: EntityName): CrudPersistence =
+    openEntityPersistence(application.entityType(entityName))
+
   def openEntityPersistence(entityType: EntityType): CrudPersistence =
     application.persistenceFactory(entityType).createEntityPersistence(entityType, this)
+
+  def withEntityPersistence[T](entityName: EntityName)(f: CrudPersistence => T): T = {
+    withEntityPersistence(application.entityType(entityName))(f)
+  }
 
   def withEntityPersistence[T](entityType: EntityType)(f: CrudPersistence => T): T = {
     val persistence = openEntityPersistence(entityType)
@@ -69,7 +79,7 @@ trait CrudContext extends Notification with Logging {
   def allowUndo(undoable: Undoable)
 }
 
-case class SimpleCrudContext(application: CrudApplication, platformDriver: PlatformDriver) extends CrudContext {
+case class SimpleCrudContext(application: CrudApplication) extends CrudContext {
   val applicationState = new State {}
 
   /** The ISO 2 country such as "US". */

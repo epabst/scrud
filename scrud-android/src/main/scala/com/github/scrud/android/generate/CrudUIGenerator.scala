@@ -64,7 +64,7 @@ object CrudUIGenerator extends Logging {
     </manifest>
   }
 
-  def generateValueStrings(entityInfo: EntityTypeViewInfo, application: CrudApplication): NodeSeq = {
+  def generateValueStrings(entityInfo: EntityTypeViewInfo): NodeSeq = {
     import entityInfo._
     val addSeq = if (application.isCreatable(entityType)) <string name={"add_" + layoutPrefix}>Add {entityName}</string> else NodeSeq.Empty
     val editSeq = if (application.isSavable(entityType)) <string name={"edit_" + layoutPrefix}>Edit {entityName}</string> else NodeSeq.Empty
@@ -82,17 +82,17 @@ object CrudUIGenerator extends Logging {
   def generateValueStrings(application: CrudApplication): Elem = {
     <resources>
       <string name="app_name">{application.name}</string>
-      {application.allEntityTypes.flatMap(entityType => generateValueStrings(EntityTypeViewInfo(entityType), application))}
+      {application.allEntityTypes.flatMap(entityType => generateValueStrings(EntityTypeViewInfo(entityType, application)))}
     </resources>
   }
 
   def generateLayouts(application: CrudApplication, androidApplicationClass: Class[_]) {
-    val entityTypeInfos = application.allEntityTypes.map(EntityTypeViewInfo(_))
+    val entityTypeInfos = application.allEntityTypes.map(EntityTypeViewInfo(_, application))
     val pickedEntityTypes: Seq[EntityType] = application.allEntityTypes.flatMap(_.deepCollect {
-      case EntityView(pickedEntityType) => pickedEntityType
+      case EntityView(pickedEntityName) => application.entityType(pickedEntityName)
     })
     entityTypeInfos.foreach(entityInfo => {
-      val childViewInfos = application.childEntityTypes(entityInfo.entityType).map(EntityTypeViewInfo(_))
+      val childViewInfos = application.childEntityTypes(entityInfo.entityType).map(EntityTypeViewInfo(_, application))
       generateLayouts(entityInfo, childViewInfos, application, pickedEntityTypes)
     })
     writeXmlToFile(Path("AndroidManifest.xml"), generateAndroidManifest(application, androidApplicationClass))
@@ -239,7 +239,7 @@ object CrudUIGenerator extends Logging {
   def generateLayouts(entityTypeInfo: EntityTypeViewInfo, childTypeInfos: Seq[EntityTypeViewInfo],
                       application: CrudApplication, pickedEntityTypes: Seq[EntityType]) {
     println("Generating layout for " + entityTypeInfo.entityType)
-    lazy val info = EntityTypeViewInfo(entityTypeInfo.entityType)
+    lazy val info = EntityTypeViewInfo(entityTypeInfo.entityType, application)
     val layoutPrefix = info.layoutPrefix
     if (application.isListable(entityTypeInfo.entityType)) {
       writeLayoutFile(layoutPrefix + "_list", listLayout(entityTypeInfo, childTypeInfos, application))

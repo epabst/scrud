@@ -6,9 +6,9 @@ import com.github.scrud.android.persistence.CursorField
 import com.github.scrud.android.view._
 import xml.NodeSeq
 import com.github.scrud.android.NamingConventions
-import com.github.scrud.EntityType
+import com.github.scrud.{CrudApplication, EntityType}
 
-case class EntityFieldInfo(field: BaseField, rIdClasses: Seq[Class[_]]) {
+case class EntityFieldInfo(field: BaseField, rIdClasses: Seq[Class[_]], application: CrudApplication) {
   private lazy val updateablePersistedFields = CursorField.updateablePersistedFields(field, rIdClasses)
 
   private def viewFields(field: BaseField): Seq[ViewField[_]] = field.deepCollect {
@@ -24,7 +24,7 @@ case class EntityFieldInfo(field: BaseField, rIdClasses: Seq[Class[_]]) {
   lazy val isUpdateable: Boolean = isDisplayable && isPersisted
 
   lazy val nestedEntityTypeViewInfos: Seq[EntityTypeViewInfo] = field.deepCollect {
-    case entityView: EntityView => EntityTypeViewInfo(entityView.entityType)
+    case entityView: EntityView => EntityTypeViewInfo(application.entityType(entityView.entityName), application)
   }
 
   lazy val displayableViewIdFieldInfos: Seq[ViewIdFieldInfo] =
@@ -52,11 +52,11 @@ object ViewIdFieldInfo {
     ViewIdFieldInfo(id, FieldLayout.toDisplayName(id), viewField)
 }
 
-case class EntityTypeViewInfo(entityType: EntityType) {
+case class EntityTypeViewInfo(entityType: EntityType, application: CrudApplication) {
   val entityName = entityType.entityName
   lazy val layoutPrefix = NamingConventions.toLayoutPrefix(entityType.entityName)
   lazy val rIdClasses: Seq[Class[_]] = detectRIdClasses(entityType.getClass)
-  lazy val entityFieldInfos: List[EntityFieldInfo] = entityType.fields.map(EntityFieldInfo(_, rIdClasses))
+  lazy val entityFieldInfos: List[EntityFieldInfo] = entityType.fields.map(EntityFieldInfo(_, rIdClasses, application))
   lazy val displayableViewIdFieldInfos: List[ViewIdFieldInfo] = entityFieldInfos.flatMap(_.displayableViewIdFieldInfos)
   lazy val updateableViewIdFieldInfos: List[ViewIdFieldInfo] = entityFieldInfos.flatMap(_.updateableViewIdFieldInfos)
   lazy val isUpdateable: Boolean = !updateableViewIdFieldInfos.isEmpty
