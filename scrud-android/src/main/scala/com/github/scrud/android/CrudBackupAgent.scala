@@ -166,7 +166,7 @@ object DeletedEntityIdApplication extends CrudApplication(new AndroidPlatformDri
 
   val deletedEntityIdEntityType = new DeletedEntityIdEntityType(platformDriver)
 
-  val allCrudTypes = List(CrudType(deletedEntityIdEntityType, SQLitePersistenceFactory))
+  val allCrudTypes = List(CrudType(deletedEntityIdEntityType, platformDriver.localDatabasePersistenceFactory))
 
   val dataVersion = 1
 
