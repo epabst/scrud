@@ -13,11 +13,6 @@ import util.Common
   * @param entityName  this is used to identify the EntityType and for internationalized strings
   */
 abstract class EntityType(val entityName: EntityName, platformDriver: PlatformDriver) extends FieldList with Logging {
-  //todo delete this constructor
-  def this(entityName: EntityName) {
-    this(entityName, null)
-  }
-
   override val logTag = Common.tryToEvaluate(entityName.name).getOrElse(Common.logTag)
 
   trace("Instantiated EntityType: " + this)
@@ -61,5 +56,5 @@ abstract class EntityType(val entityName: EntityName, platformDriver: PlatformDr
 
   lazy val loadingValue: PortableValue = copyFrom(LoadingIndicator)
 
-  override def toString() = entityName.toString
+  override def toString = entityName.toString
 }
