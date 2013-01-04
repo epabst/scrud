@@ -14,9 +14,6 @@ import com.github.scrud.platform.PlatformDriver
 
 object Book extends EntityName("Book")
 
-//todo delete this
-object BookEntityType extends BookEntityType(new AndroidPlatformDriver(classOf[R]))
-
 class BookEntityType(platformDriver: PlatformDriver) extends EntityType(Book, platformDriver) {
   val valueFields = List(
     foreignKey(Author),

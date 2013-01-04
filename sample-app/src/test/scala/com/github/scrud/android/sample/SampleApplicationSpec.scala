@@ -27,7 +27,7 @@ class SampleApplicationSpec extends FunSpec with MustMatchers with MockitoSugar 
     it("must calculate the book count") {
       val crudContext = SimpleCrudContext(application)
       val factory = persistenceFactory(Book)
-      val bookPersistence = factory.createEntityPersistence(BookEntityType, crudContext)
+      val bookPersistence = factory.createEntityPersistence(bookEntityType, crudContext)
       bookPersistence.save(None, bookPersistence.newWritable())
       bookPersistence.save(None, bookPersistence.newWritable())
       bookPersistence.close()

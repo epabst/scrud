@@ -10,9 +10,6 @@ import com.github.scrud.platform.PlatformDriver
 
 object Author extends EntityName("Author")
 
-//todo delete this
-object AuthorEntityType extends AuthorEntityType(new AndroidPlatformDriver(classOf[R]))
-
 class AuthorEntityType(platformDriver: PlatformDriver) extends EntityType(Author, platformDriver) {
   val valueFields = List(
     persisted[String]("name") + namedViewField("name", textView) + requiredString,

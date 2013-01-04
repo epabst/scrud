@@ -32,14 +32,16 @@ class CrudFunctionalTest extends ActivityInstrumentationTestCase2(classOf[CrudLi
   def currentCrudActivity: BaseCrudActivity = solo.getCurrentActivity.asInstanceOf[BaseCrudActivity]
 
   def testAddEditDelete() {
-    assertEquals(classOf[SampleApplication], currentCrudActivity.crudApplication.getClass)
+    val application = currentCrudActivity.crudApplication.asInstanceOf[SampleApplication]
+    import application._
+
     assertEquals(CrudOperation(Author, CrudOperationType.List), currentCrudActivity.currentCrudOperation)
 
     solo.clickOnMenuItem("Add Author")
     solo.waitForActivity(classOf[CrudActivity].getSimpleName)
     assertEquals(CrudOperation(Author, CrudOperationType.Create), currentCrudActivity.currentCrudOperation)
 
-    copyToCurrentActivity(AuthorEntityType.copyFrom(Map("name" -> "Orson Scott Card")))
+    copyToCurrentActivity(authorEntityType.copyFrom(Map("name" -> "Orson Scott Card")))
 
     solo.goBack()
     solo.waitForText("Saved", 1, 5000)
@@ -73,11 +75,11 @@ class CrudFunctionalTest extends ActivityInstrumentationTestCase2(classOf[CrudLi
     solo.clickOnText("Edit Author")
     solo.waitForActivity(classOf[CrudActivity].getSimpleName)
     assertEquals(CrudOperation(Author, CrudOperationType.Update), currentCrudActivity.currentCrudOperation)
-    assertEquals(Some("Orson Scott Card"), copyFromCurrentActivity(AuthorEntityType).update(Map.empty[String,Option[Any]]).apply("name"))
+    assertEquals(Some("Orson Scott Card"), copyFromCurrentActivity(Author).update(Map.empty[String,Option[Any]]).apply("name"))
 
     solo.clearEditText(0)
     solo.enterText(0, "Mark Twain")
-    assertEquals(Some("Mark Twain"), copyFromCurrentActivity(AuthorEntityType).update(Map.empty[String,Option[Any]]).apply("name"))
+    assertEquals(Some("Mark Twain"), copyFromCurrentActivity(Author).update(Map.empty[String,Option[Any]]).apply("name"))
 
     solo.goBack()
     solo.waitForText("Saved", 1, 5000)
