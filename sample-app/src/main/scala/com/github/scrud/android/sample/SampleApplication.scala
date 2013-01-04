@@ -13,7 +13,7 @@ class SampleApplication(platformDriver: PlatformDriver) extends CrudApplication(
 
   val authorEntityType = new AuthorEntityType(platformDriver)
   val bookEntityType = new BookEntityType(platformDriver)
-  val publisherEntityType = PublisherEntityType
+  val publisherEntityType = new PublisherEntityType(platformDriver)
 
   val allCrudTypes = List(
     new CrudType(authorEntityType, platformDriver.localDatabasePersistenceFactory),

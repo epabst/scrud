@@ -19,7 +19,6 @@ import collection.mutable
 import java.util.concurrent.ConcurrentHashMap
 import scala.collection.JavaConversions._
 import scrud.android.view.AndroidResourceAnalyzer._
-import scrud.android.view.ViewRef
 import PortableField.toSome
 import scala.Some
 
@@ -82,7 +81,7 @@ abstract class CrudApplication(val platformDriver: PlatformDriver) extends Loggi
 
   /** Returns true if the URI is worth calling EntityPersistence.find to try to get an entity instance. */
   def maySpecifyEntityInstance(uri: UriPath, entityType: EntityType): Boolean =
-    persistenceFactory(entityType).maySpecifyEntityInstance(entityType, uri)
+    persistenceFactory(entityType).maySpecifyEntityInstance(entityType.entityName, uri)
 
   def isListable(entityType: EntityType): Boolean = persistenceFactory(entityType).canList
   def isListable(entityName: EntityName): Boolean = persistenceFactory(entityName).canList

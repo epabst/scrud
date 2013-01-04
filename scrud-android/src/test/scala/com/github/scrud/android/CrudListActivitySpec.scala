@@ -36,7 +36,7 @@ class CrudListActivitySpec extends MustMatchers with CrudMockitoSugar {
     val parentEntityType = new MyEntityType(parentEntityName)
     val parentCrudType = new CrudType(parentEntityType, persistenceFactory)
     val application = MyCrudApplication(crudType, parentCrudType)
-    stub(persistenceFactory.maySpecifyEntityInstance(eql(entityType), any())).toReturn(false)
+    stub(persistenceFactory.maySpecifyEntityInstance(eql(entityType.entityName), any())).toReturn(false)
 
     val activity = new MyCrudListActivity(application)
     activity.populateFromParentEntities()

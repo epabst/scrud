@@ -1,7 +1,6 @@
 package com.github.scrud.persistence
 
-import com.github.scrud.{UriPath, EntityType}
-import com.github.scrud.CrudContext
+import com.github.scrud.{EntityName, UriPath, EntityType, CrudContext}
 
 
 /**
@@ -22,7 +21,7 @@ class SingletonWithChangeLogPersistenceFactory(delegate: PersistenceFactory) ext
       delegate.listenerHolder(entityType, crudContext))
 
   /** Since the first is used, no ID is required to find one. */
-  override def maySpecifyEntityInstance(entityType: EntityType, uri: UriPath) = true
+  override def maySpecifyEntityInstance(entityName: EntityName, uri: UriPath) = true
 
   def listenerHolder(entityType: EntityType, crudContext: CrudContext) = delegate.listenerHolder(entityType, crudContext)
 }

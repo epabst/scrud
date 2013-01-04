@@ -18,6 +18,7 @@ import android.CrudType
 import android.MyCrudApplication
 import com.github.scrud.util.{ListenerHolder, CrudMockitoSugar}
 import com.github.scrud.EntityName
+import platform.TestingPlatformDriver
 
 /** A behavior specification for [[com.github.scrud.persistence.GeneratedPersistenceFactory]].
   * @author Eric Pabst (epabst@gmail.com)
@@ -39,7 +40,7 @@ class GeneratedPersistenceFactorySpec extends MustMatchers with CrudMockitoSugar
     val factory = new GeneratedPersistenceFactory[Map[String,Any]] {
       def createEntityPersistence(entityType: EntityType, crudContext: CrudContext) = seqPersistence
     }
-    val entityType = new EntityType(generatedEntityName) {
+    val entityType = new EntityType(generatedEntityName, TestingPlatformDriver) {
       override protected val idField = mapField[ID]("longId") + super.idField
       def valueFields = Nil
     }

@@ -1,7 +1,6 @@
 package com.github.scrud.persistence
 
-import com.github.scrud.{UriPath, EntityType}
-import com.github.scrud.CrudContext
+import com.github.scrud.{EntityName, UriPath, EntityType, CrudContext}
 import com.github.scrud.util.ListenerHolder
 
 /** A factory for EntityPersistence specific to a storage type such as SQLite.
@@ -35,8 +34,8 @@ trait PersistenceFactory {
   /** Returns true if the URI is worth calling EntityPersistence.find to try to get an entity instance.
     * It may be overridden in cases where an entity instance can be found even if no ID is present in the URI.
     */
-  def maySpecifyEntityInstance(entityType: EntityType, uri: UriPath): Boolean =
-    uri.upToIdOf(entityType.entityName).isDefined
+  def maySpecifyEntityInstance(entityName: EntityName, uri: UriPath): Boolean =
+    uri.upToIdOf(entityName).isDefined
 
   final def addListener(listener: DataListener, entityType: EntityType, crudContext: CrudContext) {
     listenerHolder(entityType, crudContext).addListener(listener)
