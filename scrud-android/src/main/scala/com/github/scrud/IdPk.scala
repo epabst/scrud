@@ -8,13 +8,13 @@ import com.github.scrud.platform.PlatformTypes._
 trait IdPk {
   def id: Option[ID]
 
-  def id(newId: Option[ID]): IdPk
+  def withId(id: Option[ID]): IdPk
 }
 
 trait MutableIdPk extends IdPk {
   var id: Option[ID] = None
 
-  def id(newId: Option[ID]) = {
+  def withId(newId: Option[ID]) = {
     id = newId
     this
   }

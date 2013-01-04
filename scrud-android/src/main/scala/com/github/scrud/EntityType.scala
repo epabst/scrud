@@ -31,7 +31,7 @@ abstract class EntityType(val entityName: EntityName, val platformDriver: Platfo
   def valueFields: List[BaseField]
 
   /** The idField along with accessors for IdPk instances. */
-  lazy val idPkField = IdField + Getter[IdPk,ID](_.id).withUpdater(e => e.id(_)) +
+  lazy val idPkField = IdField + Getter[IdPk,ID](_.id).withUpdater(e => e.withId(_)) +
     Setter((e: MutableIdPk) => e.id = _)
   lazy val fieldsIncludingIdPk = FieldList((idPkField +: fields): _*)
 

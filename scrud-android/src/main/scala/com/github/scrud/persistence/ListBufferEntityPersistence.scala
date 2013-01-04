@@ -15,7 +15,7 @@ import java.util.concurrent.atomic.AtomicLong
  *         Time: 4:57 PM
  */
 abstract class ListBufferEntityPersistence[T <: AnyRef](newWritableFunction: => T, listenerSet: ListenerSet[DataListener]) extends SeqEntityPersistence[T] {
-  private object IdField extends Field[ID](Getter[IdPk,ID](_.id).withUpdater(e => e.id(_)) +
+  private object IdField extends Field[ID](Getter[IdPk,ID](_.id).withUpdater(e => e.withId(_)) +
       Setter((e: MutableIdPk) => e.id = _) + CursorField.PersistedId)
   val buffer = mutable.ListBuffer[T]()
 
