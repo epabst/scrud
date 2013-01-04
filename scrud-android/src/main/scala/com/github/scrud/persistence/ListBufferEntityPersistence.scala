@@ -24,9 +24,7 @@ abstract class ListBufferEntityPersistence[T <: AnyRef](newWritableFunction: => 
 
   val nextId = new AtomicLong(10000L)
 
-  //todo only return the one that matches the ID in the uri, if present
-  //def findAll(uri: UriPath) = buffer.toList.filter(item => uri.segments.containsSlice(toUri(IdField(item)).segments))
-  def findAll(uri: UriPath) = buffer.toList
+  def findAll(uri: UriPath) = buffer.toList.filter(item => IdField(item).map(id => uri.segments.containsSlice(toUri(id).segments)).getOrElse(true))
 
   def newWritable() = newWritableFunction
 
