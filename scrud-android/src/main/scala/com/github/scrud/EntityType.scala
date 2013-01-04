@@ -12,7 +12,7 @@ import util.Common
   * @author Eric Pabst (epabst@gmail.com)
   * @param entityName  this is used to identify the EntityType and for internationalized strings
   */
-abstract class EntityType(val entityName: EntityName, platformDriver: PlatformDriver) extends FieldList with Logging {
+abstract class EntityType(val entityName: EntityName, val platformDriver: PlatformDriver) extends FieldList with Logging {
   override val logTag = Common.tryToEvaluate(entityName.name).getOrElse(Common.logTag)
 
   trace("Instantiated EntityType: " + this)
@@ -43,6 +43,10 @@ abstract class EntityType(val entityName: EntityName, platformDriver: PlatformDr
   }
 
   lazy val parentEntityNames: Seq[EntityName] = parentFields.map(_.entityName)
+
+  /** A PortableField for modifying a named portion of a View. */
+  protected def namedViewField[T](fieldName: String, childViewField: PortableField[T]): PortableField[T] =
+    platformDriver.namedViewField(fieldName, childViewField)
 
   def toUri(id: ID) = UriPath(entityName, id)
 

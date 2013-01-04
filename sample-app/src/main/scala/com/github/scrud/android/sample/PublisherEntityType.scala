@@ -12,9 +12,9 @@ object Publisher extends EntityName("Publisher")
 
 class PublisherEntityType(platformDriver: PlatformDriver) extends EntityType(Publisher, platformDriver) {
   val valueFields = List(
-    persisted[String]("name") + viewId(classOf[R], "publisher_name", textView) + requiredString,
+    persisted[String]("name") + namedViewField("publisher_name", textView) + requiredString,
 
-    viewId(classOf[R], "bookCount", intView) + bundleField[Int]("bookCount") + Getter[Int] {
+    namedViewField("bookCount", intView) + bundleField[Int]("bookCount") + Getter[Int] {
       case UriField(Some(uri)) && CrudContextField(Some(crudContext)) => {
         println("calculating bookCount for " + uri + " and " + crudContext)
         crudContext.withEntityPersistence(Book) { persistence =>

@@ -62,7 +62,7 @@ class CrudUIGeneratorSpec extends FunSpec with MustMatchers with MockitoSugar {
   describe("generateValueStrings") {
     it("must include 'list', 'add' and 'edit' strings for modifiable entities") {
       val myEntityType = new MyEntityType {
-        override val valueFields = List(persisted[String]("model") + viewId(classOf[R], "model", textView))
+        override val valueFields = List(persisted[String]("model") + namedViewField("model", textView))
       }
       val application = new CrudApplication(platformDriver) {
         val allCrudTypes = List(new MyCrudType(myEntityType))

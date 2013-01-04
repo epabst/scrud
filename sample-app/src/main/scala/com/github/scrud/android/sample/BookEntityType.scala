@@ -21,15 +21,15 @@ class BookEntityType(platformDriver: PlatformDriver) extends EntityType(Book, pl
   val valueFields = List(
     foreignKey(Author),
 
-    persisted[String]("name") + viewId(classOf[R], "name", textView) + requiredString,
+    persisted[String]("name") + namedViewField("name", textView) + requiredString,
 
-    persisted[Int]("edition") + viewId(classOf[R], "edition", intView),
+    persisted[Int]("edition") + namedViewField("edition", intView),
 
-    persistedEnum[Genre.Value]("genre", Genre) + viewId(classOf[R], "genre", EnumerationView[Genre.Value](Genre)) +
+    persistedEnum[Genre.Value]("genre", Genre) + namedViewField("genre", EnumerationView[Genre.Value](Genre)) +
       default(Genre.Fantasy),
 
-    foreignKey(Publisher) + viewId(classOf[R], "publisher", EntityView(Publisher)),
+    foreignKey(Publisher) + namedViewField("publisher", EntityView(Publisher)),
 
-    persistedDate("publishDate") + viewId[Date](classOf[R], "publishDate", dateView)
+    persistedDate("publishDate") + namedViewField[Date]("publishDate", dateView)
   )
 }

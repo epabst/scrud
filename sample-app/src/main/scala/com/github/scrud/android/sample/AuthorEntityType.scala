@@ -15,9 +15,9 @@ object AuthorEntityType extends AuthorEntityType(new AndroidPlatformDriver(class
 
 class AuthorEntityType(platformDriver: PlatformDriver) extends EntityType(Author, platformDriver) {
   val valueFields = List(
-    persisted[String]("name") + viewId(classOf[R], "name", textView) + requiredString,
+    persisted[String]("name") + namedViewField("name", textView) + requiredString,
 
-    viewId(classOf[R], "bookCount", intView) +
+    namedViewField("bookCount", intView) +
             bundleField[Int]("bookCount") +
             Getter[Int] {
               case UriField(Some(uri)) && CrudContextField(Some(crudContext)) => {

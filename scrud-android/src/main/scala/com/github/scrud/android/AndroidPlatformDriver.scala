@@ -5,7 +5,9 @@ import scrud.action.{CommandId, Command}
 import scrud.android.action.{StartEntityIdActivityOperation, StartEntityActivityOperation}
 import action.AndroidOperation._
 import com.github.scrud.platform.PlatformDriver
-import com.github.scrud.EntityName
+import scrud.EntityName
+import view.ViewField._
+import com.github.triangle.PortableField
 
 /**
  * A PlatformDriver for the Android platform.
@@ -27,7 +29,6 @@ class AndroidPlatformDriver(rClass: Class[_]) extends PlatformDriver {
   def operationToShowListUI(entityName: EntityName) =
     new StartEntityActivityOperation(entityName, ListActionName, listActivityClass)
 
-
   /** An Operation that will show the UI to the user that displays an entity instance. */
   def operationToShowDisplayUI(entityName: EntityName) =
     new StartEntityIdActivityOperation(entityName, DisplayActionName, activityClass)
@@ -38,4 +39,9 @@ class AndroidPlatformDriver(rClass: Class[_]) extends PlatformDriver {
 
   /** The command to undo the last delete. */
   lazy val commandToUndoDelete = Command(CommandId("undo_delete"), None, Some(res.R.string.undo_delete))
+
+  /** A PortableField for modifying a named portion of a View. */
+  def namedViewField[T](fieldName: String, childViewField: PortableField[T]): PortableField[T] = {
+    viewId(rClass, fieldName, childViewField)
+  }
 }

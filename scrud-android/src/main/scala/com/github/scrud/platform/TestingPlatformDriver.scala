@@ -1,8 +1,13 @@
 package com.github.scrud.platform
 
 import com.github.scrud.persistence.ListBufferPersistenceFactory
-import com.github.scrud.{CrudContext, UriPath, EntityName}
-import com.github.scrud.action.{Command, CommandId, Operation, CrudOperationType}
+import com.github.scrud.{CrudContext, UriPath}
+import com.github.scrud.action.{Operation, CrudOperationType}
+import com.github.triangle.{Updater, Getter, PortableField}
+import com.github.scrud.EntityName
+import com.github.scrud.action.CommandId
+import com.github.scrud.action.Command
+import com.github.scrud.view.NamedViewMap
 
 /**
  * A simple PlatformDriver for testing.
@@ -33,6 +38,13 @@ class TestingPlatformDriver extends PlatformDriver {
 
   /** The command to undo the last delete. */
   def commandToUndoDelete = Command(CommandId("command1"), None, None)
+
+  /** A PortableField for modifying a named portion of a View. */
+  def namedViewField[T](fieldName: String, childViewField: PortableField[T]): PortableField[T] = {
+    Getter.single[T]({
+      case map: NamedViewMap if map.contains(fieldName) =>  map.apply(fieldName).asInstanceOf[Option[T]]
+    }) + Updater((m: NamedViewMap) => (valueOpt: Option[T]) => m + (fieldName -> valueOpt))
+  }
 }
 
 object TestingPlatformDriver extends TestingPlatformDriver

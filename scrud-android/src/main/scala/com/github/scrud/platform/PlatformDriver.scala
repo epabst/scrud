@@ -3,6 +3,7 @@ package com.github.scrud.platform
 import com.github.scrud.persistence.PersistenceFactory
 import com.github.scrud.action.{Command, Operation}
 import com.github.scrud.EntityName
+import com.github.triangle.PortableField
 
 /**
  * An API for an app to interact with the host platform such as Android.
@@ -34,4 +35,7 @@ trait PlatformDriver {
 
   /** The command to undo the last delete. */
   def commandToUndoDelete: Command
+
+  /** A PortableField for modifying a named portion of a View. */
+  def namedViewField[T](fieldName: String, childViewField: PortableField[T]): PortableField[T]
 }

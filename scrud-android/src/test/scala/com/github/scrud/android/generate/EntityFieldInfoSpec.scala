@@ -37,7 +37,7 @@ class EntityFieldInfoSpec extends FunSpec with MustMatchers with MockitoSugar {
   }
 
   it("must consider a ParentField displayable if it has a viewId field") {
-    val fieldInfo = EntityFieldInfo(ParentField(MyEntity) + viewId(classOf[R], "foo", longView), Seq(classOf[R]), application)
+    val fieldInfo = EntityFieldInfo(ParentField(MyEntity) + namedViewField("foo", longView), Seq(classOf[R]), application)
     fieldInfo.isDisplayable must be (true)
   }
 
