@@ -3,22 +3,22 @@
 android:stretchColumns="1" android:layout_height="wrap_content" android:layout_width="fill_parent" xmlns:android="http://schemas.android.com/apk/res/android">
   <TableRow>
     <TextView android:text="Name:" android:textAppearance="?android:attr/textAppearanceLarge" android:gravity="right"/>
-    <EditText android:inputType="textCapWords" android:id="@+id/name"/>
+    <EditText android:inputType="textCapWords" android:id="@+id/Book_name"/>
   </TableRow>
   <TableRow>
     <TextView android:text="Edition:" android:textAppearance="?android:attr/textAppearanceLarge" android:gravity="right"/>
-    <EditText android:inputType="number|numberSigned" android:id="@+id/edition"/>
+    <EditText android:inputType="number|numberSigned" android:id="@+id/Book_edition"/>
   </TableRow>
   <TableRow>
     <TextView android:text="Genre:" android:textAppearance="?android:attr/textAppearanceLarge" android:gravity="right"/>
-    <Spinner android:drawSelectorOnTop="true" android:id="@+id/genre"/>
+    <Spinner android:drawSelectorOnTop="true" android:id="@+id/Book_genre"/>
   </TableRow>
   <TableRow>
     <TextView android:text="Publisher:" android:textAppearance="?android:attr/textAppearanceLarge" android:gravity="right"/>
-    <Spinner android:drawSelectorOnTop="true" android:id="@+id/publisher"/>
+    <Spinner android:drawSelectorOnTop="true" android:id="@+id/Book_publisher"/>
   </TableRow>
   <TableRow>
     <TextView android:text="Publish Date:" android:textAppearance="?android:attr/textAppearanceLarge" android:gravity="right"/>
-    <DatePicker android:id="@+id/publishDate"/>
+    <DatePicker android:id="@+id/Book_publishDate"/>
   </TableRow>
 </TableLayout>

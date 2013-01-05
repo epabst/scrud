@@ -12,7 +12,7 @@ object Publisher extends EntityName("Publisher")
 
 class PublisherEntityType(platformDriver: PlatformDriver) extends EntityType(Publisher, platformDriver) {
   val valueFields = List(
-    persisted[String]("name") + namedViewField("publisher_name", textView) + requiredString,
+    persisted[String]("name") + namedViewField("name", textView) + requiredString,
 
     namedViewField("bookCount", intView) + bundleField[Int]("bookCount") + Getter[Int] {
       case UriField(Some(uri)) && CrudContextField(Some(crudContext)) => {
