@@ -21,14 +21,19 @@ object Validation {
     */
   def required[T]: Validation[T] = Validation(_.isDefined)
 
+  /** A Validation that requires that the value be defined and meet criteria.
+    * It does allow the value to be an empty string, empty list, etc.
+    * Example: <pre>field... + requiredAnd(_ != "")</pre>
+    */
+  def requiredAnd[T](isValid: T => Boolean): Validation[T] = Validation(_.map(isValid(_)).getOrElse(false))
+
   /** A Validation that requires that the value be defined and not one of the given values.
     * Example: <pre>field... + requiredAndNot("")</pre>
     */
-  def requiredAndNot[T](invalidValues: T*): Validation[T] =
-    Validation(value => value.isDefined && !invalidValues.contains(value.get))
+  def requiredAndNot[T](invalidValues: T*): Validation[T] = requiredAnd(!invalidValues.contains(_))
 
   /** A Validation that requires that the value not be empty (after trimming). */
-  lazy val requiredString: Validation[String] = Validation(_.map(s => s.trim != "").getOrElse(false))
+  lazy val requiredString: Validation[String] = requiredAnd(_.trim != "")
 }
 
 case class ValidationResult(numInvalid: Int) {
