@@ -3,7 +3,7 @@ package com.github.scrud.persistence
 import com.github.scrud.util.ListenerSet
 import com.github.triangle.{Setter, Getter, Field}
 import com.github.scrud.platform.PlatformTypes._
-import com.github.scrud.{UriPath, MutableIdPk, IdPk}
+import com.github.scrud.{EntityName, UriPath, MutableIdPk, IdPk}
 import com.github.scrud.android.persistence.CursorField
 import collection.mutable
 import java.util.concurrent.atomic.AtomicLong
@@ -14,7 +14,8 @@ import java.util.concurrent.atomic.AtomicLong
  *         Date: 10/20/12
  *         Time: 4:57 PM
  */
-abstract class ListBufferEntityPersistence[T <: AnyRef](newWritableFunction: => T, listenerSet: ListenerSet[DataListener]) extends SeqEntityPersistence[T] {
+class ListBufferEntityPersistence[T <: AnyRef](entityName: EntityName, newWritableFunction: => T,
+                                               listenerSet: ListenerSet[DataListener]) extends SeqEntityPersistence[T] {
   private object IdField extends Field[ID](Getter[IdPk,ID](_.id).withUpdater(e => e.withId(_)) +
       Setter((e: MutableIdPk) => e.id = _) + CursorField.PersistedId)
   val buffer = mutable.ListBuffer[T]()
@@ -22,9 +23,12 @@ abstract class ListBufferEntityPersistence[T <: AnyRef](newWritableFunction: => 
   // not a val since dynamic
   def listeners = listenerSet.listeners
 
-  val nextId = new AtomicLong(10000L)
+  private val nextId = new AtomicLong(10000L)
 
-  def findAll(uri: UriPath) = buffer.toList.filter(item => IdField(item).map(id => uri.segments.containsSlice(toUri(id).segments)).getOrElse(true))
+  def toUri(id: ID) = entityName.toUri(id)
+
+  def findAll(uri: UriPath) =
+    uri.findId(entityName).map(id => buffer.toList.filter(item => IdField(item) == Some(id))).getOrElse(buffer.toList)
 
   def newWritable() = newWritableFunction
 
@@ -42,4 +46,6 @@ abstract class ListBufferEntityPersistence[T <: AnyRef](newWritableFunction: => 
   }
 
   def close() {}
+
+  override def toString = super.toString + "[" + buffer.mkString(",") + "]"
 }

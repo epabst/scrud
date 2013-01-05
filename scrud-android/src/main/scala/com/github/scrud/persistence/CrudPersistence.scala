@@ -13,7 +13,7 @@ trait CrudPersistence extends EntityPersistence with ListenerSet[DataListener] w
 
   def entityType: EntityType
 
-  def toUri(id: ID) = entityType.toUri(id)
+  override def toUri(id: ID) = entityType.toUri(id)
 
   def find[T <: AnyRef](uri: UriPath, instantiateItem: => T): Option[T] =
     find(uri).map(entityType.fieldsIncludingIdPk.copyAndUpdate(_, instantiateItem))

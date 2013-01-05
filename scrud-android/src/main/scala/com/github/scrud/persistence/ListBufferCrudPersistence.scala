@@ -8,4 +8,4 @@ import com.github.scrud.util.{MutableListenerSet, ListenerSet}
 class ListBufferCrudPersistence[T <: AnyRef](newWritableFunction: => T, val entityType: EntityType,
                                              val crudContext: CrudContext,
                                              listenerSet: ListenerSet[DataListener] = new MutableListenerSet[DataListener])
-        extends ListBufferEntityPersistence[T](newWritableFunction, listenerSet) with SeqCrudPersistence[T]
+        extends ListBufferEntityPersistence[T](entityType.entityName, newWritableFunction, listenerSet) with SeqCrudPersistence[T]
