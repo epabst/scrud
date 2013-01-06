@@ -205,7 +205,7 @@ trait BaseCrudActivity extends ActivityWithState with OptionsMenuActivity with L
   }
 
   final def setListAdapterUsingUri(crudContext: AndroidCrudContext, activity: CrudListActivity) {
-    setListAdapter(activity.getListView, entityType, activity.currentUriPath, crudContext, activity.contextItems, activity, rowLayout)
+    setListAdapter(activity.getListView, entityType, crudContext, activity.contextItems, activity, rowLayout)
   }
 
   private def createAdapter(persistence: CrudPersistence, contextItems: CrudContextItems, activity: Activity, itemLayout: LayoutKey): AdapterCaching = {
@@ -216,18 +216,18 @@ trait BaseCrudActivity extends ActivityWithState with OptionsMenuActivity with L
   private def setListAdapter[A <: Adapter](adapterView: AdapterView[A], persistence: CrudPersistence, crudContext: AndroidCrudContext, contextItems: CrudContextItems, activity: Activity, itemLayout: LayoutKey) {
     addDataListener(new DataListener {
       def onChanged(uri: UriPath) {
-        crudContext.application.FuturePortableValueCache.get(crudContext).clear()
+        contextItems.application.FuturePortableValueCache.get(contextItems.crudContext).clear()
       }
-    }, crudContext)
+    }, contextItems.crudContext)
     def callCreateAdapter(): A = {
       createAdapter(persistence, contextItems, activity, itemLayout).asInstanceOf[A]
     }
     val adapter = callCreateAdapter()
     adapterView.setAdapter(adapter)
-    crudContext.addCachedActivityStateListener(new AdapterCachingStateListener(adapterView, persistence.entityType, crudContext, adapterFactory = callCreateAdapter()))
+    crudContext.addCachedActivityStateListener(new AdapterCachingStateListener(adapterView, persistence.entityType, contextItems.crudContext, adapterFactory = callCreateAdapter()))
   }
 
-  def setListAdapter[A <: Adapter](adapterView: AdapterView[A], entityType: EntityType, uriPath: UriPath, crudContext: AndroidCrudContext, contextItems: CrudContextItems, activity: Activity, itemLayout: LayoutKey) {
+  def setListAdapter[A <: Adapter](adapterView: AdapterView[A], entityType: EntityType, crudContext: AndroidCrudContext, contextItems: CrudContextItems, activity: Activity, itemLayout: LayoutKey) {
     val persistence = crudContext.openEntityPersistence(entityType)
     crudContext.activityState.addListener(new DestroyStateListener {
       def onDestroyState() {

@@ -1,13 +1,12 @@
 package com.github.scrud.android.view
 
 import com.github.triangle.{UpdaterInput, Logging}
-import com.github.scrud.{CrudContextItems, UriPath, EntityType}
+import com.github.scrud.{CrudContext, CrudContextItems, UriPath, EntityType}
 import android.view.View
 import android.os.Bundle
 import android.widget.{Adapter, AdapterView, BaseAdapter}
 import com.github.scrud.platform.PlatformTypes._
 import scala.Some
-import com.github.scrud.android.AndroidCrudContext
 import com.github.scrud.android.state.CachedStateListener
 import com.github.scrud.util.Common
 
@@ -57,7 +56,7 @@ trait AdapterCaching extends Logging { self: BaseAdapter =>
   }
 }
 
-class AdapterCachingStateListener[A <: Adapter](adapterView: AdapterView[A], entityType: EntityType, crudContext: AndroidCrudContext, adapterFactory: => A) extends CachedStateListener with Logging {
+class AdapterCachingStateListener[A <: Adapter](adapterView: AdapterView[A], entityType: EntityType, crudContext: CrudContext, adapterFactory: => A) extends CachedStateListener with Logging {
   protected def logTag = entityType.logTag
 
   def onSaveState(outState: Bundle) {

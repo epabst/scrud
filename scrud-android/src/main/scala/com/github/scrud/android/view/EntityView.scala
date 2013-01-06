@@ -33,7 +33,7 @@ case class EntityView(entityName: EntityName)
         //don't do it again if already done from a previous time
         if (adapterView.getAdapter == null) {
           val entityType = crudActivity.crudApplication.entityType(entityName)
-          crudActivity.setListAdapter(adapterView, entityType, uri, crudContext, crudActivity.contextItems, crudActivity,
+          crudActivity.setListAdapter(adapterView, entityType, crudContext, crudActivity.contextItems.copy(uri), crudActivity,
             crudActivity.pickLayoutFor(entityType.entityName))
         }
         if (idOpt.isDefined) {
