@@ -5,7 +5,7 @@ import com.github.scrud.platform.PlatformTypes._
 import android.view.{ViewGroup, View}
 import com.github.scrud
 import scrud.android.AndroidCrudContext
-import scrud.{CrudContextItems, CrudContextField, UriField, EntityType}
+import scrud.{CrudContextItems, CrudContextField, EntityType}
 
 /** An Android Adapter for an EntityType with the result of EntityPersistence.findAll.
   * @author Eric Pabst (epabst@gmail.com)
@@ -13,8 +13,8 @@ import scrud.{CrudContextItems, CrudContextField, UriField, EntityType}
 class EntityAdapter(val entityType: EntityType, values: Seq[AnyRef], rowViewInflater: ViewInflater,
                     contextItems: CrudContextItems) extends BaseAdapter with AdapterCaching {
 
-  /** The UriPath that does not contain the entities. */
-  protected lazy val uriPathWithoutEntityId = UriField(contextItems).getOrElse(sys.error("no UriPath provided"))
+  /** The UriPath that does not contain the id of the entities. */
+  protected lazy val uriPathWithoutEntityId = contextItems.currentUriPath
 
   protected lazy val crudContext =
     CrudContextField(contextItems).getOrElse(sys.error("no CrudContext found")).asInstanceOf[AndroidCrudContext]
