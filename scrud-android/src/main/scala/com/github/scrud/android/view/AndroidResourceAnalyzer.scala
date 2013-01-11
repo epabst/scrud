@@ -61,10 +61,10 @@ object AndroidResourceAnalyzer extends Logging {
   def findResourceIdWithName(classes: Seq[Class[_]], name: String): Option[Int] =
     findResourceFieldWithName(classes, name).map(_.getInt(null))
 
-  def resourceIdWithName(classes: Seq[Class[_]], name: String): Int =
+  def resourceIdWithName(classes: Seq[Class[_]], name: String, innerClassName: String = "string"): Int =
     findResourceIdWithName(classes, name).getOrElse {
       classes.foreach(rStringClass => logError("Contents of " + rStringClass + " are " + rStringClass.getFields.mkString(", ")))
-      throw new IllegalStateException("R.string." + name + " not found.  You may want to run the CrudUIGenerator.generateLayouts." +
-              classes.mkString("(string classes: ", ",", ")"))
+      throw new IllegalStateException("R." + innerClassName + "." + name + " not found.  You may want to run the CrudUIGenerator.generateLayouts." +
+              classes.mkString("(" + innerClassName + " classes: ", ",", ")"))
     }
 }

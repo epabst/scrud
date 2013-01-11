@@ -28,7 +28,11 @@ trait ViewRef {
 object ViewRef {
   def apply(viewKey: ViewKey): ViewRef = ViewRefUsingViewKey(viewKey)
 
-  def apply(viewResourceIdName: String, rIdClasses: Seq[Class[_]]): ViewRef = ViewRefUsingName(viewResourceIdName, rIdClasses)
+  def apply(viewResourceIdName: String, rIdClasses: Seq[Class[_]], innerClassName: String = "string"): ViewRef =
+    ViewRefUsingName(viewResourceIdName, rIdClasses, innerClassName)
+
+  def apply(viewResourceIdName: String, clazz: Class[_], innerClassName: String): ViewRef =
+    apply(viewResourceIdName, detectRIdClasses(clazz), innerClassName)
 }
 
 private case class ViewRefUsingViewKey(viewKey: ViewKey) extends ViewRef {
@@ -43,10 +47,10 @@ private case class ViewRefUsingViewKey(viewKey: ViewKey) extends ViewRef {
   override def toString = viewKey.toString
 }
 
-private case class ViewRefUsingName(viewResourceIdName: String, rIdClasses: Seq[Class[_]]) extends ViewRef {
+private case class ViewRefUsingName(viewResourceIdName: String, rIdClasses: Seq[Class[_]], innerClassName: String = "string") extends ViewRef {
   lazy val viewKeyOpt = findResourceIdWithName(rIdClasses, viewResourceIdName)
 
-  lazy val viewKeyOrError = resourceIdWithName(rIdClasses, viewResourceIdName)
+  lazy val viewKeyOrError = resourceIdWithName(rIdClasses, viewResourceIdName, innerClassName)
 
   def fieldName(rIdClasses: Seq[Class[_]]): String = viewResourceIdName
 
