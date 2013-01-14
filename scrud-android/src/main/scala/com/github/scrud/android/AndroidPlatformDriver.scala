@@ -8,6 +8,7 @@ import com.github.scrud.platform.PlatformDriver
 import scrud.EntityName
 import view.ViewField._
 import com.github.triangle.PortableField
+import view.ViewRef
 
 /**
  * A PlatformDriver for the Android platform.
@@ -44,4 +45,8 @@ class AndroidPlatformDriver(rClass: Class[_]) extends PlatformDriver {
   def namedViewField[T](fieldName: String, childViewField: PortableField[T]): PortableField[T] = {
     viewId(rClass, fieldName, childViewField)
   }
+
+  def listViewId(entityName: EntityName): Int = ViewRef("list", rClass, "id").viewKeyOrError
+
+  def emptyListViewIdOpt(entityName: EntityName): Int = ViewRef("emptyList", rClass, "id").viewKeyOrError
 }

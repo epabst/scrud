@@ -32,7 +32,7 @@ trait BaseCrudActivity extends ActivityWithState with OptionsMenuActivity with L
 
   lazy val platformDriver: AndroidPlatformDriver = crudApplication.platformDriver.asInstanceOf[AndroidPlatformDriver]
 
-  lazy val entityType = crudApplication.allEntityTypes.find(entityType => Some(entityType.entityName.name) == currentUriPath.lastEntityNameOption).getOrElse {
+  lazy val entityType: EntityType = crudApplication.allEntityTypes.find(entityType => Some(entityType.entityName.name) == currentUriPath.lastEntityNameOption).getOrElse {
     throw new IllegalStateException("No valid entityName in " + currentUriPath)
   }
 
@@ -117,6 +117,8 @@ trait BaseCrudActivity extends ActivityWithState with OptionsMenuActivity with L
   lazy val headerLayout: LayoutKey = getLayoutKey(entityNameLayoutPrefix + "_header")
   lazy val listLayout: LayoutKey =
     findResourceIdWithName(rLayoutClasses, entityNameLayoutPrefix + "_list").getOrElse(getLayoutKey("entity_list"))
+  lazy val emptyListLayoutOpt: Option[LayoutKey] =
+    findResourceIdWithName(rLayoutClasses, entityNameLayoutPrefix + "_emptyList")
   lazy val rowLayout: LayoutKey = getLayoutKey(entityNameLayoutPrefix + "_row")
   /** The layout used for each entity when allowing the user to pick one of them. */
   lazy val pickLayout: LayoutKey = pickLayoutFor(entityName)
@@ -205,7 +207,7 @@ trait BaseCrudActivity extends ActivityWithState with OptionsMenuActivity with L
   }
 
   final def setListAdapterUsingUri(crudContext: AndroidCrudContext, activity: CrudListActivity) {
-    setListAdapter(activity.getListView, entityType, crudContext, activity.contextItems, activity, rowLayout)
+    setListAdapter(activity.getAdapterView, entityType, crudContext, activity.contextItems, activity, rowLayout)
   }
 
   private def createAdapter(persistence: CrudPersistence, contextItems: CrudContextItems, activity: Activity, itemLayout: LayoutKey): AdapterCaching = {

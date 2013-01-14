@@ -110,13 +110,13 @@ class SQLitePersistenceFactorySpec extends MustMatchers with CrudMockitoSugar wi
   def shouldRefreshCursorWhenDeletingAndSaving() {
     val activity = new MyCrudListActivity(application) {
       override val applicationState = new State {}
-      override val getListView: ListView = new ListView(this)
+      override val getAdapterView: ListView = new ListView(this)
     }
     val observer = mock[DataSetObserver]
 
     val crudContext = new AndroidCrudContext(activity, application)
     activity.setListAdapterUsingUri(crudContext, activity)
-    val listAdapter = activity.getListView.getAdapter
+    val listAdapter = activity.getAdapterView.getAdapter
     listAdapter.getCount must be (0)
 
     val writable = SQLitePersistenceFactory.newWritable()

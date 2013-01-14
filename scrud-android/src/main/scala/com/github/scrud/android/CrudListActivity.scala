@@ -1,7 +1,6 @@
 package com.github.scrud.android
 
-import android.widget.ListView
-import android.app.ListActivity
+import android.widget.{ListView, Adapter, AdapterView}
 import android.os.Bundle
 import android.view.{ContextMenu, View, MenuItem}
 import android.view.ContextMenu.ContextMenuInfo
@@ -14,18 +13,41 @@ import com.github.scrud.action.{CrudOperationType, CrudOperation, Action}
 /** A generic ListActivity for CRUD operations
   * @author Eric Pabst (epabst@gmail.com)
   */
-class CrudListActivity extends ListActivity with BaseCrudActivity { self =>
+class CrudListActivity extends BaseCrudActivity { self =>
+  private val mRequestFocus: Runnable = new Runnable {
+    def run() {
+      adapterView.focusableViewAvailable(adapterView)
+    }
+  }
+  protected val mOnClickListener: AdapterView.OnItemClickListener = new AdapterView.OnItemClickListener {
+    def onItemClick(parent: AdapterView[_], v: View, position: Int, id: Long) {
+      onListItemClick(parent.asInstanceOf[AdapterView[_ <: Adapter]], v, position, id)
+    }
+  }
+
+  /**
+   * Get the activity's list view widget.
+   */
+  def getAdapterView: AdapterView[_ <: Adapter] = {
+    ensureAdapterView()
+    adapterView
+  }
+
+  private var adapterView: AdapterView[_ <: Adapter] = null
 
   override def onCreate(savedInstanceState: Bundle) {
     super.onCreate(savedInstanceState)
     crudContext.withExceptionReporting {
-      setContentView(listLayout)
+      ensureAdapterView()
 
-      val view = getListView
-  		view.setHeaderDividersEnabled(true)
-  		view.addHeaderView(getLayoutInflater.inflate(headerLayout, null))
+  		getAdapterView match {
+        case listView: ListView =>
+          listView.setHeaderDividersEnabled(true)
+          listView.addHeaderView(getLayoutInflater.inflate(headerLayout, null))
+        case _ =>
+      }
       bindNormalActionsToViews()
-      registerForContextMenu(getListView)
+      registerForContextMenu(getAdapterView)
 
       setListAdapterUsingUri(crudContext, this)
       crudContext.future {
@@ -40,6 +62,13 @@ class CrudListActivity extends ListActivity with BaseCrudActivity { self =>
     }
   }
 
+  /** This is taken from android's ListActivity.  Not sure what situations make it necessary. */
+  private def ensureAdapterView() {
+    if (adapterView == null) {
+      setContentView(listLayout)
+    }
+  }
+
   private[scrud] def populateFromParentEntities() {
     val uriPath = currentUriPath
     //copy each parent Entity's data to the Activity if identified in the currentUriPath
@@ -49,6 +78,29 @@ class CrudListActivity extends ListActivity with BaseCrudActivity { self =>
         populateFromUri(parentType, uriPath)
       }
     }
+  }
+
+
+  override def onRestoreInstanceState(savedInstanceState: Bundle) {
+    ensureAdapterView()
+    super.onRestoreInstanceState(savedInstanceState)
+  }
+
+  /**
+   * Updates the screen state (current list and other views) when the
+   * content changes.
+   *
+   * @see Activity#onContentChanged()
+   */
+  override def onContentChanged() {
+    super.onContentChanged()
+    val emptyViewOpt: Option[View] = emptyListLayoutOpt.flatMap(key => Option(findViewById(key)))
+    this.adapterView = Option(findViewById(listLayout).asInstanceOf[AdapterView[_ <: Adapter]]).getOrElse {
+      throw new RuntimeException("Your content must have a ListView whose id attribute is " + "'android.R.id.list'")
+    }
+    emptyViewOpt.map(adapterView.setEmptyView(_))
+    adapterView.setOnItemClickListener(mOnClickListener)
+    runOnUiThread(mRequestFocus)
   }
 
   protected lazy val contextMenuActions: Seq[Action] = {
@@ -79,7 +131,7 @@ class CrudListActivity extends ListActivity with BaseCrudActivity { self =>
     }
   }
 
-  override def onListItemClick(l: ListView, v: View, position: Int, id: ID) {
+  def onListItemClick(l: AdapterView[_ <: Adapter], v: View, position: Int, id: ID) {
     crudContext.withExceptionReporting {
       if (id >= 0) {
         crudApplication.actionsFromCrudOperation(CrudOperation(entityName, CrudOperationType.Read)).headOption.map(_.invoke(uriWithId(id), crudContext)).getOrElse {
