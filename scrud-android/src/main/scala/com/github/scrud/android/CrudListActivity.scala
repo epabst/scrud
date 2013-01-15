@@ -94,9 +94,9 @@ class CrudListActivity extends BaseCrudActivity { self =>
    */
   override def onContentChanged() {
     super.onContentChanged()
-    val emptyViewOpt: Option[View] = emptyListLayoutOpt.flatMap(key => Option(findViewById(key)))
-    this.adapterView = Option(findViewById(listLayout).asInstanceOf[AdapterView[_ <: Adapter]]).getOrElse {
-      throw new RuntimeException("Your content must have a ListView whose id attribute is " + "'android.R.id.list'")
+    val emptyViewOpt: Option[View] = emptyListViewKeyOpt.flatMap(key => Option(findViewById(key)))
+    this.adapterView = Option(findViewById(listViewKey).asInstanceOf[AdapterView[_ <: Adapter]]).getOrElse {
+      throw new RuntimeException("The content layout must have an AdapterView (e.g. ListView) whose id attribute is " + listViewName)
     }
     emptyViewOpt.map(adapterView.setEmptyView(_))
     adapterView.setOnItemClickListener(mOnClickListener)
