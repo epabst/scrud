@@ -46,7 +46,7 @@ class AndroidPlatformDriver(rClass: Class[_]) extends PlatformDriver {
     viewId(rClass, fieldName, childViewField)
   }
 
-  def listViewId(entityName: EntityName): Int = ViewRef("list", rClass, "id").viewKeyOrError
+  def listViewId(entityName: EntityName): Int = ViewRef(entityName + "_list", rClass, "id").viewKeyOrError
 
-  def emptyListViewIdOpt(entityName: EntityName): Int = ViewRef("emptyList", rClass, "id").viewKeyOrError
+  def emptyListViewIdOpt(entityName: EntityName): Int = ViewRef(entityName + "_emptyList", rClass, "id").viewKeyOrError
 }
