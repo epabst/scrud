@@ -105,10 +105,8 @@ class CrudListActivity extends BaseCrudActivity { self =>
 
   protected lazy val contextMenuActions: Seq[Action] = {
     val actions = crudApplication.actionsFromCrudOperation(CrudOperation(entityName, CrudOperationType.Read))
-    actions match {
-      case _ :: tail => tail.filter(_.command.title.isDefined)
-      case Nil => Nil
-    }
+    // Include the first action based on Android Feel even though available by just tapping.
+    actions.filter(_.command.title.isDefined)
   }
 
   override def onCreateContextMenu(menu: ContextMenu, v: View, menuInfo: ContextMenuInfo) {
