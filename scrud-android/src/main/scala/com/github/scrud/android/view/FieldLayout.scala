@@ -34,7 +34,7 @@ object FieldLayout {
   }
 
   def textLayout(inputType: String) = new FieldLayout {
-    val displayXml = <TextView/>
+    val displayXml = <TextView style="@android:style/TextAppearance.Widget.TextView"/>
     val editXml = <EditText android:inputType={inputType}/>
   }
 
@@ -45,7 +45,7 @@ object FieldLayout {
   lazy val doubleLayout = textLayout("numberDecimal|numberSigned")
   lazy val currencyLayout = textLayout("numberDecimal|numberSigned")
   lazy val datePickerLayout = new FieldLayout {
-    val displayXml = <TextView/>
+    val displayXml = <TextView style="@android:style/TextAppearance.Widget.TextView"/>
     val editXml = <DatePicker/>
   }
   lazy val dateTextLayout = textLayout("date")

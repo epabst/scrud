@@ -9,5 +9,5 @@
   <TextView android:id="@+id/Publisher_emptyList"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Empty List" android:textAppearance="?android:attr/textAppearanceLarge"/>
+            android:text="Empty List" android:textAppearance="?android:attr/textAppearanceLarge" style="@android:style/TextAppearance.Widget.TextView"/>
 </LinearLayout>

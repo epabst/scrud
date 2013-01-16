@@ -107,7 +107,7 @@ object CrudUIGenerator extends Logging {
               android:layout_width={layoutWidth}
               android:layout_height="wrap_content"
               android:paddingRight="3sp"
-              android:textAppearance={textAppearance}/>
+              android:textAppearance={textAppearance} style="@android:style/TextAppearance.Widget.TextView"/>
   }
 
   protected[generate] def fieldLayoutForRow(field: ViewIdFieldInfo, position: Int): NodeSeq = {
@@ -118,7 +118,7 @@ object CrudUIGenerator extends Logging {
                                android:layout_width={layoutWidth}
                                android:layout_height="wrap_content"
                                android:paddingRight="3sp"
-                               android:textAppearance={textAppearance}/>.attributes
+                               android:textAppearance={textAppearance} style="@android:style/TextAppearance.Widget.TextView"/>.attributes
     adjustHeadNode(field.layout.displayXml, applyAttributes(_, attributes))
   }
 
@@ -135,7 +135,8 @@ object CrudUIGenerator extends Logging {
       <TextView android:id={"@+id/" + entityInfo.entityName + "_emptyList"}
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content" android:layout_weight="1"
-                android:text="Empty List" android:textAppearance="?android:attr/textAppearanceLarge"/>
+                android:text="Empty List"
+                android:textAppearance="?android:attr/textAppearanceLarge" style="@android:style/TextAppearance.Widget.TextView"/>
       { addableEntityTypeInfos.map(addableEntityTypeInfo =>
         <Button android:id={"@+id/add_" + addableEntityTypeInfo.layoutPrefix + "_command"}
                 android:text={"@string/add_" + addableEntityTypeInfo.layoutPrefix}
@@ -209,7 +210,8 @@ object CrudUIGenerator extends Logging {
     val textAppearance = "?android:attr/textAppearanceLarge"
     val attributes = <EditText android:id={"@+id/" + field.id}/>.attributes
     <TableRow>
-      <TextView android:text={field.displayName + ":"} android:textAppearance={textAppearance} android:gravity={gravity}/>
+      <TextView android:text={field.displayName + ":"} android:gravity={gravity}
+                android:textAppearance={textAppearance} style="@android:style/TextAppearance.Widget.TextView"/>
       {adjustHeadNode(field.layout.editXml, applyAttributes(_, attributes))}
     </TableRow>
   }

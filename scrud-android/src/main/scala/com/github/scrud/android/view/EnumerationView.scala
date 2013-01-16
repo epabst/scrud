@@ -10,7 +10,7 @@ import scala.collection.JavaConversions._
   * @author Eric Pabst (epabst@gmail.com)
   */
 case class EnumerationView[E <: Enumeration#Value](enum: Enumeration)
-  extends ViewField[E](FieldLayout(displayXml = <TextView/>, editXml = <Spinner android:drawSelectorOnTop = "true"/>)) {
+  extends ViewField[E](FieldLayout(displayXml = <TextView style="@android:style/TextAppearance.Widget.TextView"/>, editXml = <Spinner android:drawSelectorOnTop = "true"/>)) {
 
   private val itemViewResourceId = _root_.android.R.layout.simple_spinner_dropdown_item
   private val valueArray: java.util.List[E] = enum.values.toSeq.map(_.asInstanceOf[E])
