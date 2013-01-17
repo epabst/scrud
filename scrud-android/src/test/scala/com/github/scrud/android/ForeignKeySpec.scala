@@ -3,7 +3,7 @@ package com.github.scrud.android
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.scalatest.matchers.MustMatchers
-import com.github.scrud.{ParentField, UriPath}
+import com.github.scrud.{EntityField, UriPath}
 import org.scalatest.mock.EasyMockSugar
 import persistence.SQLiteCriteria
 import ForeignKey.foreignKey
@@ -15,11 +15,11 @@ import ForeignKey.foreignKey
 class ForeignKeySpec extends MustMatchers with EasyMockSugar {
   @Test
   def shouldGetCriteriaCorrectlyForForeignKey() {
-    val foreign = foreignKey(MyEntity)
+    val foreign = foreignKey[MyEntityType](MyEntity)
     val uri = UriPath(MyEntityType.entityName, 19)
     //add on extra stuff to make sure it is ignored
     val uriWithExtraStuff = uri / "foo" / 1234
     val criteria = foreign.copyAndUpdate(uriWithExtraStuff, new SQLiteCriteria)
-    criteria.selection must be (List(ParentField(MyEntity).fieldName + "=19"))
+    criteria.selection must be (List(EntityField[MyEntityType](MyEntity).fieldName + "=19"))
   }
 }

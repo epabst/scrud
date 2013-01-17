@@ -28,7 +28,7 @@ class CrudApplicationSpec extends FunSpec with MustMatchers {
     val parentEntityType = new MyEntityType(parentEntityName)
     val childEntityName = new EntityName("Child")
     val childEntityType = new MyEntityType(childEntityName) {
-      override val valueFields = ParentField(parentEntityType) :: super.valueFields
+      override val valueFields = EntityField[MyEntityType](parentEntityName) :: super.valueFields
     }
     val childCrudType = new MyCrudType(childEntityType)
     val parentCrudType = new MyCrudType(parentEntityType)
@@ -44,21 +44,21 @@ class CrudApplicationSpec extends FunSpec with MustMatchers {
     val parentEntityType = new MyEntityType(parentEntityName)
     val childEntityName1 = EntityName("Child1")
     val childEntityType1 = new MyEntityType(childEntityName1) {
-      override lazy val valueFields = ParentField(parentEntityType) :: super.valueFields
+      override lazy val valueFields = EntityField[MyEntityType](parentEntityName) :: super.valueFields
     }
     val childEntityType2 = new MyEntityType(EntityName("Child2")) {
-      override lazy val valueFields = ParentField(parentEntityType) :: super.valueFields
+      override lazy val valueFields = EntityField[MyEntityType](parentEntityName) :: super.valueFields
     }
     val parentCrudType = new MyCrudType(parentEntityType)
     val childCrudType1 = new MyCrudType(childEntityType1)
     val childCrudType2 = new MyCrudType(childEntityType2)
     val application = new MyCrudApplication(childCrudType1, childCrudType2, parentCrudType) {
-      override def hasDisplayPage(entityName: EntityName): Boolean = parentEntityType.entityName == entityName
+      override def hasDisplayPage(entityName: EntityName): Boolean = parentEntityName == entityName
     }
     application.actionsFromCrudOperation(CrudOperation(parentEntityName, CrudOperationType.List)) must be (
-      List(application.actionToCreate(parentEntityType).get))
+      List(application.actionToCreate(parentEntityName).get))
     application.actionsFromCrudOperation(CrudOperation(childEntityName1, CrudOperationType.List)) must be (
-      List(application.actionToCreate(childEntityType1).get))
+      List(application.actionToCreate(childEntityName1).get))
   }
 
   it("must get the correct list actions with child entities w/ no parent display") {
@@ -66,10 +66,10 @@ class CrudApplicationSpec extends FunSpec with MustMatchers {
     val parentEntityType = new MyEntityType(parentEntityName)
     val childEntityName1 = EntityName("Child1")
     val childEntityType1 = new MyEntityType(childEntityName1) {
-      override lazy val valueFields = ParentField(parentEntityType) :: super.valueFields
+      override lazy val valueFields = EntityField[MyEntityType](parentEntityName) :: super.valueFields
     }
     val childEntityType2 = new MyEntityType(EntityName("Child2")) {
-      override lazy val valueFields = ParentField(parentEntityType) :: super.valueFields
+      override lazy val valueFields = EntityField[MyEntityType](parentEntityName) :: super.valueFields
     }
     val parentCrudType = new MyCrudType(parentEntityType)
     val childCrudType1 = new MyCrudType(childEntityType1)

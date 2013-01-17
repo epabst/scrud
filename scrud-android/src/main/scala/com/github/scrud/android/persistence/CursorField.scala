@@ -7,7 +7,7 @@ import com.github.triangle._
 import PortableField._
 import android.os.Bundle
 import com.github.scrud.platform.PlatformTypes._
-import com.github.scrud.ParentField
+import com.github.scrud.EntityField
 import com.github.triangle.Converter._
 import android.net.Uri
 
@@ -44,7 +44,7 @@ object CursorField {
   }
 
   def updateablePersistedFields(field: BaseField, rIdClasses: Seq[Class[_]]): Seq[CursorField[_]] = {
-    val parentFieldNames = ParentField.parentFields(field).map(_.fieldName)
+    val parentFieldNames = EntityField.entityFields(field).map(_.fieldName)
     persistedFields(field).filterNot(_.name == idFieldName).filterNot(parentFieldNames.contains(_))
   }
 

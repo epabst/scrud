@@ -30,11 +30,11 @@ class EntityTypeSpec extends FunSpec with MustMatchers {
     }.flatten must be (Seq(true))
   }
 
-  it("must derive parent entities from ParentField fields") {
+  it("must derive parent entities from EntityField fields") {
     val entityName1 = new EntityName("Entity1")
     val entityName2 = new EntityName("Entity2")
     val entityType3 = new MyEntityType {
-      override val valueFields = ParentField(entityName1) +: ParentField(entityName2) +: super.valueFields
+      override val valueFields = EntityField[EntityType](entityName1) +: EntityField[EntityType](entityName2) +: super.valueFields
     }
     entityType3.parentEntityNames must be (List(entityName1, entityName2))
   }
@@ -45,7 +45,7 @@ class EntityTypeSpec extends FunSpec with MustMatchers {
     val entityType1 = new MyEntityType(entityName1)
     val entityType2 = new MyEntityType(entityName2)
     val entityType3 = new MyEntityType {
-      override val valueFields = foreignKey(entityType1) +: foreignKey(entityType2) +: super.valueFields
+      override val valueFields = foreignKey[MyEntityType](entityName1) +: foreignKey[MyEntityType](entityName2) +: super.valueFields
     }
     entityType3.parentEntityNames must be (List(entityName1, entityName2))
   }

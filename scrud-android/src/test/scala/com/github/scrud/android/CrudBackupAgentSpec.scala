@@ -122,7 +122,7 @@ class CrudBackupAgentSpec extends MustMatchers with CrudMockitoSugar {
     val persistence = new MyEntityPersistence
     val entityType = new MyEntityType
     val generatedType = new EntityType(EntityName("Generated"), TestingPlatformDriver) {
-      val valueFields = List[BaseField](ParentField(MyEntityType), default[Int](100))
+      val valueFields = List[BaseField](EntityField[MyEntityType](MyEntity), default[Int](100))
     }
     val state0 = null
     when(application.entityNameLayoutPrefixFor(entityType.entityName)).thenReturn("test")

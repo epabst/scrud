@@ -38,9 +38,7 @@ abstract class EntityType(val entityName: EntityName, val platformDriver: Platfo
   /** These are all of the entity's fields, which includes IdPk.idField and the valueFields. */
   final lazy val fields: List[BaseField] = IdField +: valueFields
 
-  lazy val parentFields: Seq[ParentField] = deepCollect {
-    case parentField: ParentField => parentField
-  }
+  lazy val parentFields: Seq[NamedEntityField[_]] = EntityField.entityFields(this)
 
   lazy val parentEntityNames: Seq[EntityName] = parentFields.map(_.entityName)
 
