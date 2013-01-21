@@ -9,6 +9,7 @@ import com.github.triangle.Converter._
 import android.widget._
 import com.github.scrud.android.view.AndroidResourceAnalyzer._
 import android.view.View
+import android.widget.LinearLayout
 
 /** A Map of ViewKey with values.
   * Wraps a map so that it is distinguished from persisted fields.
@@ -84,6 +85,12 @@ object ViewField {
   lazy val phoneView: ViewField[String] = textViewWithInputType("phone")
   lazy val doubleView: ViewField[Double] = ViewField[Double](doubleLayout, formatted(textView))
   lazy val percentageView: ViewField[Float] = formattedTextView[Float](percentageToString, percentageToEditString, stringToPercentage, doubleLayout)
+  lazy val viewWeightField: Setter[Float] =
+    Setter((view: View) => (valueOpt: Option[Float]) => {
+      val oldLayoutParams = view.getLayoutParams.asInstanceOf[LinearLayout.LayoutParams]
+      val newLayoutParams = new LinearLayout.LayoutParams(oldLayoutParams.width, oldLayoutParams.height, valueOpt.getOrElse(0.0f))
+      view.setLayoutParams(newLayoutParams)
+    })
   lazy val currencyView = formattedTextView[Double](currencyToString, currencyToEditString, stringToCurrency, currencyLayout)
   lazy val intView: ViewField[Int] = ViewField[Int](intLayout, formatted[Int](textView))
   lazy val longView: ViewField[Long] = ViewField[Long](longLayout, formatted[Long](textView))
