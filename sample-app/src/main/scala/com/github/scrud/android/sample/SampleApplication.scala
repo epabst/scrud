@@ -23,6 +23,8 @@ class SampleApplication(platformDriver: PlatformDriver) extends CrudApplication(
   val dataVersion = 2
 }
 
-class SampleAndroidApplication extends CrudAndroidApplication(new SampleApplication(new AndroidPlatformDriver(classOf[R])))
+class SampleApplicationForAndroid extends SampleApplication(new AndroidPlatformDriver(classOf[R]))
 
-class SampleBackupAgent extends CrudBackupAgent(new SampleApplication(new AndroidPlatformDriver(classOf[R])))
+class SampleAndroidApplication extends CrudAndroidApplication(new SampleApplicationForAndroid)
+
+class SampleBackupAgent extends CrudBackupAgent(new SampleApplicationForAndroid)
