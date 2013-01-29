@@ -60,7 +60,7 @@ trait BaseCrudActivity extends ActivityWithState with OptionsMenuActivity with L
   lazy val currentCrudOperation: CrudOperation = CrudOperation(entityName, currentCrudOperationType)
 
   // not a val because it isn't worth storing
-  private def currentCrudOperationType: CrudOperationType.Value = currentAction match {
+  protected lazy val currentCrudOperationType: CrudOperationType.Value = currentAction match {
     case AndroidOperation.CreateActionName => CrudOperationType.Create
     case AndroidOperation.ListActionName => CrudOperationType.List
     // This would normally be Operation.ListActionName, but it is the starting intent.
@@ -208,7 +208,7 @@ trait BaseCrudActivity extends ActivityWithState with OptionsMenuActivity with L
     persistenceFactory.addListener(listener, entityType, crudContext)
   }
 
-  final def setListAdapterUsingUri(crudContext: AndroidCrudContext, activity: CrudListActivity) {
+  final def setListAdapterUsingUri(crudContext: AndroidCrudContext, activity: CrudActivity) {
     setListAdapter(activity.getAdapterView, entityType, crudContext, activity.contextItems, activity, rowLayout)
   }
 
