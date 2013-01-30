@@ -6,7 +6,6 @@ import action.Action
 import action.CrudOperation
 import action.StartEntityDeleteOperation
 import com.github.scrud
-import android._
 import persistence.PersistenceFactory
 import platform.PlatformDriver
 import platform.PlatformTypes._
@@ -18,9 +17,9 @@ import scala.actors.Future
 import collection.mutable
 import java.util.concurrent.ConcurrentHashMap
 import scala.collection.JavaConversions._
-import scrud.android.view.AndroidResourceAnalyzer._
 import PortableField.toSome
-import scala.Some
+import android.{CrudType,NamingConventions,res}
+import scrud.android.view.AndroidResourceAnalyzer._
 
 /**
  * A stateless Application that uses Scrud.  It has all the configuration for how the application behaves,
