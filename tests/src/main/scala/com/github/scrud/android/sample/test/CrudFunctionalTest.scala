@@ -2,7 +2,7 @@ package com.github.scrud.android.sample.test
 
 import junit.framework.Assert._
 import android.test.ActivityInstrumentationTestCase2
-import com.github.scrud.android.{BaseCrudActivity, CrudActivity, sample}
+import com.github.scrud.android.{CrudActivity, sample}
 import sample._
 import com.jayway.android.robotium.solo.Solo
 import com.github.triangle.PortableValue
@@ -29,7 +29,7 @@ class CrudFunctionalTest extends ActivityInstrumentationTestCase2(classOf[CrudAc
   }
 
   // not a val since dynamic
-  def currentCrudActivity: BaseCrudActivity = solo.getCurrentActivity.asInstanceOf[BaseCrudActivity]
+  def currentCrudActivity: CrudActivity = solo.getCurrentActivity.asInstanceOf[CrudActivity]
 
   def testAddEditDelete() {
     val application = currentCrudActivity.crudApplication.asInstanceOf[SampleApplication]

@@ -7,7 +7,7 @@ import android.widget._
 import android.view.View
 import android.app.Activity
 import xml.NodeSeq
-import com.github.scrud.android.BaseCrudActivity
+import com.github.scrud.android.CrudActivity
 import com.github.scrud.android.AndroidCrudContext
 import scala.Some
 
@@ -28,7 +28,7 @@ case class EntityView(entityName: EntityName)
   }
 
   protected val delegate = Getter[AdapterView[BaseAdapter], ID](v => Option(v.getSelectedItemId)) + Setter[ID] {
-    case UpdaterInput(adapterView: AdapterView[BaseAdapter], idOpt, UriField(Some(uri)) && CrudContextField(Some(crudContext @ AndroidCrudContext(crudActivity: BaseCrudActivity, _)))) =>
+    case UpdaterInput(adapterView: AdapterView[BaseAdapter], idOpt, UriField(Some(uri)) && CrudContextField(Some(crudContext @ AndroidCrudContext(crudActivity: CrudActivity, _)))) =>
       if (idOpt.isDefined || adapterView.getAdapter == null) {
         //don't do it again if already done from a previous time
         if (adapterView.getAdapter == null) {
@@ -42,7 +42,7 @@ case class EntityView(entityName: EntityName)
           adapterView.setSelection(position)
         }
       }
-    case UpdaterInput(AndroidUIElement(uiElement), idOpt, input @ UriField(Some(baseUri)) && CrudContextField(Some(crudContext @ AndroidCrudContext(crudActivity: BaseCrudActivity, _)))) =>
+    case UpdaterInput(AndroidUIElement(uiElement), idOpt, input @ UriField(Some(baseUri)) && CrudContextField(Some(crudContext @ AndroidCrudContext(crudActivity: CrudActivity, _)))) =>
       val uriOpt = idOpt.map(baseUri / _)
       val updaterInput = UpdaterInput(uiElement, input)
       val entityType = crudActivity.crudApplication.entityType(entityName)

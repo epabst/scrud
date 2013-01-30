@@ -33,7 +33,7 @@ case class AndroidCrudContext(activityContext: ContextWithState, application: Cr
     LastUndoable.set(this, undoable)
 
     activityContext match {
-      case crudActivity: BaseCrudActivity =>
+      case crudActivity: CrudActivity =>
         crudActivity.onCommandsChanged()
     }
   }

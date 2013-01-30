@@ -27,7 +27,7 @@ import view.OnClickOperationSetter
   * @author Eric Pabst (epabst@gmail.com)
   */
 
-trait BaseCrudActivity extends ActivityWithState with OptionsMenuActivity with Logging { self =>
+protected trait BaseCrudActivity extends ActivityWithState with OptionsMenuActivity with Logging { self =>
   lazy val crudApplication: CrudApplication = super.getApplication.asInstanceOf[CrudAndroidApplication].application
 
   lazy val platformDriver: AndroidPlatformDriver = crudApplication.platformDriver.asInstanceOf[AndroidPlatformDriver]
