@@ -98,13 +98,6 @@ class CrudActivity extends BaseCrudActivity { self =>
 
   protected def populateDataInViews() {
     currentCrudOperationType match {
-      case CrudOperationType.Create | CrudOperationType.Update =>
-        val currentPath = currentUriPath
-        if (crudApplication.maySpecifyEntityInstance(currentPath, entityType)) {
-          populateFromUri(entityType, currentPath)
-        } else {
-          entityType.copy(PortableField.UseDefaults +: contextItems, this)
-        }
       case CrudOperationType.List =>
         setListAdapterUsingUri(crudContext, this)
         crudContext.future {
@@ -115,6 +108,13 @@ class CrudActivity extends BaseCrudActivity { self =>
               populateFromParentEntities()
             }
           }, entityType, crudContext)
+        }
+      case _ =>
+        val currentPath = currentUriPath
+        if (crudApplication.maySpecifyEntityInstance(currentPath, entityType)) {
+          populateFromUri(entityType, currentPath)
+        } else {
+          entityType.copy(PortableField.UseDefaults +: contextItems, this)
         }
     }
   }
@@ -211,11 +211,13 @@ class CrudActivity extends BaseCrudActivity { self =>
 
   override def onBackPressed() {
     crudContext.withExceptionReporting {
-      // Save before going back so that the Activity being activated will read the correct data from persistence.
-      val createId = crudApplication.saveIfValid(this, entityType, contextItemsWithoutUseDefaults)
-      val idOpt = entityType.IdField(currentUriPath)
-      if (idOpt.isEmpty) {
-        createId.foreach(id => createdId.set(Some(id)))
+      if (currentCrudOperationType == CrudOperationType.Create || currentCrudOperationType == CrudOperationType.Update) {
+        // Save before going back so that the Activity being activated will read the correct data from persistence.
+        val createId = crudApplication.saveIfValid(this, entityType, contextItemsWithoutUseDefaults)
+        val idOpt = entityType.IdField(currentUriPath)
+        if (idOpt.isEmpty) {
+          createId.foreach(id => createdId.set(Some(id)))
+        }
       }
     }
     super.onBackPressed()

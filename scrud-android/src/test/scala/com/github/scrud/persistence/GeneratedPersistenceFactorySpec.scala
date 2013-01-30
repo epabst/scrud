@@ -55,7 +55,7 @@ class GeneratedPersistenceFactorySpec extends MustMatchers with CrudMockitoSugar
     val uri = UriPath.EMPTY
     when(persistence.entityType).thenReturn(entityType)
     when(persistence.findAll(uri)).thenReturn(List(Map("longId" -> 456L)))
-    val listActivity = new MyCrudListActivity(_crudApplication)
+    val listActivity = new MyCrudActivity(_crudApplication)
     listActivity.setListAdapter(adapterView, entityType, crudContext, new CrudContextItems(uri, crudContext), activity, 123)
     verify(adapterView).setAdapter(anyObject())
     val listAdapter = listAdapterCapture.params(0).asInstanceOf[ListAdapter]

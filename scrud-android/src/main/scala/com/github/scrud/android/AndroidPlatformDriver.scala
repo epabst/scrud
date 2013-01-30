@@ -20,7 +20,7 @@ class AndroidPlatformDriver(rClass: Class[_]) extends PlatformDriver {
   lazy val localDatabasePersistenceFactory = new SQLitePersistenceFactory
 
   val activityClass = classOf[CrudActivity]
-  val listActivityClass = classOf[CrudListActivity]
+  val listActivityClass = classOf[CrudActivity]
 
   /** An Operation that will show the UI to the user for creating an entity instance. */
   def operationToShowCreateUI(entityName: EntityName) =

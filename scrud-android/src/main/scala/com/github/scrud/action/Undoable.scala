@@ -9,4 +9,10 @@ package com.github.scrud.action
  * Date: 11/29/12
  * Time: 7:37 AM
  */
-case class Undoable(undoAction: Action, closeOperation: Option[PersistenceOperation] = None)
+case class Undoable(undoAction: Action, closeOperation: Option[PersistenceOperation] = None) {
+  /**
+   * Creates a new Undoable that wraps this one and does an additional Operation when undoing.
+   * It is patterned after [[scala.Function1.andThen]].
+   */
+  def andThen(nextOperation: Operation): Undoable = Undoable(undoAction.andThen(nextOperation), closeOperation)
+}

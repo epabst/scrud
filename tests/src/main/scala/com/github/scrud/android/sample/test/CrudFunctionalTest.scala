@@ -2,7 +2,7 @@ package com.github.scrud.android.sample.test
 
 import junit.framework.Assert._
 import android.test.ActivityInstrumentationTestCase2
-import com.github.scrud.android.{BaseCrudActivity, CrudListActivity, CrudActivity, sample}
+import com.github.scrud.android.{BaseCrudActivity, CrudActivity, sample}
 import sample._
 import com.jayway.android.robotium.solo.Solo
 import com.github.triangle.PortableValue
@@ -13,7 +13,7 @@ import com.github.scrud.util.Common
 import com.github.scrud.action.CrudOperation
 import scala.Some
 
-class CrudFunctionalTest extends ActivityInstrumentationTestCase2(classOf[CrudListActivity]) {
+class CrudFunctionalTest extends ActivityInstrumentationTestCase2(classOf[CrudActivity]) {
   var instrumentation: Instrumentation = _
   var solo: Solo = _
 
@@ -45,11 +45,11 @@ class CrudFunctionalTest extends ActivityInstrumentationTestCase2(classOf[CrudLi
 
     solo.goBack()
     solo.waitForText("Saved", 1, 5000)
-    solo.waitForActivity(classOf[CrudListActivity].getSimpleName)
+    solo.waitForActivity(classOf[CrudActivity].getSimpleName)
     assertEquals(CrudOperation(Author, CrudOperationType.List), currentCrudActivity.currentCrudOperation)
 
     solo.clickOnText("Orson Scott Card")
-    solo.waitForActivity(classOf[CrudListActivity].getSimpleName)
+    solo.waitForActivity(classOf[CrudActivity].getSimpleName)
     assertEquals(CrudOperation(Book, CrudOperationType.List), currentCrudActivity.currentCrudOperation)
 
     solo.clickOnMenuItem("Add Book")
@@ -63,12 +63,12 @@ class CrudFunctionalTest extends ActivityInstrumentationTestCase2(classOf[CrudLi
 
     solo.goBack()
     solo.waitForText("Saved", 1, 5000)
-    solo.waitForActivity(classOf[CrudListActivity].getSimpleName)
+    solo.waitForActivity(classOf[CrudActivity].getSimpleName)
     assertEquals(CrudOperation(Book, CrudOperationType.List), currentCrudActivity.currentCrudOperation)
 
     solo.goBack()
     solo.waitForText("Saved", 1, 5000)
-    solo.waitForActivity(classOf[CrudListActivity].getSimpleName)
+    solo.waitForActivity(classOf[CrudActivity].getSimpleName)
     assertEquals(CrudOperation(Author, CrudOperationType.List), currentCrudActivity.currentCrudOperation)
 
     solo.clickLongOnText("Orson Scott Card")
@@ -83,7 +83,7 @@ class CrudFunctionalTest extends ActivityInstrumentationTestCase2(classOf[CrudLi
 
     solo.goBack()
     solo.waitForText("Saved", 1, 5000)
-    solo.waitForActivity(classOf[CrudListActivity].getSimpleName)
+    solo.waitForActivity(classOf[CrudActivity].getSimpleName)
     assertEquals(CrudOperation(Author, CrudOperationType.List), currentCrudActivity.currentCrudOperation)
 
     solo.clickLongOnText("Mark Twain")

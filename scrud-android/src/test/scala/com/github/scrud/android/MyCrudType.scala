@@ -51,10 +51,6 @@ class MyCrudApplicationSpecifyingPlatform(platformDriver: PlatformDriver, crudTy
 
 case class MyCrudApplication(crudTypes: CrudType*) extends MyCrudApplicationSpecifyingPlatform(TestingPlatformDriver, crudTypes: _*)
 
-class MyCrudListActivity(_crudApplication: CrudApplication) extends CrudListActivity {
-  override lazy val crudApplication = _crudApplication
-}
-
 class MyCrudActivity(_crudApplication: CrudApplication) extends CrudActivity {
   override lazy val crudApplication = _crudApplication
   override lazy val currentAction = UpdateActionName

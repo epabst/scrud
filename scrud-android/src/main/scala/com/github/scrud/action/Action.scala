@@ -16,4 +16,10 @@ case class Action(command: Command, operation: Operation) {
   def invoke(uri: UriPath, crudContext: CrudContext) {
     operation.invoke(uri, crudContext)
   }
+
+  /**
+   * Creates a new Action that wraps this Action and does an additional operation.
+   * It is patterned after [[scala.Function1.andThen]].
+   */
+  def andThen(nextOperation: Operation): Action = Action(command, operation.andThen(nextOperation))
 }
