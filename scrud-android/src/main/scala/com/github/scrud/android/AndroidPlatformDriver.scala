@@ -20,7 +20,6 @@ class AndroidPlatformDriver(rClass: Class[_]) extends PlatformDriver {
   lazy val localDatabasePersistenceFactory = new SQLitePersistenceFactory
 
   val activityClass = classOf[CrudActivity]
-  val listActivityClass = classOf[CrudActivity]
 
   /** An Operation that will show the UI to the user for creating an entity instance. */
   def operationToShowCreateUI(entityName: EntityName) =
@@ -28,7 +27,7 @@ class AndroidPlatformDriver(rClass: Class[_]) extends PlatformDriver {
 
   /** An Operation that will show the UI to the user that lists the entity instances. */
   def operationToShowListUI(entityName: EntityName) =
-    new StartEntityActivityOperation(entityName, ListActionName, listActivityClass)
+    new StartEntityActivityOperation(entityName, ListActionName, activityClass)
 
   /** An Operation that will show the UI to the user that displays an entity instance. */
   def operationToShowDisplayUI(entityName: EntityName) =
