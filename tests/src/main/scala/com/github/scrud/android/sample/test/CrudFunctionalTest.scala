@@ -41,7 +41,7 @@ class CrudFunctionalTest extends ActivityInstrumentationTestCase2(classOf[CrudAc
     solo.waitForActivity(classOf[CrudActivity].getSimpleName)
     assertEquals(CrudOperation(Author, CrudOperationType.Create), currentCrudActivity.currentCrudOperation)
 
-    copyToCurrentActivity(authorEntityType.copyFrom(Map("name" -> "Orson Scott Card")))
+    copyToCurrentActivity(authorEntityType.copyFrom(Map("name" -> Some("Orson Scott Card"))))
 
     solo.goBack()
     solo.waitForText("Saved", 1, 5000)
