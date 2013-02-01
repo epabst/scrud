@@ -13,13 +13,14 @@ import view.ViewRef
 /**
  * A PlatformDriver for the Android platform.
  * @author Eric Pabst (epabst@gmail.com)
- *         Date: 8/28/12
- *         Time: 10:23 AM
+ * Date: 8/28/12
+ * Time: 10:23 AM
+ * @param rClass classOf[R] from the application's package
+ * @param activityClass classOf[CrudActivity] or a custom subclass for the application
  */
-class AndroidPlatformDriver(rClass: Class[_]) extends PlatformDriver {
+class AndroidPlatformDriver(rClass: Class[_], val activityClass: Class[_ <: CrudActivity] = classOf[CrudActivity])
+    extends PlatformDriver {
   lazy val localDatabasePersistenceFactory = new SQLitePersistenceFactory
-
-  val activityClass = classOf[CrudActivity]
 
   /** An Operation that will show the UI to the user for creating an entity instance. */
   def operationToShowCreateUI(entityName: EntityName) =

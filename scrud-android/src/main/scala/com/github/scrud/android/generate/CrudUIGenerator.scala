@@ -8,7 +8,7 @@ import com.github.scrud.{CrudApplication, EntityType}
 import com.github.scrud.util.FileConversions._
 import java.io.File
 import com.github.scrud.util.{Path, Common}
-import com.github.scrud.android.{CrudActivity, CrudAndroidApplication}
+import com.github.scrud.android.{AndroidPlatformDriver, CrudAndroidApplication}
 
 /** A UI Generator for a CrudTypes.
   * @author Eric Pabst (epabst@gmail.com)
@@ -40,7 +40,7 @@ object CrudUIGenerator extends Logging {
     if (!classOf[CrudAndroidApplication].isAssignableFrom(androidApplicationClass)) {
       throw new IllegalArgumentException(androidApplicationClass + " does not extend CrudAndroidApplication")
     }
-    val activityNames = Seq(classOf[CrudActivity].getName)
+    val activityNames = Seq(androidPlatformDriverFor(application).activityClass.getName)
     <manifest xmlns:android="http://schemas.android.com/apk/res/android"
               package={application.packageName}
               android:versionName="${project.version}"
@@ -62,6 +62,10 @@ object CrudUIGenerator extends Logging {
       </application>
       <uses-sdk android:minSdkVersion="8"/>
     </manifest>
+  }
+
+  private def androidPlatformDriverFor(application: CrudApplication): AndroidPlatformDriver = {
+    application.platformDriver.asInstanceOf[AndroidPlatformDriver]
   }
 
   def generateValueStrings(entityInfo: EntityTypeViewInfo): NodeSeq = {
