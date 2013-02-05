@@ -10,6 +10,7 @@ import com.github.scrud.state.LazyApplicationVal
 import com.github.scrud.{CrudContext, CrudContextField}
 import com.github.scrud.util.Common
 import xml.NodeSeq
+import ref.WeakReference
 import collection.mutable
 import java.util.concurrent.ConcurrentHashMap
 import scala.collection.JavaConversions._
@@ -39,14 +40,19 @@ class ImageViewField(fieldLayout: FieldLayout) extends ViewField[Uri](fieldLayou
       imageView.setTag(uriString)
       val cache = DrawableByUriCache.get(crudContext)
       cache.get(uri) match {
-        case Some(drawable) =>
+        case Some(weakReference) =>
+          val drawable = weakReference.get.getOrElse {
+            val drawable = loadDrawable(uri, context)
+            cache.put(uri, new WeakReference(drawable))
+            drawable
+          }
           imageView.setImageDrawable(drawable)
         case None =>
-          cache.put(uri, {
+          cache.put(uri, new WeakReference({
             val drawable = loadDrawable(uri, context)
             imageView.setImageDrawable(drawable)
             drawable
-          })
+          }))
       }
     }
   }
@@ -90,6 +96,8 @@ class ImageViewField(fieldLayout: FieldLayout) extends ViewField[Uri](fieldLayou
   protected final val delegate = createDelegate
 }
 
-private object DrawableByUriCache extends LazyApplicationVal[mutable.ConcurrentMap[Uri,Drawable]](
-  new ConcurrentHashMap[Uri,Drawable]()
+// The WeakReference must directly contain the Drawable or else it might be released due to no references
+// existing to the intermediate container.
+private object DrawableByUriCache extends LazyApplicationVal[mutable.ConcurrentMap[Uri,WeakReference[Drawable]]](
+  new ConcurrentHashMap[Uri,WeakReference[Drawable]]()
 )
