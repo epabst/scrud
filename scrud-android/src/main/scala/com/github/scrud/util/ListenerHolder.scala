@@ -1,7 +1,7 @@
 package com.github.scrud.util
 
 import java.util.concurrent.ConcurrentHashMap
-import collection.mutable.ConcurrentMap
+import collection.mutable
 import scala.collection.JavaConversions._
 import scala.collection.Set
 
@@ -51,7 +51,7 @@ trait DelegatingListenerHolder[L] extends ListenerHolder[L] {
 }
 
 class MutableListenerSet[L] extends ListenerSet[L] with ListenerHolder[L] {
-  private val theListeners: ConcurrentMap[L,L] = new ConcurrentHashMap[L,L]()
+  private val theListeners: mutable.ConcurrentMap[L,L] = new ConcurrentHashMap[L,L]()
 
   protected val listenerSet: ListenerSet[L] = new ListenerSet[L] {
     def listeners = theListeners.keySet
