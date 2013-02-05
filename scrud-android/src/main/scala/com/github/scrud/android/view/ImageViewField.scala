@@ -6,10 +6,14 @@ import com.github.scrud.android.res.R
 import com.github.triangle._
 import android.graphics.BitmapFactory
 import android.graphics.drawable.{BitmapDrawable, Drawable}
-import com.github.scrud.state.ApplicationVar
+import com.github.scrud.state.LazyApplicationVal
 import com.github.scrud.{CrudContext, CrudContextField}
-import com.github.scrud.util.{Common, CachedFunction}
+import com.github.scrud.util.Common
 import xml.NodeSeq
+import collection.mutable
+import java.util.concurrent.ConcurrentHashMap
+import scala.collection.JavaConversions._
+import android.content.Context
 
 object ImageViewField extends ImageViewField(new FieldLayout {
   val displayXml = <ImageView android:adjustViewBounds="true"/>
@@ -27,30 +31,40 @@ class ImageViewField(fieldLayout: FieldLayout) extends ViewField[Uri](fieldLayou
     options
   }
 
-  private def setImageUri(imageView: ImageView, uriOpt: Option[Uri], crudContext: CrudContext) {
-    imageView.setImageBitmap(null)
-    uriOpt match {
-      case Some(uri) =>
-        imageView.setTag(uri.toString)
-        val contentResolver = imageView.getContext.getContentResolver
-        val cachingResolver = DrawableByUriCache.getOrSet(crudContext, CachedFunction(uri => {
-          val displayMetrics = imageView.getContext.getResources.getDisplayMetrics
-          val maxHeight: Int = displayMetrics.heightPixels
-          val maxWidth: Int = displayMetrics.widthPixels
-          val optionsToDecodeBounds = new BitmapFactory.Options()
-          optionsToDecodeBounds.inJustDecodeBounds = true
-          Common.withCloseable(contentResolver.openInputStream(uri)) { stream =>
-            BitmapFactory.decodeStream(stream, null, optionsToDecodeBounds)
-          }
-          val ratio = math.min(optionsToDecodeBounds.outHeight / maxHeight, optionsToDecodeBounds.outWidth / maxWidth)
-          val inSampleSize = math.max(Integer.highestOneBit(ratio), 1)
-          Common.withCloseable(contentResolver.openInputStream(uri)) { stream =>
-            new BitmapDrawable(BitmapFactory.decodeStream(stream, null, bitmapFactoryOptions(inSampleSize)))
-          }
-        }))
-        imageView.setImageDrawable(cachingResolver(uri))
-      case None =>
-        displayDefault(imageView)
+  private def setImageDrawable(imageView: ImageView, uriOpt: Option[Uri], crudContext: CrudContext) {
+    val context = imageView.getContext
+    displayDefault(imageView)
+    uriOpt.foreach { uri =>
+      val uriString = uri.toString
+      imageView.setTag(uriString)
+      val cache = DrawableByUriCache.get(crudContext)
+      cache.get(uri) match {
+        case Some(drawable) =>
+          imageView.setImageDrawable(drawable)
+        case None =>
+          cache.put(uri, {
+            val drawable = loadDrawable(uri, context)
+            imageView.setImageDrawable(drawable)
+            drawable
+          })
+      }
+    }
+  }
+
+  private def loadDrawable(uri: Uri, context: Context): Drawable = {
+    val displayMetrics = context.getResources.getDisplayMetrics
+    val maxHeight: Int = displayMetrics.heightPixels
+    val maxWidth: Int = displayMetrics.widthPixels
+    val optionsToDecodeBounds = new BitmapFactory.Options()
+    optionsToDecodeBounds.inJustDecodeBounds = true
+    val contentResolver = context.getContentResolver
+    Common.withCloseable(contentResolver.openInputStream(uri)) { stream =>
+      BitmapFactory.decodeStream(stream, null, optionsToDecodeBounds)
+    }
+    val ratio = math.min(optionsToDecodeBounds.outHeight / maxHeight, optionsToDecodeBounds.outWidth / maxWidth)
+    val inSampleSize = math.max(Integer.highestOneBit(ratio), 1)
+    Common.withCloseable(contentResolver.openInputStream(uri)) { stream =>
+      new BitmapDrawable(BitmapFactory.decodeStream(stream, null, bitmapFactoryOptions(inSampleSize)))
     }
   }
 
@@ -69,11 +83,13 @@ class ImageViewField(fieldLayout: FieldLayout) extends ViewField[Uri](fieldLayou
 
   protected def createDelegate: PortableField[Uri] = Getter((v: ImageView) => imageUri(v)) + Setter[Uri] {
     case UpdaterInput(ViewExtractor(Some(view: ImageView)), uriOpt, CrudContextField(Some(crudContext))) =>
-      setImageUri(view, uriOpt, crudContext)
+      setImageDrawable(view, uriOpt, crudContext)
   }
 
   /** To override, override createDelegate instead. This is because super is not available for a val. */
   protected final val delegate = createDelegate
 }
 
-private object DrawableByUriCache extends ApplicationVar[CachedFunction[Uri,Drawable]]
+private object DrawableByUriCache extends LazyApplicationVal[mutable.ConcurrentMap[Uri,Drawable]](
+  new ConcurrentHashMap[Uri,Drawable]()
+)
