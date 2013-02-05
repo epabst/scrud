@@ -5,7 +5,7 @@ import com.github.triangle.{Logging, Field}
 import com.github.triangle.PortableField._
 import persistence.{DataListener, CrudPersistence}
 import platform.{PlatformTypes, PlatformDriver}
-import state.State
+import state.{StateHolder, State}
 import util.ListenerHolder
 import collection.mutable
 import java.util.concurrent.ConcurrentHashMap
@@ -16,14 +16,12 @@ import scala.collection.JavaConversions._
  * A context which can store data for the duration of an Application.
  * @author Eric Pabst (epabst@gmail.com)
  */
-trait CrudContext extends Notification with Logging {
+trait CrudContext extends StateHolder with Notification with Logging {
   protected lazy val logTag = application.logTag
 
   def application: CrudApplication
 
   def platformDriver: PlatformDriver = application.platformDriver
-
-  def applicationState: State
 
   /** The ISO 2 country such as "US". */
   def isoCountry: String

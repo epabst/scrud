@@ -1,8 +1,6 @@
 package com.github.scrud.state
 
-import com.github.scrud.CrudContext
-
-/** A variable whose value is stored on a per-application basis in CrudContext. */
-class ApplicationVar[T] extends CrudContextVar[T] {
-  protected def state(crudContext: CrudContext) = crudContext.applicationState
+/** A variable whose value is stored on a per-application basis in StateHolder. */
+class ApplicationVar[T] extends StateHolderVar[T] {
+  protected def state(stateHolder: StateHolder) = stateHolder.applicationState
 }
