@@ -45,7 +45,6 @@ class GeneratedPersistenceFactorySpec extends MustMatchers with CrudMockitoSugar
       def valueFields = Nil
     }
     val _crudApplication = MyCrudApplication(CrudType(entityType, factory))
-    stub(activity.getLayoutInflater).toReturn(layoutInflater)
     stub(crudContext.activityState).toReturn(new State {})
     stub(crudContext.applicationState).toReturn(new State {})
     stub(crudContext.dataListenerHolder(entityType)).toReturn(dataListenerHolder)
