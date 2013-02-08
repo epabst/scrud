@@ -49,10 +49,15 @@ class ImageLoader {
     // for a picture that is really tall and narrow or that is really short and wide, the dimension that limits
     // the displayed size of the picture should dictate how much detail is decoded.
     val ratio = math.max(optionsToDecodeBounds.outHeight / maxHeight, optionsToDecodeBounds.outWidth / maxWidth)
-    val inSampleSize = math.max(Integer.highestOneBit(ratio), 1)
-    Common.withCloseable(contentResolver.openInputStream(uri)) { stream =>
-      new BitmapDrawable(BitmapFactory.decodeStream(stream, null, bitmapFactoryOptions(inSampleSize)))
+    val firstInSampleSize = math.max(Integer.highestOneBit(ratio), 1)
+    val results: Seq[Either[Drawable,Throwable]] = Stream.range(firstInSampleSize, optionsToDecodeBounds.outHeight, 2).view.map { inSampleSize =>
+      Common.evaluateOrIntercept {
+        Common.withCloseable(contentResolver.openInputStream(uri)) { stream =>
+          new BitmapDrawable(BitmapFactory.decodeStream(stream, null, bitmapFactoryOptions(inSampleSize)))
+        }
+      }
     }
+    results.find(_.isLeft).map(_.left.get).getOrElse(throw results.head.right.get)
   }
 
   private def bitmapFactoryOptions(inSampleSize: Int) = {

@@ -10,9 +10,15 @@ object Common {
   val logTag = "scrud"
 
   /** Evaluates the given function and returns the result.  If it throws an exception, it returns None. */
-  def tryToEvaluate[T](f: => T): Option[T] = {
-    try { Option(f) }
-    catch { case _: Throwable => None }
+  def tryToEvaluate[T](f: => T): Option[T] = evaluateOrIntercept(f).left.toOption
+
+  /** Evaluates the given function and returns the result or the exception. */
+  def evaluateOrIntercept[T](f: => T): Either[T,Throwable] = {
+    try { Left(f) }
+    catch {
+      case exception: Throwable =>
+        Right(exception)
+    }
   }
 
   def withCloseable[C <: Closeable,T](closeable: C)(f: C => T): T = {
