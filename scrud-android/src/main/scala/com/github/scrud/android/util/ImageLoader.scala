@@ -45,7 +45,10 @@ class ImageLoader {
     Common.withCloseable(contentResolver.openInputStream(uri)) { stream =>
       BitmapFactory.decodeStream(stream, null, optionsToDecodeBounds)
     }
-    val ratio = math.min(optionsToDecodeBounds.outHeight / maxHeight, optionsToDecodeBounds.outWidth / maxWidth)
+    // Use max instead of min because the image's aspect ratio will probably be preserved, which means that
+    // for a picture that is really tall and narrow or that is really short and wide, the dimension that limits
+    // the displayed size of the picture should dictate how much detail is decoded.
+    val ratio = math.max(optionsToDecodeBounds.outHeight / maxHeight, optionsToDecodeBounds.outWidth / maxWidth)
     val inSampleSize = math.max(Integer.highestOneBit(ratio), 1)
     Common.withCloseable(contentResolver.openInputStream(uri)) { stream =>
       new BitmapDrawable(BitmapFactory.decodeStream(stream, null, bitmapFactoryOptions(inSampleSize)))
