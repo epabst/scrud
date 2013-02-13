@@ -45,12 +45,10 @@ class ImageLoader {
     Common.withCloseable(contentResolver.openInputStream(uri)) { stream =>
       BitmapFactory.decodeStream(stream, null, optionsToDecodeBounds)
     }
-    // Use max instead of min because the image's aspect ratio will probably be preserved, which means that
-    // for a picture that is really tall and narrow or that is really short and wide, the dimension that limits
-    // the displayed size of the picture should dictate how much detail is decoded.
-    val ratio = math.max(optionsToDecodeBounds.outHeight / maxHeight, optionsToDecodeBounds.outWidth / maxWidth)
-    val firstInSampleSize = math.max(Integer.highestOneBit(ratio), 1)
-    val results: Seq[Either[Drawable,Throwable]] = Stream.range(firstInSampleSize, optionsToDecodeBounds.outHeight, 2).view.map { inSampleSize =>
+    val imageHeight: Int = optionsToDecodeBounds.outHeight
+    val imageWidth: Int = optionsToDecodeBounds.outWidth
+    val firstInSampleSize: Int = calculateSampleSize(imageWidth, imageHeight, maxWidth, maxHeight)
+    val results: Seq[Either[Drawable,Throwable]] = Stream.range(firstInSampleSize, imageHeight, 2).view.map { inSampleSize =>
       Common.evaluateOrIntercept {
         Common.withCloseable(contentResolver.openInputStream(uri)) { stream =>
           new BitmapDrawable(BitmapFactory.decodeStream(stream, null, bitmapFactoryOptions(inSampleSize)))
@@ -58,6 +56,17 @@ class ImageLoader {
       }
     }
     results.find(_.isLeft).map(_.left.get).getOrElse(throw results.head.right.get)
+  }
+
+
+  def calculateSampleSize(imageWidth: Int, imageHeight: Int, maxWidth: Int, maxHeight: Int): Int = {
+    // Use max instead of min because the image's aspect ratio will probably be preserved, which means that
+    // for a picture that is really tall and narrow or that is really short and wide, the dimension that limits
+    // the displayed size of the picture should dictate how much detail is decoded.
+    val ratio = math.max(imageHeight / maxHeight, imageWidth / maxWidth)
+    // Use highestOneBit so that the sample size is a power of 2, which makes it more efficient to do the sampling.
+    // If ratio is already a power of 2, it is used unchanged.
+    math.max(Integer.highestOneBit(ratio), 1)
   }
 
   private def bitmapFactoryOptions(inSampleSize: Int) = {
