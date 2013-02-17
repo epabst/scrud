@@ -58,12 +58,11 @@ class ImageLoader {
     results.find(_.isLeft).map(_.left.get).getOrElse(throw results.head.right.get)
   }
 
-
-  def calculateSampleSize(imageWidth: Int, imageHeight: Int, maxWidth: Int, maxHeight: Int): Int = {
+  def calculateSampleSize(imageWidth: Int, imageHeight: Int, displayWidth: Int, displayHeight: Int): Int = {
     // Use max instead of min because the image's aspect ratio will probably be preserved, which means that
     // for a picture that is really tall and narrow or that is really short and wide, the dimension that limits
     // the displayed size of the picture should dictate how much detail is decoded.
-    val ratio = math.max(imageHeight / maxHeight, imageWidth / maxWidth)
+    val ratio = math.max(imageHeight / displayHeight, imageWidth / displayWidth)
     // Use highestOneBit so that the sample size is a power of 2, which makes it more efficient to do the sampling.
     // If ratio is already a power of 2, it is used unchanged.
     math.max(Integer.highestOneBit(ratio), 1)
