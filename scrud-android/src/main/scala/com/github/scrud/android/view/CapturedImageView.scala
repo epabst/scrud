@@ -9,7 +9,7 @@ import android.os.Environment
 import android.provider.MediaStore
 import com.github.triangle._
 import com.github.scrud.android.action._
-import com.github.scrud.android.util.ImageLoader
+import com.github.scrud.android.util.ImageViewLoader
 
 /** A ViewField for an image that can be captured using the camera.
   * It currently puts the image into external storage, which requires the following in the AndroidManifest.xml:
@@ -19,7 +19,7 @@ import com.github.scrud.android.util.ImageLoader
 object CapturedImageView extends ImageViewField(new FieldLayout {
   val displayXml = <ImageView android:adjustViewBounds="true"/>
   val editXml = <ImageView android:adjustViewBounds="true" android:clickable="true"/>
-}, new ImageLoader {
+}, new ImageViewLoader() {
   override protected def displayDefault(imageView: ImageView) {
     imageView.setImageResource(R.drawable.android_camera_256)
   }

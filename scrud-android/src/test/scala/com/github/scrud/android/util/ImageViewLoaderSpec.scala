@@ -18,45 +18,47 @@ import android.graphics.drawable.Drawable
  * Time: 3:38 PM
  */
 @RunWith(classOf[CustomRobolectricTestRunner])
-class ImageLoaderSpec extends MustMatchers with MockitoSugar {
+class ImageViewLoaderSpec extends MustMatchers with MockitoSugar {
   @Test
   def getImage_shouldDistinguishByUri() {
-    val loadedDrawable = mutable.Buffer.empty[Drawable]
+    val loadedDrawables = mutable.Buffer.empty[Drawable]
     val imageLoader = new ImageLoader() {
-      override def loadDrawable(uri: Uri, context: Context) = {
+      override def loadDrawable(uri: Uri, displayWidth: Int, displayHeight: Int, context: Context) = {
         val drawable = mock[Drawable]
-        loadedDrawable += drawable
+        loadedDrawables += drawable
         drawable
       }
     }
+    val imageViewLoader = new ImageViewLoader(imageLoader)
 
     val state = new State() {}
     val uri1 = mock[Uri]
     val uri2 = mock[Uri]
-    val drawable1 = imageLoader.getDrawable(uri1, null, state)
-    drawable1 must be(loadedDrawable.head)
+    val drawable1 = imageViewLoader.getDrawable(uri1, 100, 100, null, state)
+    drawable1 must be(loadedDrawables.head)
 
-    imageLoader.getDrawable(uri2, null, state) must not be (drawable1)
-    loadedDrawable.size must be (2)
+    imageViewLoader.getDrawable(uri2, 100, 100, null, state) must not be (drawable1)
+    loadedDrawables.size must be (2)
   }
 
   @Test
   def getImage_shouldCache() {
     val loadedDrawables = mutable.Buffer.empty[Drawable]
     val imageLoader = new ImageLoader() {
-      override def loadDrawable(uri: Uri, context: Context) = {
+      override def loadDrawable(uri: Uri, displayWidth: Int, displayHeight: Int, context: Context) = {
         val drawable = mock[Drawable]
         loadedDrawables += drawable
         drawable
       }
     }
+    val imageViewLoader = new ImageViewLoader(imageLoader)
 
     val state = new State() {}
     val uri1 = mock[Uri]
-    val drawable = imageLoader.getDrawable(uri1, null, state)
+    val drawable = imageViewLoader.getDrawable(uri1, 100, 100, null, state)
     drawable must be(loadedDrawables.head)
 
-    val result2 = imageLoader.getDrawable(uri1, null, state)
+    val result2 = imageViewLoader.getDrawable(uri1, 100, 100, null, state)
     loadedDrawables.size must be (1)
     result2 must be (drawable)
   }
@@ -65,20 +67,21 @@ class ImageLoaderSpec extends MustMatchers with MockitoSugar {
   def getImage_cacheShouldNotCauseOutOfMemoryError() {
     var loadCount = 0
     val imageLoader = new ImageLoader() {
-      override def loadDrawable(uri: Uri, context: Context) = {
+      override def loadDrawable(uri: Uri, displayWidth: Int, displayHeight: Int, context: Context) = {
         val drawable = mock[Drawable]
         loadCount += 1
         drawable
       }
     }
+    val imageViewLoader = new ImageViewLoader(imageLoader)
 
     val state = new State() {}
     val uri1 = mock[Uri]
-    imageLoader.getDrawable(uri1, null, state)
+    imageViewLoader.getDrawable(uri1, 100, 100, null, state)
     loadCount must be (1)
 
     System.gc()
-    imageLoader.getDrawable(uri1, null, state)
+    imageViewLoader.getDrawable(uri1, 100, 100, null, state)
     loadCount must be (2)
   }
 
@@ -86,20 +89,21 @@ class ImageLoaderSpec extends MustMatchers with MockitoSugar {
   def getImage_cacheShouldOnlyReleaseIfNoOtherReferencesToImage() {
     var loadCount = 0
     val imageLoader = new ImageLoader() {
-      override def loadDrawable(uri: Uri, context: Context) = {
+      override def loadDrawable(uri: Uri, displayWidth: Int, displayHeight: Int, context: Context) = {
         val drawable = mock[Drawable]
         loadCount += 1
         drawable
       }
     }
+    val imageViewLoader = new ImageViewLoader(imageLoader)
 
     val state = new State() {}
     val uri1 = mock[Uri]
-    val drawable1 = imageLoader.getDrawable(uri1, null, state)
+    val drawable1 = imageViewLoader.getDrawable(uri1, 100, 100, null, state)
     loadCount must be (1)
 
     System.gc()
-    imageLoader.getDrawable(uri1, null, state) must be (drawable1)
+    imageViewLoader.getDrawable(uri1, 100, 100, null, state) must be (drawable1)
     loadCount must be (1)
   }
 }
