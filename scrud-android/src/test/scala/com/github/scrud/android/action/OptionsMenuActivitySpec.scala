@@ -50,7 +50,7 @@ class OptionsMenuActivitySpec extends MustMatchers with MockitoSugar {
       var invalidated, populated = false
 
       //this will be called using reflection
-      def invalidateOptionsMenu() {
+      override def invalidateOptionsMenu() {
         invalidated = true
       }
 
@@ -73,7 +73,7 @@ class OptionsMenuActivitySpec extends MustMatchers with MockitoSugar {
     val activity = new StubOptionsMenuActivity {
       var populated = false
 
-      def invalidateOptionsMenu() {}
+      override def invalidateOptionsMenu() {}
 
       override private[action] def populateMenu(menu: Menu, actions: List[Command]) {
         populated = true
