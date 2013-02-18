@@ -92,11 +92,14 @@ protected trait BaseCrudActivity extends ActivityWithState with OptionsMenuActiv
   def populateFromUri(entityType: EntityType, uri: UriPath, updaterInput: UpdaterInput[AnyRef,Nothing]) {
     val futurePortableValue = crudApplication.futurePortableValue(entityType, uri, crudContext)
     if (futurePortableValue.isSet) {
-      futurePortableValue().update(updaterInput)
+      val portableValue = futurePortableValue.apply()
+      debug("Copying " + portableValue + " into " + updaterInput.subject + " uri=" + uri)
+      portableValue.update(updaterInput)
     } else {
       entityType.loadingValue.update(updaterInput)
       futurePortableValue.foreach { portableValue =>
         crudContext.runOnUiThread {
+          debug("Copying " + portableValue + " into " + updaterInput.subject + " uri=" + uri)
           portableValue.update(updaterInput)
         }
       }
