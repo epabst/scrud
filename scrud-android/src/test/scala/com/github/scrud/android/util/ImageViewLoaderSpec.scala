@@ -4,12 +4,16 @@ import org.junit.runner.RunWith
 import com.github.scrud.android.CustomRobolectricTestRunner
 import org.scalatest.matchers.MustMatchers
 import org.scalatest.mock.MockitoSugar
+import org.mockito.Mockito._
 import org.junit.Test
 import com.github.scrud.state.State
 import android.net.Uri
 import android.content.Context
 import collection.mutable
 import android.graphics.drawable.Drawable
+import android.widget.ImageView
+import android.content.res.Resources
+import android.util.DisplayMetrics
 
 /**
  * Behavior specification for [[com.github.scrud.android.util.ImageLoader]].
@@ -19,8 +23,56 @@ import android.graphics.drawable.Drawable
  */
 @RunWith(classOf[CustomRobolectricTestRunner])
 class ImageViewLoaderSpec extends MustMatchers with MockitoSugar {
+  val screenWidth = 400
+  val screenHeight = 300
+
   @Test
-  def getImage_shouldDistinguishByUri() {
+  def setImageDrawable_shouldUseImageViewSizeIfProvided() {
+    val imageDisplayWidth = 40
+    val imageDisplayHeight = 30
+    val imageLoader = mock[ImageLoader]
+    val imageView = mock[ImageView]
+    val context: Context = createMockContextWithDisplayMetrics()
+    when(imageView.getWidth).thenReturn(imageDisplayWidth)
+    when(imageView.getHeight).thenReturn(imageDisplayHeight)
+    when(imageView.getContext).thenReturn(context)
+
+    val imageViewLoader = new ImageViewLoader(imageLoader)
+    val state = new State() {}
+    val uri1 = mock[Uri]
+    imageViewLoader.setImageDrawable(imageView, Some(uri1), state)
+    verify(imageLoader).loadDrawable(uri1, imageDisplayWidth, imageDisplayHeight, context)
+  }
+
+  @Test
+  def setImageDrawable_shouldUseScreenSizeIfImageViewSizeIsNotSet() {
+    val imageLoader = mock[ImageLoader]
+    val imageView = mock[ImageView]
+    val context: Context = createMockContextWithDisplayMetrics()
+    when(imageView.getWidth).thenReturn(0)
+    when(imageView.getHeight).thenReturn(0)
+    when(imageView.getContext).thenReturn(context)
+
+    val imageViewLoader = new ImageViewLoader(imageLoader)
+    val state = new State() {}
+    val uri1 = mock[Uri]
+    imageViewLoader.setImageDrawable(imageView, Some(uri1), state)
+    verify(imageLoader).loadDrawable(uri1, screenWidth, screenHeight, context)
+  }
+
+  private def createMockContextWithDisplayMetrics(): Context = {
+    val context = mock[Context]
+    val resources = mock[Resources]
+    when(context.getResources).thenReturn(resources)
+    val displayMetrics = new DisplayMetrics()
+    when(resources.getDisplayMetrics).thenReturn(displayMetrics)
+    displayMetrics.widthPixels = screenWidth
+    displayMetrics.heightPixels = screenHeight
+    context
+  }
+
+  @Test
+  def getImage_cacheShouldDistinguishByUri() {
     val loadedDrawables = mutable.Buffer.empty[Drawable]
     val imageLoader = new ImageLoader() {
       override def loadDrawable(uri: Uri, displayWidth: Int, displayHeight: Int, context: Context) = {

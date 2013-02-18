@@ -17,17 +17,17 @@ import scala.collection.JavaConversions.asScalaConcurrentMap
  * Time: 3:21 PM
  */
 class ImageViewLoader(imageLoader: ImageLoader = new ImageLoader) {
-  def getDrawable(uri: Uri, displayWidth: Int, displayHeight: Int, context: Context, stateForCaching: State): Drawable = {
+  def getDrawable(uri: Uri, imageDisplayWidth: Int, imageDisplayHeight: Int, context: Context, stateForCaching: State): Drawable = {
     val cache = DrawableByUriCache.get(stateForCaching)
     cache.get(uri) match {
       case Some(weakReference) =>
         weakReference.get.getOrElse {
-          val drawable = imageLoader.loadDrawable(uri, displayWidth, displayHeight, context)
+          val drawable = imageLoader.loadDrawable(uri, imageDisplayWidth, imageDisplayHeight, context)
           cache.put(uri, new WeakReference(drawable))
           drawable
         }
       case None =>
-        val drawable = imageLoader.loadDrawable(uri, displayWidth, displayHeight, context)
+        val drawable = imageLoader.loadDrawable(uri, imageDisplayWidth, imageDisplayHeight, context)
         cache.put(uri, new WeakReference(drawable))
         drawable
     }
@@ -39,10 +39,13 @@ class ImageViewLoader(imageLoader: ImageLoader = new ImageLoader) {
     uriOpt.foreach { uri =>
       val uriString = uri.toString
       imageView.setTag(uriString)
-      val displayMetrics = context.getResources.getDisplayMetrics
-      val displayWidth: Int = displayMetrics.widthPixels
-      val displayHeight: Int = displayMetrics.heightPixels
-      val drawable = getDrawable(uri, displayWidth, displayHeight, context, stateForCaching)
+      val imageViewWidth = imageView.getWidth
+      val imageViewHeight = imageView.getHeight
+      val imageViewSizeIsProvided = imageViewWidth > 0 && imageViewHeight > 0
+      val displayMetricsToUseOpt = if (imageViewSizeIsProvided) None else Some(context.getResources.getDisplayMetrics)
+      val imageDisplayWidth: Int = displayMetricsToUseOpt.map(_.widthPixels).getOrElse(imageViewWidth)
+      val imageDisplayHeight: Int = displayMetricsToUseOpt.map(_.heightPixels).getOrElse(imageViewHeight)
+      val drawable = getDrawable(uri, imageDisplayWidth, imageDisplayHeight, context, stateForCaching)
       imageView.setImageDrawable(drawable)
     }
   }
