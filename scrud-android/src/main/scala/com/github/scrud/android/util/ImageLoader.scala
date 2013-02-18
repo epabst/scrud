@@ -1,9 +1,7 @@
 package com.github.scrud.android.util
 
 import android.net.Uri
-import android.content.Context
-import android.graphics.drawable.{BitmapDrawable, Drawable}
-import android.graphics.BitmapFactory
+import android.graphics.drawable.Drawable
 import com.github.scrud.util.Common
 
 /**
@@ -13,22 +11,19 @@ import com.github.scrud.util.Common
  * Time: 3:21 PM
  */
 class ImageLoader {
-  def loadDrawable(uri: Uri, displayWidth: Int, displayHeight: Int, context: Context): Drawable = {
-    val optionsToDecodeBounds = new BitmapFactory.Options()
-    optionsToDecodeBounds.inJustDecodeBounds = true
-    val contentResolver = context.getContentResolver
-    Common.withCloseable(contentResolver.openInputStream(uri)) { stream =>
-      BitmapFactory.decodeStream(stream, null, optionsToDecodeBounds)
-    }
+  // The sequence of 1, 2, 4, 8, 16, ...
+  private lazy val powersOfTwo = Stream.from(0).map(1 << _)
+
+  def loadDrawable(uri: Uri, imageDisplayWidth: Int, imageDisplayHeight: Int, contentResolver: RichContentResolver): Drawable = {
+    val optionsToDecodeBounds = contentResolver.decodeBounds(uri)
     val imageHeight: Int = optionsToDecodeBounds.outHeight
     val imageWidth: Int = optionsToDecodeBounds.outWidth
-    val firstInSampleSize: Int = calculateSampleSize(imageWidth, imageHeight, displayWidth, displayHeight)
-    val results: Seq[Either[Drawable, Throwable]] = Stream.range(firstInSampleSize, imageHeight, 2).view.map { inSampleSize =>
-      Common.evaluateOrIntercept {
-        Common.withCloseable(contentResolver.openInputStream(uri)) { stream =>
-          new BitmapDrawable(BitmapFactory.decodeStream(stream, null, bitmapFactoryOptions(inSampleSize)))
-        }
-      }
+    val firstInSampleSize: Int = calculateSampleSize(imageWidth, imageHeight, imageDisplayWidth, imageDisplayHeight)
+    // No use in doing less than 8 pixels of detail.
+    val multiplierSeq = powersOfTwo.takeWhile(_ <= imageDisplayWidth / 8)
+    val results: Seq[Either[Drawable, Throwable]] = multiplierSeq.view.map { multiplier =>
+      val inSampleSize = firstInSampleSize * multiplier
+      Common.evaluateOrIntercept(contentResolver.decodeBitmap(uri, inSampleSize))
     }
     results.find(_.isLeft).map(_.left.get).getOrElse(throw results.head.right.get)
   }
@@ -41,12 +36,5 @@ class ImageLoader {
     // Use highestOneBit so that the sample size is a power of 2, which makes it more efficient to do the sampling.
     // If ratio is already a power of 2, it is used unchanged.
     math.max(Integer.highestOneBit(ratio), 1)
-  }
-
-  private def bitmapFactoryOptions(inSampleSize: Int) = {
-    val options = new BitmapFactory.Options
-    options.inDither = true
-    options.inSampleSize = inSampleSize
-    options
   }
 }

@@ -14,6 +14,7 @@ import android.graphics.drawable.Drawable
 import android.widget.ImageView
 import android.content.res.Resources
 import android.util.DisplayMetrics
+import org.mockito.Matchers
 
 /**
  * Behavior specification for [[com.github.scrud.android.util.ImageLoader]].
@@ -41,7 +42,7 @@ class ImageViewLoaderSpec extends MustMatchers with MockitoSugar {
     val state = new State() {}
     val uri1 = mock[Uri]
     imageViewLoader.setImageDrawable(imageView, Some(uri1), state)
-    verify(imageLoader).loadDrawable(uri1, imageDisplayWidth, imageDisplayHeight, context)
+    verify(imageLoader).loadDrawable(Matchers.eq(uri1), Matchers.eq(imageDisplayWidth), Matchers.eq(imageDisplayHeight), Matchers.any())
   }
 
   @Test
@@ -57,7 +58,7 @@ class ImageViewLoaderSpec extends MustMatchers with MockitoSugar {
     val state = new State() {}
     val uri1 = mock[Uri]
     imageViewLoader.setImageDrawable(imageView, Some(uri1), state)
-    verify(imageLoader).loadDrawable(uri1, screenWidth, screenHeight, context)
+    verify(imageLoader).loadDrawable(Matchers.eq(uri1), Matchers.eq(screenWidth), Matchers.eq(screenHeight), Matchers.any())
   }
 
   private def createMockContextWithDisplayMetrics(): Context = {
@@ -75,7 +76,7 @@ class ImageViewLoaderSpec extends MustMatchers with MockitoSugar {
   def getImage_cacheShouldDistinguishByUri() {
     val loadedDrawables = mutable.Buffer.empty[Drawable]
     val imageLoader = new ImageLoader() {
-      override def loadDrawable(uri: Uri, displayWidth: Int, displayHeight: Int, context: Context) = {
+      override def loadDrawable(uri: Uri, displayWidth: Int, displayHeight: Int, contentResolver: RichContentResolver) = {
         val drawable = mock[Drawable]
         loadedDrawables += drawable
         drawable
@@ -97,7 +98,7 @@ class ImageViewLoaderSpec extends MustMatchers with MockitoSugar {
   def getImage_shouldCache() {
     val loadedDrawables = mutable.Buffer.empty[Drawable]
     val imageLoader = new ImageLoader() {
-      override def loadDrawable(uri: Uri, displayWidth: Int, displayHeight: Int, context: Context) = {
+      override def loadDrawable(uri: Uri, displayWidth: Int, displayHeight: Int, contentResolver: RichContentResolver) = {
         val drawable = mock[Drawable]
         loadedDrawables += drawable
         drawable
@@ -119,7 +120,7 @@ class ImageViewLoaderSpec extends MustMatchers with MockitoSugar {
   def getImage_cacheShouldNotCauseOutOfMemoryError() {
     var loadCount = 0
     val imageLoader = new ImageLoader() {
-      override def loadDrawable(uri: Uri, displayWidth: Int, displayHeight: Int, context: Context) = {
+      override def loadDrawable(uri: Uri, displayWidth: Int, displayHeight: Int, contentResolver: RichContentResolver) = {
         val drawable = mock[Drawable]
         loadCount += 1
         drawable
@@ -141,7 +142,7 @@ class ImageViewLoaderSpec extends MustMatchers with MockitoSugar {
   def getImage_cacheShouldOnlyReleaseIfNoOtherReferencesToImage() {
     var loadCount = 0
     val imageLoader = new ImageLoader() {
-      override def loadDrawable(uri: Uri, displayWidth: Int, displayHeight: Int, context: Context) = {
+      override def loadDrawable(uri: Uri, displayWidth: Int, displayHeight: Int, contentResolver: RichContentResolver) = {
         val drawable = mock[Drawable]
         loadCount += 1
         drawable

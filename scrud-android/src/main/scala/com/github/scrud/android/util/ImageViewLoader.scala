@@ -4,7 +4,6 @@ import android.widget.ImageView
 import android.net.Uri
 import com.github.scrud.state.{LazyStateVal, State}
 import ref.WeakReference
-import android.content.Context
 import android.graphics.drawable.Drawable
 import collection.mutable
 import java.util.concurrent.ConcurrentHashMap
@@ -17,17 +16,17 @@ import scala.collection.JavaConversions.asScalaConcurrentMap
  * Time: 3:21 PM
  */
 class ImageViewLoader(imageLoader: ImageLoader = new ImageLoader) {
-  def getDrawable(uri: Uri, imageDisplayWidth: Int, imageDisplayHeight: Int, context: Context, stateForCaching: State): Drawable = {
+  def getDrawable(uri: Uri, imageDisplayWidth: Int, imageDisplayHeight: Int, contentResolver: RichContentResolver, stateForCaching: State): Drawable = {
     val cache = DrawableByUriCache.get(stateForCaching)
     cache.get(uri) match {
       case Some(weakReference) =>
         weakReference.get.getOrElse {
-          val drawable = imageLoader.loadDrawable(uri, imageDisplayWidth, imageDisplayHeight, context)
+          val drawable = imageLoader.loadDrawable(uri, imageDisplayWidth, imageDisplayHeight, contentResolver)
           cache.put(uri, new WeakReference(drawable))
           drawable
         }
       case None =>
-        val drawable = imageLoader.loadDrawable(uri, imageDisplayWidth, imageDisplayHeight, context)
+        val drawable = imageLoader.loadDrawable(uri, imageDisplayWidth, imageDisplayHeight, contentResolver)
         cache.put(uri, new WeakReference(drawable))
         drawable
     }
@@ -45,7 +44,8 @@ class ImageViewLoader(imageLoader: ImageLoader = new ImageLoader) {
       val displayMetricsToUseOpt = if (imageViewSizeIsProvided) None else Some(context.getResources.getDisplayMetrics)
       val imageDisplayWidth: Int = displayMetricsToUseOpt.map(_.widthPixels).getOrElse(imageViewWidth)
       val imageDisplayHeight: Int = displayMetricsToUseOpt.map(_.heightPixels).getOrElse(imageViewHeight)
-      val drawable = getDrawable(uri, imageDisplayWidth, imageDisplayHeight, context, stateForCaching)
+      val contentResolver = new RichContentResolver(context)
+      val drawable = getDrawable(uri, imageDisplayWidth, imageDisplayHeight, contentResolver, stateForCaching)
       imageView.setImageDrawable(drawable)
     }
   }
