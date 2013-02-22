@@ -1,7 +1,7 @@
 package com.github.scrud.android.view
 
 import com.github.triangle.PortableField._
-import com.github.triangle.ValueFormat._
+import com.github.triangle.converter.ValueFormat._
 import android.widget.{AdapterView, ArrayAdapter, BaseAdapter}
 import com.github.triangle.Getter
 import scala.collection.JavaConversions._

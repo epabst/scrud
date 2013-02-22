@@ -4,7 +4,8 @@ import org.scalatest.FunSpec
 import org.scalatest.matchers.MustMatchers
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
-import com.github.triangle.{PortableField, ValueFormat}
+import com.github.triangle.converter.ValueFormat
+import com.github.triangle.PortableField
 import PortableField._
 import com.github.scrud.android.view.ViewField._
 import com.github.scrud.android.ForeignKey._

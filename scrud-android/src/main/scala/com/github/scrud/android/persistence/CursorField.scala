@@ -4,11 +4,12 @@ import android.content.ContentValues
 import android.database.Cursor
 import android.provider.BaseColumns
 import com.github.triangle._
+import converter.ValueFormat
 import PortableField._
 import android.os.Bundle
 import com.github.scrud.platform.PlatformTypes._
 import com.github.scrud.EntityField
-import com.github.triangle.Converter._
+import com.github.triangle.converter.Converter._
 import android.net.Uri
 
 case class SQLiteCriteria(selection: List[String] = Nil, selectionArgs: List[String] = Nil,

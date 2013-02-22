@@ -14,7 +14,7 @@ import UriPath.uriIdField
 import android.widget._
 import java.util.{Locale, GregorianCalendar, Calendar}
 import com.github.triangle.Getter
-import com.github.triangle.Converter._
+import com.github.triangle.converter.Converter._
 import com.github.scrud.android.view.FieldLayout._
 import android.content.Context
 import xml.NodeSeq

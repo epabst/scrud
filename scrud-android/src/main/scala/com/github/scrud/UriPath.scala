@@ -1,7 +1,7 @@
 package com.github.scrud
 
 import com.github.scrud.platform.PlatformTypes._
-import com.github.triangle.ValueFormat._
+import com.github.triangle.converter.ValueFormat._
 import com.github.triangle.{Getter, TargetedGetter}
 
 /** A convenience wrapper for UriPath.

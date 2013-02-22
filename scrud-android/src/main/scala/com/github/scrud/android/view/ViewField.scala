@@ -2,10 +2,11 @@ package com.github.scrud.android.view
 
 import com.github.scrud.platform.PlatformTypes._
 import com.github.triangle._
+import converter.Converter
 import PortableField._
 import java.util.{Calendar, Date, GregorianCalendar}
 import FieldLayout._
-import com.github.triangle.Converter._
+import com.github.triangle.converter.Converter._
 import android.widget._
 import com.github.scrud.android.view.AndroidResourceAnalyzer._
 import android.view.View
