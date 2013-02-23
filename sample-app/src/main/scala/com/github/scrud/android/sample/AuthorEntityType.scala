@@ -7,14 +7,15 @@ import view.ViewField._
 import com.github.triangle._
 import com.github.scrud.Validation._
 import com.github.scrud.platform.PlatformDriver
+import types.{NaturalIntQT, TitleQT}
 
 object Author extends EntityName("Author")
 
 class AuthorEntityType(platformDriver: PlatformDriver) extends EntityType(Author, platformDriver) {
   val valueFields = List(
-    persisted[String]("name") + namedViewField("name", textView) + requiredString,
+    persisted[String]("name") + namedViewField("name", TitleQT) + requiredString,
 
-    namedViewField("bookCount", intView) +
+    namedViewField("bookCount", NaturalIntQT) +
             bundleField[Int]("bookCount") +
             Getter[Int] {
               case UriField(Some(uri)) && CrudContextField(Some(crudContext)) => {

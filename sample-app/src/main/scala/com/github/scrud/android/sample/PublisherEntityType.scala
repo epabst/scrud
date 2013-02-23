@@ -7,14 +7,15 @@ import scrud.{CrudContextField, EntityName, UriField, EntityType}
 import scrud.android.view.ViewField._
 import com.github.triangle._
 import scrud.Validation._
+import types.{NaturalIntQT, TitleQT}
 
 object Publisher extends EntityName("Publisher")
 
 class PublisherEntityType(platformDriver: PlatformDriver) extends EntityType(Publisher, platformDriver) {
   val valueFields = List(
-    persisted[String]("name") + namedViewField("name", textView) + requiredString,
+    persisted[String]("name") + namedViewField("name", TitleQT) + requiredString,
 
-    namedViewField("bookCount", intView) + bundleField[Int]("bookCount") + Getter[Int] {
+    namedViewField("bookCount", NaturalIntQT) + bundleField[Int]("bookCount") + Getter[Int] {
       case UriField(Some(uri)) && CrudContextField(Some(crudContext)) => {
         println("calculating bookCount for " + uri + " and " + crudContext)
         crudContext.withEntityPersistence(Book) { persistence =>
