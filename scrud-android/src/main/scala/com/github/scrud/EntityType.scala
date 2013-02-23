@@ -5,6 +5,7 @@ import com.github.triangle._
 import persistence.CrudPersistence
 import platform.PlatformDriver
 import platform.PlatformTypes._
+import types.QualifiedType
 import util.Common
 
 /** An entity configuration that provides information needed to map data to and from persistence.
@@ -45,6 +46,10 @@ abstract class EntityType(val entityName: EntityName, val platformDriver: Platfo
   /** A PortableField for modifying a named portion of a View. */
   protected def namedViewField[T](fieldName: String, childViewField: PortableField[T]): PortableField[T] =
     platformDriver.namedViewField(entityName.toString + "_" + fieldName, childViewField)
+
+  /** A PortableField for modifying a named portion of a View. */
+  protected def namedViewField[T](fieldName: String, qualifiedType: QualifiedType[T]): PortableField[T] =
+    platformDriver.namedViewField(entityName.toString + "_" + fieldName, qualifiedType)
 
   def toUri(id: ID) = UriPath(entityName, id)
 

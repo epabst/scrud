@@ -8,9 +8,9 @@ import com.github.scrud.android.persistence.CursorField._
 import com.github.scrud.android._
 import org.scalatest.mock.MockitoSugar
 import com.github.scrud.{CrudApplication, EntityType}
-import com.github.scrud.android.testres.R
 import com.github.scrud.android.view.ViewField
 import ViewField._
+import com.github.triangle.types.TitleQT
 
 /** A behavior specification for [[com.github.scrud.android.generate.CrudUIGenerator]].
   * @author Eric Pabst (epabst@gmail.com)
@@ -62,7 +62,7 @@ class CrudUIGeneratorSpec extends FunSpec with MustMatchers with MockitoSugar {
   describe("generateValueStrings") {
     it("must include 'list', 'add' and 'edit' strings for modifiable entities") {
       val myEntityType = new MyEntityType {
-        override val valueFields = List(persisted[String]("model") + namedViewField("model", textView))
+        override val valueFields = List(persisted[String]("model") + namedViewField("model", TitleQT))
       }
       val application = new CrudApplication(platformDriver) {
         val allCrudTypes = List(new MyCrudType(myEntityType))

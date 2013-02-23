@@ -8,6 +8,7 @@ import com.github.scrud.EntityName
 import com.github.scrud.action.CommandId
 import com.github.scrud.action.Command
 import com.github.scrud.view.NamedViewMap
+import com.github.triangle.types.QualifiedType
 
 /**
  * A simple PlatformDriver for testing.
@@ -40,7 +41,17 @@ class TestingPlatformDriver extends PlatformDriver {
   def commandToUndoDelete = Command(CommandId("command1"), None, None)
 
   /** A PortableField for modifying a named portion of a View. */
-  def namedViewField[T](fieldName: String, childViewField: PortableField[T]): PortableField[T] = {
+  def namedViewField[T](fieldName: String, childViewField: PortableField[T]) = namedViewField(fieldName)
+
+  /**
+   * A PortableField for modifying a named portion of a View.
+   * The platform is expected to recognize the qualifiedType and be able to return a PortableField.
+   * @throws IllegalArgumentException if the qualifiedType is not recognized.
+   */
+  def namedViewField[T](fieldName: String, qualifiedType: QualifiedType[T]) = namedViewField(fieldName)
+
+  /** A PortableField for modifying a named portion of a View. */
+  def namedViewField[T](fieldName: String): PortableField[T] = {
     Getter.single[T]({
       case map: NamedViewMap if map.contains(fieldName) =>  map.apply(fieldName).asInstanceOf[Option[T]]
     }) + Updater((m: NamedViewMap) => (valueOpt: Option[T]) => m + (fieldName -> valueOpt))

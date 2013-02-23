@@ -9,6 +9,11 @@ import org.scalatest.matchers.MustMatchers
 import com.github.scrud.android.action.AndroidOperation.toRichItent
 import com.github.scrud.util.CrudMockitoSugar
 import com.github.scrud.action.Action
+import res.R
+import com.github.triangle.types._
+import view.{EntityView, EnumerationView, ViewField}
+import com.github.scrud.EntityName
+import com.github.scrud.action.Action
 
 /** A test for [[com.github.scrud.android.AndroidPlatformDriver]].
   * @author Eric Pabst (epabst@gmail.com)
@@ -17,7 +22,8 @@ import com.github.scrud.action.Action
 class AndroidPlatformDriverSpec extends MustMatchers with CrudMockitoSugar {
   //todo determine if shadowing, and run tests on real Android device as well.
   val isShadowing = true
-  val application = new MyCrudApplicationSpecifyingPlatform(new AndroidPlatformDriver(classOf[res.R]), MyCrudType) {
+  val driver = new AndroidPlatformDriver(classOf[R])
+  val application = new MyCrudApplicationSpecifyingPlatform(driver, MyCrudType) {
     override def hasDisplayPage(entityName: EntityName) = true
   }
 
@@ -89,5 +95,50 @@ class AndroidPlatformDriverSpec extends MustMatchers with CrudMockitoSugar {
       displayOperation.determineIntent(UriPath("foo"), activity).getAction must be (Intent.ACTION_VIEW)
       updateOperation.determineIntent(UriPath("foo"), activity).getAction must be (Intent.ACTION_EDIT)
     }
+  }
+
+  @Test
+  def shouldRecognizeQualifiedType_DateWithoutTimeQT() {
+    assertQualifiedTypeRecognized(DateWithoutTimeQT, ViewField.dateView)
+  }
+
+  @Test
+  def shouldRecognizeQualifiedType_TitleQT() {
+    assertQualifiedTypeRecognized(TitleQT, ViewField.textView)
+  }
+
+  @Test
+  def shouldRecognizeQualifiedType_NaturalIntQT() {
+    assertQualifiedTypeRecognized(NaturalIntQT, ViewField.intView)
+  }
+
+  @Test
+  def shouldRecognizeQualifiedType_PositiveIntQT() {
+    assertQualifiedTypeRecognized(PositiveIntQT, ViewField.intView)
+  }
+
+  @Test
+  def shouldRecognizeQualifiedType_PercentageQT() {
+    assertQualifiedTypeRecognized(PercentageQT, ViewField.percentageView)
+  }
+
+  @Test
+  def shouldRecognizeQualifiedType_EntityName() {
+    assertQualifiedTypeRecognized(EntityName("Foo"), EntityView(EntityName("Foo")))
+  }
+
+  @Test
+  def shouldRecognizeQualifiedType_EnumerationValueQT() {
+    object Genre extends Enumeration {
+      val Fantasy = Value("Fantasy")
+      val SciFi = Value("Sci-Fi")
+    }
+    assertQualifiedTypeRecognized(EnumerationValueQT(Genre), EnumerationView(Genre))
+  }
+
+  def assertQualifiedTypeRecognized(qualifiedType: QualifiedType[_], expectedField: ViewField[_]) {
+    driver.namedViewField("foo", qualifiedType).deepCollect {
+      case view if view == expectedField => view
+    }.size must be(1)
   }
 }

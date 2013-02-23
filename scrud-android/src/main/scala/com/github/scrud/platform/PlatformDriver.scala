@@ -4,6 +4,7 @@ import com.github.scrud.persistence.PersistenceFactory
 import com.github.scrud.action.{Command, Operation}
 import com.github.scrud.EntityName
 import com.github.triangle.PortableField
+import com.github.triangle.types.QualifiedType
 
 /**
  * An API for an app to interact with the host platform such as Android.
@@ -38,4 +39,11 @@ trait PlatformDriver {
 
   /** A PortableField for modifying a named portion of a View. */
   def namedViewField[T](fieldName: String, childViewField: PortableField[T]): PortableField[T]
+
+  /**
+   * A PortableField for modifying a named portion of a View.
+   * The platform is expected to recognize the qualifiedType and be able to return a PortableField.
+   * @throws MatchError if the qualifiedType is not recognized.
+   */
+  def namedViewField[T](fieldName: String, qualifiedType: QualifiedType[T]): PortableField[T]
 }

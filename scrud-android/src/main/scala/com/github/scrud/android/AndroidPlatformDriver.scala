@@ -1,14 +1,21 @@
 package com.github.scrud.android
 
+import action.StartEntityActivityOperation
+import action.StartEntityIdActivityOperation
 import com.github.scrud
+import scrud.action.Command
+import scrud.action.CommandId
 import scrud.action.{CommandId, Command}
 import scrud.android.action.{StartEntityIdActivityOperation, StartEntityActivityOperation}
 import action.AndroidOperation._
 import com.github.scrud.platform.PlatformDriver
 import scrud.EntityName
+import scrud.EntityName
 import view.ViewField._
 import com.github.triangle.PortableField
-import view.ViewRef
+import view.{EntityView, EnumerationView, ViewRef}
+import com.github.triangle.types._
+import scala.Some
 
 /**
  * A PlatformDriver for the Android platform.
@@ -44,6 +51,23 @@ class AndroidPlatformDriver(rClass: Class[_], val activityClass: Class[_ <: Crud
   /** A PortableField for modifying a named portion of a View. */
   def namedViewField[T](fieldName: String, childViewField: PortableField[T]): PortableField[T] = {
     viewId(rClass, fieldName, childViewField)
+  }
+
+  /**
+   * A PortableField for modifying a named portion of a View.
+   * The platform is expected to recognize the qualifiedType and be able to return a PortableField.
+   * @throws IllegalArgumentException if the qualifiedType is not recognized.
+   */
+  def namedViewField[T](fieldName: String, qualifiedType: QualifiedType[T]) = {
+    val childViewField = (qualifiedType match {
+      case TitleQT => textView
+      case NaturalIntQT | PositiveIntQT => intView
+      case PercentageQT => percentageView
+      case DateWithoutTimeQT => dateView
+      case EnumerationValueQT(enumeration) => EnumerationView(enumeration)
+      case e @ EntityName(_) => EntityView(e)
+    }).asInstanceOf[PortableField[T]]
+    namedViewField(fieldName, childViewField)
   }
 
   def listViewId(entityName: EntityName): Int = ViewRef(entityName + "_list", rClass, "id").viewKeyOrError
