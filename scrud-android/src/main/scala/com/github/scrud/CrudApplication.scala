@@ -3,22 +3,24 @@ package com.github.scrud
 import _root_.android.R
 import action._
 import action.Action
+import action.Command
+import action.CommandId
 import action.CrudOperation
 import action.StartEntityDeleteOperation
-import com.github.scrud
 import persistence.PersistenceFactory
 import platform.PlatformDriver
 import platform.PlatformTypes._
+import com.github.triangle._
+import com.github.scrud
 import scrud.state.LazyApplicationVal
 import util.{Common, UrgentFutureExecutor}
 import java.util.NoSuchElementException
-import com.github.triangle.{PortableField, GetterInput, PortableValue, Logging}
 import scala.actors.Future
 import collection.mutable
 import java.util.concurrent.ConcurrentHashMap
 import scala.collection.JavaConversions._
 import PortableField.toSome
-import android.{CrudType,NamingConventions,res}
+import scrud.android.{CrudType,NamingConventions,res}
 import scrud.android.view.AndroidResourceAnalyzer._
 
 /**
@@ -213,13 +215,14 @@ abstract class CrudApplication(val platformDriver: PlatformDriver) extends Loggi
    */
   def saveIfValid(data: AnyRef, entityType: EntityType, contextItems: CrudContextItems): Option[ID] = {
     val crudContext = contextItems.crudContext
-    val writable = crudContext.newWritable(entityType)
-    val copyableFields = entityType.copyableTo(writable, contextItems)
-    val portableValue = copyableFields.copyFrom(data +: contextItems)
+    val updaterInput = UpdaterInput(crudContext.newWritable(entityType), contextItems)
+    val relevantFields = entityType.copyableTo(updaterInput)
+    val portableValue = relevantFields.copyFrom(data +: contextItems)
     if (portableValue.update(ValidationResult.Valid).isValid) {
-      val updatedWritable = portableValue.update(writable)
+      val updatedWritable = portableValue.update(updaterInput)
       val idOpt = entityType.IdField(contextItems.currentUriPath)
       val newId = crudContext.withEntityPersistence(entityType)(_.save(idOpt, updatedWritable))
+      debug("Saved " + portableValue + " into id=" + newId + " entityType=" + entityType)
       crudContext.displayMessageToUserBriefly(res.R.string.data_saved_notification)
       Some(newId)
     } else {
