@@ -8,7 +8,6 @@ import com.github.triangle.converter.ValueFormat
 import com.github.triangle.PortableField
 import PortableField._
 import com.github.scrud.android.view.ViewField._
-import com.github.scrud.android.ForeignKey._
 import com.github.scrud.android.testres.R
 import com.github.scrud.android._
 import org.scalatest.mock.MockitoSugar
@@ -63,7 +62,7 @@ class EntityFieldInfoSpec extends FunSpec with MustMatchers with MockitoSugar {
   }
 
   it("must not include a ForeignKey if it has no viewId field") {
-    val fieldInfo = EntityFieldInfo(foreignKey[MyEntityType](MyEntity), Seq(classOf[R]), application)
+    val fieldInfo = EntityFieldInfo(ForeignKey[MyEntityType](MyEntity), Seq(classOf[R]), application)
     fieldInfo.isUpdateable must be (false)
   }
 
@@ -72,7 +71,7 @@ class EntityFieldInfoSpec extends FunSpec with MustMatchers with MockitoSugar {
     fieldInfos.map(_.id) must be (List("foo", "bar"))
   }
 
-  val entityFieldInfo = EntityFieldInfo(viewId(R.id.foo, foreignKey[MyEntityType](MyEntity) + EntityView(MyEntity)), Seq(classOf[id]), application)
+  val entityFieldInfo = EntityFieldInfo(viewId(R.id.foo, ForeignKey[MyEntityType](MyEntity, EntityView(MyEntity))), Seq(classOf[id]), application)
 
   describe("updateableViewIdFieldInfos") {
     it("must not include fields whose editXml is Empty") {

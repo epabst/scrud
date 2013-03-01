@@ -6,7 +6,6 @@ import persistence.CursorField._
 import com.github.scrud.{EntityName, EntityType}
 import persistence.PersistedType._
 import java.util.Date
-import ForeignKey._
 import com.github.scrud.Validation._
 import com.github.scrud.platform.PlatformDriver
 import com.github.triangle.types.{DateWithoutTimeQT, EnumerationValueQT, PositiveIntQT, TitleQT}
@@ -15,7 +14,7 @@ object Book extends EntityName("Book")
 
 class BookEntityType(platformDriver: PlatformDriver) extends EntityType(Book, platformDriver) {
   val valueFields = List(
-    foreignKey[AuthorEntityType](Author),
+    ForeignKey[AuthorEntityType](Author),
 
     persisted[String]("name") + namedViewField("name", TitleQT) + requiredString,
 
@@ -24,7 +23,7 @@ class BookEntityType(platformDriver: PlatformDriver) extends EntityType(Book, pl
     persistedEnum[Genre.Value]("genre", Genre) + namedViewField("genre", EnumerationValueQT[Genre.Value](Genre)) +
       default(Genre.Fantasy),
 
-    foreignKey[PublisherEntityType](Publisher, namedViewField("publisher", Publisher)),
+    ForeignKey[PublisherEntityType](Publisher, namedViewField("publisher", Publisher)),
 
     persistedDate("publishDate") + namedViewField[Date]("publishDate", DateWithoutTimeQT)
   )

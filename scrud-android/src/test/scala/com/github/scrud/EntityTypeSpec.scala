@@ -1,6 +1,6 @@
 package com.github.scrud
 
-import android.ForeignKey._
+import android.ForeignKey
 import org.scalatest.FunSpec
 import android.MyEntityType
 import org.scalatest.matchers.MustMatchers
@@ -52,7 +52,7 @@ class EntityTypeSpec extends FunSpec with MustMatchers {
     val entityName1 = new EntityName("Entity1")
     val entityName2 = new EntityName("Entity2")
     val entityType3 = new MyEntityType {
-      override val valueFields = foreignKey[MyEntityType](entityName1) +: foreignKey[MyEntityType](entityName2) +: super.valueFields
+      override val valueFields = ForeignKey[MyEntityType](entityName1) +: ForeignKey[MyEntityType](entityName2) +: super.valueFields
     }
     entityType3.parentEntityNames must be (List(entityName1, entityName2))
   }
