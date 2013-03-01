@@ -24,7 +24,7 @@ class BookEntityType(platformDriver: PlatformDriver) extends EntityType(Book, pl
     persistedEnum[Genre.Value]("genre", Genre) + namedViewField("genre", EnumerationValueQT[Genre.Value](Genre)) +
       default(Genre.Fantasy),
 
-    foreignKey[PublisherEntityType](Publisher) + namedViewField("publisher", Publisher),
+    foreignKey[PublisherEntityType](Publisher, namedViewField("publisher", Publisher)),
 
     persistedDate("publishDate") + namedViewField[Date]("publishDate", DateWithoutTimeQT)
   )

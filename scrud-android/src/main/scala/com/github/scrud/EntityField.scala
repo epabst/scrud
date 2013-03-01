@@ -6,18 +6,18 @@ import scala.Some
 
 /**
  * A PortableField that has an ID for a (presumably different) EntityType.
- * @param field the entire PortableField for getting the ID for the entity (other than those added by EntityField).
+ * @param fieldToGetIdElsewhere the entire PortableField for getting the ID for the entity (other than those added by EntityField).
  *              If it is incomplete, some lookups won't happen because the ID must be gettable for a lookup to work.
  *              The default is an emptyField.
  * @author Eric Pabst (epabst@gmail.com)
  */
-case class EntityField[E <: EntityType](entityName: EntityName, field: PortableField[ID] = PortableField.emptyField)
+case class EntityField[E <: EntityType](entityName: EntityName, fieldToGetIdElsewhere: PortableField[ID] = PortableField.emptyField)
     extends DelegatingPortableField[ID] {
-  val fieldName = entityName.name.toLowerCase + "_id"
+  val fieldName = EntityField.fieldName(entityName)
 
-  protected val delegate = field + entityName.UriPathId
+  protected val delegate = fieldToGetIdElsewhere + entityName.UriPathId
 
-  override val toString = "EntityField(" + entityName + ", " + field + ")"
+  override val toString = "EntityField(" + entityName + ", " + fieldToGetIdElsewhere + ")"
 
   /**
    * A PortableField that gets the value from a field on a different Entity.
@@ -41,4 +41,6 @@ object EntityField {
   def entityFields(field: BaseField): Seq[EntityField[_]] = field.deepCollect {
     case entityField: EntityField[_] => entityField
   }
+
+  def fieldName(entityName: EntityName): String = entityName.name.toLowerCase + "_id"
 }

@@ -20,6 +20,6 @@ class ForeignKeySpec extends MustMatchers with EasyMockSugar {
     //add on extra stuff to make sure it is ignored
     val uriWithExtraStuff = uri / "foo" / 1234
     val criteria = foreign.copyAndUpdate(uriWithExtraStuff, new SQLiteCriteria)
-    criteria.selection must be (List(EntityField[MyEntityType](MyEntity).fieldName + "=19"))
+    criteria.selection must be (List(EntityField.fieldName(MyEntity) + "=19"))
   }
 }
