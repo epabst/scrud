@@ -1,12 +1,12 @@
 package com.github.scrud.android
 
-import action.{AndroidNotification, ContextWithState}
+import com.github.scrud.android.action.{AndroidNotification, ContextWithState}
 import com.github.scrud.state._
-import com.github.scrud.{UriPath, CrudContext, CrudApplication}
-import state.{ActivityVar, CachedStateListeners, CachedStateListener}
-import android.os.Bundle
-import android.content.Context
-import android.telephony.TelephonyManager
+import com.github.scrud._
+import com.github.scrud.android.state.{ActivityVar, CachedStateListeners, CachedStateListener}
+import _root_.android.os.{Looper, Bundle}
+import _root_.android.content.Context
+import _root_.android.telephony.TelephonyManager
 import com.github.scrud.action.Undoable
 
 /**
@@ -38,6 +38,25 @@ case class AndroidCrudContext(activityContext: ContextWithState, application: Cr
     }
   }
 
+  private[android] def isUIThread: Boolean = Looper.myLooper() == Looper.getMainLooper
+
+  override def openEntityPersistence(entityType: EntityType) = {
+    if (PersistenceDeniedInUIThread.get(this).getOrElse(false)) {
+      if (isUIThread) {
+        throw new IllegalStateException("Do this on another thread!")
+      }
+    }
+    super.openEntityPersistence(entityType)
+  }
+
+  /**
+   * Handle the exception by communicating it to the user and developers.
+   */
+  override def reportError(throwable: Throwable) {
+    LastException.set(this, throwable)
+    super.reportError(throwable)
+  }
+
   def addCachedActivityStateListener(listener: CachedStateListener) {
     CachedStateListeners.get(this) += listener
   }
@@ -57,3 +76,7 @@ case class AndroidCrudContext(activityContext: ContextWithState, application: Cr
 
 /** A StateVar that holds an undoable Action if present. */
 private object LastUndoable extends ActivityVar[Undoable]
+
+private[android] object LastException extends ApplicationVar[Throwable]
+
+private[android] object PersistenceDeniedInUIThread extends ApplicationVar[Boolean]
