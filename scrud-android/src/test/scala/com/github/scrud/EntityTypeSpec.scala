@@ -1,6 +1,5 @@
 package com.github.scrud
 
-import android.ForeignKey
 import org.scalatest.FunSpec
 import android.MyEntityType
 import org.scalatest.matchers.MustMatchers
