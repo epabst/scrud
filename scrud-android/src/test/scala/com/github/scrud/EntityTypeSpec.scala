@@ -1,7 +1,7 @@
 package com.github.scrud
 
 import org.scalatest.FunSpec
-import android.MyEntityType
+import android.{ForeignKey, MyEntityType}
 import org.scalatest.matchers.MustMatchers
 import com.github.triangle.PortableField._
 import com.github.scrud.android.persistence.CursorField.persisted
