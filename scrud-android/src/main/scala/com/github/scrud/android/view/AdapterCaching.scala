@@ -4,7 +4,7 @@ import com.github.triangle.{UpdaterInput, Logging}
 import com.github.scrud.{CrudContext, CrudContextItems, UriPath, EntityType}
 import android.view.View
 import android.os.Bundle
-import android.widget.{Adapter, AdapterView, BaseAdapter}
+import android.widget.BaseAdapter
 import com.github.scrud.platform.PlatformTypes._
 import scala.Some
 import com.github.scrud.android.state.CachedStateListener
@@ -59,8 +59,8 @@ trait AdapterCaching extends Logging { self: BaseAdapter =>
   }
 }
 
-class AdapterCachingStateListener[A <: Adapter](adapterView: AdapterView[A], entityType: EntityType, crudContext: CrudContext, adapterFactory: => A) extends CachedStateListener with Logging {
-  protected def logTag = entityType.logTag
+class AdapterCachingStateListener(crudContext: CrudContext) extends CachedStateListener with Logging {
+  protected def logTag = crudContext.application.logTag
 
   def onSaveState(outState: Bundle) {
   }
@@ -70,8 +70,5 @@ class AdapterCachingStateListener[A <: Adapter](adapterView: AdapterView[A], ent
 
   def onClearState(stayActive: Boolean) {
     crudContext.application.FuturePortableValueCache.get(crudContext).clear()
-    if (stayActive) {
-      adapterView.setAdapter(adapterFactory)
-    }
   }
 }

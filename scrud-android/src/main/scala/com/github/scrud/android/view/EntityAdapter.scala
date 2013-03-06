@@ -5,13 +5,15 @@ import com.github.scrud.platform.PlatformTypes._
 import android.view.{ViewGroup, View}
 import com.github.scrud
 import scrud.android.AndroidCrudContext
+import scrud.persistence.RefreshableFindAll
 import scrud.{CrudContextItems, CrudContextField, EntityType}
 
 /** An Android Adapter for an EntityType with the result of EntityPersistence.findAll.
   * @author Eric Pabst (epabst@gmail.com)
   */
-class EntityAdapter(val entityType: EntityType, values: Seq[AnyRef], rowViewInflater: ViewInflater,
+class EntityAdapter(val entityType: EntityType, refreshableFindAll: RefreshableFindAll, rowViewInflater: ViewInflater,
                     contextItems: CrudContextItems) extends BaseAdapter with AdapterCaching {
+  private def values: Seq[AnyRef] = refreshableFindAll.currentResults
 
   /** The UriPath that does not contain the id of the entities. */
   protected lazy val uriPathWithoutEntityId = contextItems.currentUriPath

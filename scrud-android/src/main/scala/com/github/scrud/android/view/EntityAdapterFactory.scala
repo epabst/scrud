@@ -3,7 +3,7 @@ package com.github.scrud.android.view
 import com.github.scrud.persistence.{DataListener, CrudPersistence}
 import com.github.scrud.{UriPath, CrudContextItems}
 import android.app.Activity
-import com.github.scrud.android.persistence.{CursorStream, EntityTypePersistedInfo}
+import com.github.scrud.android.persistence.{RefreshableFindAllWithCursor, EntityTypePersistedInfo}
 import android.widget.ResourceCursorAdapter
 import android.view.View
 import android.content.Context
@@ -20,23 +20,25 @@ class EntityAdapterFactory {
   private[android] def createAdapter(persistence: CrudPersistence, contextItems: CrudContextItems, itemViewInflater: ViewInflater): AdapterCaching = {
     val _entityType = persistence.entityType
     val entityTypePersistedInfo = EntityTypePersistedInfo(_entityType)
-    val findAllResult = persistence.findAll(contextItems.currentUriPath)
-    if (findAllResult.isEmpty) {
+    val refreshableFindAll = persistence.refreshableFindAll(contextItems.currentUriPath)
+    val findAllResults = refreshableFindAll.currentResults
+    if (findAllResults.isEmpty) {
       persistence.warn("No results found for entityType=" + _entityType + " uri=" + contextItems.currentUriPath)
     } else {
-      persistence.debug("found count=" + findAllResult.length + " for entityType=" + _entityType + " for uri=" + contextItems.currentUriPath)
+      persistence.debug("found count=" + findAllResults.length + " for entityType=" + _entityType + " for uri=" + contextItems.currentUriPath)
     }
-    findAllResult match {
-      case CursorStream(cursor, _) =>
+    val listener = new DataListener {
+      def onChanged(uri: UriPath) {
+        refreshableFindAll.refresh()
+      }
+    }
+    val persistenceFactory = contextItems.persistenceFactory(_entityType.entityName)
+    persistenceFactory.addListener(listener, _entityType, contextItems.crudContext)
+
+    refreshableFindAll match {
+      case RefreshableFindAllWithCursor(_, cursor, _) =>
         val activity: Activity = getActivity(contextItems)
         activity.startManagingCursor(cursor)
-        val persistenceFactory = contextItems.persistenceFactory(_entityType.entityName)
-        val listener = new DataListener {
-          def onChanged(uri: UriPath) {
-            cursor.requery()
-          }
-        }
-        persistenceFactory.addListener(listener, _entityType, contextItems.crudContext)
         new ResourceCursorAdapter(activity, itemViewInflater.viewKey, cursor) with AdapterCaching {
           def entityType = _entityType
 
@@ -48,7 +50,7 @@ class EntityAdapterFactory {
             bindViewFromCacheOrItems(view, cursor.getPosition, row, contextItems)
           }
         }
-      case _ => new EntityAdapter(_entityType, findAllResult, itemViewInflater, contextItems)
+      case _ => new EntityAdapter(_entityType, refreshableFindAll, itemViewInflater, contextItems)
     }
   }
 

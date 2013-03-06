@@ -7,11 +7,14 @@ import com.github.triangle.{PortableField, GetterInput, Logging}
 import com.github.scrud.util.Common
 import collection.mutable
 import android.database.Cursor
-import persistence.{CursorField, CursorStream, SQLiteCriteria, EntityTypePersistedInfo}
+import persistence._
 import android.app.backup.BackupManager
 import com.github.scrud.platform.PlatformTypes._
 import android.content.ContentValues
 import android.provider.BaseColumns
+import persistence.CursorStream
+import persistence.SQLiteCriteria
+import scala.Some
 
 /**
  * A ThinPersistence for interacting with SQLite.
@@ -44,6 +47,9 @@ class SQLiteThinEntityPersistence(entityType: EntityType, database: SQLiteDataba
   def findAll(uri: UriPath): CursorStream =
     // The default orderBy is Some("_id desc")
     findAll(entityType.copyAndUpdate(GetterInput(uri, PortableField.UseDefaults), new SQLiteCriteria(orderBy = Some(CursorField.idFieldName + " desc"))))
+
+  /** A findAll that can be refreshed.  It should be closed when no longer needed. */
+  override def refreshableFindAll(uri: UriPath): RefreshableFindAllWithCursor = RefreshableFindAllWithCursor(uri, findAll(uri))
 
   private def notifyDataChanged() {
     backupManager.dataChanged()

@@ -226,12 +226,8 @@ protected trait BaseCrudActivity extends ActivityWithState with OptionsMenuActiv
         contextItems.application.FuturePortableValueCache.get(contextItems.crudContext).clear()
       }
     }, contextItems.crudContext)
-    def callCreateAdapter(): A = {
-      createAdapter(persistence, contextItems, activity, itemLayout).asInstanceOf[A]
-    }
-    val adapter = callCreateAdapter()
-    adapterView.setAdapter(adapter)
-    crudContext.addCachedActivityStateListener(new AdapterCachingStateListener(adapterView, persistence.entityType, contextItems.crudContext, adapterFactory = callCreateAdapter()))
+    adapterView.setAdapter(createAdapter(persistence, contextItems, activity, itemLayout).asInstanceOf[A])
+    crudContext.addCachedActivityStateListener(new AdapterCachingStateListener(contextItems.crudContext))
   }
 
   def setListAdapter[A <: Adapter](adapterView: AdapterView[A], entityType: EntityType, crudContext: AndroidCrudContext, contextItems: CrudContextItems, activity: Activity, itemLayout: LayoutKey) {

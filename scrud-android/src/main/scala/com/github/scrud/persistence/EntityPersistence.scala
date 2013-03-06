@@ -8,7 +8,7 @@ import com.github.scrud.UriPath
   * @author Eric Pabst (epabst@gmail.com)
   */
 
-trait EntityPersistence extends ListenerSet[DataListener] {
+trait EntityPersistence extends ThinPersistence with ListenerSet[DataListener] {
   protected def logTag: String = Common.logTag
 
   def toUri(id: ID): UriPath
