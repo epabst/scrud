@@ -27,15 +27,7 @@ class EntityAdapterFactory {
     } else {
       persistence.debug("found count=" + findAllResults.length + " for entityType=" + _entityType + " for uri=" + contextItems.currentUriPath)
     }
-    val listener = new DataListener {
-      def onChanged(uri: UriPath) {
-        refreshableFindAll.refresh()
-      }
-    }
-    val persistenceFactory = contextItems.persistenceFactory(_entityType.entityName)
-    persistenceFactory.addListener(listener, _entityType, contextItems.crudContext)
-
-    refreshableFindAll match {
+    val adapter = refreshableFindAll match {
       case RefreshableFindAllWithCursor(_, cursor, _) =>
         val activity: Activity = getActivity(contextItems)
         activity.startManagingCursor(cursor)
@@ -52,6 +44,16 @@ class EntityAdapterFactory {
         }
       case _ => new EntityAdapter(_entityType, refreshableFindAll, itemViewInflater, contextItems)
     }
+    val listener = new DataListener {
+      def onChanged(uri: UriPath) {
+        refreshableFindAll.refresh()
+        adapter.notifyDataSetChanged()
+      }
+    }
+    val persistenceFactory = contextItems.persistenceFactory(_entityType.entityName)
+    persistenceFactory.addListener(listener, _entityType, contextItems.crudContext)
+
+    adapter
   }
 
   private[android] def getActivity(contextItems: CrudContextItems): Activity = {
