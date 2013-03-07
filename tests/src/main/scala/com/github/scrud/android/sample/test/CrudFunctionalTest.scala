@@ -2,16 +2,16 @@ package com.github.scrud.android.sample.test
 
 import junit.framework.Assert._
 import android.test.ActivityInstrumentationTestCase2
-import com.github.scrud.android.{PersistenceDeniedInUIThread, LastException, CrudActivity, sample}
-import sample._
+import com.github.scrud.android._
+import com.github.scrud.android.sample._
 import com.jayway.android.robotium.solo.Solo
 import com.github.triangle.PortableValue
-import com.github.scrud.{EntityName, EntityType}
+import com.github.scrud.EntityType
 import android.app.Instrumentation
 import com.github.scrud.action.CrudOperationType
 import com.github.scrud.util.Common
+import com.github.scrud.EntityName
 import com.github.scrud.action.CrudOperation
-import scala.Some
 
 class CrudFunctionalTest extends ActivityInstrumentationTestCase2(classOf[CrudActivity]) {
   var instrumentation: Instrumentation = _
@@ -29,7 +29,11 @@ class CrudFunctionalTest extends ActivityInstrumentationTestCase2(classOf[CrudAc
   }
 
   // not a val since dynamic
-  def currentCrudActivity: CrudActivity = solo.getCurrentActivity.asInstanceOf[CrudActivity]
+  def currentCrudActivity: CrudActivity = {
+    val crudActivity = solo.getCurrentActivity.asInstanceOf[CrudActivity]
+    checkForExceptionInApp(crudActivity.crudContext)
+    crudActivity
+  }
 
   def testAddEditDelete_PersistenceNotAllowedInUIThread() {
     PersistenceDeniedInUIThread.set(currentCrudActivity.crudContext, true)
@@ -104,12 +108,17 @@ class CrudFunctionalTest extends ActivityInstrumentationTestCase2(classOf[CrudAc
       assertEquals(CrudOperation(Author, CrudOperationType.List), currentCrudActivity.currentCrudOperation)
     } catch {
       case e: Throwable =>
-        LastException.get(crudContext).foreach { lastException =>
-          throw lastException
-//          lastException.printStackTrace(System.err)
-//          e.initCause(lastException)
-        }
+        checkForExceptionInApp(crudContext)
         throw e
+    }
+  }
+
+  private def checkForExceptionInApp(crudContext: AndroidCrudContext) {
+    LastException.get(crudContext).foreach {
+      lastException =>
+        throw lastException
+      //          lastException.printStackTrace(System.err)
+      //          e.initCause(lastException)
     }
   }
 
