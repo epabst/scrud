@@ -32,7 +32,15 @@ trait CrudContext extends StateHolder with Notification with Logging {
     // Would prefer to use scala.concurrent.ops.future instead of scala.actors.Futures.future because it preserves exceptions
     // However, scala.concurrent.ops.future has a problem with scala before 2.10.1 with missing sun.misc.Unsafe.throwException
     //    scala.concurrent.ops.future(trackWorkInProgress(propagateWithExceptionReporting(body))())
-    scala.actors.Futures.future(body)
+    scala.actors.Futures.future {
+      try {
+        body
+      } catch {
+        case t: Throwable =>
+          reportError(t)
+          throw t
+      }
+    }
   }
 
   def trackWorkInProgress[T](body: => T): () => T = {
