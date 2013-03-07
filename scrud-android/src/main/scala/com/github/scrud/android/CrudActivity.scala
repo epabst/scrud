@@ -317,11 +317,12 @@ class CrudActivity extends FragmentActivity with OptionsMenuActivity with Loader
   override def onBackPressed() {
     crudContext.withExceptionReporting {
       if (currentCrudOperationType == CrudOperationType.Create || currentCrudOperationType == CrudOperationType.Update) {
-        // Save before going back so that the Activity being activated will read the correct data from persistence.
-        val createId = crudApplication.saveIfValid(this, entityType, contextItemsWithoutUseDefaults)
-        val idOpt = entityType.IdField(currentUriPath)
-        if (idOpt.isEmpty) {
-          createId.foreach(id => createdId.set(Some(id)))
+        crudContext.future {
+          val createId = crudApplication.saveIfValid(this, entityType, contextItemsWithoutUseDefaults)
+          val idOpt = entityType.IdField(currentUriPath)
+          if (idOpt.isEmpty) {
+            createId.foreach(id => createdId.set(Some(id)))
+          }
         }
       }
     }

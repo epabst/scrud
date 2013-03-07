@@ -11,7 +11,9 @@ trait AndroidNotification extends Notification {
   def context: Context
 
   def displayMessageToUser(message: String) {
-    Toast.makeText(context, message, Toast.LENGTH_LONG).show()
+    runOnUiThread {
+      Toast.makeText(context, message, Toast.LENGTH_LONG).show()
+    }
   }
 
   /**
@@ -19,7 +21,9 @@ trait AndroidNotification extends Notification {
    * @param messageKey the key of the message to display
    */
   def displayMessageToUserBriefly(messageKey: PlatformTypes.SKey) {
-    Toast.makeText(context, messageKey, Toast.LENGTH_SHORT).show()
+    runOnUiThread {
+      Toast.makeText(context, messageKey, Toast.LENGTH_SHORT).show()
+    }
   }
 
   def runOnUiThread[T](body: => T) {
