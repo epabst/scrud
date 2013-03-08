@@ -189,10 +189,12 @@ class CrudActivity extends FragmentActivity with OptionsMenuActivity with Loader
         }
       case _ =>
         val currentPath = currentUriPath
-        if (crudApplication.maySpecifyEntityInstance(currentPath, entityType)) {
-          populateFromUri(entityType, currentPath)
-        } else {
-          entityType.copy(PortableField.UseDefaults +: contextItems, this)
+        crudContext.future {
+          if (crudApplication.maySpecifyEntityInstance(currentPath, entityType)) {
+            populateFromUri(entityType, currentPath)
+          } else {
+            entityType.copy(PortableField.UseDefaults +: contextItems, this)
+          }
         }
     }
   }

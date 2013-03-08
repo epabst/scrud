@@ -11,6 +11,7 @@ import android.widget._
 import com.github.scrud.android.view.AndroidResourceAnalyzer._
 import android.view.View
 import android.widget.LinearLayout
+import com.github.scrud.android.util.ViewUtil.withViewOnUIThread
 
 /** A Map of ViewKey with values.
   * Wraps a map so that it is distinguished from persisted fields.
@@ -65,9 +66,11 @@ object ViewField {
   val textView: ViewField[String] = new ViewField[String](nameLayout) {
     val delegate = Getter[TextView,String] { v =>
       toOption(v.getText.toString.trim)
-    }.withSetter({v => value =>
-      v.setText(value)
-    }, _.setText(""))
+    }.withSetter({v => valueOpt =>
+      withViewOnUIThread(v) {
+        _.setText(valueOpt.getOrElse(""))
+      }
+    })
 
     override val toString = "textView"
   }
@@ -76,8 +79,18 @@ object ViewField {
     new ViewField[T](defaultLayout) {
       val delegate = Getter[TextView,T](view => toOption(view.getText.toString.trim).flatMap(fromString.convert(_))) +
         Setter[T] {
-          case UpdaterInput(view: EditText, valueOpt, _) => view.setText(valueOpt.flatMap(toEditString.convert(_)).getOrElse(""))
-          case UpdaterInput(view: TextView, valueOpt, _) => view.setText(valueOpt.flatMap(toDisplayString.convert(_)).getOrElse(""))
+          case UpdaterInput(view: EditText, valueOpt, _) => {
+            val text = valueOpt.flatMap(toEditString.convert(_)).getOrElse("")
+            withViewOnUIThread(view) {
+              _.setText(text)
+            }
+          }
+          case UpdaterInput(view: TextView, valueOpt, _) => {
+            val text = valueOpt.flatMap(toDisplayString.convert(_)).getOrElse("")
+            withViewOnUIThread(view) {
+              _.setText(text)
+            }
+          }
         }
 
       override val toString = "formattedTextView"
@@ -87,7 +100,7 @@ object ViewField {
   lazy val doubleView: ViewField[Double] = ViewField[Double](doubleLayout, formatted(textView))
   lazy val percentageView: ViewField[Float] = formattedTextView[Float](percentageToString, percentageToEditString, stringToPercentage, doubleLayout)
   lazy val viewWeightField: Setter[Float] =
-    Setter((view: View) => (valueOpt: Option[Float]) => {
+    Setter((view: View) => (valueOpt: Option[Float]) => withViewOnUIThread(view) { view =>
       val oldLayoutParams = view.getLayoutParams.asInstanceOf[LinearLayout.LayoutParams]
       val newLayoutParams = new LinearLayout.LayoutParams(oldLayoutParams.width, oldLayoutParams.height, valueOpt.getOrElse(0.0f))
       view.setLayoutParams(newLayoutParams)
@@ -101,7 +114,9 @@ object ViewField {
   private val calendarPickerField = Setter[Calendar] {
     case UpdaterInput(picker: DatePicker, valueOpt, _) =>
       val calendar = valueOpt.getOrElse(Calendar.getInstance())
-      picker.updateDate(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH))
+      withViewOnUIThread(picker) {
+        _.updateDate(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH))
+      }
   } + Getter((p: DatePicker) => Some(new GregorianCalendar(p.getYear, p.getMonth, p.getDayOfMonth)))
 
   implicit val dateView: ViewField[Date] = new ViewField[Date](datePickerLayout) {

@@ -5,6 +5,7 @@ import com.github.triangle.converter.ValueFormat._
 import android.widget.{AdapterView, ArrayAdapter, BaseAdapter}
 import com.github.triangle.Getter
 import scala.collection.JavaConversions._
+import com.github.scrud.android.util.ViewUtil.withViewOnUIThread
 
 /** A ViewField for an [[scala.Enumeration]].
   * @author Eric Pabst (epabst@gmail.com)
@@ -17,12 +18,14 @@ case class EnumerationView[E <: Enumeration#Value](enum: Enumeration)
 
   protected val delegate = Getter[AdapterView[BaseAdapter],E](v => Option(v.getSelectedItem.asInstanceOf[E])).
     withSetter { adapterView => valueOpt =>
-      //don't do it again if already done from a previous time
-      if (adapterView.getAdapter == null) {
-        val adapter = new ArrayAdapter[E](adapterView.getContext, itemViewResourceId, valueArray)
-        adapterView.setAdapter(adapter)
+      withViewOnUIThread(adapterView) { adapterView =>
+        //don't do it again if already done from a previous time
+        if (adapterView.getAdapter == null) {
+          val adapter = new ArrayAdapter[E](adapterView.getContext, itemViewResourceId, valueArray)
+          adapterView.setAdapter(adapter)
+        }
+        adapterView.setSelection(valueOpt.map(valueArray.indexOf(_)).getOrElse(AdapterView.INVALID_POSITION))
       }
-      adapterView.setSelection(valueOpt.map(valueArray.indexOf(_)).getOrElse(AdapterView.INVALID_POSITION))
     } + formatted[E](enumFormat(enum), ViewField.textView)
 
   override lazy val toString = "EnumerationView(" + enum.getClass.getSimpleName + ")"
