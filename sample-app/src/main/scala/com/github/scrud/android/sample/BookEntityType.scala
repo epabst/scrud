@@ -8,7 +8,7 @@ import persistence.PersistedType._
 import java.util.Date
 import com.github.scrud.Validation._
 import com.github.scrud.platform.PlatformDriver
-import com.github.triangle.types.{DateWithoutTimeQT, EnumerationValueQT, PositiveIntQT, TitleQT}
+import com.github.scrud.types.{TitleQT, PositiveIntQT, EnumerationValueQT, DateWithoutTimeQT}
 
 object Book extends EntityName("Book")
 

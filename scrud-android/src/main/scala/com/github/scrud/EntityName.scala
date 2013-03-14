@@ -1,9 +1,9 @@
 package com.github.scrud
 
-import com.github.triangle.Field
 import com.github.scrud.platform.PlatformTypes._
 import platform.PlatformTypes
-import types.QualifiedType
+import com.github.scrud.types.QualifiedType
+import com.github.triangle.Field
 
 /**
  * The name of an EntityType.  It is also a QualifiedType for an entity ID value.

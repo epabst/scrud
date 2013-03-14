@@ -3,11 +3,10 @@ package com.github.scrud.android.sample
 import com.github.scrud.android._
 import persistence.CursorField._
 import com.github.scrud.{CrudContextField, EntityName, UriField, EntityType}
-import view.ViewField._
 import com.github.triangle._
 import com.github.scrud.Validation._
 import com.github.scrud.platform.PlatformDriver
-import types.{NaturalIntQT, TitleQT}
+import com.github.scrud.types.{TitleQT, NaturalIntQT}
 
 object Author extends EntityName("Author")
 

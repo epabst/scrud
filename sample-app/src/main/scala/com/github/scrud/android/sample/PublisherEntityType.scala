@@ -3,11 +3,10 @@ package com.github.scrud.android.sample
 import com.github.scrud
 import scrud.android.persistence.CursorField._
 import scrud.platform.PlatformDriver
+import scrud.types.{TitleQT, NaturalIntQT}
 import scrud.{CrudContextField, EntityName, UriField, EntityType}
-import scrud.android.view.ViewField._
 import com.github.triangle._
 import scrud.Validation._
-import types.{NaturalIntQT, TitleQT}
 
 object Publisher extends EntityName("Publisher")
 

@@ -8,9 +8,9 @@ import com.github.scrud.platform.PlatformDriver
 import scrud.EntityName
 import scrud.types._
 import view.ViewField._
-import com.github.triangle.PortableField
 import view.{EntityView, EnumerationView, ViewRef}
 import scala.Some
+import com.github.triangle.PortableField
 
 /**
  * A PlatformDriver for the Android platform.

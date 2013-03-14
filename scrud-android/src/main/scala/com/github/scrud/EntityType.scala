@@ -5,7 +5,7 @@ import com.github.triangle._
 import persistence.CrudPersistence
 import platform.PlatformDriver
 import platform.PlatformTypes._
-import types.QualifiedType
+import com.github.scrud.types.QualifiedType
 import util.Common
 
 /** An entity configuration that provides information needed to map data to and from persistence.

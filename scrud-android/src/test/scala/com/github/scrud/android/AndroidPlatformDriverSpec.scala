@@ -9,7 +9,7 @@ import org.scalatest.matchers.MustMatchers
 import com.github.scrud.android.action.AndroidOperation.toRichItent
 import com.github.scrud.util.CrudMockitoSugar
 import res.R
-import view.{EntityView, EnumerationView, ViewField}
+import com.github.scrud.android.view.{EntityView, EnumerationView, ViewField}
 import com.github.scrud.types._
 import com.github.scrud.EntityName
 import com.github.scrud.action.Action
