@@ -104,6 +104,7 @@ class AndroidPlatformDriverSpec extends MustMatchers with CrudMockitoSugar {
   @Test
   def shouldRecognizeQualifiedType_TitleQT() {
     assertQualifiedTypeRecognized(TitleQT, ViewField.textView)
+    assertQualifiedTypeRecognized(DescriptionQT, ViewField.textView)
   }
 
   @Test
@@ -119,6 +120,11 @@ class AndroidPlatformDriverSpec extends MustMatchers with CrudMockitoSugar {
   @Test
   def shouldRecognizeQualifiedType_PercentageQT() {
     assertQualifiedTypeRecognized(PercentageQT, ViewField.percentageView)
+  }
+
+  @Test
+  def shouldRecognizeQualifiedType_CurrencyQT() {
+    assertQualifiedTypeRecognized(CurrencyQT, ViewField.currencyView)
   }
 
   @Test

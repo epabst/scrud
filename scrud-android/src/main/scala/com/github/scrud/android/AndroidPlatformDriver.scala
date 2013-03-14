@@ -56,7 +56,9 @@ class AndroidPlatformDriver(rClass: Class[_], val activityClass: Class[_ <: Crud
   def namedViewField[T](fieldName: String, qualifiedType: QualifiedType[T]) = {
     val childViewField = (qualifiedType match {
       case TitleQT => textView
+      case DescriptionQT => textView
       case NaturalIntQT | PositiveIntQT => intView
+      case CurrencyQT => currencyView
       case PercentageQT => percentageView
       case DateWithoutTimeQT => dateView
       case EnumerationValueQT(enumeration) => EnumerationView(enumeration)
