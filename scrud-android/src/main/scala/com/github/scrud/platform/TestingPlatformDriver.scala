@@ -41,14 +41,20 @@ class TestingPlatformDriver extends PlatformDriver {
   def commandToUndoDelete = Command(CommandId("command1"), None, None)
 
   /** A PortableField for modifying a named portion of a View. */
-  def namedViewField[T](fieldName: String, childViewField: PortableField[T]) = namedViewField(fieldName)
+  def namedViewField[T](fieldName: String, childViewField: PortableField[T], entityName: EntityName) =
+    namedViewField(fieldName, entityName)
 
   /**
    * A PortableField for modifying a named portion of a View.
    * The platform is expected to recognize the qualifiedType and be able to return a PortableField.
    * @throws IllegalArgumentException if the qualifiedType is not recognized.
    */
-  def namedViewField[T](fieldName: String, qualifiedType: QualifiedType[T]) = namedViewField(fieldName)
+  def namedViewField[T](fieldName: String, qualifiedType: QualifiedType[T], entityName: EntityName) =
+    namedViewField(fieldName, entityName)
+
+  /** A PortableField for modifying a named portion of a View. */
+  def namedViewField[T](fieldName: String, entityName: EntityName): PortableField[T] =
+    namedViewField(entityName.toString + "_" + fieldName)
 
   /** A PortableField for modifying a named portion of a View. */
   def namedViewField[T](fieldName: String): PortableField[T] = {

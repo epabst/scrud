@@ -44,8 +44,8 @@ class AndroidPlatformDriver(rClass: Class[_], val activityClass: Class[_ <: Crud
   lazy val commandToUndoDelete = Command(CommandId("undo_delete"), None, Some(res.R.string.undo_delete))
 
   /** A PortableField for modifying a named portion of a View. */
-  def namedViewField[T](fieldName: String, childViewField: PortableField[T]): PortableField[T] = {
-    viewId(rClass, fieldName, childViewField)
+  def namedViewField[T](fieldName: String, childViewField: PortableField[T], entityName: EntityName): PortableField[T] = {
+    viewId(rClass, AndroidPlatformDriver.fieldPrefix(entityName) + fieldName, childViewField)
   }
 
   /**
@@ -53,7 +53,7 @@ class AndroidPlatformDriver(rClass: Class[_], val activityClass: Class[_ <: Crud
    * The platform is expected to recognize the qualifiedType and be able to return a PortableField.
    * @throws IllegalArgumentException if the qualifiedType is not recognized.
    */
-  def namedViewField[T](fieldName: String, qualifiedType: QualifiedType[T]) = {
+  def namedViewField[T](fieldName: String, qualifiedType: QualifiedType[T], entityName: EntityName) = {
     val childViewField = (qualifiedType match {
       case TitleQT => textView
       case DescriptionQT => textView
@@ -64,10 +64,14 @@ class AndroidPlatformDriver(rClass: Class[_], val activityClass: Class[_ <: Crud
       case EnumerationValueQT(enumeration) => EnumerationView(enumeration)
       case e @ EntityName(_) => EntityView(e)
     }).asInstanceOf[PortableField[T]]
-    namedViewField(fieldName, childViewField)
+    namedViewField(fieldName, childViewField, entityName)
   }
 
   def listViewId(entityName: EntityName): Int = ViewRef(entityName + "_list", rClass, "id").viewKeyOrError
 
   def emptyListViewIdOpt(entityName: EntityName): Int = ViewRef(entityName + "_emptyList", rClass, "id").viewKeyOrError
+}
+
+object AndroidPlatformDriver {
+  def fieldPrefix(entityName: EntityName): String = entityName.toString + "_"
 }

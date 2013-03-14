@@ -32,50 +32,50 @@ class EntityFieldInfoSpec extends FunSpec with MustMatchers with MockitoSugar {
   }
 
   it("must handle a viewId name that does not exist") {
-    val fieldInfo = EntityFieldInfo(viewId(classOf[R.id], "bogus", textView), List(classOf[R]), application).viewIdFieldInfos.head
+    val fieldInfo = EntityFieldInfo(viewId(classOf[R.id], "bogus", textView), List(classOf[R]), MyEntity, application).viewIdFieldInfos.head
     fieldInfo.id must be ("bogus")
   }
 
   it("must consider a EntityField displayable if it has a viewId field") {
-    val fieldInfo = EntityFieldInfo(EntityField[MyEntityType](MyEntity) + viewId(classOf[R], "foo", longView), Seq(classOf[R]), application)
+    val fieldInfo = EntityFieldInfo(EntityField[MyEntityType](MyEntity) + viewId(classOf[R], "foo", longView), Seq(classOf[R]), MyEntity, application)
     fieldInfo.isDisplayable must be (true)
   }
 
   it("must not include a EntityField if it has no viewId field") {
-    val fieldInfos = EntityFieldInfo(EntityField[MyEntityType](MyEntity), Seq(classOf[R]), application).viewIdFieldInfos
+    val fieldInfos = EntityFieldInfo(EntityField[MyEntityType](MyEntity), Seq(classOf[R]), MyEntity, application).viewIdFieldInfos
     fieldInfos must be (Nil)
   }
 
   it("must not include adjustment fields") {
-    val fieldInfos = EntityFieldInfo(adjustment[String](_ + "foo"), Seq(classOf[R]), application).viewIdFieldInfos
+    val fieldInfos = EntityFieldInfo(adjustment[String](_ + "foo"), Seq(classOf[R]), MyEntity, application).viewIdFieldInfos
     fieldInfos must be (Nil)
   }
 
   it("must not include adjustmentInPlace fields") {
-    val fieldInfos = EntityFieldInfo(adjustmentInPlace[StringBuffer] { s => s.append("foo"); Unit }, Seq(classOf[R]), application).viewIdFieldInfos
+    val fieldInfos = EntityFieldInfo(adjustmentInPlace[StringBuffer] { s => s.append("foo"); Unit }, Seq(classOf[R]), MyEntity, application).viewIdFieldInfos
     fieldInfos must be (Nil)
   }
 
   it("must not include the default primary key field") {
-    val fieldInfos = EntityFieldInfo(MyCrudType.entityType.IdField, Seq(classOf[R]), application).viewIdFieldInfos
+    val fieldInfos = EntityFieldInfo(MyCrudType.entityType.IdField, Seq(classOf[R]), MyEntity, application).viewIdFieldInfos
     fieldInfos must be (Nil)
   }
 
   it("must not include a ForeignKey if it has no viewId field") {
-    val fieldInfo = EntityFieldInfo(ForeignKey[MyEntityType](MyEntity), Seq(classOf[R]), application)
+    val fieldInfo = EntityFieldInfo(ForeignKey[MyEntityType](MyEntity), Seq(classOf[R]), MyEntity, application)
     fieldInfo.isUpdateable must be (false)
   }
 
   it("must detect multiple ViewFields in the same field") {
-    val fieldInfos = EntityFieldInfo(viewId(R.id.foo, textView) + viewId(R.id.bar, textView), Seq(classOf[R.id]), application).viewIdFieldInfos
+    val fieldInfos = EntityFieldInfo(viewId(R.id.foo, textView) + viewId(R.id.bar, textView), Seq(classOf[R.id]), MyEntity, application).viewIdFieldInfos
     fieldInfos.map(_.id) must be (List("foo", "bar"))
   }
 
-  val entityFieldInfo = EntityFieldInfo(viewId(R.id.foo, ForeignKey[MyEntityType](MyEntity, EntityView(MyEntity))), Seq(classOf[id]), application)
+  val entityFieldInfo = EntityFieldInfo(viewId(R.id.foo, ForeignKey[MyEntityType](MyEntity, EntityView(MyEntity))), Seq(classOf[id]), MyEntity, application)
 
   describe("updateableViewIdFieldInfos") {
     it("must not include fields whose editXml is Empty") {
-      val info = EntityFieldInfo(viewId(R.id.foo, textView.suppressEdit), Seq(classOf[id]), application)
+      val info = EntityFieldInfo(viewId(R.id.foo, textView.suppressEdit), Seq(classOf[id]), MyEntity, application)
       val fieldInfos = info.updateableViewIdFieldInfos
       fieldInfos must be ('empty)
     }
@@ -87,7 +87,7 @@ class EntityFieldInfoSpec extends FunSpec with MustMatchers with MockitoSugar {
     }
 
     it("must not include fields whose childView field isn't a ViewField") {
-      val info = EntityFieldInfo(viewId(R.id.foo, mapField[String]("foo")), Seq(classOf[id]), application)
+      val info = EntityFieldInfo(viewId(R.id.foo, mapField[String]("foo")), Seq(classOf[id]), MyEntity, application)
       val fieldInfos = info.updateableViewIdFieldInfos
       fieldInfos must be ('empty)
     }
@@ -95,7 +95,7 @@ class EntityFieldInfoSpec extends FunSpec with MustMatchers with MockitoSugar {
 
   describe("displayableViewIdFieldInfos") {
     it("must not include fields whose displayXml is Empty") {
-      val info = EntityFieldInfo(viewId(R.id.foo, textView.suppressDisplay), Seq(classOf[id]), application)
+      val info = EntityFieldInfo(viewId(R.id.foo, textView.suppressDisplay), Seq(classOf[id]), MyEntity, application)
       val fieldInfos = info.displayableViewIdFieldInfos
       fieldInfos must be ('empty)
     }
@@ -106,7 +106,7 @@ class EntityFieldInfoSpec extends FunSpec with MustMatchers with MockitoSugar {
     }
 
     it("must not include fields whose childView field isn't a ViewField") {
-      val info = EntityFieldInfo(viewId(R.id.foo, mapField[String]("foo")), Seq(classOf[id]), application)
+      val info = EntityFieldInfo(viewId(R.id.foo, mapField[String]("foo")), Seq(classOf[id]), MyEntity, application)
       val fieldInfos = info.displayableViewIdFieldInfos
       fieldInfos must be ('empty)
     }

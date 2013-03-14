@@ -142,7 +142,7 @@ class AndroidPlatformDriverSpec extends MustMatchers with CrudMockitoSugar {
   }
 
   def assertQualifiedTypeRecognized(qualifiedType: QualifiedType[_], expectedField: ViewField[_]) {
-    driver.namedViewField("foo", qualifiedType).deepCollect {
+    driver.namedViewField("foo", qualifiedType, EntityName("Bar")).deepCollect {
       case view if view == expectedField => view
     }.size must be(1)
   }

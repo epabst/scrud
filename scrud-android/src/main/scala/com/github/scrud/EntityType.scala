@@ -45,11 +45,11 @@ abstract class EntityType(val entityName: EntityName, val platformDriver: Platfo
 
   /** A PortableField for modifying a named portion of a View. */
   protected def namedViewField[T](fieldName: String, childViewField: PortableField[T]): PortableField[T] =
-    platformDriver.namedViewField(entityName.toString + "_" + fieldName, childViewField)
+    platformDriver.namedViewField(fieldName, childViewField, entityName)
 
   /** A PortableField for modifying a named portion of a View. */
   protected def namedViewField[T](fieldName: String, qualifiedType: QualifiedType[T]): PortableField[T] =
-    platformDriver.namedViewField(entityName.toString + "_" + fieldName, qualifiedType)
+    platformDriver.namedViewField(fieldName, qualifiedType, entityName)
 
   def toUri(id: ID) = UriPath(entityName, id)
 

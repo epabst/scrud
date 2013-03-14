@@ -5,18 +5,22 @@ import com.github.triangle.{PortableField, FieldList, BaseField}
 import com.github.scrud.android.persistence.CursorField
 import com.github.scrud.android.view._
 import xml.NodeSeq
-import com.github.scrud.android.NamingConventions
-import com.github.scrud.{CrudApplication, EntityType}
+import com.github.scrud.android.{AndroidPlatformDriver, NamingConventions}
+import com.github.scrud.{EntityName, CrudApplication, EntityType}
 
-case class EntityFieldInfo(field: BaseField, rIdClasses: Seq[Class[_]], application: CrudApplication) {
+case class EntityFieldInfo(field: BaseField, rIdClasses: Seq[Class[_]], entityName: EntityName, application: CrudApplication) {
   private lazy val updateablePersistedFields = CursorField.updateablePersistedFields(field, rIdClasses)
+  private val fieldPrefix = AndroidPlatformDriver.fieldPrefix(entityName)
 
   private def viewFields(field: BaseField): Seq[ViewField[_]] = field.deepCollect {
     case matchingField: ViewField[_] => matchingField
   }
 
   lazy val viewIdFieldInfos: Seq[ViewIdFieldInfo] = field.deepCollect {
-    case viewIdField: ViewIdField[_] => ViewIdFieldInfo(viewIdField.viewRef.fieldName(rIdClasses), viewIdField)
+    case viewIdField: ViewIdField[_] =>
+      val idString = viewIdField.viewRef.fieldName(rIdClasses)
+      val displayName = FieldLayout.toDisplayName(idString.stripPrefix(fieldPrefix))
+      ViewIdFieldInfo(idString, displayName, viewIdField)
   }
 
   lazy val isDisplayable: Boolean = !displayableViewIdFieldInfos.isEmpty
@@ -56,7 +60,7 @@ case class EntityTypeViewInfo(entityType: EntityType, application: CrudApplicati
   val entityName = entityType.entityName
   lazy val layoutPrefix = NamingConventions.toLayoutPrefix(entityType.entityName)
   lazy val rIdClasses: Seq[Class[_]] = detectRIdClasses(entityType.getClass)
-  lazy val entityFieldInfos: List[EntityFieldInfo] = entityType.fields.map(EntityFieldInfo(_, rIdClasses, application))
+  lazy val entityFieldInfos: List[EntityFieldInfo] = entityType.fields.map(EntityFieldInfo(_, rIdClasses, entityName, application))
   lazy val displayableViewIdFieldInfos: List[ViewIdFieldInfo] = entityFieldInfos.flatMap(_.displayableViewIdFieldInfos)
   lazy val updateableViewIdFieldInfos: List[ViewIdFieldInfo] = entityFieldInfos.flatMap(_.updateableViewIdFieldInfos)
   lazy val isUpdateable: Boolean = !updateableViewIdFieldInfos.isEmpty

@@ -58,7 +58,7 @@ class EntityTypeSpec extends FunSpec with MustMatchers {
 
   it("must calculate a field when copying from the UI to persistence when the field is persisted.") {
     val entityType1 = new EntityTypeWithHiddenCalculatedField
-    val uiData = NamedViewMap("string1" -> Some("Some Title"))
+    val uiData = NamedViewMap("Foo_string1" -> Some("Some Title"))
     val updatedPersistenceData = entityType1.copyAndUpdate(uiData +: contextItems, Map.empty[String, Option[Any]])
     updatedPersistenceData("string1") must be (Some("Some Title"))
     updatedPersistenceData("calculatedField") must be (Some("theResult"))
@@ -67,7 +67,7 @@ class EntityTypeSpec extends FunSpec with MustMatchers {
 
   it("must not calculate a field when copying from the UI to persistence when the field isn't persisted.") {
     val entityType1 = new EntityTypeWithNonPersistedCalculatedField
-    val uiData = NamedViewMap("string1" -> Some("Some Title"))
+    val uiData = NamedViewMap("Foo_string1" -> Some("Some Title"))
     val updatedPersistenceData = entityType1.copyAndUpdate(uiData +: contextItems, Map.empty[String, Option[Any]])
     updatedPersistenceData("string1") must be (Some("Some Title"))
     updatedPersistenceData.contains("calculatedField") must be (false)
@@ -78,8 +78,8 @@ class EntityTypeSpec extends FunSpec with MustMatchers {
     val entityType1 = new EntityTypeWithNonPersistedCalculatedField
     val persistenceData = Map[String, Option[Any]]("string1" -> Some("Some Title"))
     val updatedUiData = entityType1.copyAndUpdate(persistenceData +: contextItems, NamedViewMap())
-    updatedUiData("string1") must be (Some("Some Title"))
-    updatedUiData("calculatedField") must be (Some("theResult"))
+    updatedUiData("Foo_string1") must be (Some("Some Title"))
+    updatedUiData("Foo_calculatedField") must be (Some("theResult"))
     entityType1.executed.get() must be (true)
   }
 
@@ -87,8 +87,8 @@ class EntityTypeSpec extends FunSpec with MustMatchers {
     val entityType1 = new EntityTypeWithHiddenCalculatedField
     val persistenceData = Map[String, Option[Any]]("string1" -> Some("Some Title"))
     val updatedUiData = entityType1.copyAndUpdate(persistenceData +: contextItems, NamedViewMap())
-    updatedUiData("string1") must be (Some("Some Title"))
-    updatedUiData.contains("calculatedField") must be (false)
+    updatedUiData("Foo_string1") must be (Some("Some Title"))
+    updatedUiData.contains("Foo_calculatedField") must be (false)
     entityType1.executed.get() must be (false)
   }
 }
@@ -96,13 +96,13 @@ class EntityTypeSpec extends FunSpec with MustMatchers {
 class EntityTypeWithNonPersistedCalculatedField extends EntityType(EntityName("Foo"), TestingPlatformDriver) {
   val executed = new AtomicBoolean(false)
 
-  val stringField = platformDriver.namedViewField("string1", TitleQT) + persisted[String]("string1")
+  val stringField = namedViewField("string1", TitleQT) + persisted[String]("string1")
 
   val nonPersistedCalculatedField = Getter[String] {
     case stringField(Some(title)) && CrudContextField(Some(crudContext)) && UriField(Some(uri)) =>
       executed.set(true)
       Some("theResult")
-  } + platformDriver.namedViewField("calculatedField", TitleQT)
+  } + namedViewField("calculatedField", TitleQT)
 
   override val valueFields = stringField +: nonPersistedCalculatedField +: Nil
 }
@@ -110,7 +110,7 @@ class EntityTypeWithNonPersistedCalculatedField extends EntityType(EntityName("F
 class EntityTypeWithHiddenCalculatedField extends EntityType(EntityName("Foo"), TestingPlatformDriver) {
   val executed = new AtomicBoolean(false)
 
-  val stringField = platformDriver.namedViewField("string1", TitleQT) + persisted[String]("string1")
+  val stringField = namedViewField("string1", TitleQT) + persisted[String]("string1")
 
   val hiddenCalculatedField = Getter[String] {
     case stringField(Some(title)) && CrudContextField(Some(crudContext)) && UriField(Some(uri)) =>
