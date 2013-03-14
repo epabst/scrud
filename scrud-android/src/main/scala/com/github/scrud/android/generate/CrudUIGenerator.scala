@@ -31,7 +31,7 @@ object CrudUIGenerator extends Logging {
   }
 
   private def writeXmlToFile(file: File, xml: Elem) {
-    file.getParentFile.mkdirs()
+    Option(file.getParentFile).foreach(_.mkdirs())
     file.writeAll("""<?xml version="1.0" encoding="utf-8"?>""", lineSeparator, prettyPrinter.format(xml))
     println("Wrote " + file)
   }
@@ -209,24 +209,22 @@ object CrudUIGenerator extends Logging {
 
   private def adjustHeadNode(xml: NodeSeq, f: Node => Node): NodeSeq = xml.headOption.map(f(_) +: xml.tail).getOrElse(xml)
 
-  protected def fieldLayoutForEntry(field: ViewIdFieldInfo, position: Int): Elem = {
-    val gravity = "right"
+  protected def fieldLayoutForEntry(field: ViewIdFieldInfo, position: Int): NodeSeq = {
     val textAppearance = "?android:attr/textAppearanceLarge"
-    val attributes = <EditText android:id={"@+id/" + field.id}/>.attributes
-    <TableRow>
-      <TextView android:text={field.displayName + ":"} android:gravity={gravity}
-                android:textAppearance={textAppearance} style="@android:style/TextAppearance.Widget.TextView"/>
+    val attributes = <EditText android:id={"@+id/" + field.id} android:layout_width="fill_parent" android:layout_height="wrap_content"/>.attributes
+    <result>
+      <TextView android:text={field.displayName + ":"} android:textAppearance={textAppearance} style="@android:style/TextAppearance.Widget.TextView" android:layout_width="wrap_content" android:layout_height="wrap_content"/>
       {adjustHeadNode(field.layout.editXml, applyAttributes(_, attributes))}
-    </TableRow>
+    </result>.child
   }
 
-  def entryLayout(fields: List[ViewIdFieldInfo]) = {
-    <TableLayout xmlns:android="http://schemas.android.com/apk/res/android"
+  def entryLayout(fields: List[ViewIdFieldInfo]): Elem = {
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                 android:orientation="vertical"
                  android:layout_width="fill_parent"
-                 android:layout_height="wrap_content"
-                 android:stretchColumns="1">
-      {fields.map(field => fieldLayoutForEntry(field, fields.indexOf(field)))}
-    </TableLayout>
+                 android:layout_height="wrap_content">
+      {fields.flatMap(field => fieldLayoutForEntry(field, fields.indexOf(field)))}
+    </LinearLayout>
   }
 
   private def writeLayoutFile(name: String, xml: Elem) {
