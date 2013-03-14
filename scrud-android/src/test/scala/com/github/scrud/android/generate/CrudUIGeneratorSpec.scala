@@ -10,7 +10,7 @@ import org.scalatest.mock.MockitoSugar
 import com.github.scrud.{CrudApplication, EntityType}
 import com.github.scrud.android.view.ViewField
 import ViewField._
-import com.github.triangle.types.TitleQT
+import com.github.scrud.types.TitleQT
 
 /** A behavior specification for [[com.github.scrud.android.generate.CrudUIGenerator]].
   * @author Eric Pabst (epabst@gmail.com)

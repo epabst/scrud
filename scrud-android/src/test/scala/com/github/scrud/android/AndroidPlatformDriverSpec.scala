@@ -2,16 +2,15 @@ package com.github.scrud.android
 
 import _root_.android.content.Intent
 import action.StartActivityOperation
-import com.github.scrud.{EntityName, UriPath}
+import com.github.scrud.UriPath
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.scalatest.matchers.MustMatchers
 import com.github.scrud.android.action.AndroidOperation.toRichItent
 import com.github.scrud.util.CrudMockitoSugar
-import com.github.scrud.action.Action
 import res.R
-import com.github.triangle.types._
 import view.{EntityView, EnumerationView, ViewField}
+import com.github.scrud.types._
 import com.github.scrud.EntityName
 import com.github.scrud.action.Action
 

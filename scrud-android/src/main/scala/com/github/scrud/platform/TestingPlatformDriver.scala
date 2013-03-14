@@ -8,7 +8,7 @@ import com.github.scrud.EntityName
 import com.github.scrud.action.CommandId
 import com.github.scrud.action.Command
 import com.github.scrud.view.NamedViewMap
-import com.github.triangle.types.QualifiedType
+import com.github.scrud.types.QualifiedType
 
 /**
  * A simple PlatformDriver for testing.

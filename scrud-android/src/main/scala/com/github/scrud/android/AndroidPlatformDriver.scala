@@ -1,20 +1,15 @@
 package com.github.scrud.android
 
-import action.StartEntityActivityOperation
-import action.StartEntityIdActivityOperation
 import com.github.scrud
-import scrud.action.Command
-import scrud.action.CommandId
 import scrud.action.{CommandId, Command}
 import scrud.android.action.{StartEntityIdActivityOperation, StartEntityActivityOperation}
 import action.AndroidOperation._
 import com.github.scrud.platform.PlatformDriver
 import scrud.EntityName
-import scrud.EntityName
+import scrud.types._
 import view.ViewField._
 import com.github.triangle.PortableField
 import view.{EntityView, EnumerationView, ViewRef}
-import com.github.triangle.types._
 import scala.Some
 
 /**

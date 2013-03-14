@@ -10,7 +10,7 @@ import scala.Some
 import com.github.triangle.Getter
 import com.github.triangle.&&
 import java.util.concurrent.atomic.AtomicBoolean
-import com.github.triangle.types.TitleQT
+import types.TitleQT
 import view.NamedViewMap
 
 /**

@@ -4,7 +4,7 @@ import com.github.scrud.persistence.PersistenceFactory
 import com.github.scrud.action.{Command, Operation}
 import com.github.scrud.EntityName
 import com.github.triangle.PortableField
-import com.github.triangle.types.QualifiedType
+import com.github.scrud.types.QualifiedType
 
 /**
  * An API for an app to interact with the host platform such as Android.
