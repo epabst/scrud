@@ -163,7 +163,6 @@ class CrudUIGenerator extends Logging {
                   android:paddingRight="6dip"
                   android:layout_width="match_parent"
                   android:layout_height="wrap_content"
-                  android:minHeight="?android:attr/listPreferredItemHeight"
                   android:orientation="vertical">{
       fields.grouped(2).map { rowFields =>
         <LinearLayout android:layout_width="match_parent"
