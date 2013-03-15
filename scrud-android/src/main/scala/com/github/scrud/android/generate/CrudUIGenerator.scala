@@ -14,7 +14,7 @@ import com.github.scrud.android.{AndroidPlatformDriver, CrudAndroidApplication}
   * @author Eric Pabst (epabst@gmail.com)
   */
 
-object CrudUIGenerator extends Logging {
+class CrudUIGenerator extends Logging {
   protected def logTag = Common.logTag
   private val lineSeparator = System.getProperty("line.separator")
   private val androidScope: NamespaceBinding = <TextView xmlns:android="http://schemas.android.com/apk/res/android"/>.scope
@@ -126,6 +126,8 @@ object CrudUIGenerator extends Logging {
     adjustHeadNode(field.layout.displayXml, applyAttributes(_, attributes))
   }
 
+  protected def emptyListRenderedDifferently: Boolean = false
+
   protected def listLayout(entityInfo: EntityTypeViewInfo, childEntityInfos: Seq[EntityTypeViewInfo], application: CrudApplication) = {
     val addableEntityTypeInfos = if (application.isCreatable(entityInfo.entityType)) List(entityInfo) else childEntityInfos.filter(childInfo => application.isCreatable(childInfo.entityType))
     <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
@@ -136,11 +138,13 @@ object CrudUIGenerator extends Logging {
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
                 android:layout_weight="1.0"/>
-      <TextView android:id={"@+id/" + entityInfo.entityName + "_emptyList"}
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content" android:layout_weight="1"
-                android:text="Empty List"
-                android:textAppearance="?android:attr/textAppearanceLarge" style="@android:style/TextAppearance.Widget.TextView"/>
+      {if (emptyListRenderedDifferently || addableEntityTypeInfos.isEmpty)
+        <TextView android:id={"@+id/" + entityInfo.entityName + "_emptyList"}
+                  android:layout_width="wrap_content"
+                  android:layout_height="wrap_content" android:layout_weight="1"
+                  android:text={"Empty " + entityInfo.entityName + " List"}
+                  android:textAppearance="?android:attr/textAppearanceLarge" style="@android:style/TextAppearance.Widget.TextView"/>
+      }
       { addableEntityTypeInfos.map(addableEntityTypeInfo =>
         <Button android:id={"@+id/add_" + addableEntityTypeInfo.layoutPrefix + "_command"}
                 android:text={"@string/add_" + addableEntityTypeInfo.layoutPrefix}
@@ -256,3 +260,5 @@ object CrudUIGenerator extends Logging {
     if (info.isUpdateable) writeLayoutFile(layoutPrefix + "_entry", entryLayout(info.updateableViewIdFieldInfos))
   }
 }
+
+object CrudUIGenerator extends CrudUIGenerator
