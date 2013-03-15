@@ -1,24 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
-<TableLayout 
-android:stretchColumns="1" android:layout_height="wrap_content" android:layout_width="fill_parent" xmlns:android="http://schemas.android.com/apk/res/android">
-  <TableRow>
-    <TextView android:text="Name:" android:textAppearance="?android:attr/textAppearanceLarge" style="@android:style/TextAppearance.Widget.TextView" android:gravity="right"/>
-    <EditText android:inputType="textCapWords" android:id="@+id/Book_name"/>
-  </TableRow>
-  <TableRow>
-    <TextView android:text="Edition:" android:textAppearance="?android:attr/textAppearanceLarge" style="@android:style/TextAppearance.Widget.TextView" android:gravity="right"/>
-    <EditText android:inputType="number|numberSigned" android:id="@+id/Book_edition"/>
-  </TableRow>
-  <TableRow>
-    <TextView android:text="Genre:" android:textAppearance="?android:attr/textAppearanceLarge" style="@android:style/TextAppearance.Widget.TextView" android:gravity="right"/>
-    <Spinner android:drawSelectorOnTop="true" android:id="@+id/Book_genre"/>
-  </TableRow>
-  <TableRow>
-    <TextView android:text="Publisher:" android:textAppearance="?android:attr/textAppearanceLarge" style="@android:style/TextAppearance.Widget.TextView" android:gravity="right"/>
-    <Spinner android:drawSelectorOnTop="true" android:id="@+id/Book_publisher"/>
-  </TableRow>
-  <TableRow>
-    <TextView android:text="Publish Date:" android:textAppearance="?android:attr/textAppearanceLarge" style="@android:style/TextAppearance.Widget.TextView" android:gravity="right"/>
-    <DatePicker android:id="@+id/Book_publishDate"/>
-  </TableRow>
-</TableLayout>
+<LinearLayout 
+android:layout_width="fill_parent" android:layout_height="wrap_content" android:orientation="vertical" xmlns:android="http://schemas.android.com/apk/res/android">
+  <TextView android:layout_width="wrap_content" android:textAppearance="?android:attr/textAppearanceLarge" android:text="Name:" android:layout_height="wrap_content" style="@android:style/TextAppearance.Widget.TextView"/>
+  <EditText android:inputType="textCapWords" android:layout_width="fill_parent" android:layout_height="wrap_content" android:id="@+id/Book_name"/>
+  <TextView android:layout_width="wrap_content" android:textAppearance="?android:attr/textAppearanceLarge" android:text="Edition:" android:layout_height="wrap_content" style="@android:style/TextAppearance.Widget.TextView"/>
+  <EditText android:inputType="number|numberSigned" android:layout_width="fill_parent" android:layout_height="wrap_content" android:id="@+id/Book_edition"/>
+  <TextView android:layout_width="wrap_content" android:textAppearance="?android:attr/textAppearanceLarge" android:text="Genre:" android:layout_height="wrap_content" style="@android:style/TextAppearance.Widget.TextView"/>
+  <Spinner android:drawSelectorOnTop="true" android:layout_width="fill_parent" android:layout_height="wrap_content" android:id="@+id/Book_genre"/>
+  <TextView android:layout_width="wrap_content" android:textAppearance="?android:attr/textAppearanceLarge" android:text="Publisher:" android:layout_height="wrap_content" style="@android:style/TextAppearance.Widget.TextView"/>
+  <Spinner android:drawSelectorOnTop="true" android:layout_width="fill_parent" android:layout_height="wrap_content" android:id="@+id/Book_publisher"/>
+  <TextView android:layout_width="wrap_content" android:textAppearance="?android:attr/textAppearanceLarge" android:text="Publish Date:" android:layout_height="wrap_content" style="@android:style/TextAppearance.Widget.TextView"/>
+  <DatePicker android:layout_width="fill_parent" android:layout_height="wrap_content" android:id="@+id/Book_publishDate"/>
+</LinearLayout>

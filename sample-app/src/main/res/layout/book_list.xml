@@ -1,13 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              android:orientation="vertical"
-              android:layout_width="fill_parent"
-              android:layout_height="fill_parent">
-  <ListView android:id="@+id/Book_list"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"/>
-  <TextView android:id="@+id/Book_emptyList"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Empty List" android:textAppearance="?android:attr/textAppearanceLarge" style="@android:style/TextAppearance.Widget.TextView"/>
+<LinearLayout 
+android:layout_width="fill_parent" android:layout_height="fill_parent" android:orientation="vertical" xmlns:android="http://schemas.android.com/apk/res/android">
+  <ListView android:layout_width="fill_parent" android:layout_weight="1.0" android:layout_height="wrap_content" android:id="@+id/Book_list"/>
+  <Button android:layout_width="fill_parent" android:drawableLeft="@android:drawable/ic_input_add" android:text="@string/add_book" android:layout_height="wrap_content" android:id="@+id/add_book_command"/>
 </LinearLayout>
