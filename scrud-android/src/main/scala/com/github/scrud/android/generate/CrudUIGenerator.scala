@@ -42,9 +42,7 @@ class CrudUIGenerator extends Logging {
     }
     val activityNames = Seq(androidPlatformDriverFor(application).activityClass.getName)
     <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-              package={application.packageName}
-              android:versionName="${project.version}"
-              android:versionCode="${versionCode}">
+              package={application.packageName}>
       <application android:label="@string/app_name" android:icon="@drawable/icon"
                    android:name={androidApplicationClass.getName}
                    android:theme="@android:style/Theme.NoTitleBar"

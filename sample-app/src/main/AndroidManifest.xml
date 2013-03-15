@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest 
-android:versionName="${project.version}" package="com.github.scrud.android.sample" android:versionCode="${versionCode}" xmlns:android="http://schemas.android.com/apk/res/android">
+package="com.github.scrud.android.sample" xmlns:android="http://schemas.android.com/apk/res/android">
   <application 
   android:theme="@android:style/Theme.NoTitleBar" android:icon="@drawable/icon" android:restoreAnyVersion="true" android:debuggable="true" android:backupAgent="SampleBackupAgent" android:name="com.github.scrud.android.sample.SampleAndroidApplication" android:label="@string/app_name">
     <meta-data android:value="TODO: get a backup key from http://code.google.com/android/backup/signup.html and put it here." android:name="com.google.android.backup.api_key"/>
