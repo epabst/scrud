@@ -2,7 +2,7 @@ package com.github.scrud.android
 
 import android.app.Application
 import com.github.scrud.CrudApplication
-import com.github.scrud.state.State
+import com.github.scrud.state.{StateHolder, State}
 
 /**
  * A CrudApplication for Android.
@@ -16,4 +16,6 @@ import com.github.scrud.state.State
  * Date: 3/2/12
  * Time: 5:07 PM
  */
-abstract class CrudAndroidApplication(val application: CrudApplication) extends Application with State
+abstract class CrudAndroidApplication(val application: CrudApplication) extends Application with StateHolder {
+  lazy val applicationState = new State
+}

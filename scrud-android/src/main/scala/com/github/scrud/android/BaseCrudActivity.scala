@@ -9,6 +9,7 @@ import com.github.scrud.platform.PlatformTypes._
 import com.github.scrud.android.view.AndroidConversions._
 import _root_.android.os.Bundle
 import com.github.triangle._
+import state.ActivityStateHolder
 import view.AndroidResourceAnalyzer._
 import view._
 import _root_.android.app.Activity
@@ -27,7 +28,7 @@ import view.OnClickOperationSetter
   * @author Eric Pabst (epabst@gmail.com)
   */
 
-protected trait BaseCrudActivity extends ActivityWithState with OptionsMenuActivity with Logging { self =>
+protected trait BaseCrudActivity extends OptionsMenuActivity with Logging { self =>
   lazy val crudApplication: CrudApplication = super.getApplication.asInstanceOf[CrudAndroidApplication].application
 
   lazy val platformDriver: AndroidPlatformDriver = crudApplication.platformDriver.asInstanceOf[AndroidPlatformDriver]

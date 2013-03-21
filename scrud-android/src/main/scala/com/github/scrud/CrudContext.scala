@@ -86,7 +86,7 @@ trait CrudContext extends StateHolder with Notification with Logging {
 }
 
 case class SimpleCrudContext(application: CrudApplication) extends CrudContext {
-  val applicationState = new State {}
+  val applicationState = new State
 
   /** The ISO 2 country such as "US". */
   lazy val isoCountry = java.util.Locale.getDefault.getCountry

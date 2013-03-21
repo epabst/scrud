@@ -23,7 +23,6 @@ case class AndroidCrudContext(context: Context, stateHolder: ActivityStateHolder
   /** Fails if the current Context is not an Activity. */
   def activity: Activity = context.asInstanceOf[Activity]
 
-  /** Fails if the current Context is not an ActivityWithState. */
   def activityState: State = stateHolder.activityState
 
   lazy override val platformDriver: AndroidPlatformDriver = application.platformDriver.asInstanceOf[AndroidPlatformDriver]

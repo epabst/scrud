@@ -52,8 +52,8 @@ class CrudBackupAgent(application: CrudApplication) extends BackupAgent with Act
 
   protected lazy val logTag = Common.tryToEvaluate(application.logTag).getOrElse(Common.logTag)
 
-  lazy val activityState: State = new State {}
-  lazy val applicationState: State = getApplicationContext.asInstanceOf[CrudAndroidApplication]
+  lazy val activityState: State = new State
+  lazy val applicationState: State = getApplicationContext.asInstanceOf[CrudAndroidApplication].applicationState
 
   final def onBackup(oldState: ParcelFileDescriptor, data: BackupDataOutput, newState: ParcelFileDescriptor) {
     crudContext.withExceptionReporting {

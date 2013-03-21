@@ -188,7 +188,7 @@ class CrudActivitySpec extends CrudMockitoSugar with MustMatchers {
           throw throwable
         }
       }
-      override lazy val applicationState = new State {}
+      override lazy val applicationState = new State
     }
     activity.setIntent(new Intent(Intent.ACTION_MAIN))
     activity.onCreate(null)

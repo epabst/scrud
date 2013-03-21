@@ -54,5 +54,5 @@ case class MyCrudApplication(crudTypes: CrudType*) extends MyCrudApplicationSpec
 class MyCrudActivity(_crudApplication: CrudApplication) extends CrudActivity {
   override lazy val crudApplication = _crudApplication
   override lazy val currentAction = UpdateActionName
-  override lazy val applicationState = new State {}
+  override lazy val applicationState = new State
 }

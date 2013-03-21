@@ -4,7 +4,6 @@ import _root_.android.provider.BaseColumns
 import _root_.android.app.Activity
 import _root_.android.database.{Cursor, DataSetObserver}
 import _root_.android.widget.ListView
-import action.ContextWithState
 import com.github.scrud
 import com.github.scrud.state._
 import com.github.scrud.persistence._
@@ -77,8 +76,8 @@ class SQLitePersistenceFactorySpec extends MustMatchers with CrudMockitoSugar wi
   @Test
   def shouldCloseCursorsWhenClosing() {
     val crudContext = mock[AndroidCrudContext]
-    stub(crudContext.activityState).toReturn(new State {})
-    stub(crudContext.applicationState).toReturn(new State {})
+    stub(crudContext.activityState).toReturn(new State)
+    stub(crudContext.applicationState).toReturn(new State)
     stub(crudContext.application).toReturn(application)
     val persistenceFactory = SQLitePersistenceFactory
 
@@ -110,7 +109,7 @@ class SQLitePersistenceFactorySpec extends MustMatchers with CrudMockitoSugar wi
   @Test
   def shouldRefreshCursorWhenDeletingAndSaving() {
     val activity = new MyCrudActivity(application) {
-      override lazy val applicationState = new State {}
+      override lazy val applicationState = new State
       override val getAdapterView: ListView = new ListView(this)
     }
     val observer = mock[DataSetObserver]
@@ -151,6 +150,6 @@ class SQLitePersistenceFactorySpec extends MustMatchers with CrudMockitoSugar wi
 }
 
 class MyContextWithVars extends Activity with ActivityStateHolder {
-  val activityState = new State {}
-  val applicationState = new State {}
+  val activityState = new State
+  val applicationState = new State
 }

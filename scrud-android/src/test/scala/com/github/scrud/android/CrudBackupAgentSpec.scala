@@ -84,7 +84,7 @@ class CrudBackupAgentSpec extends MustMatchers with CrudMockitoSugar {
     when(applicationB.persistenceFactory(entityTypeB)).thenReturn(new MyPersistenceFactory(persistenceB))
     when(applicationB.persistenceFactory(entityType2B)).thenReturn(new MyPersistenceFactory(persistence2B))
     val backupAgent = new CrudBackupAgent(application) {
-      override lazy val applicationState = new State {}
+      override lazy val applicationState = new State
     }
     backupAgent.onCreate()
     backupAgent.onBackup(state0, backupTarget, state1)
@@ -131,7 +131,7 @@ class CrudBackupAgentSpec extends MustMatchers with CrudMockitoSugar {
     when(application.persistenceFactory(any[EntityName]())).thenReturn(new MyPersistenceFactory(persistence))
     //shouldn't call any methods on generatedPersistence
     val backupAgent = new CrudBackupAgent(application) {
-      override lazy val applicationState = new State {}
+      override lazy val applicationState = new State
     }
     backupAgent.onCreate()
     //shouldn't fail even though one is generated
