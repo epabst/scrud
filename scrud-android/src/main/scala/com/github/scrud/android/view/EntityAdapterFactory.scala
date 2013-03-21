@@ -57,7 +57,6 @@ class EntityAdapterFactory {
   }
 
   private[android] def getActivity(contextItems: CrudContextItems): Activity = {
-    val activity = contextItems.crudContext.asInstanceOf[AndroidCrudContext].activityContext.asInstanceOf[Activity]
-    activity
+    contextItems.crudContext.asInstanceOf[AndroidCrudContext].activity
   }
 }

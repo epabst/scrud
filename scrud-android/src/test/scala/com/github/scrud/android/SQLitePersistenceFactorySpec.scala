@@ -22,6 +22,7 @@ import Mockito._
 import scrud.util.{MutableListenerSet, CrudMockitoSugar}
 import com.github.scrud._
 import com.github.scrud.EntityName
+import state.ActivityStateHolder
 
 /** A test for [[com.github.scrud.android.SQLitePersistenceFactorySpec]].
   * @author Eric Pabst (epabst@gmail.com)
@@ -149,6 +150,7 @@ class SQLitePersistenceFactorySpec extends MustMatchers with CrudMockitoSugar wi
   }
 }
 
-class MyContextWithVars extends Activity with ContextWithState{
+class MyContextWithVars extends Activity with ActivityStateHolder {
+  val activityState = new State {}
   val applicationState = new State {}
 }

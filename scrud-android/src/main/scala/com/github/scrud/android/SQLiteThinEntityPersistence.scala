@@ -31,7 +31,7 @@ class SQLiteThinEntityPersistence(entityType: EntityType, database: SQLiteDataba
   private def queryFieldNames = entityTypePersistedInfo.queryFieldNames
   private lazy val deletedEntityIdCrudType = DeletedEntityIdApplication
   private def toOption(string: String): Option[String] = if (string == "") None else Some(string)
-  private lazy val backupManager = new BackupManager(crudContext.activityContext)
+  private lazy val backupManager = new BackupManager(crudContext.context)
 
   def findAll(criteria: SQLiteCriteria): CursorStream = {
     val query = criteria.selection.mkString(" AND ")
@@ -95,7 +95,7 @@ class SQLiteThinEntityPersistence(entityType: EntityType, database: SQLiteDataba
     }
     crudContext.future {
       ids.foreach { id =>
-        deletedEntityIdCrudType.recordDeletion(entityType, id, crudContext.activityContext)
+        deletedEntityIdCrudType.recordDeletion(entityType.entityName, id, crudContext)
       }
       notifyDataChanged()
     }

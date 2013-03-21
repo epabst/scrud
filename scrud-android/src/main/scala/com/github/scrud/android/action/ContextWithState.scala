@@ -7,27 +7,28 @@ import android.widget.Toast
 import com.github.scrud.util.Common
 import com.github.scrud.Notification
 import com.github.scrud.platform.PlatformTypes
+import com.github.scrud.android.state.ActivityStateHolder
 
 /**
  * The state for an Android context which has a reference to the application state as well.
  * A State that has been mixed with a Context.
  * @author Eric Pabst (epabst@gmail.com)
  */
-trait ContextWithState extends Context with State {
-  def applicationState: State
-}
+trait ContextWithState extends Context with State
 
 /** The state for an Android Activity mixed in with the Activity itself. */
-trait ActivityWithState extends Activity with ContextWithState {
+trait ActivityWithState extends Activity with ContextWithState with ActivityStateHolder {
   // getApplication gets the Android application, which should extend CrudAndroidApplication, which already extends State.
   def applicationState: State = getApplication.asInstanceOf[State]
+
+  def activityState = this
 }
 
 trait AndroidNotification extends Notification {
-  def activityContext: ContextWithState
+  def context: Context
 
   def displayMessageToUser(message: String) {
-    Toast.makeText(activityContext, message, Toast.LENGTH_LONG).show()
+    Toast.makeText(context, message, Toast.LENGTH_LONG).show()
   }
 
   /**
@@ -35,10 +36,10 @@ trait AndroidNotification extends Notification {
    * @param messageKey the key of the message to display
    */
   def displayMessageToUserBriefly(messageKey: PlatformTypes.SKey) {
-    Toast.makeText(activityContext, messageKey, Toast.LENGTH_SHORT).show()
+    Toast.makeText(context, messageKey, Toast.LENGTH_SHORT).show()
   }
 
   def runOnUiThread[T](body: => T) {
-    activityContext.asInstanceOf[Activity].runOnUiThread(Common.toRunnable(withExceptionReporting(body)))
+    context.asInstanceOf[Activity].runOnUiThread(Common.toRunnable(withExceptionReporting(body)))
   }
 }

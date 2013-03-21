@@ -236,7 +236,7 @@ class CrudActivitySpec extends CrudMockitoSugar with MustMatchers {
     val array = new SparseArray[String]()
     array.put(0, "hello")
     val working = array.get(0) == "hello"
-    if (working) error("SparseArray is now working!  You must have upgraded to a robolectric version that supports it.  Delete this code.")
+    if (working) sys.error("SparseArray is now working!  You must have upgraded to a robolectric version that supports it.  Delete this code.")
     working
   }
 

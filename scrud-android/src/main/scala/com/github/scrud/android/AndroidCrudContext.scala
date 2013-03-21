@@ -1,9 +1,10 @@
 package com.github.scrud.android
 
-import com.github.scrud.android.action.{AndroidNotification, ContextWithState}
+import _root_.android.app.Activity
+import action.AndroidNotification
 import com.github.scrud.state._
 import com.github.scrud._
-import com.github.scrud.android.state.{ActivityVar, CachedStateListeners, CachedStateListener}
+import state.{ActivityStateHolder, ActivityVar, CachedStateListeners, CachedStateListener}
 import _root_.android.os.{Looper, Bundle}
 import _root_.android.content.Context
 import _root_.android.telephony.TelephonyManager
@@ -14,14 +15,23 @@ import com.github.scrud.action.Undoable
  * A context which can store data for the duration of a single Activity.
  * @author Eric Pabst (epabst@gmail.com)
  */
-case class AndroidCrudContext(activityContext: ContextWithState, application: CrudApplication) extends CrudContext with AndroidNotification {
+case class AndroidCrudContext(context: Context, stateHolder: ActivityStateHolder, application: CrudApplication) extends CrudContext with AndroidNotification {
+  def this(activityContext: Context with ActivityStateHolder, application: CrudApplication) {
+    this(activityContext, activityContext, application)
+  }
+
+  /** Fails if the current Context is not an Activity. */
+  def activity: Activity = context.asInstanceOf[Activity]
+
+  /** Fails if the current Context is not an ActivityWithState. */
+  def activityState: State = stateHolder.activityState
+
   lazy override val platformDriver: AndroidPlatformDriver = application.platformDriver.asInstanceOf[AndroidPlatformDriver]
-  def activityState: State = activityContext
-  lazy val applicationState: State = activityContext.applicationState
+  lazy val applicationState: State = stateHolder.applicationState
 
   /** The ISO 2 country such as "US". */
   lazy val isoCountry = {
-    Option(activityContext.getSystemService(Context.TELEPHONY_SERVICE)).map(_.asInstanceOf[TelephonyManager]).
+    Option(context.getSystemService(Context.TELEPHONY_SERVICE)).map(_.asInstanceOf[TelephonyManager]).
         flatMap(tm => Option(tm.getSimCountryIso)).getOrElse(java.util.Locale.getDefault.getCountry)
   }
 
@@ -32,7 +42,7 @@ case class AndroidCrudContext(activityContext: ContextWithState, application: Cr
     // Remember the new undoable operation
     LastUndoable.set(this, undoable)
 
-    activityContext match {
+    context match {
       case crudActivity: CrudActivity =>
         crudActivity.onCommandsChanged()
     }

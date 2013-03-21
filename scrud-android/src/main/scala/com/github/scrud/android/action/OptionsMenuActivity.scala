@@ -13,7 +13,7 @@ import com.github.scrud.action.Command
   * @author Eric Pabst (epabst@gmail.com)
   */
 trait OptionsMenuActivity extends ActivityWithState with AndroidNotification {
-  def activityContext = this
+  def context = this
 
   /** The Commands to be used if they haven't been set yet. */
   protected def defaultOptionsMenuCommands: List[Command]

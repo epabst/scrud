@@ -16,11 +16,11 @@ import com.github.scrud.EntityName
 trait AndroidOperation extends Operation {
   /** Runs the operation, given the uri and the current CrudContext. */
   def invoke(uri: UriPath, crudContext: CrudContext) {
-    invoke(uri, crudContext.asInstanceOf[AndroidCrudContext].activityContext.asInstanceOf[ActivityWithState])
+    invoke(uri, crudContext.asInstanceOf[AndroidCrudContext].activity)
   }
 
   /** Runs the operation, given the uri and the current state of the application. */
-  def invoke(uri: UriPath, activity: ActivityWithState)
+  def invoke(uri: UriPath, activity: Activity)
 }
 
 object AndroidOperation {
@@ -45,9 +45,9 @@ case class RichIntent(intent: Intent) {
 }
 
 trait StartActivityOperation extends AndroidOperation {
-  def determineIntent(uri: UriPath, activity: ActivityWithState): Intent
+  def determineIntent(uri: UriPath, activity: Activity): Intent
 
-  def invoke(uri: UriPath, activity: ActivityWithState) {
+  def invoke(uri: UriPath, activity: Activity) {
     activity.startActivity(determineIntent(uri, activity))
   }
 }
@@ -57,13 +57,13 @@ trait BaseStartActivityOperation extends StartActivityOperation {
 
   def activityClass: Class[_ <: Activity]
 
-  def determineIntent(uri: UriPath, activity: ActivityWithState): Intent = AndroidOperation.constructIntent(action, uri, activity, activityClass)
+  def determineIntent(uri: UriPath, activity: Activity): Intent = AndroidOperation.constructIntent(action, uri, activity, activityClass)
 }
 
 /** An Operation that starts an Activity using the provided Intent.
   * @param intent the Intent to use to start the Activity.  It is pass-by-name because the SDK's Intent has a "Stub!" error. */
 class StartActivityOperationFromIntent(intent: => Intent) extends StartActivityOperation {
-  def determineIntent(uri: UriPath, activity: ActivityWithState) = intent
+  def determineIntent(uri: UriPath, activity: Activity) = intent
 }
 
 //final to guarantee equality is correct
@@ -78,7 +78,7 @@ trait EntityOperation extends AndroidOperation {
 final case class StartEntityActivityOperation(entityName: EntityName, action: String, activityClass: Class[_ <: Activity])
   extends BaseStartActivityOperation with EntityOperation {
 
-  override def determineIntent(uri: UriPath, activity: ActivityWithState): Intent =
+  override def determineIntent(uri: UriPath, activity: Activity): Intent =
     super.determineIntent(uri.specify(entityName), activity)
 }
 
@@ -86,13 +86,13 @@ final case class StartEntityActivityOperation(entityName: EntityName, action: St
 final case class StartEntityIdActivityOperation(entityName: EntityName, action: String, activityClass: Class[_ <: Activity])
   extends BaseStartActivityOperation with EntityOperation {
 
-  override def determineIntent(uri: UriPath, activity: ActivityWithState) = super.determineIntent(uri.upToOptionalIdOf(entityName), activity)
+  override def determineIntent(uri: UriPath, activity: Activity) = super.determineIntent(uri.upToOptionalIdOf(entityName), activity)
 }
 
 trait StartActivityForResultOperation extends StartActivityOperation {
   def viewIdToRespondTo: ViewKey
 
-  override def invoke(uri: UriPath, activity: ActivityWithState) {
+  override def invoke(uri: UriPath, activity: Activity) {
     activity.startActivityForResult(determineIntent(uri, activity), viewIdToRespondTo)
   }
 }
