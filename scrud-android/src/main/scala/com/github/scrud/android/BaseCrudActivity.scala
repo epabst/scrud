@@ -32,7 +32,7 @@ protected trait BaseCrudActivity extends ActivityWithState with OptionsMenuActiv
 
   lazy val platformDriver: AndroidPlatformDriver = crudApplication.platformDriver.asInstanceOf[AndroidPlatformDriver]
 
-  lazy val entityType: EntityType = crudApplication.allEntityTypes.find(entityType => Some(entityType.entityName.name) == currentUriPath.lastEntityNameOption).getOrElse {
+  lazy val entityType: EntityType = crudApplication.allEntityTypes.find(entityType => Some(entityType.entityName) == currentUriPath.lastEntityNameOption).getOrElse {
     throw new IllegalStateException("No valid entityName in " + currentUriPath)
   }
 

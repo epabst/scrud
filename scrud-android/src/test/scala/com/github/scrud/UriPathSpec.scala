@@ -29,12 +29,12 @@ class UriPathSpec extends FunSpec with MustMatchers {
     }
 
     it("must get the last entityName") {
-      UriPath("a", "b", "c").lastEntityNameOption must be (Some("c"))
+      UriPath("a", "b", "c").lastEntityNameOption must be (Some(EntityName("c")))
     }
 
     it("must get the last entityName even if followed by an ID") {
-      UriPath("a", "1").lastEntityNameOption must be (Some("a"))
-      UriPath("a", "1", "b", "c", "3").lastEntityNameOption must be (Some("c"))
+      UriPath("a", "1").lastEntityNameOption must be (Some(EntityName("a")))
+      UriPath("a", "1", "b", "c", "3").lastEntityNameOption must be (Some(EntityName("c")))
     }
   }
 

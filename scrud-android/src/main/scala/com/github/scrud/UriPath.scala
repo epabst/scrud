@@ -24,7 +24,11 @@ case class UriPath(segments: String*) {
 
   def specify(entityName: EntityName, id: ID): UriPath = specify(entityName.name, id.toString)
 
-  lazy val lastEntityNameOption: Option[String] = segments.reverse.find(idFormat.toValue(_).isEmpty)
+  lazy val lastEntityNameOption: Option[EntityName] = segments.reverse.find(idFormat.toValue(_).isEmpty).map(EntityName(_))
+
+  def lastEntityNameOrFail: EntityName = lastEntityNameOption.getOrElse {
+    throw new IllegalArgumentException("an EntityName must be specified in the URI but uri=" + this)
+  }
 
   def findId(entityName: EntityName): Option[ID] =
     segments.dropWhile(_ != entityName.name).toList match {
