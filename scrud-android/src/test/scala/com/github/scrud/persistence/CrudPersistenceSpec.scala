@@ -6,7 +6,7 @@ import org.scalatest.junit.JUnitRunner
 import org.scalatest.matchers.MustMatchers
 import org.scalatest.FunSpec
 import com.github.scrud.{MutableIdPk, UriPath}
-import com.github.scrud.android.MyEntityType
+import com.github.scrud.android.EntityTypeForTesting
 
 /** A behavior specification for [[com.github.scrud.persistence.EntityPersistence]].
   * @author Eric Pabst (epabst@gmail.com)
@@ -17,7 +17,7 @@ class CrudPersistenceSpec extends FunSpec with MustMatchers {
     this.id = givenId
   }
   val persistence = new SeqCrudPersistence[MyEntity] with ReadOnlyPersistence {
-    val entityType = MyEntityType
+    val entityType = EntityTypeForTesting
 
     def findAll(uri: UriPath) = Seq(new MyEntity(entityType.UriPathId.getValue(uri)))
     def listeners = Set.empty

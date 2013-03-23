@@ -108,7 +108,7 @@ class SQLitePersistenceFactorySpec extends MustMatchers with CrudMockitoSugar wi
 
   @Test
   def shouldRefreshCursorWhenDeletingAndSaving() {
-    val activity = new MyCrudActivity(application) {
+    val activity = new CrudActivityForTesting(application) {
       override lazy val applicationState = new State
       override val getAdapterView: ListView = new ListView(this)
     }
@@ -149,7 +149,7 @@ class SQLitePersistenceFactorySpec extends MustMatchers with CrudMockitoSugar wi
   }
 }
 
-class MyContextWithVars extends Activity with ActivityStateHolder {
+class ActivityStateHolderForTesting extends Activity with ActivityStateHolder {
   val activityState = new State
   val applicationState = new State
 }

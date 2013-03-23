@@ -1,7 +1,7 @@
 package com.github.scrud
 
 import org.scalatest.FunSpec
-import android.{ForeignKey, MyEntityType}
+import android.{ForeignKey, EntityTypeForTesting}
 import org.scalatest.matchers.MustMatchers
 import com.github.triangle.PortableField._
 import com.github.scrud.android.persistence.CursorField.persisted
@@ -24,13 +24,13 @@ class EntityTypeSpec extends FunSpec with MustMatchers {
 
   describe("loadingValue") {
     it("must include loading values") {
-      val loadingValue = MyEntityType.loadingValue
+      val loadingValue = EntityTypeForTesting.loadingValue
       loadingValue.update(Map.empty[String,Option[Any]]) must be (Map("name" -> Some("...")))
     }
   }
 
   it("must force having an id field on subtypes") {
-    val entityType = new MyEntityType {
+    val entityType = new EntityTypeForTesting {
       override val valueFields = List(mapField[String]("name"))
     }
     entityType.deepCollect {
@@ -41,7 +41,7 @@ class EntityTypeSpec extends FunSpec with MustMatchers {
   it("must derive parent entities from EntityField fields") {
     val entityName1 = new EntityName("Entity1")
     val entityName2 = new EntityName("Entity2")
-    val entityType3 = new MyEntityType {
+    val entityType3 = new EntityTypeForTesting {
       override val valueFields = EntityField[EntityType](entityName1) +: EntityField[EntityType](entityName2) +: super.valueFields
     }
     entityType3.parentEntityNames must be (List(entityName1, entityName2))
@@ -50,8 +50,8 @@ class EntityTypeSpec extends FunSpec with MustMatchers {
   it("must derive parent entities from foreignKey fields") {
     val entityName1 = new EntityName("Entity1")
     val entityName2 = new EntityName("Entity2")
-    val entityType3 = new MyEntityType {
-      override val valueFields = ForeignKey[MyEntityType](entityName1) +: ForeignKey[MyEntityType](entityName2) +: super.valueFields
+    val entityType3 = new EntityTypeForTesting {
+      override val valueFields = ForeignKey[EntityTypeForTesting](entityName1) +: ForeignKey[EntityTypeForTesting](entityName2) +: super.valueFields
     }
     entityType3.parentEntityNames must be (List(entityName1, entityName2))
   }

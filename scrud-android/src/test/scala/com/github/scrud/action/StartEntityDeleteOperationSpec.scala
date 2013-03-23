@@ -8,7 +8,7 @@ import com.github.scrud.android.persistence.CursorField
 import com.github.scrud.{CrudContext, UriPath}
 import org.mockito.Matchers._
 import scala.Some
-import com.github.scrud.android.{MyCrudType, MyEntityType, MyCrudApplication}
+import com.github.scrud.android.{CrudTypeForTesting, EntityTypeForTesting, CrudApplicationForTesting}
 import com.github.scrud.util.CrudMockitoSugar
 import com.github.scrud.platform.PlatformDriver
 
@@ -23,7 +23,7 @@ class StartEntityDeleteOperationSpec extends FunSpec with CrudMockitoSugar {
   val platformDriver = mock[PlatformDriver]
 
   it("must delete with option to undo") {
-    val entity = new MyEntityType
+    val entity = new EntityTypeForTesting
     val readable = mutable.Map[String,Option[Any]](CursorField.idFieldName -> Some(345L), "name" -> Some("George"))
     val uri = UriPath(entity.entityName) / 345L
     val persistence = mock[CrudPersistence]
@@ -34,7 +34,7 @@ class StartEntityDeleteOperationSpec extends FunSpec with CrudMockitoSugar {
       val undoable = currentArguments(0).asInstanceOf[Undoable]
       undoable.closeOperation.foreach(_.invoke(uri, crudContext))
     })
-    val application = MyCrudApplication(new MyCrudType(entity, persistence))
+    val application = new CrudApplicationForTesting(new CrudTypeForTesting(entity, persistence))
     application.actionToDelete(entity).get.invoke(uri, crudContext)
     val operation = new StartEntityDeleteOperation(entity)
     operation.invoke(uri, persistence, crudContext)
@@ -42,7 +42,7 @@ class StartEntityDeleteOperationSpec extends FunSpec with CrudMockitoSugar {
   }
 
   it("undo must work") {
-    val entity = new MyEntityType
+    val entity = new EntityTypeForTesting
     val readable = mutable.Map[String,Option[Any]](CursorField.idFieldName -> Some(345L), "name" -> Some("George"))
     val uri = UriPath(entity.entityName) / 345L
     val persistence = mock[CrudPersistence]

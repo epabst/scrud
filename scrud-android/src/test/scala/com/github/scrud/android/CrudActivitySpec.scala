@@ -32,11 +32,11 @@ class CrudActivitySpec extends CrudMockitoSugar with MustMatchers {
 
   @Test
   def shouldSupportAddingWithoutEverFinding() {
-    val _crudType = new MyCrudType(persistence)
-    val application = MyCrudApplication(_crudType)
+    val _crudType = new CrudTypeForTesting(persistence)
+    val application = new CrudApplicationForTesting(_crudType)
     val entity = Map[String,Option[Any]]("name" -> Some("Bob"), "age" -> Some(25))
     val uri = UriPath(_crudType.entityType.entityName)
-    val activity = new MyCrudActivity(application) {
+    val activity = new CrudActivityForTesting(application) {
       override lazy val entityType = _crudType.entityType
       override lazy val currentUriPath = uri
       override lazy val crudContext = new AndroidCrudContext(this, crudApplication) {
@@ -52,11 +52,11 @@ class CrudActivitySpec extends CrudMockitoSugar with MustMatchers {
 
   @Test
   def shouldAddIfIdNotFound() {
-    val _crudType = new MyCrudType(persistence)
-    val application = MyCrudApplication(_crudType)
+    val _crudType = new CrudTypeForTesting(persistence)
+    val application = new CrudApplicationForTesting(_crudType)
     val entity = mutable.Map[String,Option[Any]]("name" -> Some("Bob"), "age" -> Some(25))
     val uri = UriPath(_crudType.entityType.entityName)
-    val activity = new MyCrudActivity(application) {
+    val activity = new CrudActivityForTesting(application) {
       override lazy val entityType = _crudType.entityType
       override lazy val currentUriPath = uri
       override lazy val crudContext = new AndroidCrudContext(this, crudApplication) {
@@ -72,13 +72,13 @@ class CrudActivitySpec extends CrudMockitoSugar with MustMatchers {
 
   @Test
   def shouldAllowUpdating() {
-    val _crudType = new MyCrudType(persistence)
-    val application = MyCrudApplication(_crudType)
+    val _crudType = new CrudTypeForTesting(persistence)
+    val application = new CrudApplicationForTesting(_crudType)
     val entity = mutable.Map[String,Option[Any]]("name" -> Some("Bob"), "age" -> Some(25))
     val entityType = _crudType.entityType
     val uri = UriPath(entityType.entityName) / 101
     stub(persistence.find(uri)).toReturn(Some(entity))
-    val activity = new MyCrudActivity(application) {
+    val activity = new CrudActivityForTesting(application) {
       override lazy val entityType = _crudType.entityType
       override lazy val currentUriPath = uri
       override lazy val crudContext = new AndroidCrudContext(this, crudApplication) {
@@ -97,9 +97,9 @@ class CrudActivitySpec extends CrudMockitoSugar with MustMatchers {
 
   @Test
   def withPersistenceShouldClosePersistence() {
-    val _crudType = new MyCrudType(persistence)
-    val application = MyCrudApplication(_crudType)
-    val activity = new MyCrudActivity(application) {
+    val _crudType = new CrudTypeForTesting(persistence)
+    val application = new CrudApplicationForTesting(_crudType)
+    val activity = new CrudActivityForTesting(application) {
       override lazy val entityType = _crudType.entityType
     }
     activity.crudContext.withEntityPersistence(_crudType.entityType) { p => p.findAll(UriPath.EMPTY) }
@@ -108,9 +108,9 @@ class CrudActivitySpec extends CrudMockitoSugar with MustMatchers {
 
   @Test
   def withPersistenceShouldClosePersistenceWithFailure() {
-    val _crudType = new MyCrudType(persistence)
-    val application = MyCrudApplication(_crudType)
-    val activity = new MyCrudActivity(application) {
+    val _crudType = new CrudTypeForTesting(persistence)
+    val application = new CrudApplicationForTesting(_crudType)
+    val activity = new CrudActivityForTesting(application) {
       override lazy val entityType = _crudType.entityType
     }
     try {
@@ -124,13 +124,13 @@ class CrudActivitySpec extends CrudMockitoSugar with MustMatchers {
 
   @Test
   def onPauseShouldNotCreateANewIdEveryTime() {
-    val _crudType = new MyCrudType(persistence)
-    val application = MyCrudApplication(_crudType)
+    val _crudType = new CrudTypeForTesting(persistence)
+    val application = new CrudApplicationForTesting(_crudType)
     val entity = mutable.Map[String,Option[Any]]("name" -> Some("Bob"), "age" -> Some(25))
     val uri = UriPath(_crudType.entityType.entityName)
     when(persistence.find(uri)).thenReturn(None)
     stub(persistence.save(None, mutable.Map[String,Option[Any]]("name" -> Some("Bob"), "age" -> Some(25), "uri" -> Some(uri.toString), CursorField.idFieldName -> None))).toReturn(101)
-    val activity = new MyCrudActivity(application) {
+    val activity = new CrudActivityForTesting(application) {
       override lazy val entityType = _crudType.entityType
       override lazy val crudContext = new AndroidCrudContext(this, crudApplication) {
         override def future[T](body: => T) = new ReadyFuture[T](body)
@@ -157,16 +157,16 @@ class CrudActivitySpec extends CrudMockitoSugar with MustMatchers {
   def mustNotCopyFromParentEntityIfUriPathIsInsufficient() {
     val persistenceFactory = mock[PersistenceFactory]
     val parentEntityName = EntityName("Parent")
-    val entityType = new MyEntityType {
+    val entityType = new EntityTypeForTesting {
       override lazy val parentEntityNames = Seq(parentEntityName)
     }
     val crudType = new CrudType(entityType, persistenceFactory)
-    val parentEntityType = new MyEntityType(parentEntityName)
+    val parentEntityType = new EntityTypeForTesting(parentEntityName)
     val parentCrudType = new CrudType(parentEntityType, persistenceFactory)
-    val application = MyCrudApplication(crudType, parentCrudType)
+    val application = new CrudApplicationForTesting(crudType, parentCrudType)
     stub(persistenceFactory.maySpecifyEntityInstance(eql(entityType.entityName), any())).toReturn(false)
 
-    val activity = new MyCrudActivity(application)
+    val activity = new CrudActivityForTesting(application)
     activity.populateFromParentEntities()
     verify(persistenceFactory, never()).createEntityPersistence(any(), any())
   }
@@ -174,12 +174,12 @@ class CrudActivitySpec extends CrudMockitoSugar with MustMatchers {
   @Test
   def shouldAllowAdding() {
     val persistence = mock[CrudPersistence]
-    val entityType = new MyEntityType
-    val crudType = new MyCrudType(entityType, persistence)
-    val application = MyCrudApplication(crudType)
+    val entityType = new EntityTypeForTesting
+    val crudType = new CrudTypeForTesting(entityType, persistence)
+    val application = new CrudApplicationForTesting(crudType)
     when(persistence.entityType).thenReturn(entityType)
     when(persistence.findAll(any())).thenReturn(Seq(Map[String,Any]("name" -> "Bob", "age" -> 25)))
-    val activity = new MyCrudActivity(application) {
+    val activity = new CrudActivityForTesting(application) {
       override lazy val crudContext = new AndroidCrudContext(this, application) {
         /**
          * Handle the exception by communicating it to the user and developers.
@@ -206,9 +206,9 @@ class CrudActivitySpec extends CrudMockitoSugar with MustMatchers {
     val contextMenu = mock[ContextMenu]
     val ignoredView: View = null
     val ignoredMenuInfo: ContextMenu.ContextMenuInfo = null
-    val _crudType = MyCrudType
-    val application = MyCrudApplication(_crudType)
-    val activity = new MyCrudActivity(application) {
+    val _crudType = CrudTypeForTesting
+    val application = new CrudApplicationForTesting(_crudType)
+    val activity = new CrudActivityForTesting(application) {
       override lazy val entityType = _crudType.entityType
     }
     activity.onCreateContextMenu(contextMenu, ignoredView, ignoredMenuInfo)
@@ -221,11 +221,11 @@ class CrudActivitySpec extends CrudMockitoSugar with MustMatchers {
     val ignoredView: View = null
     val ignoredMenuInfo: ContextMenu.ContextMenuInfo = null
 
-    val _crudType = new MyCrudType(new MyEntityType)
-    val application = new MyCrudApplication(_crudType) {
+    val _crudType = new CrudTypeForTesting(new EntityTypeForTesting)
+    val application = new CrudApplicationForTesting(_crudType) {
       override def actionsFromCrudOperation(crudOperation: CrudOperation) = Nil
     }
-    val activity = new MyCrudActivity(application) {
+    val activity = new CrudActivityForTesting(application) {
       override lazy val entityType = _crudType.entityType
     }
     //shouldn't do anything
@@ -246,10 +246,10 @@ class CrudActivitySpec extends CrudMockitoSugar with MustMatchers {
     val persistence = mock[CrudPersistence]
     stub(persistenceFactory.createEntityPersistence(anyObject(), anyObject())).toReturn(persistence)
     when(persistence.findAll(any())).thenReturn(Seq(Map[String,Any]("name" -> "Bob", "age" -> 25)))
-    val entityType = new MyEntityType
-    val _crudType = new MyCrudType(entityType, persistenceFactory)
-    val application = MyCrudApplication(_crudType)
-    class SomeCrudListActivity extends MyCrudActivity(application) {
+    val entityType = new EntityTypeForTesting
+    val _crudType = new CrudTypeForTesting(entityType, persistenceFactory)
+    val application = new CrudApplicationForTesting(_crudType)
+    class SomeCrudListActivity extends CrudActivityForTesting(application) {
       override lazy val entityType = _crudType.entityType
 
       //make it public for testing
@@ -275,8 +275,8 @@ class CrudActivitySpec extends CrudMockitoSugar with MustMatchers {
   @Test
   def shouldIgnoreClicksOnHeader() {
     val application = mock[CrudApplication]
-    val _crudType = MyCrudType
-    val activity = new MyCrudActivity(application) {
+    val _crudType = CrudTypeForTesting
+    val activity = new CrudActivityForTesting(application) {
       override lazy val entityType = _crudType.entityType
     }
     // should do nothing

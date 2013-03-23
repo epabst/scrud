@@ -9,13 +9,13 @@ import com.github.scrud.Validation._
 import com.github.scrud.PlatformIndependentField._
 import com.github.scrud.platform.{PlatformDriver, TestingPlatformDriver}
 
-object MyEntity extends EntityName("MyMap")
+object EntityForTesting extends EntityName("MyMap")
 
 /** An EntityType for testing.
   * @author Eric Pabst (epabst@gmail.com)
   */
 
-class MyEntityType(entityName: EntityName = MyEntity, platformDriver: PlatformDriver = TestingPlatformDriver)
+class EntityTypeForTesting(entityName: EntityName = EntityForTesting, platformDriver: PlatformDriver = TestingPlatformDriver)
     extends EntityType(entityName, platformDriver) {
   def valueFields = List[BaseField](
     persisted[String]("name") + viewId(R.id.name, textView) + requiredString + loadingIndicator("..."),
@@ -24,4 +24,4 @@ class MyEntityType(entityName: EntityName = MyEntity, platformDriver: PlatformDr
     persisted[String]("uri") + Getter[UriPath,String](u => Some(u.toString)))
 }
 
-object MyEntityType extends MyEntityType(MyEntity, TestingPlatformDriver)
+object EntityTypeForTesting extends EntityTypeForTesting(EntityForTesting, TestingPlatformDriver)

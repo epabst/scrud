@@ -61,11 +61,11 @@ class CrudUIGeneratorSpec extends FunSpec with MustMatchers with MockitoSugar {
 
   describe("generateValueStrings") {
     it("must include 'list', 'add' and 'edit' strings for modifiable entities") {
-      val myEntityType = new MyEntityType {
+      val myEntityType = new EntityTypeForTesting {
         override val valueFields = List(persisted[String]("model") + namedViewField("model", TitleQT))
       }
       val application = new CrudApplication(platformDriver) {
-        val allCrudTypes = List(new MyCrudType(myEntityType))
+        val allCrudTypes = List(new CrudTypeForTesting(myEntityType))
         val dataVersion = 1
         val name = "Test App"
       }
@@ -75,11 +75,11 @@ class CrudUIGeneratorSpec extends FunSpec with MustMatchers with MockitoSugar {
     }
 
     it("must not include an 'add' string for unaddable entities") {
-      val myEntityType = new MyEntityType {
+      val myEntityType = new EntityTypeForTesting {
         override val valueFields = List(bundleField[String]("model"))
       }
       val application = new CrudApplication(platformDriver) {
-        val allCrudTypes = List(new MyCrudType(myEntityType))
+        val allCrudTypes = List(new CrudTypeForTesting(myEntityType))
         val dataVersion = 1
         val name = "Test App"
         override def isCreatable(entityType: EntityType) = false
@@ -90,11 +90,11 @@ class CrudUIGeneratorSpec extends FunSpec with MustMatchers with MockitoSugar {
     }
 
     it("must not include 'add' and 'edit' strings for unmodifiable entities") {
-      val _entityType = new MyEntityType {
+      val _entityType = new EntityTypeForTesting {
         override def valueFields = List(bundleField[String]("model"))
       }
       val application = new CrudApplication(platformDriver) {
-        val allCrudTypes = List(new MyCrudType(_entityType))
+        val allCrudTypes = List(new CrudTypeForTesting(_entityType))
         val dataVersion = 1
         val name = "Test App"
         override def isCreatable(entityType: EntityType) = false

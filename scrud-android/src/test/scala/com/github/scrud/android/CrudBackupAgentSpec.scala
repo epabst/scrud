@@ -57,32 +57,32 @@ class CrudBackupAgentSpec extends MustMatchers with CrudMockitoSugar {
     val state1 = mock[ParcelFileDescriptor]
     val state1b = mock[ParcelFileDescriptor]
 
-    val persistence = new MyEntityPersistence
+    val persistence = new EntityPersistenceForTesting
     persistence.save(Some(100L), mutable.Map("name" -> Some("Joe"), "age" -> Some(30)))
     persistence.save(Some(101L), mutable.Map("name" -> Some("Mary"), "age" -> Some(28)))
-    val persistence2 = new MyEntityPersistence
+    val persistence2 = new EntityPersistenceForTesting
     persistence2.save(Some(101L), mutable.Map("city" -> Some("Los Angeles"), "state" -> Some("CA")))
     persistence2.save(Some(104L), mutable.Map("city" -> Some("Chicago"), "state" -> Some("IL")))
-    val entityType = new MyEntityType
-    val entityType2 = new MyEntityType(EntityName("OtherMap"))
-    val persistenceB = new MyEntityPersistence
-    val persistence2B = new MyEntityPersistence
-    val entityTypeB = new MyEntityType
-    val entityType2B = new MyEntityType(EntityName("OtherMap"))
+    val entityType = new EntityTypeForTesting
+    val entityType2 = new EntityTypeForTesting(EntityName("OtherMap"))
+    val persistenceB = new EntityPersistenceForTesting
+    val persistence2B = new EntityPersistenceForTesting
+    val entityTypeB = new EntityTypeForTesting
+    val entityType2B = new EntityTypeForTesting(EntityName("OtherMap"))
     val state0 = null
     val restoreItems = mutable.ListBuffer[RestoreItem]()
     when(application.allEntityTypes).thenReturn(List[EntityType](entityType, entityType2))
     when(application.isSavable(any[EntityType]())).thenReturn(true)
-    when(application.persistenceFactory(entityType)).thenReturn(new MyPersistenceFactory(persistence))
-    when(application.persistenceFactory(entityType2)).thenReturn(new MyPersistenceFactory(persistence2))
+    when(application.persistenceFactory(entityType)).thenReturn(new PersistenceFactoryForTesting(persistence))
+    when(application.persistenceFactory(entityType2)).thenReturn(new PersistenceFactoryForTesting(persistence2))
     when(backupTarget.writeEntity(eql("MyMap#100"), any())).thenAnswer(saveRestoreItem(restoreItems))
     when(backupTarget.writeEntity(eql("MyMap#101"), any())).thenAnswer(saveRestoreItem(restoreItems))
     when(backupTarget.writeEntity(eql("OtherMap#101"), any())).thenAnswer(saveRestoreItem(restoreItems))
     when(backupTarget.writeEntity(eql("OtherMap#104"), any())).thenAnswer(saveRestoreItem(restoreItems))
     when(applicationB.allEntityTypes).thenReturn(List[EntityType](entityTypeB, entityType2B))
     when(applicationB.isSavable(any[EntityType]())).thenReturn(true)
-    when(applicationB.persistenceFactory(entityTypeB)).thenReturn(new MyPersistenceFactory(persistenceB))
-    when(applicationB.persistenceFactory(entityType2B)).thenReturn(new MyPersistenceFactory(persistence2B))
+    when(applicationB.persistenceFactory(entityTypeB)).thenReturn(new PersistenceFactoryForTesting(persistenceB))
+    when(applicationB.persistenceFactory(entityType2B)).thenReturn(new PersistenceFactoryForTesting(persistence2B))
     val backupAgent = new CrudBackupAgent(application) {
       override lazy val applicationState = new State
     }
@@ -119,16 +119,16 @@ class CrudBackupAgentSpec extends MustMatchers with CrudMockitoSugar {
     val application = mock[CrudApplication]
     val backupTarget = mock[BackupTarget]
     val state1 = mock[ParcelFileDescriptor]
-    val persistence = new MyEntityPersistence
-    val entityType = new MyEntityType
+    val persistence = new EntityPersistenceForTesting
+    val entityType = new EntityTypeForTesting
     val generatedType = new EntityType(EntityName("Generated"), TestingPlatformDriver) {
-      val valueFields = List[BaseField](EntityField[MyEntityType](MyEntity), default[Int](100))
+      val valueFields = List[BaseField](EntityField[EntityTypeForTesting](EntityForTesting), default[Int](100))
     }
     val state0 = null
     when(application.entityNameLayoutPrefixFor(entityType.entityName)).thenReturn("test")
     when(application.entityNameLayoutPrefixFor(generatedType.entityName)).thenReturn("generated")
     when(application.allEntityTypes).thenReturn(List[EntityType](entityType, generatedType))
-    when(application.persistenceFactory(any[EntityName]())).thenReturn(new MyPersistenceFactory(persistence))
+    when(application.persistenceFactory(any[EntityName]())).thenReturn(new PersistenceFactoryForTesting(persistence))
     //shouldn't call any methods on generatedPersistence
     val backupAgent = new CrudBackupAgent(application) {
       override lazy val applicationState = new State
@@ -140,4 +140,4 @@ class CrudBackupAgentSpec extends MustMatchers with CrudMockitoSugar {
   }
 }
 
-class MyEntityPersistence extends ListBufferCrudPersistence(Map.empty[String, Option[Any]], null, null)
+class EntityPersistenceForTesting extends ListBufferCrudPersistence(Map.empty[String, Option[Any]], null, null)

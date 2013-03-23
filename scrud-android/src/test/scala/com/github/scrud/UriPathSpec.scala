@@ -1,7 +1,7 @@
 package com.github.scrud
 
 import org.junit.runner.RunWith
-import android.MyEntityType
+import android.EntityTypeForTesting
 import org.scalatest.matchers.MustMatchers
 import org.scalatest.junit.JUnitRunner
 import org.scalatest.FunSpec
@@ -11,7 +11,7 @@ import org.scalatest.FunSpec
   */
 @RunWith(classOf[JUnitRunner])
 class UriPathSpec extends FunSpec with MustMatchers {
-  val entityName = MyEntityType.entityName
+  val entityName = EntityTypeForTesting.entityName
 
   describe("findId") {
     it("must find the id following the entity name") {

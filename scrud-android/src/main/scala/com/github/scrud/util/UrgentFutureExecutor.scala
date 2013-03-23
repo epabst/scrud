@@ -17,7 +17,7 @@ class UrgentFutureExecutor(maxActiveCount: Int = 20) {
 
   /** Creates a Future that will be executed before most previously created Futures. */
   def urgentFuture[T](body: => T): Future[T] = {
-    val futureTask = FutureTask(() => body, new MyFuturePromise[T])
+    val futureTask = FutureTask(() => body, new FuturePromise[T])
     tasks.addLast(futureTask)
     if (activeCount.get() < maxActiveCount) {
       activeCount.incrementAndGet()
@@ -32,7 +32,7 @@ class UrgentFutureExecutor(maxActiveCount: Int = 20) {
   }
 }
 
-private case class FutureTask[T](body: () => T, promise: MyFuturePromise[T]) {
+private case class FutureTask[T](body: () => T, promise: FuturePromise[T]) {
   def run() {
     try {
       val result: T = body()
@@ -44,7 +44,7 @@ private case class FutureTask[T](body: () => T, promise: MyFuturePromise[T]) {
 }
 
 /** A Promise and its Future. Refactor once using a version of Scala that has a Promise. */
-private class MyFuturePromise[T] extends Future[T] {
+private class FuturePromise[T] extends Future[T] {
   private val latch = new CountDownLatch(1)
   private val result = new AtomicReference[Either[T,Throwable]]()
   private val responders = new ConcurrentLinkedQueue[(T) => Unit]()

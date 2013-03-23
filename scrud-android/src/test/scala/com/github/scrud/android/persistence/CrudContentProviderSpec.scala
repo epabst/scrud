@@ -11,7 +11,7 @@ import com.github.scrud.android._
 import com.github.scrud.state.State
 import com.github.scrud.persistence.ListBufferPersistenceFactory
 import scala.Some
-import com.github.scrud.android.MyCrudApplication
+import com.github.scrud.android.CrudApplicationForTesting
 
 /**
  * A behavior specification for [[com.github.scrud.android.persistence.CrudContentProvider]].
@@ -23,12 +23,12 @@ import com.github.scrud.android.MyCrudApplication
 class CrudContentProviderSpec extends CrudMockitoSugar with MustMatchers {
   val platformDriver = new AndroidPlatformDriver(null)
   val fooEntityName = EntityName("Foo")
-  val fooEntityType = new MyEntityType(fooEntityName, platformDriver)
-  val fooCrudType = new MyCrudType(fooEntityType, new ListBufferPersistenceFactory[Map[String,Option[Any]]](Map.empty))
+  val fooEntityType = new EntityTypeForTesting(fooEntityName, platformDriver)
+  val fooCrudType = new CrudTypeForTesting(fooEntityType, new ListBufferPersistenceFactory[Map[String,Option[Any]]](Map.empty))
   val barEntityName = EntityName("Bar")
-  val barEntityType = new MyEntityType(barEntityName, platformDriver)
-  val barCrudType = new MyCrudType(barEntityType, new ListBufferPersistenceFactory[Map[String,Option[Any]]](Map.empty))
-  val testApplication = MyCrudApplication(fooCrudType, barCrudType)
+  val barEntityType = new EntityTypeForTesting(barEntityName, platformDriver)
+  val barCrudType = new CrudTypeForTesting(barEntityType, new ListBufferPersistenceFactory[Map[String,Option[Any]]](Map.empty))
+  val testApplication = new CrudApplicationForTesting(fooCrudType, barCrudType)
 
   @Test
   def getType_mustUseLastEntityName() {

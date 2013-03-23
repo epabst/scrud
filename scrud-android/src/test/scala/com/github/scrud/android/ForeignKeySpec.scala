@@ -14,11 +14,11 @@ import persistence.SQLiteCriteria
 class ForeignKeySpec extends MustMatchers with EasyMockSugar {
   @Test
   def shouldGetCriteriaCorrectlyForForeignKey() {
-    val foreign = ForeignKey[MyEntityType](MyEntity)
-    val uri = UriPath(MyEntityType.entityName, 19)
+    val foreign = ForeignKey[EntityTypeForTesting](EntityForTesting)
+    val uri = UriPath(EntityTypeForTesting.entityName, 19)
     //add on extra stuff to make sure it is ignored
     val uriWithExtraStuff = uri / "foo" / 1234
     val criteria = foreign.copyAndUpdate(uriWithExtraStuff, new SQLiteCriteria)
-    criteria.selection must be (List(EntityField.fieldName(MyEntity) + "=19"))
+    criteria.selection must be (List(EntityField.fieldName(EntityForTesting) + "=19"))
   }
 }

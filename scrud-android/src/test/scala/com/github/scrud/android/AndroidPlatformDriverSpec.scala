@@ -22,16 +22,16 @@ class AndroidPlatformDriverSpec extends MustMatchers with CrudMockitoSugar {
   //todo determine if shadowing, and run tests on real Android device as well.
   val isShadowing = true
   val driver = new AndroidPlatformDriver(classOf[R])
-  val application = new MyCrudApplicationSpecifyingPlatform(driver, MyCrudType) {
+  val application = new CrudApplicationForTesting(driver, CrudTypeForTesting) {
     override def hasDisplayPage(entityName: EntityName) = true
   }
 
-  import MyEntityType.entityName
+  import EntityTypeForTesting.entityName
 
-  val Action(_, createOperation: StartActivityOperation) = application.actionToCreate(MyEntityType).get
-  val Action(_, listOperation: StartActivityOperation) = application.actionToList(MyEntityType).get
-  val Action(_, displayOperation: StartActivityOperation) = application.actionToDisplay(MyEntityType).get
-  val Action(_, updateOperation: StartActivityOperation) = application.actionToUpdate(MyEntityType).get
+  val Action(_, createOperation: StartActivityOperation) = application.actionToCreate(EntityTypeForTesting).get
+  val Action(_, listOperation: StartActivityOperation) = application.actionToList(EntityTypeForTesting).get
+  val Action(_, displayOperation: StartActivityOperation) = application.actionToDisplay(EntityTypeForTesting).get
+  val Action(_, updateOperation: StartActivityOperation) = application.actionToUpdate(EntityTypeForTesting).get
 
   @Test
   def createActionShouldHaveTheRightUri() {

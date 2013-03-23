@@ -15,7 +15,7 @@ import com.github.scrud._
 import android._
 import android.AndroidCrudContext
 import android.CrudType
-import android.MyCrudApplication
+import android.CrudApplicationForTesting
 import com.github.scrud.util.{ListenerHolder, CrudMockitoSugar}
 import com.github.scrud.EntityName
 import platform.TestingPlatformDriver
@@ -44,7 +44,7 @@ class GeneratedPersistenceFactorySpec extends MustMatchers with CrudMockitoSugar
       override protected val idField = mapField[ID]("longId") + super.idField
       def valueFields = Nil
     }
-    val _crudApplication = MyCrudApplication(CrudType(entityType, factory))
+    val _crudApplication = new CrudApplicationForTesting(CrudType(entityType, factory))
     stub(crudContext.activityState).toReturn(new State)
     stub(crudContext.applicationState).toReturn(new State)
     stub(crudContext.dataListenerHolder(entityType)).toReturn(dataListenerHolder)
@@ -54,7 +54,7 @@ class GeneratedPersistenceFactorySpec extends MustMatchers with CrudMockitoSugar
     val uri = UriPath.EMPTY
     when(persistence.entityType).thenReturn(entityType)
     when(persistence.findAll(uri)).thenReturn(List(Map("longId" -> 456L)))
-    val activity = new MyCrudActivity(_crudApplication)
+    val activity = new CrudActivityForTesting(_crudApplication)
     activity.setListAdapter(adapterView, entityType, crudContext, new CrudContextItems(uri, crudContext), activity, 123)
     verify(adapterView).setAdapter(anyObject())
     val listAdapter = listAdapterCapture.params(0).asInstanceOf[ListAdapter]
