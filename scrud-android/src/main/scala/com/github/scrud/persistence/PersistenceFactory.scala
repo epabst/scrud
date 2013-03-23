@@ -7,7 +7,7 @@ import com.github.scrud.util.ListenerHolder
   * @author Eric Pabst (epabst@gmail.com)
   */
 
-trait PersistenceFactory {
+abstract class PersistenceFactory {
   /** Indicates if an entity can be saved. */
   def canSave: Boolean
 
