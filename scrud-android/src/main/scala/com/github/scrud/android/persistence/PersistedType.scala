@@ -12,6 +12,8 @@ trait PersistedType[T] {
 
   def getValue(cursor: Cursor, cursorIndex: Int): Option[T]
 
+  def getValue(contentValues: ContentValues, name: String): Option[T]
+
   def putValue(contentValues: ContentValues, name: String, value: T)
 
   def getValue(bundle: Bundle, name: String): Option[T]
@@ -28,6 +30,9 @@ private class ConvertedPersistedType[T,P](toValue: P => Option[T], toPersisted: 
         extends PersistedType[T] {
   val sqliteType = persistedType.sqliteType
 
+  def getValue(contentValues: ContentValues, name: String): Option[T] =
+    persistedType.getValue(contentValues, name).flatMap(toValue)
+
   def putValue(contentValues: ContentValues, name: String, value: T) {
     persistedType.putValue(contentValues, name, toPersisted(value))
   }
@@ -42,7 +47,9 @@ private class ConvertedPersistedType[T,P](toValue: P => Option[T], toPersisted: 
 }
 
 private class DirectPersistedType[T <: AnyRef](val sqliteType: String,
-                                               cursorGetter: Cursor => Int => Option[T], contentValuesPutter: ContentValues => (String, T) => Unit,
+                                               cursorGetter: Cursor => Int => Option[T],
+                                               contentValuesGetter: ContentValues => String => Option[T],
+                                               contentValuesPutter: ContentValues => (String, T) => Unit,
                                                bundleGetter: Bundle => String => Option[T], bundlePutter: Bundle => (String, T) => Unit)
                                       (implicit val valueManifest: Manifest[T]) extends PersistedType[T] {
   def putValue(contentValues: ContentValues, name: String, value: T) {
@@ -50,6 +57,8 @@ private class DirectPersistedType[T <: AnyRef](val sqliteType: String,
   }
 
   def getValue(cursor: Cursor, cursorIndex: Int): Option[T] = if (cursor.isNull(cursorIndex)) None else cursorGetter(cursor)(cursorIndex)
+
+  def getValue(contentValues: ContentValues, name: String): Option[T] = contentValuesGetter(contentValues)(name)
 
   def putValue(bundle: Bundle, name: String, value: T) {
     bundlePutter(bundle)(name, value)
@@ -84,14 +93,22 @@ object PersistedType {
     def getJFloat(index: Int): java.lang.Float = cursor.getFloat(index).asInstanceOf[java.lang.Float]
   }
   private implicit def toRichCursor(cursor: Cursor): RichCursor = new RichCursor(cursor)
-  implicit lazy val stringType: PersistedType[String] = directPersistedType[String]("TEXT", c => c.getString, c => c.put(_, _), c => c.getString, c => c.putString(_, _))
-  implicit lazy val longRefType: PersistedType[java.lang.Long] = directPersistedType[java.lang.Long]("INTEGER", c => c.getJLong, c => c.put(_, _), c => c.getJLong, c => c.putJLong)
-  implicit lazy val intRefType: PersistedType[java.lang.Integer] = directPersistedType[java.lang.Integer]("INTEGER", c => c.getJInt, c => c.put(_, _), c => c.getJInt, c => c.putJInt)
-  implicit lazy val shortRefType: PersistedType[java.lang.Short] = directPersistedType[java.lang.Short]("INTEGER", c => c.getJShort, c => c.put(_, _), c => c.getJShort, c => c.putJShort)
-  implicit lazy val byteRefType: PersistedType[java.lang.Byte] = directPersistedType[java.lang.Byte]("INTEGER", c => c.getJByte, c => c.put(_, _), c => c.getJByte, c => c.putJByte)
-  implicit lazy val doubleRefType: PersistedType[java.lang.Double] = directPersistedType[java.lang.Double]("REAL", c => c.getJDouble, c => c.put(_, _), c => c.getJDouble, c => c.putJDouble)
-  implicit lazy val floatRefType: PersistedType[java.lang.Float] = directPersistedType[java.lang.Float]("REAL", c => c.getJFloat, c => c.put(_, _), c => c.getJFloat, c => c.putJFloat)
-  implicit lazy val blobType: PersistedType[Array[Byte]] = directPersistedType[Array[Byte]]("BLOB", c => c.getBlob, c => c.put(_, _), c => c.getByteArray, c => c.putByteArray(_, _))
+  implicit lazy val stringType: PersistedType[String] = directPersistedType[String]("TEXT", c => c.getString,
+    c => f => Option(c.getAsString(f)), c => c.put(_, _), c => c.getString, c => c.putString(_, _))
+  implicit lazy val longRefType: PersistedType[java.lang.Long] = directPersistedType[java.lang.Long]("INTEGER", c => c.getJLong,
+    c => f => Option(c.getAsLong(f)), c => c.put(_, _), c => c.getJLong, c => c.putJLong)
+  implicit lazy val intRefType: PersistedType[java.lang.Integer] = directPersistedType[java.lang.Integer]("INTEGER", c => c.getJInt,
+    c => f => Option(c.getAsInteger(f)), c => c.put(_, _), c => c.getJInt, c => c.putJInt)
+  implicit lazy val shortRefType: PersistedType[java.lang.Short] = directPersistedType[java.lang.Short]("INTEGER", c => c.getJShort,
+    c => f => Option(c.getAsShort(f)), c => c.put(_, _), c => c.getJShort, c => c.putJShort)
+  implicit lazy val byteRefType: PersistedType[java.lang.Byte] = directPersistedType[java.lang.Byte]("INTEGER", c => c.getJByte,
+    c => f => Option(c.getAsByte(f)), c => c.put(_, _), c => c.getJByte, c => c.putJByte)
+  implicit lazy val doubleRefType: PersistedType[java.lang.Double] = directPersistedType[java.lang.Double]("REAL", c => c.getJDouble,
+    c => f => Option(c.getAsDouble(f)), c => c.put(_, _), c => c.getJDouble, c => c.putJDouble)
+  implicit lazy val floatRefType: PersistedType[java.lang.Float] = directPersistedType[java.lang.Float]("REAL", c => c.getJFloat,
+    c => f => Option(c.getAsFloat(f)), c => c.put(_, _), c => c.getJFloat, c => c.putJFloat)
+  implicit lazy val blobType: PersistedType[Array[Byte]] = directPersistedType[Array[Byte]]("BLOB", c => c.getBlob,
+    c => f => Option(c.getAsByteArray(f)), c => c.put(_, _), c => c.getByteArray, c => c.putByteArray(_, _))
   implicit lazy val longType: PersistedType[Long] = castedPersistedType[Long,java.lang.Long]
   implicit lazy val intType: PersistedType[Int] = castedPersistedType[Int,java.lang.Integer]
   implicit lazy val shortType: PersistedType[Short] = castedPersistedType[Short,java.lang.Short]
@@ -107,8 +124,11 @@ object PersistedType {
 
   //doesn't require an Option.
   private def directPersistedType[T <: AnyRef](sqliteType: String,
-                                               cursorGetter: Cursor => Int => T, contentValuesPutter: ContentValues => (String, T) => Unit,
+                                               cursorGetter: Cursor => Int => T,
+                                               contentValuesGetter: ContentValues => String => Option[T],
+                                               contentValuesPutter: ContentValues => (String, T) => Unit,
                                                bundleGetter: Bundle => String => T, bundlePutter: Bundle => (String, T) => Unit)
                                               (implicit valueManifest: Manifest[T]) =
-    new DirectPersistedType(sqliteType, c => index => Some(cursorGetter(c)(index)), contentValuesPutter, b => k => Some(bundleGetter(b)(k)), bundlePutter)
+    new DirectPersistedType(sqliteType, c => index => Some(cursorGetter(c)(index)), contentValuesGetter,
+      contentValuesPutter, b => k => Some(bundleGetter(b)(k)), bundlePutter)
 }

@@ -70,6 +70,7 @@ class CursorField[T](val name: String)(implicit val persistedType: PersistedType
     case cursor: Cursor if cursor.getColumnIndex(columnName) >= 0 =>
       persistedType.getValue(cursor, cursor.getColumnIndex(columnName))
   } + Setter((c: ContentValues) => (value: T) => persistedType.putValue(c, columnName, value), (c: ContentValues) => c.putNull(columnName)) +
+      Getter((c: ContentValues) => persistedType.getValue(c, columnName)) +
     bundleField[T](name)
 
   lazy val columnName = SQLiteUtil.toNonReservedWord(name)
