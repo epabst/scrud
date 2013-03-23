@@ -47,9 +47,10 @@ class ListBufferEntityPersistence[T <: AnyRef](entityName: EntityName, newWritab
     newId
   }
 
-  def doDelete(uri: UriPath) {
+  def doDelete(uri: UriPath): Int = {
     val matches = findAll(uri)
     matches.foreach(entity => buffer -= entity)
+    matches.size
   }
 
   def close() {}

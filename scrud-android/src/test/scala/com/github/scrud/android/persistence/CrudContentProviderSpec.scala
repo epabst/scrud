@@ -10,7 +10,6 @@ import android.content.{ContentValues, ContentResolver}
 import com.github.scrud.android._
 import com.github.scrud.state.State
 import com.github.scrud.persistence.ListBufferPersistenceFactory
-import persistence.CursorStream
 import scala.Some
 import com.github.scrud.android.MyCrudApplication
 
@@ -77,6 +76,8 @@ class CrudContentProviderSpec extends CrudMockitoSugar with MustMatchers {
     cursor.getCount must be (1)
     val head = CursorStream(cursor, EntityTypePersistedInfo(fooEntityType)).head
     fooEntityType.idPkField.getRequired(head) must be (toUriPath(uri2).findId(fooEntityName).get)
+
+    provider.delete(uri1, null, Array.empty) must be (0)
   }
 }
 

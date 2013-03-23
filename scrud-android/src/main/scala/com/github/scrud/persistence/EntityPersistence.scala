@@ -39,13 +39,16 @@ trait EntityPersistence extends ThinPersistence with ListenerSet[DataListener] {
   /** Delete a set of entities by uri.
     * This should NOT delete child entities because that would make the "undo" functionality incomplete.
     * Instead, assume that the CrudType will handle deleting all child entities explicitly.
+    * @return how many were deleted
     */
-  final def delete(uri: UriPath) {
-    doDelete(uri)
+  final def delete(uri: UriPath): Int = {
+    val result = doDelete(uri)
     listeners.foreach(_.onChanged(uri))
+    result
   }
 
-  def doDelete(uri: UriPath)
+  /** @return how many were deleted */
+  def doDelete(uri: UriPath): Int
 
   def close()
 }

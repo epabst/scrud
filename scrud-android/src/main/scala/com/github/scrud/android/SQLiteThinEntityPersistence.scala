@@ -87,7 +87,7 @@ class SQLiteThinEntityPersistence(entityType: EntityType, database: SQLiteDataba
     id
   }
 
-  def delete(uri: UriPath) {
+  def delete(uri: UriPath): Int = {
     val ids = findAll(uri).map { readable =>
       val id = entityType.IdField.getRequired(readable)
       database.delete(tableName, BaseColumns._ID + "=" + id, Nil.toArray)
@@ -99,6 +99,7 @@ class SQLiteThinEntityPersistence(entityType: EntityType, database: SQLiteDataba
       }
       notifyDataChanged()
     }
+    ids.size
   }
 
   def close() {

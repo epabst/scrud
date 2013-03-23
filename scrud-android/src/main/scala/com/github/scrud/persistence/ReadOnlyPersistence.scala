@@ -14,7 +14,7 @@ trait ReadOnlyPersistence extends EntityPersistence {
 
   def doSave(id: Option[ID], data: AnyRef): ID = throw new UnsupportedOperationException("write not supported")
 
-  def doDelete(uri: UriPath) { throw new UnsupportedOperationException("delete not supported") }
+  def doDelete(uri: UriPath): Int = { throw new UnsupportedOperationException("delete not supported") }
 
   def close() {}
 }

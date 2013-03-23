@@ -70,7 +70,6 @@ abstract class CrudContentProvider extends ContentProvider with ActivityStateHol
     val persistence = persistenceFor(uriPath)
     val writable = persistence.entityType.copyAndUpdate(values, persistence.newWritable())
     persistence.save(Some(persistence.entityType.idPkField.getRequired(uriPath)), writable)
-    //todo return how many were updated
     1
   }
 
@@ -79,8 +78,6 @@ abstract class CrudContentProvider extends ContentProvider with ActivityStateHol
     val uriPath = toUriPath(uri)
     val persistence = persistenceFor(uriPath)
     persistence.delete(uri)
-    //todo return how many were deleted
-    1
   }
 }
 

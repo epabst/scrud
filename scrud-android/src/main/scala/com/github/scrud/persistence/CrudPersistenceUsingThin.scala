@@ -23,7 +23,7 @@ class CrudPersistenceUsingThin(val entityType: EntityType, val thinPersistence: 
     thinPersistence.save(idOption, writable)
   }
 
-  def doDelete(uri: UriPath) {
+  def doDelete(uri: UriPath): Int = {
     thinPersistence.delete(uri)
   }
 

@@ -36,7 +36,7 @@ case class SingletonWithChangeLogCrudPersistence(manyPersistence: CrudPersistenc
     manyPersistence.doSave(None, writableWithoutId)
   }
 
-  def doDelete(uri: UriPath) {
+  def doDelete(uri: UriPath): Int = {
     manyPersistence.doDelete(uri)
   }
 

@@ -25,8 +25,9 @@ trait ThinPersistence {
   /** Delete a set of entities by uri.
     * This should NOT delete child entities because that would make the "undo" functionality incomplete.
     * Instead, assume that the CrudType will handle deleting all child entities explicitly.
+    * @return how many were deleted
     */
-  def delete(uri: UriPath)
+  def delete(uri: UriPath): Int
 
   /** Indicate that the persistence will no longer be used. */
   def close()
