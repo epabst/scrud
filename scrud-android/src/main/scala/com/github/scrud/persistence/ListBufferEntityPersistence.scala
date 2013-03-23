@@ -32,17 +32,24 @@ class ListBufferEntityPersistence[T <: AnyRef](entityName: EntityName, newWritab
 
   def newWritable() = newWritableFunction
 
-  def doSave(id: Option[ID], item: AnyRef) = {
-    val newId = id.getOrElse {
+  def doSave(idOpt: Option[ID], item: AnyRef) = {
+    val newId = idOpt.getOrElse {
       nextId.incrementAndGet()
     }
-    // Prepend so that the newest ones come out first in results
-    buffer.prepend(IdField.updateWithValue(item.asInstanceOf[T], Some(newId)))
+    idOpt match {
+      case None =>
+        // Prepend so that the newest ones come out first in results
+        buffer.prepend(IdField.updateWithValue(item.asInstanceOf[T], Some(newId)))
+      case Some(id) =>
+        val index = buffer.indexWhere(IdField(_) == Some(id))
+        buffer(index) = item.asInstanceOf[T]
+    }
     newId
   }
 
   def doDelete(uri: UriPath) {
-    findAll(uri).foreach(entity => buffer -= entity)
+    val matches = findAll(uri)
+    matches.foreach(entity => buffer -= entity)
   }
 
   def close() {}
