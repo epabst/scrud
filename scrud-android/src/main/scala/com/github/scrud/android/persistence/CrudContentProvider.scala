@@ -61,7 +61,7 @@ abstract class CrudContentProvider extends ContentProvider with ActivityStateHol
     val uriPath = toUriPath(uri)
     val persistence = persistenceFor(uriPath)
     val id = persistence.save(None, persistence.entityType.copyAndUpdate(contentValues, persistence.newWritable()))
-    uriPath.specify(persistence.entityType.entityName, id)
+    uri.buildUpon().path(uriPath.specify(persistence.entityType.entityName, id).toString).build()
   }
 
   def update(uri: Uri, values: ContentValues, selection: String, selectionArgs: Array[String]): Int = {

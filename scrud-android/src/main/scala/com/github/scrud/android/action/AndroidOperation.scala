@@ -9,6 +9,7 @@ import com.github.triangle.Field
 import com.github.triangle.PortableField._
 import com.github.scrud._
 import action._
+import android.view.AndroidConversions
 import com.github.scrud.android.AndroidCrudContext
 import com.github.scrud.EntityName
 
@@ -34,7 +35,7 @@ object AndroidOperation {
 
   //this is a workaround because Robolectric doesn't handle the full constructor
   def constructIntent(action: String, uriPath: UriPath, context: Context, clazz: Class[_]): Intent = {
-    val intent = new Intent(action, uriPath)
+    val intent = new Intent(action, AndroidConversions.toUri(uriPath, context))
     intent.setClass(context, clazz)
     intent
   }

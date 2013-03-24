@@ -35,7 +35,7 @@ class AndroidPlatformDriverSpec extends MustMatchers with CrudMockitoSugar {
 
   @Test
   def createActionShouldHaveTheRightUri() {
-    val activity = null
+    val activity = new CrudActivityForTesting(application)
     createOperation.determineIntent(UriPath("foo"), activity).uriPath must
       be (UriPath("foo") / entityName)
     createOperation.determineIntent(UriPath("foo") / entityName, activity).uriPath must
@@ -50,7 +50,7 @@ class AndroidPlatformDriverSpec extends MustMatchers with CrudMockitoSugar {
 
   @Test
   def listActionShouldHaveTheRightUri() {
-    val activity = null
+    val activity = new CrudActivityForTesting(application)
     listOperation.determineIntent(UriPath("foo"), activity).uriPath must
       be (UriPath("foo") / entityName)
     listOperation.determineIntent(UriPath("foo", entityName.name), activity).uriPath must
@@ -65,7 +65,7 @@ class AndroidPlatformDriverSpec extends MustMatchers with CrudMockitoSugar {
 
   @Test
   def displayActionShouldHaveTheRightUri() {
-    val activity = null
+    val activity = new CrudActivityForTesting(application)
     displayOperation.determineIntent(UriPath("foo", entityName.name, "35"), activity).uriPath must
       be (UriPath("foo", entityName.name, "35"))
     displayOperation.determineIntent(UriPath("foo", entityName.name, "34", "bar"), activity).uriPath must
@@ -76,7 +76,7 @@ class AndroidPlatformDriverSpec extends MustMatchers with CrudMockitoSugar {
 
   @Test
   def updateActionShouldHaveTheRightUri() {
-    val activity = null
+    val activity = new CrudActivityForTesting(application)
     updateOperation.determineIntent(UriPath("foo", entityName.name, "35"), activity).uriPath must
       be (UriPath("foo", entityName.name, "35"))
     updateOperation.determineIntent(UriPath("foo", entityName.name, "34", "bar"), activity).uriPath must
