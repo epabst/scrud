@@ -9,8 +9,8 @@ import java.io.Closeable
 object Common {
   val logTag = "scrud"
 
-  /** Evaluates the given function and returns the result.  If it throws an exception, it returns None. */
-  def tryToEvaluate[T](f: => T): Option[T] = evaluateOrIntercept(f).left.toOption
+  /** Evaluates the given function and returns the result.  If it throws an exception or returns null, it returns None. */
+  def tryToEvaluate[T](f: => T): Option[T] = evaluateOrIntercept(f).left.toOption.flatMap(Option(_))
 
   /** Evaluates the given function and returns the result or the exception. */
   def evaluateOrIntercept[T](f: => T): Either[T,Throwable] = {
