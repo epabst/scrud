@@ -35,9 +35,9 @@ abstract class CrudContentProvider extends ContentProvider with ActivityStateHol
     val uriPath = toUriPath(uri)
     uriPath.findId(uriPath.lastEntityNameOrFail) match {
       case Some(id) =>
-        ContentResolver.CURSOR_ITEM_BASE_TYPE + "/" + uriPath.lastEntityNameOrFail
+        ContentResolver.CURSOR_ITEM_BASE_TYPE + "/vnd." + authorityFor(application) + "." + uriPath.lastEntityNameOrFail
       case None =>
-        ContentResolver.CURSOR_DIR_BASE_TYPE + "/" + uriPath.lastEntityNameOrFail
+        ContentResolver.CURSOR_DIR_BASE_TYPE + "/vnd." + authorityFor(application) + "." + uriPath.lastEntityNameOrFail
     }
   }
 

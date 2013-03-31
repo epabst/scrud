@@ -13,6 +13,8 @@ object AndroidConversions {
 
   def authorityFor(applicationPackageName: String): String = applicationPackageName + ".provider"
 
+  def authorityFor(application: CrudApplication): String = authorityFor(application.packageName)
+
   def baseUriFor(application: CrudApplication): Uri = baseUriFor(application.packageName)
 
   def baseUriFor(packageName: String): Uri = (new Uri.Builder).scheme("content").authority(authorityFor(packageName)).build()

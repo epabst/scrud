@@ -37,8 +37,8 @@ class CrudContentProviderSpec extends CrudMockitoSugar with MustMatchers {
   @Test
   def getType_mustUseLastEntityName() {
     val provider = new CrudContentProviderForTesting(testApplication)
-    provider.getType(toUri(fooEntityName.toUri(3))) must be (ContentResolver.CURSOR_ITEM_BASE_TYPE + "/" + fooEntityName)
-    provider.getType(toUri(UriPath(fooEntityName))) must be (ContentResolver.CURSOR_DIR_BASE_TYPE + "/" + fooEntityName)
+    provider.getType(toUri(fooEntityName.toUri(3))) must be (ContentResolver.CURSOR_ITEM_BASE_TYPE + "/vnd." + authorityFor(testApplication) + "." + fooEntityName)
+    provider.getType(toUri(UriPath(fooEntityName))) must be (ContentResolver.CURSOR_DIR_BASE_TYPE + "/vnd." + authorityFor(testApplication) + "." + fooEntityName)
   }
 
   @Test
