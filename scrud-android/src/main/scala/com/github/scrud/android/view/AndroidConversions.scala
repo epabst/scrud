@@ -11,7 +11,7 @@ object AndroidConversions {
   import scala.collection.JavaConversions._
   implicit def toUriPath(uri: Uri): UriPath = UriPath(uri.getPathSegments.toList:_*)
 
-  def authorityFor(applicationPackageName: String): String = applicationPackageName
+  def authorityFor(applicationPackageName: String): String = applicationPackageName + ".provider"
 
   def baseUriFor(application: CrudApplication): Uri = baseUriFor(application.packageName)
 
