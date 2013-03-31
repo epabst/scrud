@@ -57,18 +57,18 @@ class CrudBackupAgentSpec extends MustMatchers with CrudMockitoSugar {
     val state1 = mock[ParcelFileDescriptor]
     val state1b = mock[ParcelFileDescriptor]
 
-    val persistence = new EntityPersistenceForTesting
+    val entityType = new EntityTypeForTesting
+    val persistence = new EntityPersistenceForTesting(entityType)
     persistence.save(Some(100L), mutable.Map("name" -> Some("Joe"), "age" -> Some(30)))
     persistence.save(Some(101L), mutable.Map("name" -> Some("Mary"), "age" -> Some(28)))
-    val persistence2 = new EntityPersistenceForTesting
+    val entityType2 = new EntityTypeForTesting(EntityName("OtherMap"))
+    val persistence2 = new EntityPersistenceForTesting(entityType2)
     persistence2.save(Some(101L), mutable.Map("city" -> Some("Los Angeles"), "state" -> Some("CA")))
     persistence2.save(Some(104L), mutable.Map("city" -> Some("Chicago"), "state" -> Some("IL")))
-    val entityType = new EntityTypeForTesting
-    val entityType2 = new EntityTypeForTesting(EntityName("OtherMap"))
-    val persistenceB = new EntityPersistenceForTesting
-    val persistence2B = new EntityPersistenceForTesting
     val entityTypeB = new EntityTypeForTesting
+    val persistenceB = new EntityPersistenceForTesting(entityTypeB)
     val entityType2B = new EntityTypeForTesting(EntityName("OtherMap"))
+    val persistence2B = new EntityPersistenceForTesting(entityType2B)
     val state0 = null
     val restoreItems = mutable.ListBuffer[RestoreItem]()
     when(application.allEntityTypes).thenReturn(List[EntityType](entityType, entityType2))
@@ -119,8 +119,8 @@ class CrudBackupAgentSpec extends MustMatchers with CrudMockitoSugar {
     val application = mock[CrudApplication]
     val backupTarget = mock[BackupTarget]
     val state1 = mock[ParcelFileDescriptor]
-    val persistence = new EntityPersistenceForTesting
     val entityType = new EntityTypeForTesting
+    val persistence = new EntityPersistenceForTesting(entityType)
     val generatedType = new EntityType(EntityName("Generated"), TestingPlatformDriver) {
       val valueFields = List[BaseField](EntityField[EntityTypeForTesting](EntityForTesting), default[Int](100))
     }
@@ -140,4 +140,5 @@ class CrudBackupAgentSpec extends MustMatchers with CrudMockitoSugar {
   }
 }
 
-class EntityPersistenceForTesting extends ListBufferCrudPersistence(Map.empty[String, Option[Any]], null, null)
+class EntityPersistenceForTesting(entityType: EntityType)
+    extends ListBufferCrudPersistence(Map.empty[String, Option[Any]], entityType, null)
