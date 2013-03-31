@@ -13,13 +13,18 @@ import scala.collection.JavaConversions._
 
 /**
  * The context and state for the application code to interact with.
- * A context which can store data for the duration of an Application.
+ * A context's stateHolder which can store data for the duration of an Application.
  * @author Eric Pabst (epabst@gmail.com)
  */
-trait CrudContext extends StateHolder with Notification with Logging {
+trait CrudContext extends Notification with Logging {
   protected lazy val logTag = application.logTag
 
   def application: CrudApplication
+
+  def stateHolder: StateHolder
+
+  //final since only here as a convenience method.
+  final def applicationState = stateHolder.applicationState
 
   def platformDriver: PlatformDriver = application.platformDriver
 
@@ -86,7 +91,9 @@ trait CrudContext extends StateHolder with Notification with Logging {
 }
 
 case class SimpleCrudContext(application: CrudApplication) extends CrudContext {
-  val applicationState = new State
+  val stateHolder = new StateHolder {
+    val applicationState = new State
+  }
 
   /** The ISO 2 country such as "US". */
   lazy val isoCountry = java.util.Locale.getDefault.getCountry

@@ -12,7 +12,7 @@ trait CachedActivityFunction[A, B] {
   /** Specify the actual function to use when the result has not been cached for a given Activity. */
   protected def evaluate(input: A): B
 
-  private def cachedFunction(crudContext: AndroidCrudContext) = cachedFunctionVar.getOrSet(crudContext, {
+  private def cachedFunction(crudContext: AndroidCrudContext) = cachedFunctionVar.getOrSet(crudContext.stateHolder, {
     val cachedFunction = CachedFunction[A, B](evaluate)
     crudContext.addCachedActivityStateListener(new CachedStateListener {
       /** Save any cached state into the given bundle before switching context. */
@@ -39,6 +39,6 @@ trait CachedActivityFunction[A, B] {
   }
 
   def clear(crudContext: CrudContext) {
-    cachedFunctionVar.clear(crudContext)
+    cachedFunctionVar.clear(crudContext.stateHolder)
   }
 }

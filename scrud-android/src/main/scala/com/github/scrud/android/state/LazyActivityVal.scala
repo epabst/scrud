@@ -11,6 +11,6 @@ class LazyActivityVal[T](lazyExpression: => T) {
     * @return the value
     */
   def get(crudContext: CrudContext): T = {
-    activityVar.getOrSet(crudContext, lazyExpression)
+    activityVar.getOrSet(crudContext.stateHolder, lazyExpression)
   }
 }

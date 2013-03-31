@@ -230,7 +230,7 @@ abstract class CrudApplication(val platformDriver: PlatformDriver) extends Loggi
   private lazy val executor = new UrgentFutureExecutor()
 
   private def cachedFuturePortableValueOrCalculate(entityType: EntityType, uriPathWithId: UriPath, crudContext: CrudContext)(calculate: => PortableValue): Future[PortableValue] = {
-    val cache = FuturePortableValueCache.get(crudContext)
+    val cache = FuturePortableValueCache.get(crudContext.stateHolder)
     val key = (entityType, uriPathWithId, crudContext)
     cache.get(key).getOrElse {
       val futurePortableValue = executor.urgentFuture {

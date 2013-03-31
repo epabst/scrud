@@ -76,8 +76,7 @@ class SQLitePersistenceFactorySpec extends MustMatchers with CrudMockitoSugar wi
   @Test
   def shouldCloseCursorsWhenClosing() {
     val crudContext = mock[AndroidCrudContext]
-    stub(crudContext.activityState).toReturn(new State)
-    stub(crudContext.applicationState).toReturn(new State)
+    stub(crudContext.stateHolder).toReturn(new ActivityStateHolderForTesting)
     stub(crudContext.application).toReturn(application)
     val persistenceFactory = SQLitePersistenceFactory
 
@@ -109,7 +108,6 @@ class SQLitePersistenceFactorySpec extends MustMatchers with CrudMockitoSugar wi
   @Test
   def shouldRefreshCursorWhenDeletingAndSaving() {
     val activity = new CrudActivityForTesting(application) {
-      override lazy val applicationState = new State
       override val getAdapterView: ListView = new ListView(this)
     }
     val observer = mock[DataSetObserver]

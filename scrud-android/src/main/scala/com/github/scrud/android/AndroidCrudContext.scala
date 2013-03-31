@@ -23,10 +23,10 @@ case class AndroidCrudContext(context: Context, stateHolder: ActivityStateHolder
   /** Fails if the current Context is not an Activity. */
   def activity: Activity = context.asInstanceOf[Activity]
 
-  def activityState: State = stateHolder.activityState
+  //final since only here as a convenience method.
+  final def activityState: State = stateHolder.activityState
 
   lazy override val platformDriver: AndroidPlatformDriver = application.platformDriver.asInstanceOf[AndroidPlatformDriver]
-  lazy val applicationState: State = stateHolder.applicationState
 
   /** The ISO 2 country such as "US". */
   lazy val isoCountry = {
@@ -37,9 +37,9 @@ case class AndroidCrudContext(context: Context, stateHolder: ActivityStateHolder
   /** Provides a way for the user to undo an operation. */
   def allowUndo(undoable: Undoable) {
     // Finish any prior undoable first.  This could be re-implemented to support a stack of undoable operations.
-    LastUndoable.clear(this).foreach(_.closeOperation.foreach(_.invoke(UriPath.EMPTY, this)))
+    LastUndoable.clear(stateHolder).foreach(_.closeOperation.foreach(_.invoke(UriPath.EMPTY, this)))
     // Remember the new undoable operation
-    LastUndoable.set(this, undoable)
+    LastUndoable.set(stateHolder, undoable)
 
     context match {
       case crudActivity: CrudActivity =>
@@ -50,7 +50,7 @@ case class AndroidCrudContext(context: Context, stateHolder: ActivityStateHolder
   private[android] def isUIThread: Boolean = Looper.myLooper() == Looper.getMainLooper
 
   override def openEntityPersistence(entityType: EntityType) = {
-    if (PersistenceDeniedInUIThread.get(this).getOrElse(false)) {
+    if (PersistenceDeniedInUIThread.get(stateHolder).getOrElse(false)) {
       if (isUIThread) {
         throw new IllegalStateException("Do this on another thread!")
       }
@@ -62,7 +62,7 @@ case class AndroidCrudContext(context: Context, stateHolder: ActivityStateHolder
    * Handle the exception by communicating it to the user and developers.
    */
   override def reportError(throwable: Throwable) {
-    LastException.set(this, throwable)
+    LastException.set(stateHolder, throwable)
     super.reportError(throwable)
   }
 

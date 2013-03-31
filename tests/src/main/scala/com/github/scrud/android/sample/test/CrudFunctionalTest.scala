@@ -36,11 +36,11 @@ class CrudFunctionalTest extends ActivityInstrumentationTestCase2(classOf[CrudAc
   }
 
   def testAddEditDelete_PersistenceNotAllowedInUIThread() {
-    PersistenceDeniedInUIThread.set(currentCrudActivity.crudContext, true)
+    PersistenceDeniedInUIThread.set(currentCrudActivity.stateHolder, true)
     try {
       testAddEditDelete()
     } finally {
-      PersistenceDeniedInUIThread.clear(currentCrudActivity.crudContext)
+      PersistenceDeniedInUIThread.clear(currentCrudActivity.stateHolder)
     }
   }
 
@@ -114,7 +114,7 @@ class CrudFunctionalTest extends ActivityInstrumentationTestCase2(classOf[CrudAc
   }
 
   private def checkForExceptionInApp(crudContext: AndroidCrudContext) {
-    LastException.get(crudContext).foreach {
+    LastException.get(crudContext.stateHolder).foreach {
       lastException =>
         throw lastException
       //          lastException.printStackTrace(System.err)

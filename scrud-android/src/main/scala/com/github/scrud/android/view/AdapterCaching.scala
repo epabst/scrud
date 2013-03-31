@@ -69,6 +69,6 @@ class AdapterCachingStateListener(crudContext: CrudContext) extends CachedStateL
   }
 
   def onClearState(stayActive: Boolean) {
-    crudContext.application.FuturePortableValueCache.get(crudContext).clear()
+    crudContext.application.FuturePortableValueCache.get(crudContext.stateHolder).clear()
   }
 }

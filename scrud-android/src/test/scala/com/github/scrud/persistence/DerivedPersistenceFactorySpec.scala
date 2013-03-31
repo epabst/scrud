@@ -6,7 +6,7 @@ import org.scalatest.FunSpec
 import org.scalatest.matchers.MustMatchers
 import org.mockito.Mockito._
 import org.mockito.Matchers
-import com.github.scrud.state.State
+import com.github.scrud.state.{StateHolderForTesting, State}
 import com.github.scrud.util.{CrudMockitoSugar, ListenerHolder}
 import com.github.scrud.{EntityName, CrudContext, UriPath, EntityType}
 
@@ -29,7 +29,7 @@ class DerivedPersistenceFactorySpec extends FunSpec with MustMatchers with CrudM
       }
     }
     val crudContext = mock[CrudContext]
-    stub(crudContext.applicationState).toReturn(new State)
+    stub(crudContext.stateHolder).toReturn(new StateHolderForTesting)
     stub(crudContext.dataListenerHolder(Matchers.any[EntityName]())).toReturn(dataListenerHolder)
     when(crudContext.openEntityPersistence(entity1)).thenReturn(persistence1)
     when(crudContext.openEntityPersistence(entity2)).thenReturn(persistence2)
@@ -44,7 +44,7 @@ class DerivedPersistenceFactorySpec extends FunSpec with MustMatchers with CrudM
       def findAll(entityType: EntityType, uri: UriPath, crudContext: CrudContext, delegatePersistenceMap: Map[EntityName, CrudPersistence]) = Nil
     }
     val crudContext = mock[CrudContext]
-    stub(crudContext.applicationState).toReturn(new State)
+    stub(crudContext.stateHolder).toReturn(new StateHolderForTesting)
     stub(crudContext.dataListenerHolder(Matchers.any[EntityName]())).toReturn(dataListenerHolder)
     val persistence1 = mock[CrudPersistence]
     val persistence2 = mock[CrudPersistence]

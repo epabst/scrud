@@ -17,8 +17,8 @@ trait DataListenerSetValHolder {
       CachedFunction[EntityType, MutableListenerSet[DataListener]](_ => new MutableListenerSet[DataListener]))
 
   def listenerSet(entityType: EntityType, crudContext: CrudContext): MutableListenerSet[DataListener] =
-    ListenersByEntityType.get(crudContext).apply(entityType)
+    ListenersByEntityType.get(crudContext.stateHolder).apply(entityType)
 
   def listenerHolder(entityType: EntityType, crudContext: CrudContext): MutableListenerSet[DataListener] =
-    ListenersByEntityType.get(crudContext).apply(entityType)
+    ListenersByEntityType.get(crudContext.stateHolder).apply(entityType)
 }

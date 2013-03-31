@@ -22,7 +22,7 @@ class ListBufferPersistenceFactory[T <: AnyRef](instantiateItem: => T) extends P
 
   // synchronized so that only one persistence instance is used and onCreateDatabase completes before any thread uses the instance.
   def createEntityPersistence(entityType: EntityType, crudContext: CrudContext) = synchronized {
-    val persistenceByEntityName = PersistenceByEntityName.get(crudContext)
+    val persistenceByEntityName = PersistenceByEntityName.get(crudContext.stateHolder)
     persistenceByEntityName.get(entityType.entityName).getOrElse {
       val persistence = new ListBufferCrudPersistence[T](newWritable(), entityType, crudContext, listenerSet(entityType, crudContext))
       persistenceByEntityName.putIfAbsent(entityType.entityName, persistence)

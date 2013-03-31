@@ -77,6 +77,9 @@ protected trait BaseCrudActivity extends OptionsMenuActivity with Logging { self
 
   lazy val crudContext = new AndroidCrudContext(this, crudApplication)
 
+  //final since only here as a convenience method.
+  final def stateHolder = crudContext.stateHolder
+
   lazy val contextItems: CrudContextItems = new CrudContextItems(currentUriPath, crudContext, PortableField.UseDefaults)
 
   // not a val because not used enough to store
@@ -137,7 +140,7 @@ protected trait BaseCrudActivity extends OptionsMenuActivity with Logging { self
   }
 
   // not a val because it is dynamic
-  protected def applicableActions: List[Action] = LastUndoable.get(crudContext).map(_.undoAction).toList ++ normalActions
+  protected def applicableActions: List[Action] = LastUndoable.get(crudContext.stateHolder).map(_.undoAction).toList ++ normalActions
 
   protected lazy val normalOperationSetters: FieldList = {
     val setters = normalActions.map(action =>
@@ -167,8 +170,8 @@ protected trait BaseCrudActivity extends OptionsMenuActivity with Logging { self
       actions.find(_.commandId == item.getItemId) match {
         case Some(action) =>
           action.invoke(currentUriPath, crudContext)
-          if (LastUndoable.get(crudContext).exists(_.undoAction.commandId == item.getItemId)) {
-            LastUndoable.clear(crudContext)
+          if (LastUndoable.get(crudContext.stateHolder).exists(_.undoAction.commandId == item.getItemId)) {
+            LastUndoable.clear(crudContext.stateHolder)
             onCommandsChanged()
           }
           true
@@ -224,7 +227,7 @@ protected trait BaseCrudActivity extends OptionsMenuActivity with Logging { self
   private def setListAdapter[A <: Adapter](adapterView: AdapterView[A], persistence: CrudPersistence, crudContext: AndroidCrudContext, contextItems: CrudContextItems, activity: Activity, itemLayout: LayoutKey) {
     addDataListener(new DataListener {
       def onChanged(uri: UriPath) {
-        contextItems.application.FuturePortableValueCache.get(contextItems.crudContext).clear()
+        contextItems.application.FuturePortableValueCache.get(contextItems.stateHolder).clear()
       }
     }, contextItems.crudContext)
     adapterView.setAdapter(createAdapter(persistence, contextItems, activity, itemLayout).asInstanceOf[A])
