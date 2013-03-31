@@ -9,7 +9,6 @@ import com.github.scrud.platform.PlatformTypes._
 import com.github.scrud.android.view.AndroidConversions._
 import _root_.android.os.Bundle
 import com.github.triangle._
-import state.ActivityStateHolder
 import view.AndroidResourceAnalyzer._
 import view._
 import _root_.android.app.Activity
@@ -49,7 +48,8 @@ protected trait BaseCrudActivity extends OptionsMenuActivity with Logging { self
   }
 
   private[this] lazy val initialUriPath: UriPath = {
-    val defaultContentUri = crudApplication.defaultContentUri
+    // The primary EntityType is used as the default starting point.
+    val defaultContentUri = toUriPath(baseUriFor(crudApplication)) / crudApplication.primaryEntityType.entityName
     // If no data was given in the intent (e.g. because we were started as a MAIN activity),
     // then use our default content provider.
     Option(getIntent).flatMap(intent => Option(intent.getData).map(toUriPath(_))).getOrElse(defaultContentUri)

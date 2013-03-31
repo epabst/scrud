@@ -13,7 +13,7 @@ import com.github.scrud.CrudApplication
 object ContentResolverCrudPersistenceForTesting {
   def apply(application: CrudApplication): ContentResolverCrudPersistence = {
     val contentProvider = new CrudContentProviderForTesting(application)
-    val contentResolver = new ContentResolverForTesting(Map(application.packageName -> contentProvider))
+    val contentResolver = new ContentResolverForTesting(Map(application -> contentProvider))
     new ContentResolverCrudPersistence(application.allEntityTypes.head, contentResolver, application,
       new MutableListenerSet[DataListener])
   }

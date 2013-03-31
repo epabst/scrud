@@ -59,10 +59,6 @@ abstract class CrudApplication(val platformDriver: PlatformDriver) extends Loggi
     throw new IllegalArgumentException("Unknown entity: entityName=" + entityName)
   }
 
-  lazy val contentProviderAuthority = packageName
-  // The first EntityType is used as the default starting point.
-  lazy val defaultContentUri = UriPath("content://" + contentProviderAuthority) / primaryEntityType.entityName
-
   def childEntityNames(entityName: EntityName): Seq[EntityName] = childEntityTypes(entityType(entityName)).map(_.entityName)
 
   def childEntityTypes(entityType: EntityType): Seq[EntityType] = {

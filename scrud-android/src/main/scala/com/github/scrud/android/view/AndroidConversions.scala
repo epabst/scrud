@@ -11,15 +11,17 @@ object AndroidConversions {
   import scala.collection.JavaConversions._
   implicit def toUriPath(uri: Uri): UriPath = UriPath(uri.getPathSegments.toList:_*)
 
+  def authorityFor(applicationPackageName: String): String = applicationPackageName
+
   def baseUriFor(application: CrudApplication): Uri = baseUriFor(application.packageName)
 
-  def baseUriFor(authority: String): Uri = (new Uri.Builder).scheme("content").authority(authority).build()
+  def baseUriFor(packageName: String): Uri = (new Uri.Builder).scheme("content").authority(authorityFor(packageName)).build()
 
   def toUri(uriPath: UriPath, context: Context): Uri = toUri(uriPath, context.getApplicationInfo.packageName)
 
   def toUri(uriPath: UriPath, application: CrudApplication): Uri = toUri(uriPath, application.packageName)
 
-  def toUri(uriPath: UriPath, authority: String): Uri = withAppendedPath(baseUriFor(authority), uriPath)
+  def toUri(uriPath: UriPath, packageName: String): Uri = withAppendedPath(baseUriFor(packageName), uriPath)
 
   def withAppendedPath(baseUri: Uri, relativePath: UriPath): Uri =
     relativePath.segments.foldLeft(baseUri)((uri, segment) => Uri.withAppendedPath(uri, segment))
