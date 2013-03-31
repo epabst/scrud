@@ -36,12 +36,12 @@ class ListBufferEntityPersistence[T <: AnyRef](entityName: EntityName, newWritab
     val newId = idOpt.getOrElse {
       nextId.incrementAndGet()
     }
-    idOpt match {
-      case None =>
+    val index = idOpt.map(id => buffer.indexWhere(IdField(_) == Some(id))).getOrElse(-1)
+    index match {
+      case -1 =>
         // Prepend so that the newest ones come out first in results
         buffer.prepend(IdField.updateWithValue(item.asInstanceOf[T], Some(newId)))
-      case Some(id) =>
-        val index = buffer.indexWhere(IdField(_) == Some(id))
+      case _ =>
         buffer(index) = item.asInstanceOf[T]
     }
     newId

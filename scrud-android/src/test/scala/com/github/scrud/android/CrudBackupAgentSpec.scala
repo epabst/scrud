@@ -93,7 +93,9 @@ class CrudBackupAgentSpec extends MustMatchers with CrudMockitoSugar {
     persistenceB.findAll(UriPath.EMPTY).size must be (0)
     persistence2B.findAll(UriPath.EMPTY).size must be (0)
 
-    val backupAgentB = new CrudBackupAgent(applicationB)
+    val backupAgentB = new CrudBackupAgent(applicationB) {
+      override lazy val applicationState = new State
+    }
     backupAgentB.onCreate()
     backupAgentB.onRestore(restoreItems.toIterator, 1, state1b)
     backupAgentB.onDestroy()
