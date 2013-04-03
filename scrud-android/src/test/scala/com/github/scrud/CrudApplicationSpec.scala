@@ -22,7 +22,7 @@ class CrudApplicationSpec extends FunSpec with MustMatchers {
     application.nameId must be ("a_difficult_name_to_use_as_an_id")
   }
 
-  it("must get the correct entity actions with child entities") {
+  it("must get the correct read actions with child entities") {
     val parentEntityName = new EntityName("Entity1")
     val parentEntityType = new EntityTypeForTesting(parentEntityName)
     val childEntityName = new EntityName("Child")
@@ -36,6 +36,22 @@ class CrudApplicationSpec extends FunSpec with MustMatchers {
       List(application.actionToUpdate(childEntityType).get, application.actionToDelete(childEntityType).get))
     application.actionsFromCrudOperation(CrudOperation(parentEntityName, CrudOperationType.Read)) must be (
       List(application.actionToList(childEntityType).get, application.actionToUpdate(parentEntityType).get, application.actionToDelete(parentEntityType).get))
+  }
+
+  it("must get the correct update actions with child entities") {
+    val parentEntityName = new EntityName("Entity1")
+    val parentEntityType = new EntityTypeForTesting(parentEntityName)
+    val childEntityName = new EntityName("Child")
+    val childEntityType = new EntityTypeForTesting(childEntityName) {
+      override val valueFields = EntityField[EntityTypeForTesting](parentEntityName) :: super.valueFields
+    }
+    val childCrudType = new CrudTypeForTesting(childEntityType)
+    val parentCrudType = new CrudTypeForTesting(parentEntityType)
+    val application = new CrudApplicationForTesting(childCrudType, parentCrudType)
+    application.actionsFromCrudOperation(CrudOperation(childEntityName, CrudOperationType.Update)) must be (
+      List(application.actionToCreate(parentEntityName).get, application.actionToList(parentEntityName).get, application.actionToDelete(childEntityType).get))
+    application.actionsFromCrudOperation(CrudOperation(parentEntityName, CrudOperationType.Update)) must be (
+      List(application.actionToDelete(parentEntityType).get))
   }
 
   it("must get the correct list actions with child entities") {

@@ -56,6 +56,8 @@ abstract class CrudApplication(val platformDriver: PlatformDriver) extends Loggi
     throw new IllegalArgumentException("Unknown entity: entityName=" + entityName)
   }
 
+  def parentEntityNames(entityName: EntityName): Seq[EntityName] = entityType(entityName).parentEntityNames
+
   def childEntityNames(entityName: EntityName): Seq[EntityName] = childEntityTypes(entityType(entityName)).map(_.entityName)
 
   def childEntityTypes(entityType: EntityType): Seq[EntityType] = {
@@ -128,14 +130,14 @@ abstract class CrudApplication(val platformDriver: PlatformDriver) extends Loggi
    */
   def actionsFromCrudOperation(crudOperation: CrudOperation): Seq[Action] = (crudOperation match {
     case CrudOperation(entityName, CrudOperationType.Create) =>
-      actionToDelete(entityName).toSeq
+      parentEntityNames(entityName).flatMap(actionsToManage(_)) ++ actionToDelete(entityName).toSeq
     case CrudOperation(entityName, CrudOperationType.Read) =>
       childEntityNames(entityName).flatMap(actionToList(_)) ++
           actionToUpdate(entityName).toSeq ++ actionToDelete(entityName).toSeq
     case CrudOperation(entityName, CrudOperationType.List) =>
       actionToCreate(entityName).toSeq ++ actionsToUpdateAndListChildrenOfOnlyParentWithoutDisplayAction(entityName)
     case CrudOperation(entityName, CrudOperationType.Update) =>
-      actionToDisplay(entityName).toSeq ++ actionToDelete(entityName).toSeq
+      actionToDisplay(entityName).toSeq ++ parentEntityNames(entityName).flatMap(actionsToManage(_)) ++ actionToDelete(entityName).toSeq
   })
 
   protected def actionsToUpdateAndListChildrenOfOnlyParentWithoutDisplayAction(entityName: EntityName): Seq[Action] = {
@@ -153,6 +155,8 @@ abstract class CrudApplication(val platformDriver: PlatformDriver) extends Loggi
     })
   }
 
+  def actionsToManage(entityName: EntityName): Seq[Action] =
+    actionToCreate(entityName).toSeq.flatMap(_ +: actionToList(entityName).toSeq)
 
   /** Gets the action to display a UI for a user to fill in data for creating an entity.
     * The target Activity should copy Unit into the UI using entityType.copy to populate defaults.
