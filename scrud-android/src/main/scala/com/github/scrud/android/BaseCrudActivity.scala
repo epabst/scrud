@@ -38,7 +38,7 @@ protected trait BaseCrudActivity extends OptionsMenuActivity with Logging { self
 
   def entityName = entityType.entityName
 
-  protected lazy val persistenceFactory: PersistenceFactory = crudApplication.persistenceFactory(entityType)
+  protected lazy val persistenceFactory: PersistenceFactory = crudContext.persistenceFactory(entityType)
 
   protected[this] val createdId: AtomicReference[Option[ID]] = new AtomicReference(None)
 

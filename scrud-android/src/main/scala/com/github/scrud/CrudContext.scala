@@ -3,7 +3,7 @@ package com.github.scrud
 import action.Undoable
 import com.github.triangle.{Logging, Field}
 import com.github.triangle.PortableField._
-import persistence.{PersistenceFactoryMapping, DataListener, CrudPersistence}
+import persistence.{PersistenceFactory, PersistenceFactoryMapping, DataListener, CrudPersistence}
 import platform.{PlatformTypes, PlatformDriver}
 import state.{StateHolder, State}
 import util.ListenerHolder
@@ -64,19 +64,28 @@ trait CrudContext extends Notification with Logging {
     debug("Waited for work in progress for " + (System.currentTimeMillis() - start) + "ms")
   }
 
-  def newWritable(entityType: EntityType): AnyRef = persistenceFactoryMapping.persistenceFactory(entityType).newWritable()
+  def newWritable(entityType: EntityType): AnyRef = persistenceFactory(entityType).newWritable()
 
   def dataListenerHolder(entityName: EntityName): ListenerHolder[DataListener] =
     dataListenerHolder(persistenceFactoryMapping.entityType(entityName))
 
   def dataListenerHolder(entityType: EntityType): ListenerHolder[DataListener] =
-    persistenceFactoryMapping.persistenceFactory(entityType).listenerHolder(entityType, this)
+    persistenceFactory(entityType).listenerHolder(entityType, this)
+
+  /** May be overidden if needed. */
+  def persistenceFactory(entityName: EntityName): PersistenceFactory = persistenceFactoryMapping.persistenceFactory(entityName)
+
+  /**
+   * Marked final since it is only a convenience method for [[com.github.scrud.CrudContext.persistenceFactory(EntityName)]].
+   * This makes it clear which one needs to be overridden if needed.
+   */
+  final def persistenceFactory(entityType: EntityType): PersistenceFactory = persistenceFactory(entityType.entityName)
 
   def openEntityPersistence(entityName: EntityName): CrudPersistence =
     openEntityPersistence(persistenceFactoryMapping.entityType(entityName))
 
   def openEntityPersistence(entityType: EntityType): CrudPersistence =
-    application.persistenceFactory(entityType).createEntityPersistence(entityType, this)
+    persistenceFactory(entityType).createEntityPersistence(entityType, this)
 
   def withEntityPersistence[T](entityName: EntityName)(f: CrudPersistence => T): T = {
     withEntityPersistence(persistenceFactoryMapping.entityType(entityName))(f)

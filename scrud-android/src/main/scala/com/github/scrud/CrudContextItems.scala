@@ -20,5 +20,5 @@ class CrudContextItems(val currentUriPath: UriPath, val crudContext: CrudContext
 
   def application: CrudApplication = crudContext.application
 
-  def persistenceFactory(entityName: EntityName): PersistenceFactory = application.persistenceFactory(entityName)
+  def persistenceFactory(entityName: EntityName): PersistenceFactory = crudContext.persistenceFactory(entityName)
 }
