@@ -153,7 +153,7 @@ class CrudUIGenerator extends Logging {
     </LinearLayout>
   }
 
-  protected def headerLayout(fields: List[ViewIdFieldInfo]) =
+  protected def headerLayout(entityInfo: EntityTypeViewInfo) =
     <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
                   android:paddingTop="2dip"
                   android:paddingBottom="2dip"
@@ -161,15 +161,10 @@ class CrudUIGenerator extends Logging {
                   android:paddingRight="6dip"
                   android:layout_width="match_parent"
                   android:layout_height="wrap_content"
-                  android:orientation="vertical">{
-      fields.grouped(2).map { rowFields =>
-        <LinearLayout android:layout_width="match_parent"
-                      android:layout_height="wrap_content"
-                      android:orientation="horizontal">
-          {rowFields.map(field => fieldLayoutForHeader(field, fields.indexOf(field)))}
-        </LinearLayout>
-      }
-    }
+                  android:orientation="vertical">
+      <TextView android:layout_height="wrap_content" android:paddingRight="3sp" android:text={entityInfo.entityName + " List"}
+                android:textAppearance="?android:attr/textAppearanceLarge" style="@android:style/TextAppearance.Widget.TextView"
+                android:gravity="center" android:layout_width="match_parent"/>
     </LinearLayout>
 
   protected def rowLayout(fields: List[ViewIdFieldInfo]) =
@@ -248,7 +243,7 @@ class CrudUIGenerator extends Logging {
     val layoutPrefix = info.layoutPrefix
     if (application.isListable(entityTypeInfo.entityType)) {
       writeLayoutFile(layoutPrefix + "_list", listLayout(entityTypeInfo, childTypeInfos, application))
-      writeLayoutFile(layoutPrefix + "_header", headerLayout(info.displayableViewIdFieldInfos))
+      writeLayoutFile(layoutPrefix + "_header", headerLayout(entityTypeInfo))
       writeLayoutFile(layoutPrefix + "_row", rowLayout(info.displayableViewIdFieldInfos))
     }
     if (pickedEntityTypes.contains(entityTypeInfo.entityType)) {
