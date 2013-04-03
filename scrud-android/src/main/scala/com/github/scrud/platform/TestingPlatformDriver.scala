@@ -1,10 +1,9 @@
 package com.github.scrud.platform
 
 import com.github.scrud.persistence.ListBufferPersistenceFactory
-import com.github.scrud.{CrudContext, UriPath}
+import com.github.scrud.{EntityType, CrudContext, UriPath, EntityName}
 import com.github.scrud.action.{Operation, CrudOperationType}
 import com.github.triangle.{Updater, Getter, PortableField}
-import com.github.scrud.EntityName
 import com.github.scrud.action.CommandId
 import com.github.scrud.action.Command
 import com.github.scrud.view.NamedViewMap
@@ -20,6 +19,8 @@ class TestingPlatformDriver extends PlatformDriver {
   protected def logTag = getClass.getSimpleName
 
   val localDatabasePersistenceFactory = new ListBufferPersistenceFactory[AnyRef](Map.empty[String,Any])
+
+  def calculateDataVersion(entityTypes: Seq[EntityType]) = 1
 
   /** An Operation that will show the UI to the user for creating an entity instance. */
   def operationToShowCreateUI(entityName: EntityName) =

@@ -39,9 +39,6 @@ abstract class CrudApplication(val platformDriver: PlatformDriver) extends Loggi
 
   def name: String
 
-  /** The version of the data such as a database.  This must be increased when new tables or columns need to be added, etc. */
-  def dataVersion: Int
-
   //this will be used for programmatic uses such as a database name
   lazy val nameId: String = name.replace(" ", "_").toLowerCase
 

@@ -56,8 +56,6 @@ class SQLitePersistenceFactorySpec extends MustMatchers with CrudMockitoSugar wi
     val name = "Test Application"
 
     val allCrudTypes = List(TestCrudType)
-
-    val dataVersion = 1
   }
   val application = TestApplication
   val listenerSet = mock[MutableListenerSet[DataListener]]

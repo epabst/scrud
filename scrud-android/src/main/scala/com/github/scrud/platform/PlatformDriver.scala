@@ -2,7 +2,7 @@ package com.github.scrud.platform
 
 import com.github.scrud.persistence.PersistenceFactory
 import com.github.scrud.action.{Command, Operation}
-import com.github.scrud.EntityName
+import com.github.scrud.{EntityType, EntityName}
 import com.github.scrud.types.QualifiedType
 import com.github.triangle.PortableField
 
@@ -21,6 +21,8 @@ import com.github.triangle.PortableField
  */
 trait PlatformDriver {
   def localDatabasePersistenceFactory: PersistenceFactory
+
+  def calculateDataVersion(entityTypes: Seq[EntityType]): Int
 
   /** An Operation that will show the UI to the user for creating an entity instance. */
   def operationToShowCreateUI(entityName: EntityName): Operation

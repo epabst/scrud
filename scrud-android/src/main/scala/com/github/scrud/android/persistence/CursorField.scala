@@ -20,8 +20,8 @@ object CursorField {
     Getter[Bundle,T](b => persistedType.getValue(b, name)).withSetter(b => persistedType.putValue(b, name, _), noSetterForEmpty) +
     optionMapField[T](name)
 
-  def persisted[T](name: String)(implicit persistedType: PersistedType[T]): CursorField[T] = {
-    new CursorField[T](name)(persistedType)
+  def persisted[T](name: String, dataVersion: Int = 1)(implicit persistedType: PersistedType[T]): CursorField[T] = {
+    new CursorField[T](name, dataVersion)(persistedType)
   }
 
   def persistedUri(name: String): PortableField[Uri] =
@@ -65,7 +65,7 @@ object CursorField {
 import CursorField._
 
 /** Also supports accessing a scala Map (mutable.Map for writing) using the same name. */
-class CursorField[T](val name: String)(implicit val persistedType: PersistedType[T]) extends DelegatingPortableField[T] with Logging {
+class CursorField[T](val name: String, val dataVersion: Int = 1)(implicit val persistedType: PersistedType[T]) extends DelegatingPortableField[T] with Logging {
   protected val delegate = Getter.single[T] {
     case cursor: Cursor if cursor.getColumnIndex(columnName) >= 0 =>
       persistedType.getValue(cursor, cursor.getColumnIndex(columnName))

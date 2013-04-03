@@ -180,8 +180,6 @@ object DeletedEntityIdApplication extends CrudApplication(new AndroidPlatformDri
 
   val allCrudTypes = List(CrudType(deletedEntityIdEntityType, platformDriver.localDatabasePersistenceFactory))
 
-  val dataVersion = 1
-
   /** Records that a deletion happened so that it is deleted from the Backup Service.
     * It's ok for this to happen immediately because if a delete is undone,
     * it will be restored independent of this support, and it will then be re-added to the Backup Service later

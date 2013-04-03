@@ -19,8 +19,6 @@ class SampleApplication(platformDriver: PlatformDriver) extends CrudApplication(
     new CrudType(authorEntityType, platformDriver.localDatabasePersistenceFactory),
     new CrudType(bookEntityType, platformDriver.localDatabasePersistenceFactory),
     new CrudType(publisherEntityType, platformDriver.localDatabasePersistenceFactory))
-
-  val dataVersion = 2
 }
 
 class SampleApplicationForAndroid extends SampleApplication(new AndroidPlatformDriver(classOf[R]))

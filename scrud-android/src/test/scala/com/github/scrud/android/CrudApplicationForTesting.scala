@@ -21,6 +21,4 @@ class CrudApplicationForTesting(platformDriver: PlatformDriver, crudTypes: CrudT
   val allCrudTypes = crudTypes.toList
 
   override def entityNameLayoutPrefixFor(entityName: EntityName) = "test"
-
-  val dataVersion = 1
 }

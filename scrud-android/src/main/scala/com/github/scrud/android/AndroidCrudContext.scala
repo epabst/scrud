@@ -28,6 +28,8 @@ case class AndroidCrudContext(context: Context, stateHolder: ActivityStateHolder
 
   lazy override val platformDriver: AndroidPlatformDriver = application.platformDriver.asInstanceOf[AndroidPlatformDriver]
 
+  lazy val dataVersion: Int = platformDriver.calculateDataVersion(application.allEntityTypes)
+
   /** The ISO 2 country such as "US". */
   lazy val isoCountry = {
     Option(context.getSystemService(Context.TELEPHONY_SERVICE)).map(_.asInstanceOf[TelephonyManager]).

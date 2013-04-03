@@ -66,7 +66,6 @@ class CrudUIGeneratorSpec extends FunSpec with MustMatchers with MockitoSugar {
       }
       val application = new CrudApplication(platformDriver) {
         val allCrudTypes = List(new CrudTypeForTesting(myEntityType))
-        val dataVersion = 1
         val name = "Test App"
       }
       val valueStrings = CrudUIGenerator.generateValueStrings(EntityTypeViewInfo(myEntityType, application))
@@ -80,7 +79,6 @@ class CrudUIGeneratorSpec extends FunSpec with MustMatchers with MockitoSugar {
       }
       val application = new CrudApplication(platformDriver) {
         val allCrudTypes = List(new CrudTypeForTesting(myEntityType))
-        val dataVersion = 1
         val name = "Test App"
         override def isCreatable(entityType: EntityType) = false
       }
@@ -95,7 +93,6 @@ class CrudUIGeneratorSpec extends FunSpec with MustMatchers with MockitoSugar {
       }
       val application = new CrudApplication(platformDriver) {
         val allCrudTypes = List(new CrudTypeForTesting(_entityType))
-        val dataVersion = 1
         val name = "Test App"
         override def isCreatable(entityType: EntityType) = false
         override def isSavable(entityType: EntityType) = false

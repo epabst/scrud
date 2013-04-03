@@ -14,7 +14,7 @@ import com.github.scrud.EntityType
  *         Time: 11:45 AM
  */
 class GeneratedDatabaseSetup(crudContext: AndroidCrudContext, persistenceFactory: SQLitePersistenceFactory)
-  extends SQLiteOpenHelper(crudContext.context, crudContext.application.nameId, null, crudContext.application.dataVersion) with Logging {
+  extends SQLiteOpenHelper(crudContext.context, crudContext.application.nameId, null, crudContext.dataVersion) with Logging {
 
   protected lazy val logTag = Common.tryToEvaluate(crudContext.application.logTag).getOrElse(Common.logTag)
 

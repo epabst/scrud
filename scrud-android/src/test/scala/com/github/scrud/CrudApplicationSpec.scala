@@ -18,7 +18,6 @@ class CrudApplicationSpec extends FunSpec with MustMatchers {
     val application = new CrudApplication(TestingPlatformDriver) {
       val name = "A diFFicult name to use as an ID"
       val allCrudTypes = List()
-      val dataVersion = 1
     }
     application.nameId must be ("a_difficult_name_to_use_as_an_id")
   }

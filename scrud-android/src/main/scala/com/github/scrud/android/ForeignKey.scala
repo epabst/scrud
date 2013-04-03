@@ -16,8 +16,8 @@ import com.github.triangle.PortableField
  *         Date: 10/20/12
  *         Time: 6:00 PM
  */
-class ForeignKey[E <: EntityType](entityName: EntityName, fieldToGetIdElsewhere: PortableField[ID] = PortableField.emptyField)
-    extends EntityField[E](entityName, fieldToGetIdElsewhere + ForeignKey.calculateFields(entityName))
+class ForeignKey[E <: EntityType](entityName: EntityName, fieldToGetIdElsewhere: PortableField[ID] = PortableField.emptyField, dataVersion: Int = 1)
+    extends EntityField[E](entityName, fieldToGetIdElsewhere + ForeignKey.calculateFields(entityName, dataVersion))
 
 object ForeignKey {
   /**
@@ -28,12 +28,12 @@ object ForeignKey {
    *              The default is an emptyField.
    * @tparam E the EntityType class
    */
-  def apply[E <: EntityType](entityName: EntityName, fieldToGetIdElsewhere: PortableField[ID] = PortableField.emptyField): EntityField[E] = {
-    new ForeignKey[E](entityName, fieldToGetIdElsewhere)
+  def apply[E <: EntityType](entityName: EntityName, fieldToGetIdElsewhere: PortableField[ID] = PortableField.emptyField, dataVersion: Int = 1): EntityField[E] = {
+    new ForeignKey[E](entityName, fieldToGetIdElsewhere, dataVersion)
   }
 
-  private def calculateFields(entityName: EntityName): PortableField[ID] = {
+  private def calculateFields(entityName: EntityName, dataVersion: Int): PortableField[ID] = {
     val fieldName = EntityField.fieldName(entityName)
-    persisted[ID](fieldName) + sqliteCriteria[ID](fieldName)
+    persisted[ID](fieldName, dataVersion) + sqliteCriteria[ID](fieldName)
   }
 }
