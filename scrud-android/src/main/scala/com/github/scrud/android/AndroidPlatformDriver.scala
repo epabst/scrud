@@ -9,6 +9,7 @@ import scrud.EntityName
 import scrud.types._
 import view.ViewField._
 import view.{EntityView, EnumerationView, ViewRef}
+import view.FieldLayout._
 import scala.Some
 import com.github.triangle.PortableField
 
@@ -55,9 +56,9 @@ class AndroidPlatformDriver(rClass: Class[_], val activityClass: Class[_ <: Crud
    */
   def namedViewField[T](fieldName: String, qualifiedType: QualifiedType[T], entityName: EntityName) = {
     val childViewField = (qualifiedType match {
-      case TitleQT => textView
-      case DescriptionQT => textView
-      case NaturalIntQT | PositiveIntQT => intView
+      case TitleQT => textView.withDefaultLayout(textLayout("text|textCapWords|textAutoCorrect"))
+      case DescriptionQT => textView.withDefaultLayout(textLayout("text|textCapSentences|textMultiLine|textAutoCorrect"))
+      case NaturalIntQT | PositiveIntQT => intView.withDefaultLayout(textLayout("number"))
       case CurrencyQT => currencyView
       case PercentageQT => percentageView
       case DateWithoutTimeQT => dateView
