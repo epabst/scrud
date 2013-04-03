@@ -7,6 +7,8 @@ import com.github.scrud.EntityType
 case class EntityTypePersistedInfo(persistedFields: Seq[CursorField[_]]) {
   private val persistedFieldList = FieldList(persistedFields: _*)
   lazy val queryFieldNames: Seq[String] = persistedFields.map(_.columnName)
+  lazy val minDataVersion: Int = persistedFields.map(_.dataVersion).min
+  lazy val maxDataVersion: Int = persistedFields.map(_.dataVersion).max
 
   /** Copies the current row of the given cursor to a Map.  This allows the Cursor to then move to a different position right after this. */
   def copyRowToMap(cursor: Cursor): Map[String,Option[Any]] =
@@ -14,7 +16,7 @@ case class EntityTypePersistedInfo(persistedFields: Seq[CursorField[_]]) {
 }
 
 object EntityTypePersistedInfo {
-  def apply(entityType: EntityType): EntityTypePersistedInfo = EntityTypePersistedInfo(CursorField.persistedFields(entityType))
+  def apply(entityType: EntityType): EntityTypePersistedInfo = new EntityTypePersistedInfo(CursorField.persistedFields(entityType))
 }
 
 /** A Stream that wraps a Cursor.

@@ -1,7 +1,7 @@
 package com.github.scrud.android
 
 import com.github.scrud
-import persistence.{EntityTypePersistedInfo, CursorField}
+import persistence.EntityTypePersistedInfo
 import scrud.action.{CommandId, Command}
 import scrud.android.action.{StartEntityIdActivityOperation, StartEntityActivityOperation}
 import action.AndroidOperation._
@@ -26,7 +26,7 @@ class AndroidPlatformDriver(rClass: Class[_], val activityClass: Class[_ <: Crud
     extends PlatformDriver {
   lazy val localDatabasePersistenceFactory = new SQLitePersistenceFactory
 
-  def calculateDataVersion(entityTypes: Seq[EntityType]) = entityTypes.flatMap(EntityTypePersistedInfo(_).persistedFields).map(_.dataVersion).max
+  def calculateDataVersion(entityTypes: Seq[EntityType]) = entityTypes.map(EntityTypePersistedInfo(_).maxDataVersion).max
 
   /** An Operation that will show the UI to the user for creating an entity instance. */
   def operationToShowCreateUI(entityName: EntityName) =

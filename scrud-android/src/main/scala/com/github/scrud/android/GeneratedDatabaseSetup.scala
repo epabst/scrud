@@ -4,7 +4,7 @@ import android.database.sqlite.{SQLiteOpenHelper, SQLiteDatabase}
 import com.github.scrud.util.Common
 import com.github.triangle.Logging
 import android.provider.BaseColumns
-import persistence.EntityTypePersistedInfo
+import persistence.{CursorField, EntityTypePersistedInfo}
 import com.github.scrud.EntityType
 
 /**
@@ -18,9 +18,10 @@ class GeneratedDatabaseSetup(crudContext: AndroidCrudContext, persistenceFactory
 
   protected lazy val logTag = Common.tryToEvaluate(crudContext.application.logTag).getOrElse(Common.logTag)
 
-  private def createMissingTables(db: SQLiteDatabase): Seq[EntityType] = {
-    val application = crudContext.application
-    val entityTypesRequiringTables = application.allEntityTypes.filter(application.isSavable(_))
+  private lazy val application = crudContext.application
+  private lazy val entityTypesRequiringTables: Seq[EntityType] = application.allEntityTypes.filter(application.isSavable(_))
+
+  private def createMissingTables(db: SQLiteDatabase) {
     entityTypesRequiringTables.foreach { entityType =>
       val buffer = new StringBuffer
       buffer.append("CREATE TABLE IF NOT EXISTS ").append(SQLitePersistenceFactory.toTableName(entityType.entityName)).append(" (").
@@ -31,11 +32,10 @@ class GeneratedDatabaseSetup(crudContext: AndroidCrudContext, persistenceFactory
       buffer.append(")")
       execSQL(db, buffer.toString)
     }
-    entityTypesRequiringTables
   }
 
   def onCreate(db: SQLiteDatabase) {
-    val entityTypesRequiringTables = createMissingTables(db)
+    createMissingTables(db)
     entityTypesRequiringTables.foreach { entityType =>
       val persistence = persistenceFactory.createEntityPersistence(entityType, db, crudContext)
       entityType.onCreateDatabase(persistence)
@@ -51,5 +51,14 @@ class GeneratedDatabaseSetup(crudContext: AndroidCrudContext, persistenceFactory
   def onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
     // Steps to upgrade the database for the new version ...
     createMissingTables(db)
+    for {
+      entityType <- entityTypesRequiringTables
+      // skip if the entire EntityType is new since there's no need to alter the table
+      if EntityTypePersistedInfo(entityType).minDataVersion <= oldVersion
+      cursorField <- CursorField.persistedFields(entityType)
+      if cursorField.dataVersion > oldVersion && cursorField.dataVersion <= newVersion
+      command = new StringBuilder().append("ALTER TABLE ").append(SQLitePersistenceFactory.toTableName(entityType.entityName)).
+          append(" ADD COLUMN ").append(cursorField.columnName).append(" ").append(cursorField.persistedType.sqliteType).append(";").toString()
+    } crudContext.withExceptionReporting(execSQL(db, command))
   }
 }
