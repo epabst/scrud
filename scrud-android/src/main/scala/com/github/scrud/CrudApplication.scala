@@ -7,7 +7,7 @@ import action.Command
 import action.CommandId
 import action.CrudOperation
 import action.StartEntityDeleteOperation
-import persistence.PersistenceFactory
+import persistence.{PersistenceFactoryMapping, PersistenceFactory}
 import platform.PlatformDriver
 import platform.PlatformTypes._
 import com.github.triangle._
@@ -34,7 +34,7 @@ import scrud.android.view.AndroidResourceAnalyzer._
  * Time: 4:50 PM
  */
 
-abstract class CrudApplication(val platformDriver: PlatformDriver) extends Logging {
+abstract class CrudApplication(val platformDriver: PlatformDriver) extends PersistenceFactoryMapping with Logging {
   lazy val logTag = Common.tryToEvaluate(nameId).getOrElse(Common.logTag)
 
   def name: String
@@ -52,10 +52,6 @@ abstract class CrudApplication(val platformDriver: PlatformDriver) extends Loggi
   /** The EntityType for the first page of the App. */
   lazy val primaryEntityType: EntityType = allEntityTypes.head
 
-  def entityType(entityName: EntityName): EntityType = allEntityTypes.find(_.entityName == entityName).getOrElse {
-    throw new IllegalArgumentException("Unknown entity: entityName=" + entityName)
-  }
-
   def parentEntityNames(entityName: EntityName): Seq[EntityName] = entityType(entityName).parentEntityNames
 
   def childEntityNames(entityName: EntityName): Seq[EntityName] = childEntityTypes(entityType(entityName)).map(_.entityName)
@@ -72,24 +68,7 @@ abstract class CrudApplication(val platformDriver: PlatformDriver) extends Loggi
   private def crudType(entityName: EntityName): CrudType =
     allCrudTypes.find(_.entityType.entityName == entityName).getOrElse(throw new NoSuchElementException(entityName + " not found"))
 
-  def persistenceFactory(entityName: EntityName): PersistenceFactory = crudType(entityName).persistenceFactory
-  def persistenceFactory(entityType: EntityType): PersistenceFactory = persistenceFactory(entityType.entityName)
-
-  /** Returns true if the URI is worth calling EntityPersistence.find to try to get an entity instance. */
-  def maySpecifyEntityInstance(uri: UriPath, entityType: EntityType): Boolean =
-    persistenceFactory(entityType).maySpecifyEntityInstance(entityType.entityName, uri)
-
-  def isListable(entityType: EntityType): Boolean = persistenceFactory(entityType).canList
-  def isListable(entityName: EntityName): Boolean = persistenceFactory(entityName).canList
-
-  def isSavable(entityType: EntityType): Boolean = persistenceFactory(entityType).canSave
-  def isSavable(entityName: EntityName): Boolean = persistenceFactory(entityName).canSave
-
-  def isCreatable(entityName: EntityName): Boolean = persistenceFactory(entityName).canCreate
-  def isCreatable(entityType: EntityType): Boolean = persistenceFactory(entityType).canCreate
-
-  def isDeletable(entityType: EntityType): Boolean = persistenceFactory(entityType).canDelete
-  def isDeletable(entityName: EntityName): Boolean = persistenceFactory(entityName).canDelete
+  def persistenceFactory(entityType: EntityType): PersistenceFactory = crudType(entityType.entityName).persistenceFactory
 
   private lazy val classInApplicationPackage: Class[_] = allEntityTypes.head.getClass
   lazy val rStringClasses: Seq[Class[_]] = detectRStringClasses(classInApplicationPackage)

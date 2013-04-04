@@ -12,7 +12,7 @@ import state.{State, LazyApplicationVal}
 import collection.mutable
 import java.util.concurrent.ConcurrentHashMap
 import scala.Some
-import com.github.scrud.persistence.CrudPersistence
+import persistence.{PersistenceFactoryMapping, CrudPersistence}
 
 /**
  * A ContentProvider that uses a PersistenceFactory.
@@ -25,7 +25,8 @@ import com.github.scrud.persistence.CrudPersistence
 abstract class CrudContentProvider extends ContentProvider with ActivityStateHolder {
   // The reason this isn't derived from getContext.getApplicationContext is so that this ContentProvider
   // may be instantiated within a foreign application for efficiency.
-  protected def application: CrudApplication
+  protected[scrud] def application: CrudApplication
+  protected[scrud] def persistenceFactoryMapping: PersistenceFactoryMapping = application
   lazy val activityState: State = new State
   lazy val crudContext = new AndroidCrudContext(getContext, this, application)
 
@@ -35,9 +36,9 @@ abstract class CrudContentProvider extends ContentProvider with ActivityStateHol
     val uriPath = toUriPath(uri)
     uriPath.findId(uriPath.lastEntityNameOrFail) match {
       case Some(id) =>
-        ContentResolver.CURSOR_ITEM_BASE_TYPE + "/vnd." + authorityFor(application) + "." + uriPath.lastEntityNameOrFail
+        ContentResolver.CURSOR_ITEM_BASE_TYPE + "/vnd." + authorityFor(persistenceFactoryMapping) + "." + uriPath.lastEntityNameOrFail
       case None =>
-        ContentResolver.CURSOR_DIR_BASE_TYPE + "/vnd." + authorityFor(application) + "." + uriPath.lastEntityNameOrFail
+        ContentResolver.CURSOR_DIR_BASE_TYPE + "/vnd." + authorityFor(persistenceFactoryMapping) + "." + uriPath.lastEntityNameOrFail
     }
   }
 

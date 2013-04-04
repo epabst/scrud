@@ -18,8 +18,8 @@ class GeneratedDatabaseSetup(crudContext: AndroidCrudContext, persistenceFactory
 
   protected lazy val logTag = Common.tryToEvaluate(crudContext.application.logTag).getOrElse(Common.logTag)
 
-  private lazy val application = crudContext.application
-  private lazy val entityTypesRequiringTables: Seq[EntityType] = application.allEntityTypes.filter(application.isSavable(_))
+  private lazy val persistenceFactoryMapping = crudContext.persistenceFactoryMapping
+  private lazy val entityTypesRequiringTables: Seq[EntityType] = persistenceFactoryMapping.allEntityTypes.filter(persistenceFactoryMapping.isSavable(_))
 
   private def createMissingTables(db: SQLiteDatabase) {
     entityTypesRequiringTables.foreach { entityType =>

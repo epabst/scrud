@@ -1,7 +1,7 @@
 package com.github.scrud.android.persistence
 
 import com.github.scrud.persistence._
-import com.github.scrud.{CrudApplication, UriPath, CrudContext, EntityType}
+import com.github.scrud.{UriPath, CrudContext, EntityType}
 import android.content.{ContentResolver, ContentValues}
 import com.github.scrud.platform.PlatformTypes._
 import com.github.scrud.android.view.AndroidConversions._
@@ -28,7 +28,8 @@ class ContentResolverPersistenceFactory extends PersistenceFactory with DataList
 
   def createEntityPersistence(entityType: EntityType, crudContext: CrudContext) = {
     val contentResolver = crudContext.asInstanceOf[AndroidCrudContext].context.getContentResolver
-    new ContentResolverCrudPersistence(entityType, contentResolver, crudContext.application, listenerSet(entityType, crudContext))
+    new ContentResolverCrudPersistence(entityType, contentResolver, crudContext.persistenceFactoryMapping,
+      listenerSet(entityType, crudContext))
   }
 }
 
@@ -37,13 +38,13 @@ object ContentResolverPersistenceFactory {
 }
 
 class ContentResolverCrudPersistence(val entityType: EntityType, contentResolver: ContentResolver,
-                                     application: CrudApplication,
+                                     persistenceFactoryMapping: PersistenceFactoryMapping,
                                      protected val listenerSet: MutableListenerSet[DataListener])
     extends CrudPersistence with DelegatingListenerSet[DataListener] {
   private lazy val entityTypePersistedInfo = EntityTypePersistedInfo(entityType)
   private lazy val queryFieldNames = entityTypePersistedInfo.queryFieldNames.toArray
   private lazy val uriPathWithEntityName = UriPath(entityType.entityName)
-  private lazy val applicationUri = AndroidConversions.baseUriFor(application)
+  private lazy val applicationUri = AndroidConversions.baseUriFor(persistenceFactoryMapping)
 
   private def toUri(uriPath: UriPath): Uri = {
     AndroidConversions.withAppendedPath(applicationUri, uriPath)
