@@ -17,16 +17,13 @@ import android.net.Uri
  * Date: 3/23/13
  * Time: 12:05 AM
  */
-class ContentResolverPersistenceFactory extends PersistenceFactory with DataListenerSetValHolder { factory =>
-  /** Indicates if an entity can be saved. */
-  def canSave = true
-
+class ContentResolverPersistenceFactory(delegate: PersistenceFactory) extends DelegatingPersistenceFactory(delegate) with DataListenerSetValHolder { factory =>
   /** Instantiates a data buffer which can be saved by EntityPersistence.
     * The EntityType must support copying into this object.
     */
-  def newWritable() = ContentResolverPersistenceFactory.newWritable()
+  override def newWritable() = ContentResolverPersistenceFactory.newWritable()
 
-  def createEntityPersistence(entityType: EntityType, crudContext: CrudContext) = {
+  override def createEntityPersistence(entityType: EntityType, crudContext: CrudContext) = {
     val contentResolver = crudContext.asInstanceOf[AndroidCrudContext].context.getContentResolver
     new ContentResolverCrudPersistence(entityType, contentResolver, crudContext.persistenceFactoryMapping,
       listenerSet(entityType, crudContext))
