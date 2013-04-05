@@ -1,25 +1,30 @@
 package com.github.scrud.android
 
-import action.AndroidOperation
+import _root_.android.app.Activity
+import com.github.scrud.android.action.AndroidOperation
 import org.junit.Test
 import org.junit.runner.RunWith
-import persistence.CursorField
+import com.github.scrud.android.persistence.CursorField
 import scala.collection.mutable
 import org.scalatest.matchers.MustMatchers
 import AndroidOperation._
-import android.widget.ListAdapter
-import com.github.scrud.{CrudApplication, EntityName, UriPath}
+import _root_.android.widget.{BaseAdapter, AdapterView, ListAdapter}
+import com.github.scrud._
 import org.mockito.Mockito._
 import com.github.scrud.persistence._
-import com.github.scrud.util.{CrudMockitoSugar, ReadyFuture}
+import com.github.scrud.util.{ListenerHolder, CrudMockitoSugar, ReadyFuture}
 import org.mockito.Matchers._
-import scala.Some
+import com.github.scrud.platform.PlatformTypes._
+import com.github.scrud.platform.TestingPlatformDriver
 import com.github.scrud.state.State
-import android.content.Intent
+import _root_.android.content.Intent
 import com.xtremelabs.robolectric.tester.android.view.TestMenu
-import android.view.{View, ContextMenu}
+import _root_.android.view.{LayoutInflater, View, ContextMenu}
+import _root_.android.util.SparseArray
+import com.github.triangle.PortableField._
+import com.github.scrud.EntityName
+import scala.Some
 import com.github.scrud.action.CrudOperation
-import android.util.SparseArray
 
 /** A test for [[com.github.scrud.android.CrudActivity]].
   * @author Eric Pabst (epabst@gmail.com)
@@ -281,5 +286,40 @@ class CrudActivitySpec extends CrudMockitoSugar with MustMatchers {
     }
     // should do nothing
     activity.onListItemClick(null, null, -1, -1)
+  }
+
+  val seqPersistence = mock[SeqCrudPersistence[Map[String,Any]]]
+  val adapterView = mock[AdapterView[BaseAdapter]]
+  val activity = mock[Activity]
+  val listAdapterCapture = capturingAnswer[Unit] { Unit }
+  val generatedEntityName = EntityName("Generated")
+  val crudContext = mock[AndroidCrudContext]
+  val layoutInflater = mock[LayoutInflater]
+  val dataListenerHolder = mock[ListenerHolder[DataListener]]
+
+  @Test
+  def itsListAdapterMustGetTheItemIdUsingTheIdField() {
+    val factory = new GeneratedPersistenceFactory[Map[String,Any]] {
+      def createEntityPersistence(entityType: EntityType, crudContext: CrudContext) = seqPersistence
+    }
+    val entityType = new EntityType(generatedEntityName, TestingPlatformDriver) {
+      override protected val idField = mapField[ID]("longId") + super.idField
+      def valueFields = Nil
+    }
+    val _crudApplication = new CrudApplicationForTesting(CrudType(entityType, factory))
+    stub(crudContext.activityState).toReturn(new State)
+    stub(crudContext.applicationState).toReturn(new State)
+    stub(crudContext.dataListenerHolder(entityType)).toReturn(dataListenerHolder)
+    when(adapterView.setAdapter(anyObject())).thenAnswer(listAdapterCapture)
+    val persistence = mock[CrudPersistence]
+    when(crudContext.openEntityPersistence(entityType)).thenReturn(persistence)
+    val uri = UriPath.EMPTY
+    when(persistence.entityType).thenReturn(entityType)
+    when(persistence.findAll(uri)).thenReturn(List(Map("longId" -> 456L)))
+    val activity = new CrudActivityForTesting(_crudApplication)
+    activity.setListAdapter(adapterView, entityType, crudContext, new CrudContextItems(uri, crudContext), activity, 123)
+    verify(adapterView).setAdapter(anyObject())
+    val listAdapter = listAdapterCapture.params(0).asInstanceOf[ListAdapter]
+    listAdapter.getItemId(0) must be (456L)
   }
 }
