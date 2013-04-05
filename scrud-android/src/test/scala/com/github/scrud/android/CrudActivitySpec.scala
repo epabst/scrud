@@ -307,8 +307,7 @@ class CrudActivitySpec extends CrudMockitoSugar with MustMatchers {
       def valueFields = Nil
     }
     val _crudApplication = new CrudApplicationForTesting(CrudType(entityType, factory))
-    stub(crudContext.activityState).toReturn(new State)
-    stub(crudContext.applicationState).toReturn(new State)
+    stub(crudContext.stateHolder).toReturn(new ActivityStateHolderForTesting)
     stub(crudContext.dataListenerHolder(entityType)).toReturn(dataListenerHolder)
     when(adapterView.setAdapter(anyObject())).thenAnswer(listAdapterCapture)
     val persistence = mock[CrudPersistence]

@@ -29,7 +29,9 @@ class DerivedPersistenceFactorySpec extends FunSpec with MustMatchers with CrudM
       }
     }
     val crudContext = mock[CrudContext]
-    stub(crudContext.stateHolder).toReturn(new StateHolderForTesting)
+    val stateHolder = new StateHolderForTesting
+    stub(crudContext.stateHolder).toReturn(stateHolder)
+    stub(crudContext.applicationState).toReturn(stateHolder.applicationState)
     stub(crudContext.dataListenerHolder(Matchers.any[EntityName]())).toReturn(dataListenerHolder)
     when(crudContext.openEntityPersistence(entity1)).thenReturn(persistence1)
     when(crudContext.openEntityPersistence(entity2)).thenReturn(persistence2)
@@ -44,7 +46,9 @@ class DerivedPersistenceFactorySpec extends FunSpec with MustMatchers with CrudM
       def findAll(entityType: EntityType, uri: UriPath, crudContext: CrudContext, delegatePersistenceMap: Map[EntityName, CrudPersistence]) = Nil
     }
     val crudContext = mock[CrudContext]
-    stub(crudContext.stateHolder).toReturn(new StateHolderForTesting)
+    val stateHolder = new StateHolderForTesting
+    stub(crudContext.stateHolder).toReturn(stateHolder)
+    stub(crudContext.applicationState).toReturn(stateHolder.applicationState)
     stub(crudContext.dataListenerHolder(Matchers.any[EntityName]())).toReturn(dataListenerHolder)
     val persistence1 = mock[CrudPersistence]
     val persistence2 = mock[CrudPersistence]
