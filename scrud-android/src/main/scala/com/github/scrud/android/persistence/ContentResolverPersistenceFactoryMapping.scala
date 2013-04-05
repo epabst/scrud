@@ -17,5 +17,5 @@ class ContentResolverPersistenceFactoryMapping(delegate: PersistenceFactoryMappi
   def persistenceFactory(entityType: EntityType) =
     new ContentResolverPersistenceFactory(delegate.persistenceFactory(entityType))
 
-  protected def logTag = delegate.logTag
+  def logTag = delegate.logTag
 }

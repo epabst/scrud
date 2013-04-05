@@ -51,8 +51,6 @@ class CrudBackupAgentSpec extends MustMatchers with CrudMockitoSugar {
 
   @Test
   def shouldSupportBackupAndRestore() {
-    val application = mock[CrudApplication]
-    val applicationB = mock[CrudApplication]
     val backupTarget = mock[BackupTarget]
     val state1 = mock[ParcelFileDescriptor]
     val state1b = mock[ParcelFileDescriptor]
@@ -71,18 +69,14 @@ class CrudBackupAgentSpec extends MustMatchers with CrudMockitoSugar {
     val persistence2B = new EntityPersistenceForTesting(entityType2B)
     val state0 = null
     val restoreItems = mutable.ListBuffer[RestoreItem]()
-    when(application.allEntityTypes).thenReturn(List[EntityType](entityType, entityType2))
-    when(application.isSavable(any[EntityType]())).thenReturn(true)
-    when(application.persistenceFactory(entityType)).thenReturn(new PersistenceFactoryForTesting(persistence))
-    when(application.persistenceFactory(entityType2)).thenReturn(new PersistenceFactoryForTesting(persistence2))
+    val application = new CrudApplicationForTesting(entityType -> new PersistenceFactoryForTesting(persistence),
+      entityType2 -> new PersistenceFactoryForTesting(persistence2))
     when(backupTarget.writeEntity(eql("MyMap#100"), any())).thenAnswer(saveRestoreItem(restoreItems))
     when(backupTarget.writeEntity(eql("MyMap#101"), any())).thenAnswer(saveRestoreItem(restoreItems))
     when(backupTarget.writeEntity(eql("OtherMap#101"), any())).thenAnswer(saveRestoreItem(restoreItems))
     when(backupTarget.writeEntity(eql("OtherMap#104"), any())).thenAnswer(saveRestoreItem(restoreItems))
-    when(applicationB.allEntityTypes).thenReturn(List[EntityType](entityTypeB, entityType2B))
-    when(applicationB.isSavable(any[EntityType]())).thenReturn(true)
-    when(applicationB.persistenceFactory(entityTypeB)).thenReturn(new PersistenceFactoryForTesting(persistenceB))
-    when(applicationB.persistenceFactory(entityType2B)).thenReturn(new PersistenceFactoryForTesting(persistence2B))
+    val applicationB = new CrudApplicationForTesting(entityTypeB -> new PersistenceFactoryForTesting(persistenceB),
+          entityType2B -> new PersistenceFactoryForTesting(persistence2B))
     val backupAgent = new CrudBackupAgent(application) {
       override lazy val applicationState = new State
     }

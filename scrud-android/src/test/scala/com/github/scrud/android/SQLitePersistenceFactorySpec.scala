@@ -65,6 +65,7 @@ class SQLitePersistenceFactorySpec extends MustMatchers with CrudMockitoSugar wi
   def shouldUseCorrectColumnNamesForFindAll() {
     val crudContext = mock[AndroidCrudContext]
     stub(crudContext.application).toReturn(application)
+    stub(crudContext.persistenceFactoryMapping).toReturn(application)
 
     val entityTypePersistedInfo = EntityTypePersistedInfo(TestEntityType)
     entityTypePersistedInfo.queryFieldNames must contain(BaseColumns._ID)
@@ -76,6 +77,7 @@ class SQLitePersistenceFactorySpec extends MustMatchers with CrudMockitoSugar wi
     val crudContext = mock[AndroidCrudContext]
     stub(crudContext.stateHolder).toReturn(new ActivityStateHolderForTesting)
     stub(crudContext.application).toReturn(application)
+    stub(crudContext.persistenceFactoryMapping).toReturn(application)
     val persistenceFactory = SQLitePersistenceFactory
 
     val cursors = mutable.Buffer[Cursor]()
