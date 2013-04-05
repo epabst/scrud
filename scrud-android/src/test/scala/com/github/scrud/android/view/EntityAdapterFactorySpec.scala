@@ -26,10 +26,13 @@ class EntityAdapterFactorySpec extends MustMatchers with CrudMockitoSugar {
   def itMustCreateAnAdapterSuccessfully() {
     val persistence = mock[CrudPersistence]
     val itemViewInflater = mock[ViewInflater]
-    val contextItems = new CrudContextItems(UriPath("/uri"), null)
+    val uri = UriPath("/uri")
     val entityType = EntityTypeForTesting
+    val contextItems = new CrudContextItems(uri, new SimpleCrudContext(new CrudApplicationForTesting(entityType -> new PersistenceFactoryForTesting(persistence))))
     when(persistence.entityType).thenReturn(entityType)
     when(persistence.findAll(any())).thenReturn(Nil)
+    val refreshableFindAll = new SimpleRefreshableFindAll(uri, persistence)
+    when(persistence.refreshableFindAll(uri)).thenReturn(refreshableFindAll)
 
     val factory = new EntityAdapterFactory()
     val adapter = factory.createAdapter(persistence, contextItems, itemViewInflater)
