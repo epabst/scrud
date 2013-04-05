@@ -293,34 +293,7 @@ class CrudActivitySpec extends CrudMockitoSugar with MustMatchers {
   val activity = mock[Activity]
   val listAdapterCapture = capturingAnswer[Unit] { Unit }
   val generatedEntityName = EntityName("Generated")
-  val crudContext = mock[AndroidCrudContext]
   val layoutInflater = mock[LayoutInflater]
   val dataListenerHolder = mock[ListenerHolder[DataListener]]
 
-  @Test
-  def itsListAdapterMustGetTheItemIdUsingTheIdField() {
-    val factory = new GeneratedPersistenceFactory[Map[String,Any]] {
-      def createEntityPersistence(entityType: EntityType, crudContext: CrudContext) = seqPersistence
-    }
-    val entityType = new EntityType(generatedEntityName, TestingPlatformDriver) {
-      override protected val idField = mapField[ID]("longId") + super.idField
-      def valueFields = Nil
-    }
-    val _crudApplication = new CrudApplicationForTesting(CrudType(entityType, factory))
-    stub(crudContext.stateHolder).toReturn(new ActivityStateHolderForTesting)
-    stub(crudContext.dataListenerHolder(entityType)).toReturn(dataListenerHolder)
-    when(adapterView.setAdapter(anyObject())).thenAnswer(listAdapterCapture)
-    val persistence = mock[CrudPersistence]
-    when(crudContext.openEntityPersistence(entityType)).thenReturn(persistence)
-    val uri = UriPath.EMPTY
-    when(persistence.entityType).thenReturn(entityType)
-    when(persistence.findAll(uri)).thenReturn(List(Map("longId" -> 456L)))
-    val refreshableFindAll = new SimpleRefreshableFindAll(uri, persistence)
-    when(persistence.refreshableFindAll(uri)).thenReturn(refreshableFindAll)
-    val activity = new CrudActivityForTesting(_crudApplication)
-    activity.setListAdapter(adapterView, entityType, crudContext, new CrudContextItems(uri, crudContext), activity, 123)
-    verify(adapterView).setAdapter(anyObject())
-    val listAdapter = listAdapterCapture.params(0).asInstanceOf[ListAdapter]
-    listAdapter.getItemId(0) must be (456L)
-  }
 }
