@@ -315,6 +315,8 @@ class CrudActivitySpec extends CrudMockitoSugar with MustMatchers {
     val uri = UriPath.EMPTY
     when(persistence.entityType).thenReturn(entityType)
     when(persistence.findAll(uri)).thenReturn(List(Map("longId" -> 456L)))
+    val refreshableFindAll = new SimpleRefreshableFindAll(uri, persistence)
+    when(persistence.refreshableFindAll(uri)).thenReturn(refreshableFindAll)
     val activity = new CrudActivityForTesting(_crudApplication)
     activity.setListAdapter(adapterView, entityType, crudContext, new CrudContextItems(uri, crudContext), activity, 123)
     verify(adapterView).setAdapter(anyObject())
