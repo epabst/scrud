@@ -3,7 +3,7 @@ package com.github.scrud.android
 import action.AndroidOperation._
 import org.mockito.Mockito
 import com.github.scrud.{CrudContext, CrudApplication, EntityType}
-import com.github.scrud.persistence.{PersistenceFactory, CrudPersistence, DataListenerSetValHolder}
+import com.github.scrud.persistence.{AbstractPersistenceFactory, PersistenceFactory, CrudPersistence, DataListenerSetValHolder}
 import com.github.scrud.state.State
 
 /** A simple CrudType for testing.
@@ -27,7 +27,7 @@ case class CrudTypeForTesting(override val entityType: EntityType, override val 
 
 object CrudTypeForTesting extends CrudTypeForTesting(Mockito.mock(classOf[CrudPersistence]))
 
-class PersistenceFactoryForTesting(persistence: CrudPersistence) extends PersistenceFactory with DataListenerSetValHolder {
+class PersistenceFactoryForTesting(persistence: CrudPersistence) extends AbstractPersistenceFactory with DataListenerSetValHolder {
   val canSave = true
 
   override def newWritable() = Map.empty[String,Any]

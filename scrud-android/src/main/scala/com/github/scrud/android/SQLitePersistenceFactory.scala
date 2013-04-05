@@ -4,12 +4,12 @@ import android.content.ContentValues
 import persistence.SQLiteUtil
 import android.database.sqlite.SQLiteDatabase
 import com.github.scrud.{CrudContext, EntityType, EntityName}
-import com.github.scrud.persistence.{CrudPersistenceUsingThin, DataListenerSetValHolder, PersistenceFactory}
+import com.github.scrud.persistence.{AbstractPersistenceFactory, CrudPersistenceUsingThin, DataListenerSetValHolder}
 
 /** A PersistenceFactory for SQLite.
   * @author Eric Pabst (epabst@gmail.com)
   */
-class SQLitePersistenceFactory extends PersistenceFactory with DataListenerSetValHolder {
+class SQLitePersistenceFactory extends AbstractPersistenceFactory with DataListenerSetValHolder {
   val canSave = true
 
   def newWritable() = new ContentValues

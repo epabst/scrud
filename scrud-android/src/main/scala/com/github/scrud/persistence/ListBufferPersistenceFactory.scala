@@ -12,7 +12,7 @@ import com.github.scrud.state.LazyApplicationVal
  *         Date: 10/20/12
  *         Time: 5:27 PM
  */
-class ListBufferPersistenceFactory[T <: AnyRef](instantiateItem: => T) extends PersistenceFactory with DataListenerSetValHolder {
+class ListBufferPersistenceFactory[T <: AnyRef](instantiateItem: => T) extends AbstractPersistenceFactory with DataListenerSetValHolder {
   val canSave = true
 
   private object PersistenceByEntityName extends LazyApplicationVal[mutable.ConcurrentMap[EntityName,ListBufferCrudPersistence[T]]](

@@ -8,7 +8,7 @@ import com.github.scrud.{UriPath, EntityName, CrudContext, EntityType}
  * Date: 4/4/13
  * Time: 7:25 AM
  */
-class DelegatingPersistenceFactory(delegate: PersistenceFactory) extends PersistenceFactory {
+abstract class DelegatingPersistenceFactory(delegate: PersistenceFactory) extends PersistenceFactory {
   def canSave = delegate.canSave
 
   def canCreate = delegate.canCreate
@@ -23,6 +23,4 @@ class DelegatingPersistenceFactory(delegate: PersistenceFactory) extends Persist
 
   def createEntityPersistence(entityType: EntityType, crudContext: CrudContext) =
     delegate.createEntityPersistence(entityType, crudContext)
-
-  def listenerHolder(entityType: EntityType, crudContext: CrudContext) = delegate.listenerHolder(entityType, crudContext)
 }

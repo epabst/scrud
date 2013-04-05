@@ -13,6 +13,8 @@ import com.github.scrud.{UriPath, EntityType, EntityName}
 abstract class PersistenceFactoryMapping extends Logging {
   def packageName: String
 
+  def logTag: String
+
   def allEntityTypes: Seq[EntityType]
 
   def persistenceFactory(entityType: EntityType): PersistenceFactory

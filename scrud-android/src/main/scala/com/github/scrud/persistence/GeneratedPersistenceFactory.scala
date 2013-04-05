@@ -10,7 +10,7 @@ import com.github.scrud.CrudContext
  *         Date: 10/20/12
  *         Time: 5:05 PM
  */
-trait GeneratedPersistenceFactory[T <: AnyRef] extends PersistenceFactory with DataListenerSetValHolder {
+trait GeneratedPersistenceFactory[T <: AnyRef] extends AbstractPersistenceFactory with DataListenerSetValHolder {
   val canSave = false
 
   def newWritable(): T = throw new UnsupportedOperationException("not supported")

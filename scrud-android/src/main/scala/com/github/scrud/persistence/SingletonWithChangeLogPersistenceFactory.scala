@@ -7,7 +7,7 @@ import com.github.scrud.{EntityName, UriPath, EntityType, CrudContext}
  * A PersistenceFactory where only the first entity instance is read, and a new instance is saved each time.
  * @author Eric Pabst (epabst@gmail.com)
  */
-class SingletonWithChangeLogPersistenceFactory(delegate: PersistenceFactory) extends PersistenceFactory {
+class SingletonWithChangeLogPersistenceFactory(delegate: PersistenceFactory) extends AbstractPersistenceFactory {
   val canSave = delegate.canSave
 
   override val canDelete = false
