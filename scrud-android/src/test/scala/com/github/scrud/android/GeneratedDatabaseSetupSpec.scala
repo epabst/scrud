@@ -21,19 +21,20 @@ import com.github.scrud.{EntityName, EntityType}
 class GeneratedDatabaseSetupSpec extends CrudMockitoSugar with MustMatchers {
   val db = mock[SQLiteDatabase]
   val mockEntityType = mock[EntityType]
-  val entityType = new EntityTypeForTesting(EntityName("Entity1")) {
+  val platformDriver = new AndroidPlatformDriver(null)
+  val entityType = new EntityTypeForTesting(EntityName("Entity1"), platformDriver) {
     override def onCreateDatabase(lowLevelPersistence: CrudPersistence) {
       mockEntityType.onCreateDatabase(lowLevelPersistence)
     }
   }
   val mockEntityType2 = mock[EntityType]
-  val entityType2 = new EntityTypeForTesting(EntityName("Entity2")) {
+  val entityType2 = new EntityTypeForTesting(EntityName("Entity2"), platformDriver) {
     override def onCreateDatabase(lowLevelPersistence: CrudPersistence) {
       mockEntityType2.onCreateDatabase(lowLevelPersistence)
     }
   }
   val persistenceFactory = SQLitePersistenceFactory
-  val application = new CrudApplicationForTesting(CrudType(entityType, persistenceFactory), CrudType(entityType2, persistenceFactory))
+  val application = new CrudApplicationForTesting(platformDriver, CrudType(entityType, persistenceFactory), CrudType(entityType2, persistenceFactory))
   val sut = new GeneratedDatabaseSetup(new AndroidCrudContext(new ActivityStateHolderForTesting, application), persistenceFactory)
 
   @Before
