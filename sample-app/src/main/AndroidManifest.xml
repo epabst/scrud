@@ -10,7 +10,13 @@ package="com.github.scrud.android.sample" xmlns:android="http://schemas.android.
         <action android:name="android.intent.action.MAIN"/>
         <category android:name="android.intent.category.LAUNCHER"/>
       </intent-filter>
-</activity>
+    </activity>
+    <provider android:authorities="com.github.scrud.android.sample.provider"
+              android:name="com.github.scrud.android.persistence.LocalCrudContentProvider"
+              android:exported="false"
+              android:grantUriPermissions="false"
+              android:multiprocess="true"
+              android:syncable="false"/>
 </application>
   <uses-sdk android:minSdkVersion="8"/>
 </manifest>
