@@ -226,7 +226,7 @@ protected trait BaseCrudActivity extends OptionsMenuActivity with Logging { self
 
   private def setListAdapter[A <: Adapter](adapterView: AdapterView[A], persistence: CrudPersistence, crudContext: AndroidCrudContext, contextItems: CrudContextItems, activity: Activity, itemLayout: LayoutKey) {
     addDataListener(new DataListener {
-      def onChanged(uri: UriPath) {
+      def onChanged() {
         contextItems.application.FuturePortableValueCache.get(contextItems.stateHolder).clear()
       }
     }, contextItems.crudContext)

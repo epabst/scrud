@@ -30,7 +30,7 @@ trait EntityPersistence extends ThinPersistence with ListenerSet[DataListener] {
   /** Save a created or updated entity. */
   final def save(idOption: Option[ID], writable: AnyRef): ID = {
     val id = doSave(idOption, writable)
-    listeners.foreach(_.onChanged(toUri(id)))
+    listeners.foreach(_.onChanged())
     id
   }
 
@@ -43,7 +43,7 @@ trait EntityPersistence extends ThinPersistence with ListenerSet[DataListener] {
     */
   final def delete(uri: UriPath): Int = {
     val result = doDelete(uri)
-    listeners.foreach(_.onChanged(uri))
+    listeners.foreach(_.onChanged())
     result
   }
 

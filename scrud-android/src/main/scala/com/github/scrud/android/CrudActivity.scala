@@ -10,7 +10,6 @@ import com.github.scrud.action.CrudOperationType
 import com.github.scrud.platform.PlatformTypes
 import android.widget.{Adapter, AdapterView, ListView}
 import com.github.scrud.persistence.DataListener
-import com.github.scrud.UriPath
 import android.view.{MenuItem, View, ContextMenu}
 import android.view.ContextMenu.ContextMenuInfo
 import android.widget.AdapterView.AdapterContextMenuInfo
@@ -103,7 +102,7 @@ class CrudActivity extends BaseCrudActivity { self =>
         crudContext.future {
           populateFromParentEntities()
           persistenceFactory.addListener(new DataListener {
-            def onChanged(uri: UriPath) {
+            def onChanged() {
               //Some of the parent fields may be calculated from the children
               populateFromParentEntities()
             }

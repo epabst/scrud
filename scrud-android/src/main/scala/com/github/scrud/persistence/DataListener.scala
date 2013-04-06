@@ -9,5 +9,5 @@ import com.github.scrud.UriPath
  *         Time: 4:59 PM
  */
 trait DataListener {
-  def onChanged(uri: UriPath)
+  def onChanged()
 }

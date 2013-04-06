@@ -1,7 +1,7 @@
 package com.github.scrud.android.view
 
 import com.github.scrud.persistence.{DataListener, CrudPersistence}
-import com.github.scrud.{UriPath, CrudContextItems}
+import com.github.scrud.CrudContextItems
 import android.app.Activity
 import com.github.scrud.android.persistence.{RefreshableFindAllWithCursor, EntityTypePersistedInfo}
 import android.widget.ResourceCursorAdapter
@@ -45,7 +45,7 @@ class EntityAdapterFactory {
       case _ => new EntityAdapter(_entityType, refreshableFindAll, itemViewInflater, contextItems)
     }
     val listener = new DataListener {
-      def onChanged(uri: UriPath) {
+      def onChanged() {
         refreshableFindAll.refresh()
         adapter.notifyDataSetChanged()
       }
