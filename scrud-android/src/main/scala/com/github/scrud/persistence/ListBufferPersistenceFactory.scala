@@ -1,10 +1,7 @@
 package com.github.scrud.persistence
 
 import com.github.scrud.{EntityName, EntityType, CrudContext}
-import collection.mutable
-import java.util.concurrent.ConcurrentHashMap
-import scala.collection.JavaConversions._
-import com.github.scrud.state.LazyApplicationVal
+import com.github.scrud.state.ApplicationConcurrentMapVal
 
 /**
  * A PersistenceFactory for storing in-memory.
@@ -15,8 +12,7 @@ import com.github.scrud.state.LazyApplicationVal
 class ListBufferPersistenceFactory[T <: AnyRef](instantiateItem: => T) extends AbstractPersistenceFactory with DataListenerSetValHolder {
   val canSave = true
 
-  private object PersistenceByEntityName extends LazyApplicationVal[mutable.ConcurrentMap[EntityName,ListBufferCrudPersistence[T]]](
-    new ConcurrentHashMap[EntityName,ListBufferCrudPersistence[T]]())
+  private object PersistenceByEntityName extends ApplicationConcurrentMapVal[EntityName,ListBufferCrudPersistence[T]]
 
   def newWritable() = instantiateItem
 

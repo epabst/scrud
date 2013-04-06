@@ -11,14 +11,10 @@ import persistence.{PersistenceFactoryMapping, PersistenceFactory}
 import platform.PlatformDriver
 import platform.PlatformTypes._
 import com.github.triangle._
-import com.github.scrud
-import scrud.state.LazyApplicationVal
+import state.ApplicationConcurrentMapVal
 import util.{Common, UrgentFutureExecutor}
 import java.util.NoSuchElementException
 import scala.actors.Future
-import collection.mutable
-import java.util.concurrent.ConcurrentHashMap
-import scala.collection.JavaConversions._
 import PortableField.toSome
 import scrud.android.{CrudType,NamingConventions,res}
 import scrud.android.view.AndroidResourceAnalyzer._
@@ -183,7 +179,7 @@ abstract class CrudApplication(val platformDriver: PlatformDriver) extends Persi
   }
 
   private[scrud] object FuturePortableValueCache
-    extends LazyApplicationVal[mutable.ConcurrentMap[(EntityType, UriPath, CrudContext),Future[PortableValue]]](new ConcurrentHashMap[(EntityType, UriPath, CrudContext),Future[PortableValue]]())
+    extends ApplicationConcurrentMapVal[(EntityType, UriPath, CrudContext),Future[PortableValue]]
 
   /**
    * Save the data into the persistence for entityType.

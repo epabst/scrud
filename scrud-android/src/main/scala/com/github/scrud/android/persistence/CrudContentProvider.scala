@@ -6,11 +6,8 @@ import _root_.android.net.Uri
 import com.github.scrud._
 import android.AndroidCrudContext
 import android.state.ActivityStateHolder
-import scala.collection.JavaConversions._
 import com.github.scrud.android.view.AndroidConversions._
-import state.{State, LazyApplicationVal}
-import collection.mutable
-import java.util.concurrent.ConcurrentHashMap
+import state.{ApplicationConcurrentMapVal, State}
 import scala.Some
 import persistence.{PersistenceFactoryMapping, CrudPersistence}
 
@@ -82,5 +79,4 @@ abstract class CrudContentProvider extends ContentProvider with ActivityStateHol
   }
 }
 
-private[scrud] object CrudPersistenceByEntityName
-  extends LazyApplicationVal[mutable.ConcurrentMap[EntityName,CrudPersistence]](new ConcurrentHashMap[EntityName,CrudPersistence]())
+private[scrud] object CrudPersistenceByEntityName extends ApplicationConcurrentMapVal[EntityName,CrudPersistence]
