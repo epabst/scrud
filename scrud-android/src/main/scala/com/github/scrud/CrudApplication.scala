@@ -16,6 +16,7 @@ import util.{Common, UrgentFutureExecutor}
 import java.util.NoSuchElementException
 import scala.actors.Future
 import PortableField.toSome
+import com.github.scrud
 import scrud.android.{CrudType,NamingConventions,res}
 import scrud.android.view.AndroidResourceAnalyzer._
 
