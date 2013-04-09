@@ -39,6 +39,10 @@ trait CrudPersistence extends EntityPersistence with ListenerSet[DataListener] w
     save(id, entityType.copyAndUpdate(modelEntity, writable))
   }
 
+  def saveAll(modelEntityList: Seq[IdPk]): Seq[ID] = {
+    modelEntityList.map(save(_))
+  }
+
   // Available for cases where logging needs to happen outside, based on the entityType known here.
   override protected[scrud] def debug(f: => String) {
     super.debug(f)
