@@ -6,7 +6,7 @@ import com.github.scrud.android.persistence.CursorField._
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import org.scalatest.mock.MockitoSugar
-import com.github.triangle.GetterInput
+import com.github.triangle.{PortableField, GetterInput}
 import com.github.scrud.SimpleCrudContext
 import com.github.scrud.platform.TestingPlatformDriver
 
@@ -28,8 +28,8 @@ class SampleApplicationSpec extends FunSpec with MustMatchers with MockitoSugar 
       val crudContext = SimpleCrudContext(application)
       val factory = persistenceFactory(Book)
       val bookPersistence = factory.createEntityPersistence(bookEntityType, crudContext)
-      bookPersistence.save(None, bookPersistence.newWritable())
-      bookPersistence.save(None, bookPersistence.newWritable())
+      bookPersistence.saveCopy(None, PortableField.UseDefaults)
+      bookPersistence.saveCopy(None, PortableField.UseDefaults)
       bookPersistence.close()
 
       val authorData = authorEntityType.copyAndUpdate(GetterInput(Author.toUri(100L), crudContext), Map.empty[String,Option[Any]])

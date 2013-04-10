@@ -27,14 +27,14 @@ class ContentResolverCrudPersistenceSpec extends CrudMockitoSugar with MustMatch
   val barEntityType = new EntityTypeForTesting(barEntityName, platformDriver)
   val barCrudType = new CrudTypeForTesting(barEntityType, new ListBufferPersistenceFactory[Map[String,Option[Any]]](Map.empty))
   val testApplication = new CrudApplicationForTesting(fooCrudType, barCrudType)
+  val data1 = Map("name" -> Some("George"), "age" -> Some(31), "uri" -> None)
+  val data2 = Map("name" -> Some("Wilma"), "age" -> Some(30), "uri" -> None)
 
   @Test
   def query_mustReturnMultipleRows() {
-    val persistence = ContentResolverCrudPersistenceForTesting(testApplication)
-    val data1 = Map("name" -> Some("George"), "age" -> Some(31), "uri" -> None)
-    persistence.save(None, fooEntityType.copyAndUpdate(data1, persistence.newWritable()))
-    val data2 = Map("name" -> Some("Wilma"), "age" -> Some(30), "uri" -> None)
-    persistence.save(None, fooEntityType.copyAndUpdate(data2, persistence.newWritable()))
+    val persistence = ContentResolverCrudPersistenceForTesting(fooEntityType, testApplication)
+    persistence.saveCopy(None, data1)
+    persistence.saveCopy(None, data2)
     val uriPath = UriPath(fooEntityName)
     val results = persistence.findAll(uriPath)
     results.size must be (2)
@@ -43,13 +43,11 @@ class ContentResolverCrudPersistenceSpec extends CrudMockitoSugar with MustMatch
 
   @Test
   def update_mustModifyTheData() {
-    val persistence = ContentResolverCrudPersistenceForTesting(testApplication)
-    val data1 = Map("name" -> Some("George"), "age" -> Some(31), "uri" -> None)
-    val id1 = persistence.save(None, fooEntityType.copyAndUpdate(data1, persistence.newWritable()))
-    val data2 = Map("name" -> Some("Wilma"), "age" -> Some(30), "uri" -> None)
-    persistence.save(None, fooEntityType.copyAndUpdate(data2, persistence.newWritable()))
+    val persistence = ContentResolverCrudPersistenceForTesting(fooEntityType, testApplication)
+    val id1 = persistence.saveCopy(None, data1)
+    persistence.saveCopy(None, data2)
     val data1b = Map("name" -> Some("Greg"), "age" -> Some(32), "uri" -> None)
-    persistence.save(Some(id1), fooEntityType.copyAndUpdate(data1b, persistence.newWritable()))
+    persistence.saveCopy(Some(id1), data1b)
     val results = persistence.findAll(UriPath(fooEntityName))
     results.size must be (2)
     results.map(_ - "_id") must be (List(data2, data1b))
@@ -57,11 +55,9 @@ class ContentResolverCrudPersistenceSpec extends CrudMockitoSugar with MustMatch
 
   @Test
   def delete_mustDelete() {
-    val persistence = ContentResolverCrudPersistenceForTesting(testApplication)
-    val data1 = Map("name" -> Some("George"), "age" -> Some(31), "uri" -> None)
-    val id1 = persistence.save(None, fooEntityType.copyAndUpdate(data1, persistence.newWritable()))
-    val data2 = Map("name" -> Some("Wilma"), "age" -> Some(30), "uri" -> None)
-    val id2 = persistence.save(None, fooEntityType.copyAndUpdate(data2, persistence.newWritable()))
+    val persistence = ContentResolverCrudPersistenceForTesting(fooEntityType, testApplication)
+    val id1 = persistence.saveCopy(None, data1)
+    val id2 = persistence.saveCopy(None, data2)
     persistence.delete(UriPath(fooEntityName, id1)) must be (1)
     val results = persistence.findAll(UriPath(fooEntityName))
     results.size must be (1)

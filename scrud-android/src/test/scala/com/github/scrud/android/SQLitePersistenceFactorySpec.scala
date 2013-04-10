@@ -91,10 +91,8 @@ class SQLitePersistenceFactorySpec extends MustMatchers with CrudMockitoSugar wi
         result
       }
     }
-    val writable = persistenceFactory.newWritable()
     //UseDefaults is provided here in the item list for the sake of PortableField.adjustment[SQLiteCriteria] fields
-    TestEntityType.copy(PortableField.UseDefaults, writable)
-    val id = persistence.save(None, writable)
+    val id = persistence.saveCopy(None, PortableField.UseDefaults)
     val uri = persistence.toUri(id)
     persistence.find(uri)
     persistence.findAll(UriPath.EMPTY)
@@ -117,15 +115,12 @@ class SQLitePersistenceFactorySpec extends MustMatchers with CrudMockitoSugar wi
     val listAdapter = activity.getAdapterView.getAdapter
     listAdapter.getCount must be (0)
 
-    val writable = SQLitePersistenceFactory.newWritable()
-    TestEntityType.copy(PortableField.UseDefaults, writable)
-    val id = crudContext.withEntityPersistence(TestEntityType) { _.save(None, writable) }
+    val id = crudContext.withEntityPersistence(TestEntityType) { _.saveCopy(None, PortableField.UseDefaults) }
     //it must have refreshed the listAdapter
     listAdapter.getCount must be (if (runningOnRealAndroid) 1 else 0)
 
-    TestEntityType.copy(Map("age" -> Some(50)), writable)
     listAdapter.registerDataSetObserver(observer)
-    crudContext.withEntityPersistence(TestEntityType) { _.save(Some(id), writable) }
+    crudContext.withEntityPersistence(TestEntityType) { _.saveCopy(Some(id), Map("age" -> Some(50))) }
     //it must have refreshed the listAdapter (notified the observer)
     listAdapter.unregisterDataSetObserver(observer)
     listAdapter.getCount must be (if (runningOnRealAndroid) 1 else 0)
