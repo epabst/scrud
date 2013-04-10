@@ -35,7 +35,7 @@ class GeneratedDatabaseSetupSpec extends CrudMockitoSugar with MustMatchers {
   }
   val persistenceFactory = SQLitePersistenceFactory
   val application = new CrudApplicationForTesting(platformDriver, CrudType(entityType, persistenceFactory), CrudType(entityType2, persistenceFactory))
-  val sut = new GeneratedDatabaseSetup(new AndroidCrudContext(new ActivityStateHolderForTesting, application), persistenceFactory)
+  val sut = new GeneratedDatabaseSetup(new AndroidCrudContextForTesting(application), persistenceFactory)
 
   @Before
   def setUp() {

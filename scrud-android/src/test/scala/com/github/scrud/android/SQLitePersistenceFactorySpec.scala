@@ -110,7 +110,7 @@ class SQLitePersistenceFactorySpec extends MustMatchers with CrudMockitoSugar wi
     }
     val observer = mock[DataSetObserver]
 
-    val crudContext = new AndroidCrudContext(activity, application)
+    val crudContext = new AndroidCrudContextForTesting(application, activity)
     activity.setListAdapterUsingUri(crudContext, activity)
     val listAdapter = activity.getAdapterView.getAdapter
     listAdapter.getCount must be (0)

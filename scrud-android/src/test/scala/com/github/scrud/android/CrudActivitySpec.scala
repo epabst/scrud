@@ -12,16 +12,13 @@ import _root_.android.widget.{BaseAdapter, AdapterView, ListAdapter}
 import com.github.scrud._
 import org.mockito.Mockito._
 import com.github.scrud.persistence._
-import com.github.scrud.util.{ListenerHolder, CrudMockitoSugar, ReadyFuture}
+import com.github.scrud.util.{ListenerHolder, CrudMockitoSugar}
 import org.mockito.Matchers._
-import com.github.scrud.platform.PlatformTypes._
-import com.github.scrud.platform.TestingPlatformDriver
 import com.github.scrud.state.State
 import _root_.android.content.Intent
 import com.xtremelabs.robolectric.tester.android.view.TestMenu
 import _root_.android.view.{LayoutInflater, View, ContextMenu}
 import _root_.android.util.SparseArray
-import com.github.triangle.PortableField._
 import com.github.scrud.EntityName
 import scala.Some
 import com.github.scrud.action.CrudOperation
@@ -44,9 +41,7 @@ class CrudActivitySpec extends CrudMockitoSugar with MustMatchers {
     val activity = new CrudActivityForTesting(application) {
       override lazy val entityType = _crudType.entityType
       override lazy val currentUriPath = uri
-      override lazy val crudContext = new AndroidCrudContext(this, crudApplication) {
-        override def future[T](body: => T) = new ReadyFuture[T](body)
-      }
+      override lazy val crudContext = new AndroidCrudContextForTesting(crudApplication, this)
     }
     activity.onCreate(null)
     _crudType.entityType.copy(entity, activity)
@@ -64,9 +59,7 @@ class CrudActivitySpec extends CrudMockitoSugar with MustMatchers {
     val activity = new CrudActivityForTesting(application) {
       override lazy val entityType = _crudType.entityType
       override lazy val currentUriPath = uri
-      override lazy val crudContext = new AndroidCrudContext(this, crudApplication) {
-        override def future[T](body: => T) = new ReadyFuture[T](body)
-      }
+      override lazy val crudContext = new AndroidCrudContextForTesting(crudApplication, this)
     }
     when(persistence.find(uri)).thenReturn(None)
     activity.onCreate(null)
@@ -86,9 +79,7 @@ class CrudActivitySpec extends CrudMockitoSugar with MustMatchers {
     val activity = new CrudActivityForTesting(application) {
       override lazy val entityType = _crudType.entityType
       override lazy val currentUriPath = uri
-      override lazy val crudContext = new AndroidCrudContext(this, crudApplication) {
-        override def future[T](body: => T) = new ReadyFuture[T](body)
-      }
+      override lazy val crudContext = new AndroidCrudContextForTesting(crudApplication, this)
     }
     activity.onCreate(null)
     val viewData = entityType.copyAndUpdate(activity, mutable.Map[String,Option[Any]]())
@@ -137,9 +128,7 @@ class CrudActivitySpec extends CrudMockitoSugar with MustMatchers {
     stub(persistence.save(None, mutable.Map[String,Option[Any]]("name" -> Some("Bob"), "age" -> Some(25), "uri" -> Some(uri.toString), CursorField.idFieldName -> None))).toReturn(101)
     val activity = new CrudActivityForTesting(application) {
       override lazy val entityType = _crudType.entityType
-      override lazy val crudContext = new AndroidCrudContext(this, crudApplication) {
-        override def future[T](body: => T) = new ReadyFuture[T](body)
-      }
+      override lazy val crudContext = new AndroidCrudContextForTesting(crudApplication, this)
     }
     activity.setIntent(constructIntent(AndroidOperation.CreateActionName, uri, activity, null))
     activity.onCreate(null)
@@ -185,14 +174,7 @@ class CrudActivitySpec extends CrudMockitoSugar with MustMatchers {
     when(persistence.entityType).thenReturn(entityType)
     when(persistence.findAll(any())).thenReturn(Seq(Map[String,Any]("name" -> "Bob", "age" -> 25)))
     val activity = new CrudActivityForTesting(application) {
-      override lazy val crudContext = new AndroidCrudContext(this, application) {
-        /**
-         * Handle the exception by communicating it to the user and developers.
-         */
-        override def reportError(throwable: Throwable) {
-          throw throwable
-        }
-      }
+      override lazy val crudContext = new AndroidCrudContextForTesting(application, this)
       override lazy val applicationState = new State
     }
     activity.setIntent(new Intent(Intent.ACTION_MAIN))
