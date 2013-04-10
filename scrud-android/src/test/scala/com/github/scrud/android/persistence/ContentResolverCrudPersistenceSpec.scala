@@ -6,10 +6,11 @@ import org.scalatest.matchers.MustMatchers
 import org.junit.Test
 import com.github.scrud.UriPath
 import com.github.scrud.android._
-import com.github.scrud.persistence.ListBufferPersistenceFactory
+import com.github.scrud.persistence.{DataListener, ListBufferPersistenceFactoryForTesting, ListBufferPersistenceFactory}
 import com.github.scrud.EntityName
 import scala.Some
 import com.github.scrud.android.CrudApplicationForTesting
+import org.mockito.Mockito._
 
 /**
  * A behavior specification for [[com.github.scrud.android.persistence.ContentResolverCrudPersistence]].
@@ -64,5 +65,37 @@ class ContentResolverCrudPersistenceSpec extends CrudMockitoSugar with MustMatch
     fooEntityType.idPkField.getRequired(results.head) must be (id2)
 
     persistence.delete(UriPath(fooEntityName, id1)) must be (0)
+  }
+
+  @Test
+  def listenerMustReceiveNotificationsWhenSaveHappensForDesiredEntityType() {
+    val persistenceFactory = ContentResolverPersistenceFactoryForTesting(ListBufferPersistenceFactoryForTesting, testApplication)
+    val crudContext = new AndroidCrudContextForTesting(testApplication)
+
+    val listener = mock[DataListener]
+    persistenceFactory.listenerSet(fooEntityType, crudContext).addListener(listener)
+    val persistence = persistenceFactory.createEntityPersistence(fooEntityType, crudContext)
+
+    // save one that should cause a notification
+    persistence.save(None, fooEntityType.copyAndUpdate(data1, persistence.newWritable()))
+    verify(listener, times(1)).onChanged()
+
+    // save another that should cause a notification
+    persistence.save(None, fooEntityType.copyAndUpdate(data2, persistence.newWritable()))
+    verify(listener, times(2)).onChanged()
+  }
+
+  @Test
+  def listenerMustNotReceiveNotificationsWhenSaveHappensForDifferentEntityType() {
+    val persistenceFactory = ContentResolverPersistenceFactoryForTesting(ListBufferPersistenceFactoryForTesting, testApplication)
+    val crudContext = new AndroidCrudContextForTesting(testApplication)
+
+    val listener = mock[DataListener]
+    persistenceFactory.listenerSet(fooEntityType, crudContext).addListener(listener)
+
+    // save a different EntityType that should not cause a notification
+    val persistence = persistenceFactory.createEntityPersistence(barEntityType, crudContext)
+    persistence.saveCopy(None, data1)
+    verify(listener, never()).onChanged()
   }
 }
