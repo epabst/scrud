@@ -1,18 +1,22 @@
 package com.github.scrud
 
 import action.{CrudOperationType, CrudOperation}
-import android.{CrudApplicationForTesting, CrudTypeForTesting, EntityTypeForTesting}
+import android.persistence.CursorField
+import android.{PersistenceFactoryForTesting, CrudApplicationForTesting, CrudTypeForTesting, EntityTypeForTesting}
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import org.scalatest.matchers.MustMatchers
 import org.scalatest.FunSpec
+import persistence.CrudPersistence
 import platform.TestingPlatformDriver
+import org.scalatest.mock.MockitoSugar
+import org.mockito.Mockito._
 
 /** A behavior specification for [[com.github.scrud.CrudApplication]].
   * @author Eric Pabst (epabst@gmail.com)
   */
 @RunWith(classOf[JUnitRunner])
-class CrudApplicationSpec extends FunSpec with MustMatchers {
+class CrudApplicationSpec extends FunSpec with MustMatchers with MockitoSugar {
 
   it("must provide a valid nameId") {
     val application = new CrudApplication(TestingPlatformDriver) {
@@ -93,5 +97,28 @@ class CrudApplicationSpec extends FunSpec with MustMatchers {
     application.actionsFromCrudOperation(CrudOperation(parentEntityName, CrudOperationType.List)) must be (List(application.actionToCreate(parentEntityType).get))
     application.actionsFromCrudOperation(CrudOperation(childEntityName1, CrudOperationType.List)) must be (
       List(application.actionToCreate(childEntityType1).get, application.actionToUpdate(parentEntityType).get, application.actionToList(childEntityType2).get))
+  }
+
+  describe("saveIfValid") {
+    val entityType = new EntityTypeForTesting
+
+    it("should support adding without finding") {
+      val persistence = mock[CrudPersistence]
+      val application = new CrudApplicationForTesting(entityType -> new PersistenceFactoryForTesting(persistence))
+      val entity = Map[String,Option[Any]]("name" -> Some("Bob"), "age" -> Some(25))
+      val uri = UriPath(entityType.entityName)
+      application.saveIfValid(entity, entityType, new CrudContextItems(uri, new SimpleCrudContext(application)))
+      verify(persistence).save(None, Map[String,Option[Any]](CursorField.idFieldName -> None, "name" -> Some("Bob"), "age" -> Some(25), "uri" -> Some(uri.toString)))
+      verify(persistence, never()).find(uri)
+    }
+
+    it("should support updating") {
+      val persistence = mock[CrudPersistence]
+      val application = new CrudApplicationForTesting(entityType -> new PersistenceFactoryForTesting(persistence))
+      val entity = Map[String,Option[Any]]("name" -> Some("Bob"), "age" -> Some(25))
+      val uri = UriPath(entityType.entityName) / 200
+      application.saveIfValid(entity, entityType, new CrudContextItems(uri, new SimpleCrudContext(application)))
+      verify(persistence).save(Some(200), Map[String,Option[Any]](CursorField.idFieldName -> Some(200), "name" -> Some("Bob"), "age" -> Some(25), "uri" -> Some(uri.toString)))
+    }
   }
 }
