@@ -32,8 +32,8 @@ case class AndroidCrudContext(context: Context, stateHolder: ActivityStateHolder
 
   lazy val dataVersion: Int = platformDriver.calculateDataVersion(application.allEntityTypes)
 
-  // Use a ContentResolver unless the matching ContentProvider is what is asking.
-  override def persistenceFactoryMapping: PersistenceFactoryMapping =
+  // Use a ContentResolver (this should never be called from the ContentProvider).
+  override lazy val persistenceFactoryMapping: PersistenceFactoryMapping =
     new ContentResolverPersistenceFactoryMapping(application)
 
   /** The ISO 2 country such as "US". */
