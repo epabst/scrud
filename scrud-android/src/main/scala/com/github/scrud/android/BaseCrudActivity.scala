@@ -47,7 +47,7 @@ protected trait BaseCrudActivity extends OptionsMenuActivity with Logging { self
     super.setIntent(newIntent)
   }
 
-  private[this] lazy val initialUriPath: UriPath = {
+  protected lazy val initialUriPath: UriPath = {
     // The primary EntityType is used as the default starting point.
     val defaultContentUri = toUriPath(baseUriFor(crudApplication)) / crudApplication.primaryEntityType.entityName
     // If no data was given in the intent (e.g. because we were started as a MAIN activity),
