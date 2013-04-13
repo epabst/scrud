@@ -125,7 +125,7 @@ class SQLitePersistenceFactorySpec extends MustMatchers with CrudMockitoSugar wi
     //it must have refreshed the listAdapter
     listAdapter.getCount must be (if (runningOnRealAndroid) 1 else 0)
 
-    TestEntityType.copy(Map("age" -> 50), writable)
+    TestEntityType.copy(Map("age" -> Some(50)), writable)
     listAdapter.registerDataSetObserver(observer)
     crudContext.withEntityPersistence(TestEntityType) { _.save(Some(id), writable) }
     //it must have refreshed the listAdapter (notified the observer)
