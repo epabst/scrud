@@ -4,7 +4,7 @@ import _root_.android.app.Activity
 import action.AndroidNotification
 import com.github.scrud.state._
 import com.github.scrud._
-import persistence.{ContentResolverPersistenceFactoryMapping, CrudContentProvider}
+import persistence.ContentResolverPersistenceFactoryMapping
 import state.{ActivityStateHolder, ActivityVar, CachedStateListeners, CachedStateListener}
 import _root_.android.os.{Looper, Bundle}
 import _root_.android.content.Context
@@ -28,9 +28,9 @@ case class AndroidCrudContext(context: Context, stateHolder: ActivityStateHolder
   //final since only here as a convenience method.
   final def activityState: State = stateHolder.activityState
 
-  lazy override val platformDriver: AndroidPlatformDriver = application.platformDriver.asInstanceOf[AndroidPlatformDriver]
+  lazy val androidPlatformDriver = platformDriver.asInstanceOf[AndroidPlatformDriver]
 
-  lazy val dataVersion: Int = platformDriver.calculateDataVersion(application.allEntityTypes)
+  lazy val dataVersion: Int = androidPlatformDriver.calculateDataVersion(application.allEntityTypes)
 
   // Use a ContentResolver (this should never be called from the ContentProvider).
   override lazy val persistenceFactoryMapping: PersistenceFactoryMapping =

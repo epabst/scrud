@@ -104,14 +104,15 @@ class CrudActivitySpec extends CrudMockitoSugar with MustMatchers {
   }
 
   @Test
-  def shouldAllowAddingFromTheMenuWhenDisplayingAList() {
+  def shouldHaveCorrectOptionsMenu() {
     val persistence = mock[CrudPersistence]
     val entityType = new EntityTypeForTesting
     val crudType = new CrudTypeForTesting(entityType, persistence)
     val application = new CrudApplicationForTesting(crudType)
     when(persistence.entityType).thenReturn(entityType)
-    when(persistence.findAll(any())).thenReturn(Seq(Map[String,Any]("name" -> "Bob", "age" -> 25)))
+    when(persistence.findAll(any())).thenReturn(Seq(Map[String,Any](CursorField.idFieldName -> Some(400L), "name" -> Some("Bob"), "age" -> Some(25), "uri" -> None)))
     val activity = new CrudActivityForTesting(application) {
+      override lazy val currentAction = UpdateActionName
       override lazy val crudContext = new AndroidCrudContextForTesting(application, this)
       override lazy val applicationState = new State
     }
@@ -120,7 +121,7 @@ class CrudActivitySpec extends CrudMockitoSugar with MustMatchers {
     val menu = new TestMenu(activity)
     activity.onCreateOptionsMenu(menu)
     val item0 = menu.getItem(0)
-    item0.getTitle.toString must be ("Add")
+    item0.getTitle.toString must be ("Delete")
     menu.size must be (1)
 
     activity.onOptionsItemSelected(item0) must be (true)
@@ -135,9 +136,10 @@ class CrudActivitySpec extends CrudMockitoSugar with MustMatchers {
     val application = new CrudApplicationForTesting(_crudType)
     val activity = new CrudActivityForTesting(application) {
       override lazy val entityType = _crudType.entityType
+      override lazy val currentAction = ListActionName
     }
     activity.onCreateContextMenu(contextMenu, ignoredView, ignoredMenuInfo)
-    verify(contextMenu).add(0, res.R.string.delete_item, 0, res.R.string.delete_item)
+    verify(contextMenu).add(0, res.R.string.edit_test, 0, res.R.string.edit_test)
   }
 
   @Test
