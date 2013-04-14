@@ -43,14 +43,14 @@ trait AdapterCaching extends Logging { self: BaseAdapter =>
     val updaterInput = UpdaterInput(view, contextItems)
     if (futurePortableValue.isSet) {
       val portableValue = futurePortableValue.apply()
-      debug("Copying " + portableValue + " into " + view)
+      debug("Copying " + portableValue + " into " + view + " immediately")
       portableValue.update(updaterInput)
     } else {
       entityType.loadingValue.update(updaterInput)
       futurePortableValue.foreach { portableValue =>
         view.post(Common.toRunnable {
           if (view.getTag == uriPath) {
-            debug("Copying " + portableValue + " into " + view)
+            debug("Copying " + portableValue + " into " + view + " after asynchronous calculation")
             portableValue.update(updaterInput)
             view.invalidate()
           }
