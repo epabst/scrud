@@ -52,6 +52,7 @@ trait AdapterCaching extends Logging { self: BaseAdapter =>
           if (view.getTag == uriPath) {
             debug("Copying " + portableValue + " into " + view)
             portableValue.update(updaterInput)
+            view.invalidate()
           }
         })
       }
