@@ -12,6 +12,7 @@ import com.github.scrud.action.CrudOperationType
 import com.github.scrud.util.Common
 import com.github.scrud.EntityName
 import com.github.scrud.action.CrudOperation
+import android.widget.{ListView, EditText}
 
 class CrudFunctionalTest extends ActivityInstrumentationTestCase2(classOf[CrudActivity]) {
   var instrumentation: Instrumentation = _
@@ -53,18 +54,18 @@ class CrudFunctionalTest extends ActivityInstrumentationTestCase2(classOf[CrudAc
       assertEquals(CrudOperation(Author, CrudOperationType.List), currentCrudActivity.currentCrudOperation)
 
       solo.clickOnMenuItem("Add Author")
-      solo.waitForActivity(classOf[CrudActivity].getSimpleName)
+      solo.waitForView(classOf[EditText])
       assertEquals(CrudOperation(Author, CrudOperationType.Create), currentCrudActivity.currentCrudOperation)
 
       copyToCurrentActivity(authorEntityType.copyFrom(Map("name" -> Some("Orson Scott Card"))))
 
       solo.goBack()
       solo.waitForText("Saved", 1, 5000)
-      solo.waitForActivity(classOf[CrudActivity].getSimpleName)
+      solo.waitForView(classOf[ListView])
       assertEquals(CrudOperation(Author, CrudOperationType.List), currentCrudActivity.currentCrudOperation)
 
       solo.clickOnText("Orson Scott Card")
-      solo.waitForActivity(classOf[CrudActivity].getSimpleName)
+      solo.waitForView(classOf[EditText])
       assertEquals(CrudOperation(Book, CrudOperationType.List), currentCrudActivity.currentCrudOperation)
 
       solo.clickOnMenuItem("Add Book")
