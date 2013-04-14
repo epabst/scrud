@@ -25,15 +25,17 @@ class ContentResolverPersistenceFactory(delegate: PersistenceFactory) extends De
     val contentResolver = crudContext.asInstanceOf[AndroidCrudContext].context.getContentResolver
     val theListenerSet = listenerSet(entityType, crudContext)
 
-    ContentResolverObserverVal.get(crudContext.stateHolder).getOrElseUpdate(entityType.entityName, {
-      val observer = new ContentObserver(new Handler()) {
-        override def onChange(selfChange: Boolean) {
-          theListenerSet.listeners.foreach(_.onChanged())
+    crudContext.asInstanceOf[AndroidCrudContext].runOnUiThread {
+      ContentResolverObserverVal.get(crudContext.stateHolder).getOrElseUpdate(entityType.entityName, {
+        val observer = new ContentObserver(new Handler()) {
+          override def onChange(selfChange: Boolean) {
+            theListenerSet.listeners.foreach(_.onChanged())
+          }
         }
-      }
-      contentResolver.registerContentObserver(toUri(UriPath(entityType.entityName), crudContext.persistenceFactoryMapping), true, observer)
-      observer
-    })
+        contentResolver.registerContentObserver(toUri(UriPath(entityType.entityName), crudContext.persistenceFactoryMapping), true, observer)
+        observer
+      })
+    }
     new ContentResolverCrudPersistence(entityType, contentResolver, crudContext.persistenceFactoryMapping,
       theListenerSet)
   }
