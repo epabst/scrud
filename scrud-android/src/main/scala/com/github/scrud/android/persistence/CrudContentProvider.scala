@@ -60,7 +60,7 @@ abstract class CrudContentProvider extends ContentProvider with ActivityStateHol
   def insert(uri: Uri, contentValues: ContentValues): Uri = {
     val uriPath = toUriPath(uri)
     val persistence = persistenceFor(uriPath)
-    val id = persistence.save(None, persistence.entityType.copyAndUpdate(contentValues, persistence.newWritable()))
+    val id = persistence.save(None, persistence.toWritable(contentValues))
     uri.buildUpon().path(uriPath.specify(persistence.entityType.entityName, id).toString).build()
   }
 
@@ -68,7 +68,7 @@ abstract class CrudContentProvider extends ContentProvider with ActivityStateHol
     //todo use selection and selectionArgs
     val uriPath = toUriPath(uri)
     val persistence = persistenceFor(uriPath)
-    val writable = persistence.entityType.copyAndUpdate(values, persistence.newWritable())
+    val writable = persistence.toWritable(values)
     persistence.save(Some(persistence.entityType.idPkField.getRequired(uriPath)), writable)
     1
   }

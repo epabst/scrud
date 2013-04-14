@@ -30,13 +30,14 @@ trait CrudPersistence extends EntityPersistence with ListenerSet[DataListener] w
   def findAll[T <: AnyRef](uri: UriPath, instantiateItem: => T): Seq[T] =
     findAll(uri).map(entityType.fieldsIncludingIdPk.copyAndUpdate(_, instantiateItem))
 
+  def toWritable(data: AnyRef): AnyRef = entityType.copyAndUpdate(data, newWritable())
+
   /** Saves the entity.  This assumes that the entityType's fields support copying from the given modelEntity. */
   def save(modelEntity: IdPk): ID = saveCopy(modelEntity.id, modelEntity)
 
   /** Saves the entity.  This assumes that the entityType's fields support copying from the given modelEntity. */
   def saveCopy(id: Option[ID], modelEntity: AnyRef): ID = {
-    val writable = newWritable()
-    save(id, entityType.copyAndUpdate(modelEntity, writable))
+    save(id, toWritable(modelEntity))
   }
 
   def saveAll(modelEntityList: Seq[IdPk]): Seq[ID] = {
