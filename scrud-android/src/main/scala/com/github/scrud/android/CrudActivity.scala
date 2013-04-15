@@ -1,5 +1,6 @@
 package com.github.scrud.android
 
+import _root_.android.support.v4.app.FragmentActivity
 import android.os.Bundle
 import com.github.triangle.{FieldList, UpdaterInput, GetterInput, PortableField}
 import android.content.Intent
@@ -28,7 +29,7 @@ import scrud.state.DestroyStateListener
 /** A generic Activity for CRUD operations
   * @author Eric Pabst (epabst@gmail.com)
   */
-class CrudActivity extends OptionsMenuActivity { self =>
+class CrudActivity extends FragmentActivity with OptionsMenuActivity { self =>
   lazy val crudApplication: CrudApplication = super.getApplication.asInstanceOf[CrudAndroidApplication].application
 
   lazy val platformDriver: AndroidPlatformDriver = crudApplication.platformDriver.asInstanceOf[AndroidPlatformDriver]

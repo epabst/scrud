@@ -15,6 +15,8 @@ libraryDependencies += "com.github.epabst.scrud" % "scrud-android-res" % General
 
 libraryDependencies in Runtime += "org.slf4j" % "slf4j-jdk14" % "1.6.1" % "test"
 
+libraryDependencies += "com.google.android" % "support-v4" % "r6"
+
 libraryDependencies += "org.slf4j" % "slf4j-android" % "1.6.1-RC1"
 
 // Don't include this when running simple unit tests since slf4j-jdk14 should be used then.
