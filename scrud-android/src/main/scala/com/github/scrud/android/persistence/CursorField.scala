@@ -12,9 +12,6 @@ import com.github.scrud.EntityField
 import com.github.triangle.converter.Converter._
 import android.net.Uri
 
-case class SQLiteCriteria(selection: List[String] = Nil, selectionArgs: List[String] = Nil,
-                          groupBy: Option[String] = None, having: Option[String] = None, orderBy: Option[String] = None)
-
 object CursorField {
   def bundleField[T](name: String)(implicit persistedType: PersistedType[T]) =
     Getter[Bundle,T](b => persistedType.getValue(b, name)).withSetter(b => persistedType.putValue(b, name, _), noSetterForEmpty) +
