@@ -14,7 +14,7 @@ import com.github.scrud.android.AndroidCrudContext
  *         Date: 4/16/13
  *         Time: 11:09 PM
  */
-class EntityCursorAdapter(val entityType: EntityType, contextItems: CrudContextItems, itemViewInflater: ViewInflater, cursor: Cursor)
+class EntityCursorAdapter(val entityType: EntityType, val contextItems: CrudContextItems, itemViewInflater: ViewInflater, cursor: Cursor)
     extends ResourceCursorAdapter(contextItems.crudContext.asInstanceOf[AndroidCrudContext].context, itemViewInflater.viewKey, cursor, 0) with AdapterCaching {
   val entityTypePersistedInfo = EntityTypePersistedInfo(entityType)
 

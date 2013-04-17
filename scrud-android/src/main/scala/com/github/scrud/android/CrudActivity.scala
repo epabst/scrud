@@ -440,7 +440,6 @@ class CrudActivity extends FragmentActivity with OptionsMenuActivity with Loader
     val adapter = new EntityCursorAdapter(entityType, contextItems, new ViewInflater(itemLayout, activity.getLayoutInflater), null)
     adapterView.setAdapter(adapter.asInstanceOf[A])
     cursorLoaderDataList.append(CursorLoaderData(ContentQuery(uri, entityTypePersistedInfo.queryFieldNames), adapter))
-    crudContext.initializeListeners()
     getSupportLoaderManager.initLoader(cursorLoaderDataList.size - 1, null, this)
   }
 
@@ -457,9 +456,12 @@ class CrudActivity extends FragmentActivity with OptionsMenuActivity with Loader
     loader
   }
 
-  def onLoaderReset(loader: Loader[Cursor]) {}
+  def onLoaderReset(loader: Loader[Cursor]) {
+    crudApplication.FuturePortableValueCache.get(stateHolder).clear()
+  }
 
   def onLoadFinished(loader: Loader[Cursor], data: Cursor) {
+    crudApplication.FuturePortableValueCache.get(stateHolder).clear()
     cursorLoaderDataByLoader.get(loader).foreach { cursorLoaderData =>
       cursorLoaderData.adapter.swapCursor(data)
     }
