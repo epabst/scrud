@@ -2,6 +2,7 @@ package com.github.scrud.android.persistence
 
 import com.github.scrud.persistence.PersistenceFactoryMapping
 import com.github.scrud.EntityType
+import com.github.scrud.util.CachedFunction
 
 /**
  * A [[com.github.scrud.persistence.PersistenceFactoryMapping]] that forces all calls to go through the ContentResolver.
@@ -14,8 +15,11 @@ class ContentResolverPersistenceFactoryMapping(delegate: PersistenceFactoryMappi
 
   def packageName = delegate.packageName
 
-  def persistenceFactory(entityType: EntityType) =
+  private val cachedPersistenceFactoryByEntityType = CachedFunction { (entityType: EntityType) =>
     new ContentResolverPersistenceFactory(delegate.persistenceFactory(entityType))
+  }
+
+  def persistenceFactory(entityType: EntityType) = cachedPersistenceFactoryByEntityType(entityType)
 
   def logTag = delegate.logTag
 }
