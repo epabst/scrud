@@ -3,11 +3,7 @@ package com.github.scrud.android.view
 import com.github.scrud.persistence.{DataListener, CrudPersistence}
 import com.github.scrud.CrudContextItems
 import android.app.Activity
-import com.github.scrud.android.persistence.{RefreshableFindAllWithCursor, EntityTypePersistedInfo}
-import android.widget.ResourceCursorAdapter
-import android.view.View
-import android.content.Context
-import android.database.Cursor
+import com.github.scrud.android.persistence.RefreshableFindAllWithCursor
 import com.github.scrud.android.AndroidCrudContext
 
 /**
@@ -19,7 +15,6 @@ import com.github.scrud.android.AndroidCrudContext
 class EntityAdapterFactory {
   private[android] def createAdapter(persistence: CrudPersistence, contextItems: CrudContextItems, itemViewInflater: ViewInflater): AdapterCaching = {
     val _entityType = persistence.entityType
-    val entityTypePersistedInfo = EntityTypePersistedInfo(_entityType)
     val refreshableFindAll = persistence.refreshableFindAll(contextItems.currentUriPath)
     val findAllResults = refreshableFindAll.currentResults
     if (findAllResults.isEmpty) {
@@ -31,17 +26,7 @@ class EntityAdapterFactory {
       case RefreshableFindAllWithCursor(_, cursor, _) =>
         val activity: Activity = getActivity(contextItems)
         activity.startManagingCursor(cursor)
-        new ResourceCursorAdapter(activity, itemViewInflater.viewKey, cursor) with AdapterCaching {
-          def entityType = _entityType
-
-          /** The UriPath that does not contain the entities. */
-          protected def uriPathWithoutEntityId = contextItems.currentUriPath
-
-          def bindView(view: View, context: Context, cursor: Cursor) {
-            val row = entityTypePersistedInfo.copyRowToMap(cursor)
-            bindViewFromCacheOrItems(view, cursor.getPosition, row, contextItems)
-          }
-        }
+        new EntityCursorAdapter(_entityType, contextItems, itemViewInflater, cursor)
       case _ => new EntityAdapter(_entityType, refreshableFindAll, itemViewInflater, contextItems)
     }
     val listener = new DataListener {
