@@ -15,8 +15,6 @@ class CrudPersistenceUsingThin(val entityType: EntityType, val thinPersistence: 
 
   def findAll(uri: UriPath): Seq[AnyRef] = thinPersistence.findAll(uri)
 
-  override def refreshableFindAll(uri: UriPath) = thinPersistence.refreshableFindAll(uri)
-
   def newWritable() = thinPersistence.newWritable()
 
   def doSave(idOption: Option[ID], writable: AnyRef): ID = {

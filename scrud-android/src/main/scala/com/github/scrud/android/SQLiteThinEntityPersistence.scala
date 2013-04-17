@@ -48,9 +48,6 @@ class SQLiteThinEntityPersistence(entityType: EntityType, database: SQLiteDataba
     // The default orderBy is Some("_id desc")
     findAll(entityType.copyAndUpdate(GetterInput(uri, PortableField.UseDefaults), new SQLiteCriteria(orderBy = Some(CursorField.idFieldName + " desc"))))
 
-  /** A findAll that can be refreshed.  It should be closed when no longer needed. */
-  override def refreshableFindAll(uri: UriPath): RefreshableFindAllWithCursor = RefreshableFindAllWithCursor(uri, findAll(uri))
-
   private def notifyDataChanged() {
     backupManager.dataChanged()
     debug("Notified BackupManager that data changed.")

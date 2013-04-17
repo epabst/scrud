@@ -1,15 +1,17 @@
 package com.github.scrud.android
 
-import _root_.android.support.v4.app.FragmentActivity
+import _root_.android.database.Cursor
+import _root_.android.support.v4.app.{LoaderManager, FragmentActivity}
+import _root_.android.support.v4.content.{CursorLoader, Loader}
 import android.os.Bundle
 import com.github.triangle.{FieldList, UpdaterInput, GetterInput, PortableField}
 import android.content.Intent
 import android.app.Activity
-import android.widget.{Adapter, AdapterView, ListView}
+import _root_.android.widget.{Adapter, AdapterView, ListView}
 import com.github.scrud
 import scrud.action.CrudOperationType
 import scrud.platform.PlatformTypes
-import scrud.persistence.{CrudPersistence, PersistenceFactory, DataListener}
+import scrud.persistence.{PersistenceFactory, DataListener}
 import scrud.android.action.{AndroidOperation, OperationResponse, OptionsMenuActivity}
 import scrud.android.state.CachedStateListener
 import android.view.{MenuItem, View, ContextMenu}
@@ -24,12 +26,15 @@ import scrud.android.view._
 import scrud.{android=>_,_}
 import scrud.action.{Action,CrudOperation}
 import scrud.android.view.OnClickOperationSetter
-import scrud.state.DestroyStateListener
+import scala.collection.mutable
+import com.github.scrud.android.persistence.{EntityTypePersistedInfo, ContentQuery}
+import java.util.concurrent.ConcurrentHashMap
+import scala.collection.JavaConversions.asScalaConcurrentMap
 
 /** A generic Activity for CRUD operations
   * @author Eric Pabst (epabst@gmail.com)
   */
-class CrudActivity extends FragmentActivity with OptionsMenuActivity { self =>
+class CrudActivity extends FragmentActivity with OptionsMenuActivity with LoaderManager.LoaderCallbacks[Cursor] { self =>
   lazy val crudApplication: CrudApplication = super.getApplication.asInstanceOf[CrudAndroidApplication].application
 
   lazy val platformDriver: AndroidPlatformDriver = crudApplication.platformDriver.asInstanceOf[AndroidPlatformDriver]
@@ -43,6 +48,10 @@ class CrudActivity extends FragmentActivity with OptionsMenuActivity { self =>
   protected lazy val persistenceFactory: PersistenceFactory = crudContext.persistenceFactory(entityType)
 
   protected[this] val createdId: AtomicReference[Option[ID]] = new AtomicReference(None)
+
+  private[this] val cursorLoaderDataList = mutable.Buffer[CursorLoaderData]()
+
+  private[this] val cursorLoaderDataByLoader: mutable.ConcurrentMap[Loader[Cursor],CursorLoaderData] = new ConcurrentHashMap[Loader[Cursor],CursorLoaderData]()
 
   override def setIntent(newIntent: Intent) {
     info("Current Intent: " + newIntent)
@@ -421,37 +430,39 @@ class CrudActivity extends FragmentActivity with OptionsMenuActivity { self =>
     }
   }
 
-  def addDataListener(listener: DataListener, crudContext: CrudContext) {
-    persistenceFactory.addListener(listener, entityType, crudContext)
-  }
-
   final def setListAdapterUsingUri(crudContext: AndroidCrudContext, activity: CrudActivity) {
     setListAdapter(activity.getAdapterView, entityType, crudContext, activity.contextItems, activity, rowLayout)
   }
 
-  private def createAdapter(persistence: CrudPersistence, contextItems: CrudContextItems, activity: Activity, itemLayout: LayoutKey): AdapterCaching = {
-    val itemViewInflater = new ViewInflater(itemLayout, activity.getLayoutInflater)
-    new EntityAdapterFactory().createAdapter(persistence, contextItems, itemViewInflater)
-  }
-
-  private def setListAdapter[A <: Adapter](adapterView: AdapterView[A], persistence: CrudPersistence, crudContext: AndroidCrudContext, contextItems: CrudContextItems, activity: Activity, itemLayout: LayoutKey) {
-    addDataListener(new DataListener {
-      def onChanged() {
-        contextItems.application.FuturePortableValueCache.get(contextItems.stateHolder).clear()
-      }
-    }, contextItems.crudContext)
-    adapterView.setAdapter(createAdapter(persistence, contextItems, activity, itemLayout).asInstanceOf[A])
-    crudContext.addCachedActivityStateListener(new AdapterCachingStateListener(contextItems.crudContext))
-  }
-
   def setListAdapter[A <: Adapter](adapterView: AdapterView[A], entityType: EntityType, crudContext: AndroidCrudContext, contextItems: CrudContextItems, activity: Activity, itemLayout: LayoutKey) {
-    val persistence = crudContext.openEntityPersistence(entityType)
-    crudContext.activityState.addListener(new DestroyStateListener {
-      def onDestroyState() {
-        persistence.close()
-      }
-    })
-    setListAdapter(adapterView, persistence, crudContext, contextItems, activity, itemLayout)
+    val entityTypePersistedInfo = EntityTypePersistedInfo(entityType)
+    val uri = toUri(contextItems.currentUriPath, crudContext.persistenceFactoryMapping)
+    val adapter = new EntityCursorAdapter(entityType, contextItems, new ViewInflater(itemLayout, activity.getLayoutInflater), null)
+    adapterView.setAdapter(adapter.asInstanceOf[A])
+    cursorLoaderDataList.append(CursorLoaderData(ContentQuery(uri, entityTypePersistedInfo.queryFieldNames), adapter))
+    crudContext.initializeListeners()
+    getSupportLoaderManager.initLoader(cursorLoaderDataList.size - 1, null, this)
+  }
+
+  def onCreateLoader(id: Int, args: Bundle) = {
+    val cursorLoaderData = cursorLoaderDataList(id)
+    val contentQuery: ContentQuery = cursorLoaderData.query
+    val loader = new CursorLoader(this)
+    loader.setUri(contentQuery.uri)
+    loader.setProjection(contentQuery.projection.toArray)
+    loader.setSelection(contentQuery.selection.mkString(" AND "))
+    loader.setSelectionArgs(contentQuery.selectionArgs.toArray)
+    loader.setSortOrder(contentQuery.sortOrder.getOrElse(null))
+    cursorLoaderDataByLoader.put(loader, cursorLoaderData)
+    loader
+  }
+
+  def onLoaderReset(loader: Loader[Cursor]) {}
+
+  def onLoadFinished(loader: Loader[Cursor], data: Cursor) {
+    cursorLoaderDataByLoader.get(loader).foreach { cursorLoaderData =>
+      cursorLoaderData.adapter.swapCursor(data)
+    }
   }
 
   def waitForWorkInProgress() {
@@ -460,3 +471,5 @@ class CrudActivity extends FragmentActivity with OptionsMenuActivity { self =>
 
   override val toString = getClass.getSimpleName + "@" + System.identityHashCode(this)
 }
+
+case class CursorLoaderData(query: ContentQuery, adapter: EntityCursorAdapter)

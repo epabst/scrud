@@ -13,9 +13,6 @@ trait ThinPersistence {
   /** Find all entity instances based on a UriPath.  Filtering may be included in the UriPath. */
   def findAll(uri: UriPath): Seq[AnyRef]
 
-  /** A findAll that can be refreshed.  It should be closed when no longer needed. */
-  def refreshableFindAll(uri: UriPath): RefreshableFindAll = new SimpleRefreshableFindAll(uri, this)
-
   /** Should delegate to PersistenceFactory.newWritable. */
   def newWritable(): AnyRef
 

@@ -10,7 +10,8 @@ import _root_.android.os.{Looper, Bundle}
 import _root_.android.content.Context
 import _root_.android.telephony.TelephonyManager
 import com.github.scrud.action.Undoable
-import com.github.scrud.persistence.PersistenceFactoryMapping
+import com.github.scrud.persistence.{DataListener, PersistenceFactoryMapping}
+import com.github.scrud.android.view.AdapterCachingStateListener
 
 /**
  * The context and state for the application code to interact with.
@@ -40,6 +41,24 @@ case class AndroidCrudContext(context: Context, stateHolder: ActivityStateHolder
   lazy val isoCountry = {
     Option(context.getSystemService(Context.TELEPHONY_SERVICE)).map(_.asInstanceOf[TelephonyManager]).
         flatMap(tm => Option(tm.getSimCountryIso)).getOrElse(java.util.Locale.getDefault.getCountry)
+  }
+
+  private lazy val initializedCacheClearingListener = {
+    val listener = new DataListener {
+      def onChanged() {
+        application.FuturePortableValueCache.get(stateHolder).clear()
+      }
+    }
+    addCachedActivityStateListener(new AdapterCachingStateListener(this))
+    for {
+      entityType <- persistenceFactoryMapping.allEntityTypes
+      persistenceFactory = persistenceFactoryMapping.persistenceFactory(entityType)
+    } persistenceFactory.addListener(listener, entityType, this)
+    listener
+  }
+
+  def initializeListeners() {
+    initializedCacheClearingListener
   }
 
   /** Provides a way for the user to undo an operation. */
