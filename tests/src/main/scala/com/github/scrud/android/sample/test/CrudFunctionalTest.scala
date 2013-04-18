@@ -53,7 +53,7 @@ class CrudFunctionalTest extends ActivityInstrumentationTestCase2(classOf[CrudAc
 
       assertEquals(CrudOperation(Author, CrudOperationType.List), currentCrudActivity.currentCrudOperation)
 
-      solo.clickOnMenuItem("Add Author")
+      solo.clickOnButton("Add Author")
       solo.waitForView(classOf[EditText])
       assertEquals(CrudOperation(Author, CrudOperationType.Create), currentCrudActivity.currentCrudOperation)
 
@@ -68,7 +68,7 @@ class CrudFunctionalTest extends ActivityInstrumentationTestCase2(classOf[CrudAc
       solo.waitForView(classOf[EditText])
       assertEquals(CrudOperation(Book, CrudOperationType.List), currentCrudActivity.currentCrudOperation)
 
-      solo.clickOnMenuItem("Add Book")
+      solo.clickOnButton("Add Book")
       solo.waitForActivity(classOf[CrudActivity].getSimpleName)
       assertEquals(CrudOperation(Book, CrudOperationType.Create), currentCrudActivity.currentCrudOperation)
 
