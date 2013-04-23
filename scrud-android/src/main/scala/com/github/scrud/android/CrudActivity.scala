@@ -444,26 +444,35 @@ class CrudActivity extends FragmentActivity with OptionsMenuActivity with Loader
   }
 
   def onCreateLoader(id: Int, args: Bundle) = {
-    val cursorLoaderData = cursorLoaderDataList(id)
-    val contentQuery: ContentQuery = cursorLoaderData.query
-    val loader = new CursorLoader(this)
-    loader.setUri(contentQuery.uri)
-    loader.setProjection(contentQuery.projection.toArray)
-    loader.setSelection(contentQuery.selection.mkString(" AND "))
-    loader.setSelectionArgs(contentQuery.selectionArgs.toArray)
-    loader.setSortOrder(contentQuery.sortOrder.getOrElse(null))
-    cursorLoaderDataByLoader.put(loader, cursorLoaderData)
-    loader
+    crudContext.propagateWithExceptionReporting {
+      debug("onCreateLoader(" + id + ")")
+      val cursorLoaderData = cursorLoaderDataList(id)
+      val contentQuery: ContentQuery = cursorLoaderData.query
+      val loader = new CursorLoader(this)
+      loader.setUri(contentQuery.uri)
+      loader.setProjection(contentQuery.projection.toArray)
+      loader.setSelection(contentQuery.selection.mkString(" AND "))
+      loader.setSelectionArgs(contentQuery.selectionArgs.toArray)
+      loader.setSortOrder(contentQuery.sortOrder.getOrElse(null))
+      cursorLoaderDataByLoader.put(loader, cursorLoaderData)
+      loader
+    }
   }
 
   def onLoaderReset(loader: Loader[Cursor]) {
-    crudApplication.FuturePortableValueCache.get(stateHolder).clear()
+    crudContext.withExceptionReporting {
+      debug("onLoaderReset(" + loader + ")")
+      crudApplication.FuturePortableValueCache.get(stateHolder).clear()
+    }
   }
 
   def onLoadFinished(loader: Loader[Cursor], data: Cursor) {
-    crudApplication.FuturePortableValueCache.get(stateHolder).clear()
-    cursorLoaderDataByLoader.get(loader).foreach { cursorLoaderData =>
-      cursorLoaderData.adapter.swapCursor(data)
+    crudContext.withExceptionReporting {
+      debug("onLoadFinished(" + loader + ", cursor with count=" + data.getCount + ")")
+      crudApplication.FuturePortableValueCache.get(stateHolder).clear()
+      cursorLoaderDataByLoader.get(loader).foreach { cursorLoaderData =>
+        cursorLoaderData.adapter.swapCursor(data)
+      }
     }
   }
 
