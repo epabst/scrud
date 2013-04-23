@@ -8,6 +8,7 @@ import com.github.scrud.android.AndroidCrudContext
 import android.database.ContentObserver
 import android.os.Handler
 import com.github.scrud.state.ApplicationConcurrentMapVal
+import com.github.scrud.util.DelegatingListenerHolder
 
 /**
  * A PersistenceFactory that uses the ContentResolver.
@@ -23,25 +24,30 @@ class ContentResolverPersistenceFactory(delegate: PersistenceFactory) extends De
 
   override def createEntityPersistence(entityType: EntityType, crudContext: CrudContext) = {
     val contentResolver = crudContext.asInstanceOf[AndroidCrudContext].context.getContentResolver
-    val theListenerSet = listenerSet(entityType, crudContext)
+    val delegateListenerSet = listenerSet(entityType, crudContext)
+    val theListenerSet = new DelegatingListenerHolder[DataListener] {
+      protected def listenerHolder = delegateListenerSet
 
-    crudContext.asInstanceOf[AndroidCrudContext].runOnUiThread {
-      ContentResolverObserverVal.get(crudContext.stateHolder).getOrElseUpdate(entityType.entityName, {
-        val observer = new ContentObserver(new Handler()) {
-          override def onChange(selfChange: Boolean) {
-            theListenerSet.listeners.foreach(_.onChanged())
+      override def addListener(listener: DataListener) {
+        ContentResolverObserverInitializationVal.get(crudContext.stateHolder).getOrElseUpdate(entityType.entityName, {
+          crudContext.asInstanceOf[AndroidCrudContext].runOnUiThread {
+            val observer = new ContentObserver(new Handler()) {
+              override def onChange(selfChange: Boolean) {
+                delegateListenerSet.listeners.foreach(_.onChanged())
+              }
+            }
+            contentResolver.registerContentObserver(toUri(UriPath(entityType.entityName), crudContext.persistenceFactoryMapping), true, observer)
           }
-        }
-        contentResolver.registerContentObserver(toUri(UriPath(entityType.entityName), crudContext.persistenceFactoryMapping), true, observer)
-        observer
-      })
+        })
+        super.addListener(listener)
+      }
     }
     new ContentResolverCrudPersistence(entityType, contentResolver, crudContext.persistenceFactoryMapping,
       theListenerSet)
   }
 }
 
-object ContentResolverObserverVal extends ApplicationConcurrentMapVal[EntityName,ContentObserver]
+object ContentResolverObserverInitializationVal extends ApplicationConcurrentMapVal[EntityName,Unit]
 
 object ContentResolverPersistenceFactory {
   def newWritable() = new ContentValues()

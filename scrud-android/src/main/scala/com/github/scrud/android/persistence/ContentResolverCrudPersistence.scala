@@ -5,7 +5,7 @@ import com.github.scrud.{UriPath, EntityType}
 import android.content.{ContentResolver, ContentValues}
 import com.github.scrud.platform.PlatformTypes._
 import com.github.scrud.android.view.AndroidConversions._
-import com.github.scrud.util.{DelegatingListenerSet, MutableListenerSet}
+import com.github.scrud.util.{ListenerHolder, DelegatingListenerSet}
 import scala.Some
 import com.github.scrud.android.view.AndroidConversions
 import android.net.Uri
@@ -18,7 +18,7 @@ import android.net.Uri
  */
 class ContentResolverCrudPersistence(val entityType: EntityType, contentResolver: ContentResolver,
                                      persistenceFactoryMapping: PersistenceFactoryMapping,
-                                     protected val listenerSet: MutableListenerSet[DataListener])
+                                     protected val listenerSet: ListenerHolder[DataListener])
     extends CrudPersistence with DelegatingListenerSet[DataListener] {
   private lazy val entityTypePersistedInfo = EntityTypePersistedInfo(entityType)
   private lazy val queryFieldNames = entityTypePersistedInfo.queryFieldNames.toArray
