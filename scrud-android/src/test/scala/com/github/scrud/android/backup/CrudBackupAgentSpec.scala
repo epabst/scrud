@@ -1,26 +1,26 @@
-package com.github.scrud.android
+package com.github.scrud.android.backup
 
-import _root_.android.os.ParcelFileDescriptor
-import org.junit.Test
 import org.junit.runner.RunWith
+import com.github.scrud.android._
 import org.scalatest.matchers.MustMatchers
-import com.github.scrud.android.persistence.CursorField.PersistedId
-import com.github.scrud._
-import platform.TestingPlatformDriver
+import com.github.scrud.util.{CalculatedIterator, CrudMockitoSugar}
+import org.junit.Test
+import com.github.scrud.android.backup.CrudBackupAgent._
+import _root_.android.os.ParcelFileDescriptor
 import scala.collection.mutable
+import com.github.scrud._
 import org.mockito.Mockito._
 import org.mockito.Matchers._
-import CrudBackupAgent._
-import com.github.triangle.BaseField
-import org.mockito.stubbing.Answer
-import com.github.triangle.PortableField._
 import com.github.scrud.state.State
-import com.github.scrud.util.{CalculatedIterator, CrudMockitoSugar}
-import com.github.scrud.persistence.ListBufferCrudPersistence
+import com.github.scrud.android.persistence.CursorField.PersistedId
+import com.github.scrud.persistence.EntityPersistenceForTesting
+import com.github.scrud.platform.TestingPlatformDriver
+import com.github.triangle.{PortableField, BaseField}
 import com.github.scrud.EntityName
 import scala.Some
+import org.mockito.stubbing.Answer
 
-/** A test for [[com.github.scrud.android.CrudBackupAgent]].
+/** A test for [[CrudBackupAgent]].
   * @author Eric Pabst (epabst@gmail.com)
   */
 @RunWith(classOf[CustomRobolectricTestRunner])
@@ -118,7 +118,7 @@ class CrudBackupAgentSpec extends MustMatchers with CrudMockitoSugar {
     val entityType = new EntityTypeForTesting
     val persistence = new EntityPersistenceForTesting(entityType)
     val generatedType = new EntityType(EntityName("Generated"), TestingPlatformDriver) {
-      val valueFields = List[BaseField](EntityField[EntityTypeForTesting](EntityForTesting), default[Int](100))
+      val valueFields = List[BaseField](EntityField[EntityTypeForTesting](EntityForTesting), PortableField.default[Int](100))
     }
     val state0 = null
     when(application.entityNameLayoutPrefixFor(entityType.entityName)).thenReturn("test")
@@ -135,6 +135,3 @@ class CrudBackupAgentSpec extends MustMatchers with CrudMockitoSugar {
     backupAgent.onDestroy()
   }
 }
-
-class EntityPersistenceForTesting(entityType: EntityType)
-    extends ListBufferCrudPersistence(Map.empty[String, Option[Any]], entityType, null)

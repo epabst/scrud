@@ -1,50 +1,25 @@
-package com.github.scrud.android
+package com.github.scrud.android.backup
 
 import android.app.backup.{BackupDataOutput, BackupDataInput, BackupAgent}
-import com.github.triangle.{PortableValue, Logging}
-import persistence.CursorField._
+import com.github.triangle.Logging
 import android.os.ParcelFileDescriptor
 import java.io.{ObjectInputStream, ByteArrayInputStream, ObjectOutputStream, ByteArrayOutputStream}
 import scala.collection.JavaConversions._
-import java.util.{Map => JMap,HashMap}
+import java.util.{Map => JMap}
 import com.github.scrud.platform.PlatformTypes._
-import com.github.scrud.{UriPath, EntityType, EntityName, CrudApplication}
+import com.github.scrud.{UriPath, EntityType, CrudApplication}
 import com.github.scrud.util.{CalculatedIterator, Common}
 import com.github.scrud.state.State
-import com.github.scrud.platform.PlatformDriver
-import state.ActivityStateHolder
-
-object CrudBackupAgent {
-  private val backupStrategyVersion: Int = 1
-
-  private[scrud] def marshall(map: Map[String,Any]): Array[Byte] = {
-    val out = new ByteArrayOutputStream
-    try {
-      val objectStream = new ObjectOutputStream(out)
-      objectStream.writeInt(backupStrategyVersion)
-      val jmap: JMap[String,Any] = map
-      val hashMap: JMap[String,Any] = new HashMap(jmap)
-      objectStream.writeObject(hashMap)
-      out.toByteArray
-    } finally out.close()
-  }
-
-  private[scrud] def unmarshall(bytes: Array[Byte]): Map[String,Any] = {
-    val objectStream = new ObjectInputStream(new ByteArrayInputStream(bytes))
-    try {
-      val strategyVersion = objectStream.readInt()
-      if (strategyVersion != backupStrategyVersion) throw new IllegalStateException
-      objectStream.readObject().asInstanceOf[JMap[String,Any]].toMap
-    } finally objectStream.close()
-  }
-}
+import scala.Some
+import com.github.scrud.android.AndroidCrudContext
+import com.github.scrud.android.state.ActivityStateHolder
+import com.github.scrud.android.CrudAndroidApplication
+import com.github.scrud.android.persistence.CursorField.PersistedId
 
 /** A BackupAgent for a CrudApplication.
   * It must be subclassed in order to put it into the AndroidManifest.xml.
   * @author Eric Pabst (epabst@gmail.com)
   */
-
-import CrudBackupAgent._
 
 class CrudBackupAgent(application: CrudApplication) extends BackupAgent with ActivityStateHolder with Logging {
   val crudContext = new AndroidCrudContext(this, application)
@@ -62,7 +37,7 @@ class CrudBackupAgent(application: CrudApplication) extends BackupAgent with Act
           debug("Backing up " + key + " <- " + mapOpt)
           mapOpt match {
             case Some(map) =>
-              val bytes = marshall(map)
+              val bytes = CrudBackupAgent.marshall(map)
               data.writeEntityHeader(key, bytes.length)
               data.writeEntityData(bytes, bytes.length)
               debug("Backed up " + key + " with " + bytes.length + " bytes")
@@ -114,7 +89,7 @@ class CrudBackupAgent(application: CrudApplication) extends BackupAgent with Act
             debug("Restoring " + key + ": expected " + size + " bytes, read " + actualSize + " bytes")
             if (actualSize != size) throw new IllegalStateException("readEntityData returned " + actualSize + " instead of " + size)
             try {
-              val map = unmarshall(bytes)
+              val map = CrudBackupAgent.unmarshall(bytes)
               debug("Restoring " + key + ": read Map: " + map)
               Some(RestoreItem(key, map))
             } catch {
@@ -152,45 +127,27 @@ class CrudBackupAgent(application: CrudApplication) extends BackupAgent with Act
   }
 }
 
-trait BackupTarget {
-  def writeEntity(key: String, map: Option[Map[String,Any]])
-}
+object CrudBackupAgent {
+  private val backupStrategyVersion: Int = 1
 
-case class RestoreItem(key: String, map: Map[String,Any])
+  private[scrud] def marshall(map: Map[String,Any]): Array[Byte] = {
+    val out = new ByteArrayOutputStream
+    try {
+      val objectStream = new ObjectOutputStream(out)
+      objectStream.writeInt(backupStrategyVersion)
+      val jmap: JMap[String,Any] = map
+      val hashMap: JMap[String,Any] = new java.util.HashMap[String,Any](jmap)
+      objectStream.writeObject(hashMap)
+      out.toByteArray
+    } finally out.close()
+  }
 
-object DeletedEntityId extends EntityName("DeletedEntityId")
-
-class DeletedEntityIdEntityType(platformDriver: PlatformDriver) extends EntityType(DeletedEntityId, platformDriver) {
-  val entityNameField = persisted[String]("entityName")
-  val entityIdField = persisted[ID]("entityId")
-  // not a val since not used enough to store
-  def valueFields = List(entityNameField, entityIdField)
-}
-
-/** Helps prevent restoring entities that the user deleted when an onRestore operation happens.
-  * It only contains the entityName and ID since it is not intended as a recycle bin,
-  * but to delete data in the Backup Service.
-  * This entity is in its own CrudApplication by itself, separate from any other CrudApplication.
-  * It is intended to be in a separate database owned by the scrud-android framework.
-  */
-object DeletedEntityIdApplication extends CrudApplication(new AndroidPlatformDriver(classOf[res.R])) {
-  val name = "scrud.android_deleted"
-
-  val deletedEntityIdEntityType = new DeletedEntityIdEntityType(platformDriver)
-
-  val allCrudTypes = List(CrudType(deletedEntityIdEntityType, platformDriver.localDatabasePersistenceFactory))
-
-  /** Records that a deletion happened so that it is deleted from the Backup Service.
-    * It's ok for this to happen immediately because if a delete is undone,
-    * it will be restored independent of this support, and it will then be re-added to the Backup Service later
-    * just like any new entity being added.
-    */
-  def recordDeletion(entityName: EntityName, id: ID, crudContext: AndroidCrudContext) {
-    val agentCrudContext = crudContext.copy(application = this)
-    val portableValue = PortableValue(
-      deletedEntityIdEntityType.entityNameField -> entityName.name,
-      deletedEntityIdEntityType.entityIdField -> id)
-    val writable = portableValue.update(agentCrudContext.newWritable(deletedEntityIdEntityType))
-    agentCrudContext.withEntityPersistence(deletedEntityIdEntityType) { _.save(None, writable) }
+  private[scrud] def unmarshall(bytes: Array[Byte]): Map[String,Any] = {
+    val objectStream = new ObjectInputStream(new ByteArrayInputStream(bytes))
+    try {
+      val strategyVersion = objectStream.readInt()
+      if (strategyVersion != backupStrategyVersion) throw new IllegalStateException
+      objectStream.readObject().asInstanceOf[JMap[String,Any]].toMap
+    } finally objectStream.close()
   }
 }

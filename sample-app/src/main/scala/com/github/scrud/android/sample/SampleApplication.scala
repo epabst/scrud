@@ -3,6 +3,7 @@ package com.github.scrud.android.sample
 import com.github.scrud.android._
 import com.github.scrud.CrudApplication
 import com.github.scrud.platform.PlatformDriver
+import com.github.scrud.android.backup.CrudBackupAgent
 
 
 /** The sample application

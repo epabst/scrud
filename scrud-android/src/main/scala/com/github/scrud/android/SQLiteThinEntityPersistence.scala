@@ -15,6 +15,7 @@ import android.provider.BaseColumns
 import persistence.CursorStream
 import persistence.SQLiteCriteria
 import scala.Some
+import com.github.scrud.android.backup.{CrudBackupAgent, DeletedEntityIdApplication}
 
 /**
  * A ThinPersistence for interacting with SQLite.
