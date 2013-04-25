@@ -41,9 +41,7 @@ abstract class CrudContentProvider extends ContentProvider with ActivityStateHol
 
   private def persistenceFor(uriPath: UriPath): CrudPersistence = {
     val entityName = uriPath.lastEntityNameOrFail
-    CrudPersistenceByEntityName.get(this).getOrElseUpdate(entityName,
-      // Intentionally don't use crudContext.openPersistence since that would be an infinite loop since it delegates to this method.
-      application.persistenceFactory(entityName).createEntityPersistence(application.entityType(entityName), crudContext))
+    CrudPersistenceByEntityName.get(this).getOrElseUpdate(entityName, crudContext.openEntityPersistence(entityName))
   }
 
   def query(uri: Uri, projection: Array[String], selection: String, selectionArgs: Array[String], sortOrder: String): Cursor = {

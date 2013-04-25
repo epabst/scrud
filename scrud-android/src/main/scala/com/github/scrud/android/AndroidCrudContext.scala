@@ -4,13 +4,14 @@ import _root_.android.app.Activity
 import action.AndroidNotification
 import com.github.scrud.state._
 import com.github.scrud._
-import persistence.ContentResolverPersistenceFactoryMapping
+import com.github.scrud.android.persistence.{CrudContentProvider, ContentResolverPersistenceFactoryMapping}
 import state.{ActivityStateHolder, ActivityVar, CachedStateListeners, CachedStateListener}
 import _root_.android.os.{Looper, Bundle}
 import _root_.android.content.Context
 import _root_.android.telephony.TelephonyManager
 import com.github.scrud.action.Undoable
 import com.github.scrud.persistence.PersistenceFactoryMapping
+import com.github.scrud.android.backup.CrudBackupAgent
 
 /**
  * The context and state for the application code to interact with.
@@ -32,9 +33,22 @@ case class AndroidCrudContext(context: Context, stateHolder: ActivityStateHolder
 
   lazy val dataVersion: Int = androidPlatformDriver.calculateDataVersion(application.allEntityTypes)
 
-  // Use a ContentResolver (this should never be called from the ContentProvider).
-  override lazy val persistenceFactoryMapping: PersistenceFactoryMapping =
-    new ContentResolverPersistenceFactoryMapping(application)
+  override lazy val persistenceFactoryMapping: PersistenceFactoryMapping = {
+    stateHolder match {
+      case _: CrudContentProvider =>
+        application
+      case _: CrudBackupAgent =>
+        application
+      case _ =>
+        context match {
+          case _: Activity =>
+            // Use a ContentResolver (this should never be called from the ContentProvider).
+            new ContentResolverPersistenceFactoryMapping(application)
+          case _ =>
+            application
+        }
+    }
+  }
 
   /** The ISO 2 country such as "US". */
   lazy val isoCountry = {
