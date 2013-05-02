@@ -26,6 +26,7 @@ abstract class CrudContentProvider extends ContentProvider with ActivityStateHol
   protected[scrud] def persistenceFactoryMapping: PersistenceFactoryMapping = application
   lazy val activityState: State = new State
   lazy val crudContext = new AndroidCrudContext(getContext, this, application)
+  lazy val contentResolver = crudContext.asInstanceOf[AndroidCrudContext].context.getContentResolver
 
   def onCreate(): Boolean = true
 
@@ -59,6 +60,7 @@ abstract class CrudContentProvider extends ContentProvider with ActivityStateHol
     val uriPath = toUriPath(uri)
     val persistence = persistenceFor(uriPath)
     val id = persistence.save(None, persistence.toWritable(contentValues))
+    contentResolver.notifyChange(uri, null)
     uri.buildUpon().path(uriPath.specify(persistence.entityType.entityName, id).toString).build()
   }
 
@@ -68,6 +70,7 @@ abstract class CrudContentProvider extends ContentProvider with ActivityStateHol
     val persistence = persistenceFor(uriPath)
     val writable = persistence.toWritable(values)
     persistence.save(Some(persistence.entityType.idPkField.getRequired(uriPath)), writable)
+    contentResolver.notifyChange(uri, null)
     1
   }
 
@@ -75,7 +78,9 @@ abstract class CrudContentProvider extends ContentProvider with ActivityStateHol
     //todo use selection and selectionArgs
     val uriPath = toUriPath(uri)
     val persistence = persistenceFor(uriPath)
-    persistence.delete(uri)
+    val result = persistence.delete(uri)
+    contentResolver.notifyChange(uri, null)
+    result
   }
 }
 
