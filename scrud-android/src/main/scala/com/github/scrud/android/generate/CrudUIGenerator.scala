@@ -3,7 +3,7 @@ package com.github.scrud.android.generate
 import com.github.triangle._
 import collection.immutable.List
 import xml._
-import com.github.scrud.android.view.EntityView
+import com.github.scrud.android.view.{AndroidConversions, EntityView}
 import com.github.scrud.{CrudApplication, EntityType}
 import com.github.scrud.util.FileConversions._
 import java.io.File
@@ -57,6 +57,12 @@ class CrudUIGenerator extends Logging {
           </intent-filter>
         </activity>
         {activityNames.tail.map { name => <activity android:name={name} android:label="@string/app_name"/>}}
+        <provider android:authorities={AndroidConversions.authorityFor(application)}
+                  android:name="com.github.scrud.android.persistence.LocalCrudContentProvider"
+                  android:exported="false"
+                  android:grantUriPermissions="false"
+                  android:multiprocess="true"
+                  android:syncable="false"/>
       </application>
       <uses-sdk android:minSdkVersion="8"/>
     </manifest>
