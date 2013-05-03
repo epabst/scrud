@@ -39,7 +39,7 @@ class ContentResolverCrudPersistenceSpec extends CrudMockitoSugar with MustMatch
     val uriPath = UriPath(fooEntityName)
     val results = persistence.findAll(uriPath)
     results.size must be (2)
-    results.map(_ - "_id") must be (List(data2, data1))
+    results.map(_ - CursorField.idFieldName) must be (List(data2, data1))
   }
 
   @Test
@@ -47,11 +47,11 @@ class ContentResolverCrudPersistenceSpec extends CrudMockitoSugar with MustMatch
     val persistence = ContentResolverCrudPersistenceForTesting(fooEntityType, testApplication)
     val id1 = persistence.saveCopy(None, data1)
     persistence.saveCopy(None, data2)
-    val data1b = Map("name" -> Some("Greg"), "age" -> Some(32), "uri" -> None)
+    val data1b = Map("name" -> Some("Greg"), "age" -> Some(32), "uri" -> None, CursorField.idFieldName -> Some(id1))
     persistence.saveCopy(Some(id1), data1b)
     val results = persistence.findAll(UriPath(fooEntityName))
     results.size must be (2)
-    results.map(_ - "_id") must be (List(data2, data1b))
+    results.map(_ - CursorField.idFieldName) must be (List(data2, data1b - CursorField.idFieldName))
   }
 
   @Test

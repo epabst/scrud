@@ -440,7 +440,7 @@ class CrudActivity extends FragmentActivity with OptionsMenuActivity with Loader
     val adapter = new EntityCursorAdapter(entityType, contextItems, new ViewInflater(itemLayout, activity.getLayoutInflater), null)
     adapterView.setAdapter(adapter.asInstanceOf[A])
     cursorLoaderDataList.append(CursorLoaderData(ContentQuery(uri, entityTypePersistedInfo.queryFieldNames), adapter))
-    getSupportLoaderManager.initLoader(cursorLoaderDataList.size - 1, null, this)
+    Option(getSupportLoaderManager).foreach(_.initLoader(cursorLoaderDataList.size - 1, null, this))
   }
 
   def onCreateLoader(id: Int, args: Bundle) = {

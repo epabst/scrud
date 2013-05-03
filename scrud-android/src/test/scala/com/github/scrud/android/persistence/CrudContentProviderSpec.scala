@@ -58,22 +58,23 @@ class CrudContentProviderSpec extends CrudMockitoSugar with MustMatchers {
     val provider = new CrudContentProviderForTesting(testApplication)
     val data1 = Map("name" -> Some("George"), "age" -> Some(31), "uri" -> None)
     val uri1 = provider.insert(toUri(UriPath(fooEntityName)), fooEntityType.copyAndUpdate(data1, new ContentValues()))
+    val id1 = toUriPath(uri1).findId(fooEntityName).get
     val data2 = Map("name" -> Some("Wilma"), "age" -> Some(30), "uri" -> None)
     provider.insert(toUri(UriPath(fooEntityName)), fooEntityType.copyAndUpdate(data2, new ContentValues()))
-    val data1b = Map("name" -> Some("Greg"), "age" -> Some(32), "uri" -> None)
+    val data1b = Map("name" -> Some("Greg"), "age" -> Some(32), "uri" -> None, CursorField.idFieldName -> Some(id1))
     provider.update(uri1, fooEntityType.copyAndUpdate(data1b, new ContentValues()), null, Array.empty)
     val cursor = provider.query(toUri(UriPath(fooEntityName)), Array.empty, null, Array.empty, null)
     val results = CursorStream(cursor, EntityTypePersistedInfo(fooEntityType)).toList
     results.size must be (2)
-    results.map(_ - "_id") must be (List(data2, data1b))
+    results.map(_ - "_id") must be (List(data2, data1b - "_id"))
   }
 
   @Test
   def delete_mustDelete() {
     val provider = new CrudContentProviderForTesting(testApplication)
-    val data1 = Map("name" -> Some("George"), "age" -> 31)
+    val data1 = Map("name" -> Some("George"), "age" -> Some(31), "uri" -> None)
     val uri1 = provider.insert(toUri(UriPath(fooEntityName)), fooEntityType.copyAndUpdate(data1, new ContentValues()))
-    val data2 = Map("name" -> Some("Wilma"), "age" -> 30)
+    val data2 = Map("name" -> Some("Wilma"), "age" -> Some(30), "uri" -> None)
     val uri2 = provider.insert(toUri(UriPath(fooEntityName)), fooEntityType.copyAndUpdate(data2, new ContentValues()))
     provider.delete(uri1, null, Array.empty) must be (1)
     val cursor = provider.query(toUri(UriPath(fooEntityName)), Array.empty, null, Array.empty, null)
