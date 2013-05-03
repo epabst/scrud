@@ -40,6 +40,9 @@ abstract class CrudContentProvider extends ContentProvider with ActivityStateHol
     }
   }
 
+  /** Allows for overriding the Uri used for notifications. */
+  protected def toNotificationUri(uri: Uri): Uri = uri
+
   private def persistenceFor(uriPath: UriPath): CrudPersistence = {
     val entityName = uriPath.lastEntityNameOrFail
     CrudPersistenceByEntityName.get(this).getOrElseUpdate(entityName, crudContext.openEntityPersistence(entityName))
@@ -49,18 +52,20 @@ abstract class CrudContentProvider extends ContentProvider with ActivityStateHol
     //todo use selection and selectionArgs
     val uriPath = toUriPath(uri)
     val persistence = persistenceFor(uriPath)
-    persistence.findAll(uriPath) match {
-      case CursorStream(cursor, _) => cursor
+    val cursor = persistence.findAll(uriPath) match {
+      case cursorStream: CursorStream => cursorStream.cursor
       case results =>
         new CrudCursor(results, EntityTypePersistedInfo(persistence.entityType))
     }
+    cursor.setNotificationUri(contentResolver, toNotificationUri(uri))
+    cursor
   }
 
   def insert(uri: Uri, contentValues: ContentValues): Uri = {
     val uriPath = toUriPath(uri)
     val persistence = persistenceFor(uriPath)
     val id = persistence.save(None, persistence.toWritable(contentValues))
-    contentResolver.notifyChange(uri, null)
+    contentResolver.notifyChange(toNotificationUri(uri), null)
     uri.buildUpon().path(uriPath.specify(persistence.entityType.entityName, id).toString).build()
   }
 
@@ -70,7 +75,7 @@ abstract class CrudContentProvider extends ContentProvider with ActivityStateHol
     val persistence = persistenceFor(uriPath)
     val writable = persistence.toWritable(values)
     persistence.save(Some(persistence.entityType.idPkField.getRequired(uriPath)), writable)
-    contentResolver.notifyChange(uri, null)
+    contentResolver.notifyChange(toNotificationUri(uri), null)
     1
   }
 
@@ -79,7 +84,7 @@ abstract class CrudContentProvider extends ContentProvider with ActivityStateHol
     val uriPath = toUriPath(uri)
     val persistence = persistenceFor(uriPath)
     val result = persistence.delete(uri)
-    contentResolver.notifyChange(uri, null)
+    contentResolver.notifyChange(toNotificationUri(uri), null)
     result
   }
 }
