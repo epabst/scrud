@@ -9,6 +9,7 @@ import com.github.scrud.util.FileConversions._
 import java.io.File
 import com.github.scrud.util.{Path, Common}
 import com.github.scrud.android.{AndroidPlatformDriver, CrudAndroidApplication}
+import com.github.scrud.android.backup.CrudBackupAgent
 
 /** A UI Generator for a CrudTypes.
   * @author Eric Pabst (epabst@gmail.com)
@@ -36,7 +37,8 @@ class CrudUIGenerator extends Logging {
     println("Wrote " + file)
   }
 
-  def generateAndroidManifest(application: CrudApplication, androidApplicationClass: Class[_]): Elem = {
+  def generateAndroidManifest(application: CrudApplication, androidApplicationClass: Class[_],
+                              backupAgentClass: Class[_ <: CrudBackupAgent]): Elem = {
     if (!classOf[CrudAndroidApplication].isAssignableFrom(androidApplicationClass)) {
       throw new IllegalArgumentException(androidApplicationClass + " does not extend CrudAndroidApplication")
     }
@@ -47,7 +49,7 @@ class CrudUIGenerator extends Logging {
                    android:name={androidApplicationClass.getName}
                    android:theme="@android:style/Theme.NoTitleBar"
                    android:debuggable="true"
-                   android:backupAgent={application.classNamePrefix + "BackupAgent"} android:restoreAnyVersion="true">
+                   android:backupAgent={backupAgentClass.getName} android:restoreAnyVersion="true">
         <meta-data android:name="com.google.android.backup.api_key"
                    android:value="TODO: get a backup key from http://code.google.com/android/backup/signup.html and put it here."/>
         <activity android:name={activityNames.head} android:label="@string/app_name">
@@ -94,7 +96,7 @@ class CrudUIGenerator extends Logging {
     </resources>
   }
 
-  def generateLayouts(application: CrudApplication, androidApplicationClass: Class[_]) {
+  def generateLayouts(application: CrudApplication, androidApplicationClass: Class[_], backupAgentClass: Class[_ <: CrudBackupAgent]) {
     val entityTypeInfos = application.allEntityTypes.map(EntityTypeViewInfo(_, application))
     val pickedEntityTypes: Seq[EntityType] = application.allEntityTypes.flatMap(_.deepCollect {
       case EntityView(pickedEntityName) => application.entityType(pickedEntityName)
@@ -103,7 +105,7 @@ class CrudUIGenerator extends Logging {
       val childViewInfos = application.childEntityTypes(entityInfo.entityType).map(EntityTypeViewInfo(_, application))
       generateLayouts(entityInfo, childViewInfos, application, pickedEntityTypes)
     })
-    writeXmlToFile(Path("AndroidManifest.xml"), generateAndroidManifest(application, androidApplicationClass))
+    writeXmlToFile(Path("AndroidManifest.xml"), generateAndroidManifest(application, androidApplicationClass, backupAgentClass))
     writeXmlToFile(Path("res") / "values" / "strings.xml", generateValueStrings(application))
   }
 

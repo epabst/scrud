@@ -9,6 +9,7 @@ import com.github.scrud.android.AndroidPlatformDriver
 
 object GenerateLayouts {
   def main(args: Array[String]) {
-    CrudUIGenerator.generateLayouts(new SampleApplication(new AndroidPlatformDriver(classOf[R])), classOf[SampleAndroidApplication])
+    CrudUIGenerator.generateLayouts(new SampleApplication(new AndroidPlatformDriver(classOf[R])),
+      classOf[SampleAndroidApplication], classOf[SampleBackupAgent])
   }
 }

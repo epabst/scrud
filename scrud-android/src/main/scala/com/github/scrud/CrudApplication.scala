@@ -39,7 +39,6 @@ abstract class CrudApplication(val platformDriver: PlatformDriver) extends Persi
   //this will be used for programmatic uses such as a database name
   lazy val nameId: String = name.replace(" ", "_").toLowerCase
 
-  val classNamePrefix: String = getClass.getSimpleName.replace("$", "").stripSuffix("Application")
   val packageName: String = getClass.getPackage.getName
 
   /** All entities in the application, in order as shown to users. */
