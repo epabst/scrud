@@ -76,9 +76,9 @@ class CrudUIGenerator extends Logging {
 
   def generateValueStrings(entityInfo: EntityTypeViewInfo): NodeSeq = {
     import entityInfo._
-    val addSeq = if (application.isCreatable(entityType)) <string name={"add_" + layoutPrefix}>Add {entityName}</string> else NodeSeq.Empty
-    val editSeq = if (application.isSavable(entityType)) <string name={"edit_" + layoutPrefix}>Edit {entityName}</string> else NodeSeq.Empty
-    val listSeq = if (application.isListable(entityType)) <string name={layoutPrefix + "_list"}>{entityName} List</string> else NodeSeq.Empty
+    val addSeq = if (application.isCreatable(entityType)) <string name={"add_" + layoutPrefix}>Add {entityName.toDisplayableString}</string> else NodeSeq.Empty
+    val editSeq = if (application.isSavable(entityType)) <string name={"edit_" + layoutPrefix}>Edit {entityName.toDisplayableString}</string> else NodeSeq.Empty
+    val listSeq = if (application.isListable(entityType)) <string name={layoutPrefix + "_list"}>{entityName.toDisplayableString} List</string> else NodeSeq.Empty
     listSeq ++ addSeq ++ editSeq
   }
 
@@ -148,7 +148,7 @@ class CrudUIGenerator extends Logging {
         <TextView android:id={"@+id/" + entityInfo.entityName + "_emptyList"}
                   android:layout_width="wrap_content"
                   android:layout_height="wrap_content" android:layout_weight="1"
-                  android:text={"Empty " + entityInfo.entityName + " List"}
+                  android:text={"Empty " + entityInfo.entityName.toDisplayableString + " List"}
                   android:textAppearance="?android:attr/textAppearanceLarge" style="@android:style/TextAppearance.Widget.TextView"/>
       }
       { addableEntityTypeInfos.map(addableEntityTypeInfo =>
@@ -170,7 +170,7 @@ class CrudUIGenerator extends Logging {
                   android:layout_width="match_parent"
                   android:layout_height="wrap_content"
                   android:orientation="vertical">
-      <TextView android:layout_height="wrap_content" android:paddingRight="3sp" android:text={entityInfo.entityName + " List"}
+      <TextView android:layout_height="wrap_content" android:paddingRight="3sp" android:text={entityInfo.entityName.toDisplayableString + " List"}
                 android:textAppearance="?android:attr/textAppearanceLarge" style="@android:style/TextAppearance.Widget.TextView"
                 android:gravity="center" android:layout_width="match_parent"/>
     </LinearLayout>

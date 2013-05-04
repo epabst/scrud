@@ -14,6 +14,8 @@ import com.github.triangle.Field
 case class EntityName(name: String) extends QualifiedType[PlatformTypes.ID] {
   override val toString = name
 
+  lazy val toDisplayableString: String = name.replaceAll("([a-z])([A-Z])", "$1 $2")
+
   def toUri(id: ID) = UriPath(this, id)
 
   object UriPathId extends Field[ID](UriPath.uriIdField(this))
