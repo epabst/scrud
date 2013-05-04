@@ -62,6 +62,8 @@ case class EntityTypeViewInfo(entityType: EntityType, application: CrudApplicati
   lazy val rIdClasses: Seq[Class[_]] = detectRIdClasses(entityType.getClass)
   lazy val entityFieldInfos: List[EntityFieldInfo] = entityType.fields.map(EntityFieldInfo(_, rIdClasses, entityName, application))
   lazy val displayableViewIdFieldInfos: List[ViewIdFieldInfo] = entityFieldInfos.flatMap(_.displayableViewIdFieldInfos)
+  lazy val shortDisplayableViewIdFieldInfos: List[ViewIdFieldInfo] =
+    displayableViewIdFieldInfos.filter(!_.layout.editXml.toString().contains("textMultiLine"))
   lazy val updateableViewIdFieldInfos: List[ViewIdFieldInfo] = entityFieldInfos.flatMap(_.updateableViewIdFieldInfos)
   lazy val isUpdateable: Boolean = !updateableViewIdFieldInfos.isEmpty
 }
