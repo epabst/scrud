@@ -30,7 +30,7 @@ class ContentResolverCrudPersistence(val entityType: EntityType, contentResolver
   }
 
   def findAll(uriPath: UriPath) = {
-    val uri = toUri(uriPath)
+    val uri = toUri(uriPath.specifyLastEntityName(entityType.entityName))
     val cursor = Option(contentResolver.query(uri, queryFieldNames, null, Array.empty, null)).getOrElse {
       sys.error("Error resolving content: " + uri)
     }
