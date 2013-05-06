@@ -75,8 +75,9 @@ abstract class CrudContentProvider extends ContentProvider with ActivityStateHol
     val persistence = persistenceFor(uriPath)
     val writable = persistence.toWritable(values)
     persistence.save(Some(persistence.entityType.idPkField.getRequired(uriPath)), writable)
-    val uriWithoutId = toUri(uriPath.specify(uriPath.lastEntityNameOrFail), persistenceFactoryMapping)
-    contentResolver.notifyChange(toNotificationUri(uriWithoutId), null)
+    val fixedUri = toUri(uriPath, persistenceFactoryMapping)
+    if (uri.toString != fixedUri.toString) sys.error(uri + " != " + fixedUri)
+    contentResolver.notifyChange(toNotificationUri(fixedUri), null)
     1
   }
 
