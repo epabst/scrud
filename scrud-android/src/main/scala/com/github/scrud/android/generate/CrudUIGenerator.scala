@@ -255,7 +255,7 @@ class CrudUIGenerator extends Logging {
       writeLayoutFile(layoutPrefix + "_row", rowLayout(info.shortDisplayableViewIdFieldInfos))
     }
     if (pickedEntityTypes.contains(entityTypeInfo.entityType)) {
-      writeLayoutFileIfNotEmpty(layoutPrefix + "_pick", pickLayout(info.displayableViewIdFieldInfos))
+      writeLayoutFileIfNotEmpty(layoutPrefix + "_pick", pickLayout(info.identifyingDisplayableViewIdFieldInfos))
     }
     if (info.isUpdateable) writeLayoutFile(layoutPrefix + "_entry", entryLayout(info.updateableViewIdFieldInfos))
   }

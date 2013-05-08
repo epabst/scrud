@@ -31,8 +31,10 @@ case class EntityFieldInfo(field: BaseField, rIdClasses: Seq[Class[_]], entityNa
     case entityView: EntityView => EntityTypeViewInfo(application.entityType(entityView.entityName), application)
   }
 
+  private[generate] lazy val shallowDisplayableViewIdFieldInfos: Seq[ViewIdFieldInfo] = viewIdFieldInfos.filter(_.layout.displayXml != NodeSeq.Empty)
+
   lazy val displayableViewIdFieldInfos: Seq[ViewIdFieldInfo] =
-    viewIdFieldInfos.filter(_.layout.displayXml != NodeSeq.Empty) ++ nestedEntityTypeViewInfos.flatMap(_.displayableViewIdFieldInfos)
+    shallowDisplayableViewIdFieldInfos ++ nestedEntityTypeViewInfos.flatMap(_.shallowDisplayableViewIdFieldInfos)
 
   lazy val updateableViewIdFieldInfos: Seq[ViewIdFieldInfo] =
     if (isPersisted) viewIdFieldInfos.filter(_.layout.editXml != NodeSeq.Empty) else Nil
@@ -61,9 +63,11 @@ case class EntityTypeViewInfo(entityType: EntityType, application: CrudApplicati
   lazy val layoutPrefix = NamingConventions.toLayoutPrefix(entityType.entityName)
   lazy val rIdClasses: Seq[Class[_]] = detectRIdClasses(entityType.getClass)
   lazy val entityFieldInfos: List[EntityFieldInfo] = entityType.fields.map(EntityFieldInfo(_, rIdClasses, entityName, application))
+  private[generate] lazy val shallowDisplayableViewIdFieldInfos: List[ViewIdFieldInfo] = entityFieldInfos.flatMap(_.shallowDisplayableViewIdFieldInfos)
   lazy val displayableViewIdFieldInfos: List[ViewIdFieldInfo] = entityFieldInfos.flatMap(_.displayableViewIdFieldInfos)
   lazy val shortDisplayableViewIdFieldInfos: List[ViewIdFieldInfo] =
     displayableViewIdFieldInfos.filter(!_.layout.editXml.toString().contains("textMultiLine"))
+  lazy val identifyingDisplayableViewIdFieldInfos: List[ViewIdFieldInfo] = shortDisplayableViewIdFieldInfos.take(1)
   lazy val updateableViewIdFieldInfos: List[ViewIdFieldInfo] = entityFieldInfos.flatMap(_.updateableViewIdFieldInfos)
   lazy val isUpdateable: Boolean = !updateableViewIdFieldInfos.isEmpty
 }
