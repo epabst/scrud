@@ -37,7 +37,7 @@ object ViewExtractor extends Field(identityField[View])
   * @param defaultLayout the default layout used as an example and by [[com.github.scrud.android.generate.CrudUIGenerator]].
   * @author Eric Pabst (epabst@gmail.com)
   */
-abstract class ViewField[T](val defaultLayout: FieldLayout) extends DelegatingPortableField[T] { self =>
+class ViewField[T](val defaultLayout: FieldLayout, delegate: PortableField[T]) extends Field[T](delegate) { self =>
   lazy val suppressEdit: ViewField[T] = ViewField[T](defaultLayout.suppressEdit, this)
   lazy val suppressDisplay: ViewField[T] = ViewField[T](defaultLayout.suppressDisplay, this)
 
@@ -59,25 +59,20 @@ object ViewField {
   def viewId[T](rIdClass: Class[_], viewResourceIdName: String, childViewField: PortableField[T]): PortableField[T] =
     viewId(ViewRef(viewResourceIdName, detectRIdClasses(rIdClass)), childViewField)
 
-  def apply[T](defaultLayout: FieldLayout, dataField: PortableField[T]): ViewField[T] = new ViewField[T](defaultLayout) {
-    protected def delegate = dataField
-  }
+  def apply[T](defaultLayout: FieldLayout, dataField: PortableField[T]): ViewField[T] = new ViewField[T](defaultLayout, dataField)
 
-  val textView: ViewField[String] = new ViewField[String](nameLayout) {
-    val delegate = Getter[TextView,String] { v =>
-      toOption(v.getText.toString.trim)
-    }.withSetter({v => valueOpt =>
-      withViewOnUIThread(v) {
-        _.setText(valueOpt.getOrElse(""))
-      }
-    })
-
+  val textView: ViewField[String] = new ViewField[String](nameLayout, Getter[TextView,String] { v =>
+    toOption(v.getText.toString.trim)
+  }.withSetter({v => valueOpt =>
+    withViewOnUIThread(v) {
+      _.setText(valueOpt.getOrElse(""))
+    }
+  })) {
     override val toString = "textView"
   }
   def formattedTextView[T](toDisplayString: Converter[T,String], toEditString: Converter[T,String],
                            fromString: Converter[String,T], defaultLayout: FieldLayout = nameLayout): ViewField[T] =
-    new ViewField[T](defaultLayout) {
-      val delegate = Getter[TextView,T](view => toOption(view.getText.toString.trim).flatMap(fromString.convert(_))) +
+    new ViewField[T](defaultLayout, Getter[TextView,T](view => toOption(view.getText.toString.trim).flatMap(fromString.convert(_))) +
         Setter[T] {
           case UpdaterInput(view: EditText, valueOpt, _) => {
             val text = valueOpt.flatMap(toEditString.convert(_)).getOrElse("")
@@ -92,7 +87,7 @@ object ViewField {
             }
           }
         }
-
+    ) {
       override val toString = "formattedTextView"
     }
   def textViewWithInputType(inputType: String): ViewField[String] = textView.withDefaultLayout(textLayout(inputType))
@@ -119,14 +114,13 @@ object ViewField {
       }
   } + Getter((p: DatePicker) => Some(new GregorianCalendar(p.getYear, p.getMonth, p.getDayOfMonth)))
 
-  implicit val dateView: ViewField[Date] = new ViewField[Date](datePickerLayout) {
-    val delegate = formattedTextView(dateToDisplayString, dateToString, stringToDate) +
-      converted(dateToCalendar, calendarPickerField, calendarToDate)
+  implicit val dateView: ViewField[Date] = new ViewField[Date](datePickerLayout,
+    formattedTextView(dateToDisplayString, dateToString, stringToDate) +
+        converted(dateToCalendar, calendarPickerField, calendarToDate)) {
     override val toString = "dateView"
   }
 
-  val calendarDateView: ViewField[Calendar] = new ViewField[Calendar](datePickerLayout) {
-    val delegate = converted(calendarToDate, dateView, dateToCalendar)
+  val calendarDateView: ViewField[Calendar] = new ViewField[Calendar](datePickerLayout, converted(calendarToDate, dateView, dateToCalendar)) {
     override val toString = "calendarDateView"
   }
 

@@ -18,43 +18,41 @@ import com.github.scrud.android.util.ViewUtil._
   * @author Eric Pabst (epabst@gmail.com)
   */
 case class EntityView(entityName: EntityName)
-  extends ViewField[ID](FieldLayout(displayXml = NodeSeq.Empty, editXml = <Spinner android:drawSelectorOnTop = "true"/>)) {
-
-  private object AndroidUIElement {
-    def unapply(target: AnyRef): Option[AnyRef] = target match {
-      case view: View => Some(view)
-      case activity: Activity => Some(activity)
-      case _ => None
-    }
-  }
-
-  protected val delegate = Getter[AdapterView[BaseAdapter], ID](v => Option(v.getSelectedItemId)) + Setter[ID] {
-    case UpdaterInput(adapterView: AdapterView[BaseAdapter], idOpt, UriField(Some(uri)) &&
-        CrudContextField(Some(crudContext @ AndroidCrudContext(crudActivity: CrudActivity, _, _)))) =>
-      if (idOpt.isDefined || adapterView.getAdapter == null) {
-        //don't do it again if already done from a previous time
-        if (adapterView.getAdapter == null) {
-          val entityType = crudActivity.crudApplication.entityType(entityName)
-          crudActivity.setListAdapter(adapterView, entityType, crudContext, crudActivity.contextItems.copy(uri), crudActivity,
-            crudActivity.pickLayoutFor(entityType.entityName))
-        }
-        if (idOpt.isDefined) {
-          runOnUIThread(adapterView) {
-            val adapter = adapterView.getAdapter
-            val position = (0 to (adapter.getCount - 1)).view.map(adapter.getItemId(_)).indexOf(idOpt.get)
-            adapterView.setSelection(position)
+  extends ViewField[ID](FieldLayout(displayXml = NodeSeq.Empty, editXml = <Spinner android:drawSelectorOnTop = "true"/>),
+    Getter[AdapterView[BaseAdapter], ID](v => Option(v.getSelectedItemId)) + Setter[ID] {
+      case UpdaterInput(adapterView: AdapterView[BaseAdapter], idOpt, UriField(Some(uri)) &&
+          CrudContextField(Some(crudContext @ AndroidCrudContext(crudActivity: CrudActivity, _, _)))) =>
+        if (idOpt.isDefined || adapterView.getAdapter == null) {
+          //don't do it again if already done from a previous time
+          if (adapterView.getAdapter == null) {
+            val entityType = crudActivity.crudApplication.entityType(entityName)
+            crudActivity.setListAdapter(adapterView, entityType, crudContext, crudActivity.contextItems.copy(uri), crudActivity,
+              crudActivity.pickLayoutFor(entityType.entityName))
+          }
+          if (idOpt.isDefined) {
+            runOnUIThread(adapterView) {
+              val adapter = adapterView.getAdapter
+              val position = (0 to (adapter.getCount - 1)).view.map(adapter.getItemId(_)).indexOf(idOpt.get)
+              adapterView.setSelection(position)
+            }
           }
         }
-      }
-    case UpdaterInput(AndroidUIElement(uiElement), idOpt, input @ UriField(Some(baseUri)) &&
-        CrudContextField(Some(crudContext @ AndroidCrudContext(crudActivity: CrudActivity, _, _)))) =>
-      val uriOpt = idOpt.map(baseUri / _)
-      val updaterInput = UpdaterInput(uiElement, input)
-      val entityType = crudActivity.crudApplication.entityType(entityName)
-      uriOpt.map(crudActivity.populateFromUri(entityType, _, updaterInput)).getOrElse {
-        entityType.defaultValue.update(updaterInput)
-      }
-  }
-
+      case UpdaterInput(AndroidUIElement(uiElement), idOpt, input @ UriField(Some(baseUri)) &&
+          CrudContextField(Some(crudContext @ AndroidCrudContext(crudActivity: CrudActivity, _, _)))) =>
+        val uriOpt = idOpt.map(baseUri / _)
+        val updaterInput = UpdaterInput(uiElement, input)
+        val entityType = crudActivity.crudApplication.entityType(entityName)
+        uriOpt.map(crudActivity.populateFromUri(entityType, _, updaterInput)).getOrElse {
+          entityType.defaultValue.update(updaterInput)
+        }
+    }) {
   override lazy val toString = "EntityView(" + entityName + ")"
+}
+
+private object AndroidUIElement {
+  def unapply(target: AnyRef): Option[AnyRef] = target match {
+    case view: View => Some(view)
+    case activity: Activity => Some(activity)
+    case _ => None
+  }
 }
