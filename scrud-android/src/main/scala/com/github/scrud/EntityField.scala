@@ -12,10 +12,8 @@ import scala.Some
  * @author Eric Pabst (epabst@gmail.com)
  */
 case class EntityField[E <: EntityType](entityName: EntityName, fieldToGetIdElsewhere: PortableField[ID] = PortableField.emptyField)
-    extends DelegatingPortableField[ID] {
+    extends Field[ID](fieldToGetIdElsewhere + entityName.UriPathId) {
   val fieldName = EntityField.fieldName(entityName)
-
-  protected val delegate = fieldToGetIdElsewhere + entityName.UriPathId
 
   override val toString = "EntityField(" + entityName + ", " + fieldToGetIdElsewhere + ")"
 

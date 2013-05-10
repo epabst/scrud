@@ -62,25 +62,18 @@ object CursorField {
 import CursorField._
 
 /** Also supports accessing a scala Map (mutable.Map for writing) using the same name. */
-class CursorField[T](val name: String, val dataVersion: Int = 1)(implicit val persistedType: PersistedType[T]) extends DelegatingPortableField[T] with Logging {
-  protected val delegate = Getter.single[T] {
-    case cursor: Cursor if cursor.getColumnIndex(columnName) >= 0 =>
-      persistedType.getValue(cursor, cursor.getColumnIndex(columnName))
-  } + Setter((c: ContentValues) => (value: T) => persistedType.putValue(c, columnName, value), (c: ContentValues) => c.putNull(columnName)) +
-      Getter.single {
-        case c: ContentValues if c.containsKey(columnName) => persistedType.getValue(c, columnName)
-      } + bundleField[T](name)
+class CursorField[T](val name: String, val dataVersion: Int, val columnName: String)(implicit val persistedType: PersistedType[T])
+    extends Field[T](Getter.single[T] {
+        case cursor: Cursor if cursor.getColumnIndex(columnName) >= 0 =>
+          persistedType.getValue(cursor, cursor.getColumnIndex(columnName))
+      } + Setter((c: ContentValues) => (value: T) => persistedType.putValue(c, columnName, value), (c: ContentValues) => c.putNull(columnName)) +
+          Getter.single {
+            case c: ContentValues if c.containsKey(columnName) => persistedType.getValue(c, columnName)
+          } + bundleField[T](name)
+    ) with Logging {
 
-  lazy val columnName = SQLiteUtil.toNonReservedWord(name)
-
-  private def getFromCursor(cursor: Cursor) = {
-    val columnIndex = cursor.getColumnIndex(columnName)
-    if (columnIndex >= 0) {
-      persistedType.getValue(cursor, columnIndex)
-    } else {
-      warn("column not in Cursor: " + columnName)
-      None
-    }
+  def this(name: String, dataVersion: Int = 1) {
+    this(name, dataVersion, SQLiteUtil.toNonReservedWord(name))
   }
 
   override val toString = "persisted(\"" + name + "\")"
