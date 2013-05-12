@@ -14,12 +14,10 @@ object PlatformIndependentField {
    * Defines a field value that should be used when the real data isn't ready to display yet.
    * It is activated by copying from [[com.github.scrud.LoadingIndicator]].
    */
-  def loadingIndicator[T](value: => T): PortableField[T] = new SingleGetter[T] {
-    val singleGetter: PartialFunction[AnyRef,Option[T]] = {
-      case LoadingIndicator =>
-        Some(value)
-    }
-
+  def loadingIndicator[T](value: => T): PortableField[T] = new SingleGetter[T]({
+    case LoadingIndicator =>
+      Some(value)
+  }) {
     override val toString = "loadingValue(" + value + ")"
   }
 }
