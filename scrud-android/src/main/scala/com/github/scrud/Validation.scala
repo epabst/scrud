@@ -1,16 +1,13 @@
 package com.github.scrud
 
 import com.github.triangle.{Updater, UpdaterInput}
-import scala.{PartialFunction, AnyRef}
 
 /** A PortableField for validating data.  It updates a ValidationResult using a value.
   * @author Eric Pabst (epabst@gmail.com)
   */
-class Validation[T](isValid: Option[T] => Boolean) extends Updater[T] {
-  def updater[S <: AnyRef]: PartialFunction[UpdaterInput[S,T],S] = {
-    case UpdaterInput(result: ValidationResult, valueOpt, _) => (result + isValid(valueOpt)).asInstanceOf[S]
-  }
-}
+class Validation[T](isValid: Option[T] => Boolean) extends Updater[T]({
+  case UpdaterInput(result: ValidationResult, valueOpt, _) => (result + isValid(valueOpt))
+})
 
 object Validation {
   def apply[T](isValid: Option[T] => Boolean): Validation[T] = new Validation[T](isValid)
