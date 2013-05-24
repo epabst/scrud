@@ -32,7 +32,7 @@ class CapturedImageViewSpec extends MustMatchers with MockitoSugar {
     stub(outerView.findViewById(TheViewId)).toReturn(view)
     stub(intent.getData).toReturn(uri)
     field.getter(GetterInput(OperationResponse(TheViewId, intent), outerView)) must be (Some(uri))
-    verify(view, never()).getTag(CapturedImageView.DefaultValueTagKey)
+    verify(view, never()).getTag(ImageViewFieldHelper.DefaultValueTagKey)
   }
 
   @Test
@@ -59,7 +59,7 @@ class CapturedImageViewSpec extends MustMatchers with MockitoSugar {
     val view = mock[ImageView]
     stub(outerView.getId).toReturn(TheViewId)
     stub(outerView.findViewById(TheViewId)).toReturn(view)
-    stub(view.getTag(CapturedImageView.DefaultValueTagKey)).toReturn("file://foo/bar.jpg")
+    stub(view.getTag(ImageViewFieldHelper.DefaultValueTagKey)).toReturn("file://foo/bar.jpg")
     field.getter(GetterInput(OperationResponse(TheViewId, null), outerView)) must be (Some(Uri.parse("file://foo/bar.jpg")))
   }
 }

@@ -5,13 +5,13 @@ import android.widget.ImageView
 import com.github.scrud.android.res.R
 import com.github.triangle._
 import com.github.scrud.CrudContextField
-import xml.NodeSeq
 import com.github.scrud.android.util.ImageViewLoader
+import scala.xml.NodeSeq
 
 object ImageViewField extends ImageViewField(new FieldLayout {
   val displayXml = <ImageView android:adjustViewBounds="true"/>
   val editXml = NodeSeq.Empty
-}, new ImageViewLoader())
+}, new ImageViewLoader(), PortableField.emptyField)
 
 /** A ViewField for an image to be displayed.
   * @author Eric Pabst (epabst@gmail.com)
