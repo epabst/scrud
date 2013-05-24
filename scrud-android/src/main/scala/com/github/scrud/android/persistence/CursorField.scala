@@ -72,8 +72,8 @@ class CursorField[T](val name: String, val dataVersion: Int, val columnName: Str
           } + bundleField[T](name)
     ) with Logging {
 
-  def this(name: String, dataVersion: Int = 1) {
-    this(name, dataVersion, SQLiteUtil.toNonReservedWord(name))
+  def this(name: String, dataVersion: Int = 1)(implicit persistedType: PersistedType[T]) {
+    this(name, dataVersion, SQLiteUtil.toNonReservedWord(name))(persistedType)
   }
 
   override val toString = "persisted(\"" + name + "\")"
