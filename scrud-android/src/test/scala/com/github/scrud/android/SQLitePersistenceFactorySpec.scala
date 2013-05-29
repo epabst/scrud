@@ -18,7 +18,7 @@ import res.R
 import scala.collection._
 import org.mockito.Mockito
 import Mockito._
-import scrud.util.{MutableListenerSet, CrudMockitoSugar}
+import scrud.util.CrudMockitoSugar
 import com.github.scrud._
 import com.github.scrud.EntityName
 import state.ActivityStateHolder
@@ -58,8 +58,6 @@ class SQLitePersistenceFactorySpec extends MustMatchers with CrudMockitoSugar wi
     val allCrudTypes = List(TestCrudType)
   }
   val application = TestApplication
-  val listenerSet = mock[MutableListenerSet[DataListener]]
-  when(listenerSet.listeners).thenReturn(Set.empty[DataListener])
 
   @Test
   def shouldUseCorrectColumnNamesForFindAll() {
@@ -83,7 +81,7 @@ class SQLitePersistenceFactorySpec extends MustMatchers with CrudMockitoSugar wi
     val cursors = mutable.Buffer[Cursor]()
     val database = new GeneratedDatabaseSetup(crudContext, persistenceFactory).getWritableDatabase
     val thinPersistence = new SQLiteThinEntityPersistence(TestEntityType, database, crudContext)
-    val persistence = new CrudPersistenceUsingThin(TestEntityType, thinPersistence, crudContext, listenerSet) {
+    val persistence = new CrudPersistenceUsingThin(TestEntityType, thinPersistence) {
       override def findAll(uri: UriPath) = {
         val result = super.findAll(uri)
         val CursorStream(cursor, _) = result

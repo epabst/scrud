@@ -2,12 +2,13 @@ package com.github.scrud.persistence
 
 import com.github.scrud.platform.PlatformTypes._
 import com.github.triangle.Logging
-import com.github.scrud.util.{Common, ListenerSet}
+import com.github.scrud.util.{MicrotestCompatible, Common, ListenerSet}
 import com.github.scrud.{IdPk, UriPath, EntityType}
 
 /** An EntityPersistence for a CrudType.
   * @author Eric Pabst (epabst@gmail.com)
   */
+@MicrotestCompatible(testWith = classOf[CrudPersistenceUsingThin], notes = "")
 trait CrudPersistence extends EntityPersistence with ListenerSet[DataListener] with Logging {
   override protected lazy val logTag: String = Common.tryToEvaluate(entityType.logTag).getOrElse(Common.logTag)
 
