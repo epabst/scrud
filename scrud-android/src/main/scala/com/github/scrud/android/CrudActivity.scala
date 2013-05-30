@@ -30,6 +30,7 @@ import scala.collection.mutable
 import com.github.scrud.android.persistence.{EntityTypePersistedInfo, ContentQuery}
 import java.util.concurrent.ConcurrentHashMap
 import scala.collection.JavaConversions.asScalaConcurrentMap
+import com.github.scrud.android.util.ViewUtil.withViewOnUIThread
 
 /** A generic Activity for CRUD operations
   * @author Eric Pabst (epabst@gmail.com)
@@ -441,9 +442,12 @@ class CrudActivity extends FragmentActivity with OptionsMenuActivity with Loader
     val entityTypePersistedInfo = EntityTypePersistedInfo(entityType)
     val uri = toUri(contextItems.currentUriPath, crudContext.persistenceFactoryMapping)
     val adapter = new EntityCursorAdapter(entityType, contextItems, new ViewInflater(itemLayout, activity.getLayoutInflater), null)
-    adapterView.setAdapter(adapter.asInstanceOf[A])
-    cursorLoaderDataList.append(CursorLoaderData(ContentQuery(uri, entityTypePersistedInfo.queryFieldNames), adapter))
-    Option(getSupportLoaderManager).foreach(_.initLoader(cursorLoaderDataList.size - 1, null, this))
+    val cursorLoaderData = CursorLoaderData(ContentQuery(uri, entityTypePersistedInfo.queryFieldNames), adapter)
+    withViewOnUIThread(adapterView) { adapterView =>
+      adapterView.setAdapter(adapter.asInstanceOf[A])
+      cursorLoaderDataList.append(cursorLoaderData)
+      Option(getSupportLoaderManager).foreach(_.initLoader(cursorLoaderDataList.size - 1, null, this))
+    }
   }
 
   def onCreateLoader(id: Int, args: Bundle) = {
