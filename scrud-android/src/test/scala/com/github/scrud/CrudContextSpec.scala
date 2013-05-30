@@ -3,7 +3,7 @@ package com.github.scrud
 import android.{CrudApplicationForTesting, CrudTypeForTesting}
 import org.scalatest.FunSpec
 import org.mockito.Mockito._
-import persistence.CrudPersistence
+import com.github.scrud.persistence.ThinPersistence
 import org.scalatest.mock.MockitoSugar
 
 /**
@@ -15,7 +15,7 @@ import org.scalatest.mock.MockitoSugar
 class CrudContextSpec extends FunSpec with MockitoSugar {
   describe("withPersistence") {
     it("must close persistence") {
-      val persistence = mock[CrudPersistence]
+      val persistence = mock[ThinPersistence]
       val _crudType = new CrudTypeForTesting(persistence)
       val application = new CrudApplicationForTesting(_crudType)
       val crudContext = new SimpleCrudContext(application)
@@ -24,7 +24,7 @@ class CrudContextSpec extends FunSpec with MockitoSugar {
     }
 
     it("must close persistence on failure") {
-      val persistence = mock[CrudPersistence]
+      val persistence = mock[ThinPersistence]
       val _crudType = new CrudTypeForTesting(persistence)
       val application = new CrudApplicationForTesting(_crudType)
       val crudContext = new SimpleCrudContext(application)

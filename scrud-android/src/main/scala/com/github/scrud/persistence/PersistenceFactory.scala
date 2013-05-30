@@ -1,12 +1,13 @@
 package com.github.scrud.persistence
 
 import com.github.scrud.{EntityName, UriPath, EntityType, CrudContext}
-import com.github.scrud.util.ListenerHolder
+import com.github.scrud.util.{MicrotestCompatible, ListenerHolder}
 
 /** A factory for EntityPersistence specific to a storage type such as SQLite.
   * It shouldn't define code for any of its overridable methods to avoid bugs in [[com.github.scrud.persistence.DelegatingPersistenceFactory]].
   * @author Eric Pabst (epabst@gmail.com)
   */
+@MicrotestCompatible(use = "new CrudApplicationForTesting(new CrudTypeForTesting(...)).persistenceFactory(...)")
 abstract class PersistenceFactory {
   /** Indicates if an entity can be saved. */
   def canSave: Boolean

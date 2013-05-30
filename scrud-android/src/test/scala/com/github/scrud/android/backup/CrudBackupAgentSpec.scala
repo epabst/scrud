@@ -20,7 +20,7 @@ import com.github.scrud.EntityName
 import scala.Some
 import org.mockito.stubbing.Answer
 
-/** A test for [[CrudBackupAgent]].
+/** A test for [[com.github.scrud.android.backup.CrudBackupAgent]].
   * @author Eric Pabst (epabst@gmail.com)
   */
 @RunWith(classOf[CustomRobolectricTestRunner])

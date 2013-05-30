@@ -8,7 +8,7 @@ import com.github.scrud.{IdPk, UriPath, EntityType}
 /** An EntityPersistence for a CrudType.
   * @author Eric Pabst (epabst@gmail.com)
   */
-@MicrotestCompatible(testWith = classOf[CrudPersistenceUsingThin], notes = "")
+@MicrotestCompatible(use = "new CrudPersistenceUsingThin")
 trait CrudPersistence extends EntityPersistence with ListenerSet[DataListener] with Logging {
   override protected lazy val logTag: String = Common.tryToEvaluate(entityType.logTag).getOrElse(Common.logTag)
 

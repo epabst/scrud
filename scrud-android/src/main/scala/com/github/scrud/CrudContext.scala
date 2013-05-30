@@ -5,8 +5,8 @@ import com.github.triangle.{Logging, Field}
 import com.github.triangle.PortableField._
 import persistence.{PersistenceFactory, PersistenceFactoryMapping, DataListener, CrudPersistence}
 import platform.{PlatformTypes, PlatformDriver}
-import state.{StateHolder, State}
-import util.ListenerHolder
+import com.github.scrud.state.{SimpleStateHolder, StateHolder}
+import com.github.scrud.util.{MicrotestCompatible, ListenerHolder}
 import collection.mutable
 import java.util.concurrent.ConcurrentHashMap
 import scala.collection.JavaConversions._
@@ -16,6 +16,7 @@ import scala.collection.JavaConversions._
  * A context's stateHolder which can store data for the duration of an Application.
  * @author Eric Pabst (epabst@gmail.com)
  */
+@MicrotestCompatible(use = "SimpleCrudContext(application)")
 trait CrudContext extends Notification with Logging {
   protected lazy val logTag = application.logTag
 
@@ -102,9 +103,7 @@ trait CrudContext extends Notification with Logging {
 }
 
 case class SimpleCrudContext(application: CrudApplication) extends CrudContext {
-  val stateHolder = new StateHolder {
-    val applicationState = new State
-  }
+  val stateHolder = new SimpleStateHolder
 
   /** The ISO 2 country such as "US". */
   lazy val isoCountry = java.util.Locale.getDefault.getCountry

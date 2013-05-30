@@ -87,29 +87,29 @@ class CrudActivitySpec extends CrudMockitoSugar with MustMatchers {
 
   @Test
   def mustNotCopyFromParentEntityIfUriPathIsInsufficient() {
-    val persistenceFactory = mock[PersistenceFactory]
+    val persistenceForParent = mock[ThinPersistence]
     val parentEntityName = EntityName("Parent")
-    val entityType = new EntityTypeForTesting {
+    val entityType1 = new EntityTypeForTesting {
       override lazy val parentEntityNames = Seq(parentEntityName)
     }
-    val crudType = new CrudType(entityType, persistenceFactory)
+    val crudType = new CrudTypeForTesting(entityType1)
     val parentEntityType = new EntityTypeForTesting(parentEntityName)
-    val parentCrudType = new CrudType(parentEntityType, persistenceFactory)
+    val parentCrudType = new CrudTypeForTesting(parentEntityType, persistenceForParent)
     val application = new CrudApplicationForTesting(crudType, parentCrudType)
-    stub(persistenceFactory.maySpecifyEntityInstance(eql(entityType.entityName), any())).toReturn(false)
 
-    val activity = new CrudActivityForTesting(application)
+    val activity = new CrudActivityForTesting(application) {
+      override def currentUriPath = UriPath(entityType1.entityName)
+    }
     activity.populateFromParentEntities()
-    verify(persistenceFactory, never()).createEntityPersistence(any(), any())
+    verify(persistenceForParent, never()).findAll(any())
   }
 
   @Test
   def shouldHaveCorrectOptionsMenu() {
-    val persistence = mock[CrudPersistence]
+    val persistence = mock[ThinPersistence]
     val entityType = new EntityTypeForTesting
     val crudType = new CrudTypeForTesting(entityType, persistence)
     val application = new CrudApplicationForTesting(crudType)
-    when(persistence.entityType).thenReturn(entityType)
     when(persistence.findAll(any())).thenReturn(Seq(Map[String,Any](CursorField.idFieldName -> Some(400L), "name" -> Some("Bob"), "age" -> Some(25), "uri" -> None)))
     val activity = new CrudActivityForTesting(application) {
       override lazy val currentAction = UpdateActionName
@@ -169,12 +169,10 @@ class CrudActivitySpec extends CrudMockitoSugar with MustMatchers {
 
   @Test
   def shouldRefreshOnResume() {
-    val persistenceFactory = mock[PersistenceFactory]
-    val persistence = mock[CrudPersistence]
-    stub(persistenceFactory.createEntityPersistence(anyObject(), anyObject())).toReturn(persistence)
+    val persistence = mock[ThinPersistence]
     when(persistence.findAll(any())).thenReturn(Seq(Map[String,Any]("name" -> "Bob", "age" -> 25)))
     val entityType = new EntityTypeForTesting
-    val _crudType = new CrudTypeForTesting(entityType, persistenceFactory)
+    val _crudType = new CrudTypeForTesting(entityType, persistence)
     val application = new CrudApplicationForTesting(_crudType)
     class SomeCrudListActivity extends CrudActivityForTesting(application) {
       override lazy val entityType = _crudType.entityType

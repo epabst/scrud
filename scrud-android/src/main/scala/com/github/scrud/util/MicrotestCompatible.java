@@ -9,7 +9,5 @@ package com.github.scrud.util;
  *         Time: 5:34 PM
  */
 public @interface MicrotestCompatible {
-  Class testWith();
-  String notes() default "";
-  String value() default "";
+  String use() default "self";
 }

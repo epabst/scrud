@@ -17,9 +17,13 @@ import com.github.triangle.Getter
 import com.github.triangle.converter.Converter._
 import com.github.scrud.android.view.FieldLayout._
 import android.content.Context
-import xml.NodeSeq
 import com.github.scrud.EntityName
 import com.github.scrud.android.CustomRobolectricTestRunner
+import org.mockito.Matchers
+import org.mockito.stubbing.Answer
+import org.mockito.invocation.InvocationOnMock
+import scala.xml.NodeSeq
+import scala.reflect.Manifest
 
 /** A behavior specification for [[com.github.scrud.android.view.ViewField]].
   * @author Eric Pabst (epabst@gmail.com)
@@ -53,9 +57,9 @@ class ViewFieldSpec extends MustMatchers with MockitoSugar {
   @Test
   def itMustClearTheViewIfEmpty() {
     val viewGroup = mock[View]
-    val view1 = mock[TextView]
-    val view2 = mock[TextView]
-    val view3 = mock[TextView]
+    val view1 = mockView[TextView]
+    val view2 = mockView[TextView]
+    val view3 = mockView[TextView]
     stub(viewGroup.findViewById(101)).toReturn(view1)
     stub(viewGroup.findViewById(102)).toReturn(view2)
     stub(viewGroup.findViewById(103)).toReturn(view3)
@@ -71,10 +75,22 @@ class ViewFieldSpec extends MustMatchers with MockitoSugar {
     verify(view3).setText("")
   }
 
+  private def mockView[T <: View](implicit manifest: Manifest[T]): T = {
+    val view = mock[T]
+    when(view.post(Matchers.any())).thenAnswer(new Answer[Boolean] {
+      def answer(p1: InvocationOnMock) = {
+        val runnable = p1.getArguments.apply(0).asInstanceOf[Runnable]
+        runnable.run()
+        true
+      }
+    })
+    view
+  }
+
   @Test
   def itMustOnlyCopyToAndFromViewByIdIfTheRightType() {
     val group = mock[View]
-    val view = mock[TextView]
+    val view = mockView[TextView]
     stub(group.findViewById(56)).toReturn(view)
     val stringField = Getter[MyEntity,String](e => e.string).withSetter(e => e.string = _, noSetterForEmpty) +
       viewId(56, Getter[Spinner,String](_ => throw new IllegalStateException("must not be called")).
@@ -193,7 +209,7 @@ class ViewFieldSpec extends MustMatchers with MockitoSugar {
   def formattedTextViewMustUseToEditStringConverterForEditTextView() {
     val viewField = formattedTextView((s: String) => Some(s + " on display"), (s: String) => Some(s + " to edit"),
       (s: String) => Some(s), nameLayout)
-    val editView = mock[EditText]
+    val editView = mockView[EditText]
     viewField.updateWithValue(editView, Some("marbles"))
     verify(editView).setText("marbles to edit")
   }
@@ -202,7 +218,7 @@ class ViewFieldSpec extends MustMatchers with MockitoSugar {
   def formattedTextViewMustUseToDisplayStringConverterForTextView() {
     val viewField = formattedTextView((s: String) => Some(s + " on display"), (s: String) => Some(s + " to edit"),
       (s: String) => Some(s), nameLayout)
-    val textView = mock[TextView]
+    val textView = mockView[TextView]
     viewField.updateWithValue(textView, Some("marbles"))
     verify(textView).setText("marbles on display")
   }
@@ -211,7 +227,7 @@ class ViewFieldSpec extends MustMatchers with MockitoSugar {
   def formattedTextViewMustTrimAndUseFromStringConverterWhenGetting() {
     val viewField = formattedTextView((s: String) => Some(s + " on display"), (s: String) => Some(s + " to edit"),
       (s: String) => Some("parsed " + s), nameLayout)
-    val textView = mock[TextView]
+    val textView = mockView[TextView]
     stub(textView.getText).toReturn("  given text   ")
     viewField.getValue(textView) must be (Some("parsed given text"))
   }

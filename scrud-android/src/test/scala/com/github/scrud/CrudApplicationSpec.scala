@@ -7,7 +7,7 @@ import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import org.scalatest.matchers.MustMatchers
 import org.scalatest.FunSpec
-import persistence.CrudPersistence
+import com.github.scrud.persistence.{CrudPersistenceUsingThin, ThinPersistence}
 import platform.TestingPlatformDriver
 import org.scalatest.mock.MockitoSugar
 import org.mockito.Mockito._
@@ -103,18 +103,20 @@ class CrudApplicationSpec extends FunSpec with MustMatchers with MockitoSugar {
     val entityType = new EntityTypeForTesting
 
     it("should support adding without finding") {
-      val persistence = mock[CrudPersistence]
-      val application = new CrudApplicationForTesting(entityType -> new PersistenceFactoryForTesting(persistence))
+      val persistence = mock[ThinPersistence]
+      val crudPersistence = new CrudPersistenceUsingThin(entityType, persistence)
+      val application = new CrudApplicationForTesting(entityType -> new PersistenceFactoryForTesting(crudPersistence))
       val entity = Map[String,Option[Any]]("name" -> Some("Bob"), "age" -> Some(25))
       val uri = UriPath(entityType.entityName)
       application.saveIfValid(entity, entityType, new CrudContextItems(uri, new SimpleCrudContext(application)))
       verify(persistence).save(None, Map[String,Option[Any]](CursorField.idFieldName -> None, "name" -> Some("Bob"), "age" -> Some(25), "uri" -> Some(uri.toString)))
-      verify(persistence, never()).find(uri)
+      verify(persistence, never()).findAll(uri)
     }
 
     it("should support updating") {
-      val persistence = mock[CrudPersistence]
-      val application = new CrudApplicationForTesting(entityType -> new PersistenceFactoryForTesting(persistence))
+      val persistence = mock[ThinPersistence]
+      val crudPersistence = new CrudPersistenceUsingThin(entityType, persistence)
+      val application = new CrudApplicationForTesting(entityType -> new PersistenceFactoryForTesting(crudPersistence))
       val entity = Map[String,Option[Any]]("name" -> Some("Bob"), "age" -> Some(25))
       val uri = UriPath(entityType.entityName) / 200
       application.saveIfValid(entity, entityType, new CrudContextItems(uri, new SimpleCrudContext(application)))

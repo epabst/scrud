@@ -12,12 +12,14 @@ import _root_.android.telephony.TelephonyManager
 import com.github.scrud.action.Undoable
 import com.github.scrud.persistence.PersistenceFactoryMapping
 import com.github.scrud.android.backup.CrudBackupAgent
+import com.github.scrud.util.MicrotestCompatible
 
 /**
  * The context and state for the application code to interact with.
  * A context which can store data for the duration of a single Activity.
  * @author Eric Pabst (epabst@gmail.com)
  */
+@MicrotestCompatible(use = "new AndroidCrudContextForTesting(...)")
 case class AndroidCrudContext(context: Context, stateHolder: ActivityStateHolder, application: CrudApplication) extends CrudContext with AndroidNotification {
   def this(activityContext: Context with ActivityStateHolder, application: CrudApplication) {
     this(activityContext, activityContext, application)

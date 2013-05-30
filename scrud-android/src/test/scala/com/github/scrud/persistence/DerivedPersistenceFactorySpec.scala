@@ -5,36 +5,29 @@ import org.scalatest.junit.JUnitRunner
 import org.scalatest.FunSpec
 import org.scalatest.matchers.MustMatchers
 import org.mockito.Mockito._
-import org.mockito.Matchers
-import com.github.scrud.state.{StateHolderForTesting, State}
-import com.github.scrud.util.{CrudMockitoSugar, ListenerHolder}
-import com.github.scrud.{EntityName, CrudContext, UriPath, EntityType}
+import com.github.scrud.util.CrudMockitoSugar
+import com.github.scrud._
+import com.github.scrud.EntityName
+import com.github.scrud.android.{CrudTypeForTesting, CrudApplicationForTesting}
 
 /** A specification for [[com.github.scrud.persistence.DerivedPersistenceFactory]].
   * @author Eric Pabst (epabst@gmail.com)
   */
 @RunWith(classOf[JUnitRunner])
 class DerivedPersistenceFactorySpec extends FunSpec with MustMatchers with CrudMockitoSugar {
-  val dataListenerHolder = mock[ListenerHolder[DataListener]]
-
   it("must instantiate the CrudPersistence for the delegate CrudTypes and make them available") {
     val entity1 = EntityName("entity1")
     val entity2 = EntityName("entity2")
-    val persistence1 = mock[CrudPersistence]
-    val persistence2 = mock[CrudPersistence]
+    val persistence1 = mock[ThinPersistence]
+    val persistence2 = mock[ThinPersistence]
     val factory = new DerivedPersistenceFactory[String](entity1, entity2) {
       def findAll(entityType: EntityType, uri: UriPath, crudContext: CrudContext, delegatePersistenceMap: Map[EntityName, CrudPersistence]) = {
-        delegatePersistenceMap must be (Map(entity1 -> persistence1, entity2 -> persistence2))
+        delegatePersistenceMap.keySet must be (Set(entity1, entity2))
+        delegatePersistenceMap.values.forall(_.entityType != null)
         List("findAll", "was", "called")
       }
     }
-    val crudContext = mock[CrudContext]
-    val stateHolder = new StateHolderForTesting
-    stub(crudContext.stateHolder).toReturn(stateHolder)
-    stub(crudContext.applicationState).toReturn(stateHolder.applicationState)
-    stub(crudContext.dataListenerHolder(Matchers.any[EntityName]())).toReturn(dataListenerHolder)
-    when(crudContext.openEntityPersistence(entity1)).thenReturn(persistence1)
-    when(crudContext.openEntityPersistence(entity2)).thenReturn(persistence2)
+    val crudContext = SimpleCrudContext(new CrudApplicationForTesting(new CrudTypeForTesting(entity1, persistence1), new CrudTypeForTesting(entity2, persistence2)))
     val persistence = factory.createEntityPersistence(mock[EntityType], crudContext)
     persistence.findAll(UriPath()) must be (List("findAll", "was", "called"))
   }
@@ -45,15 +38,9 @@ class DerivedPersistenceFactorySpec extends FunSpec with MustMatchers with CrudM
     val factory = new DerivedPersistenceFactory[String](entity1, entity2) {
       def findAll(entityType: EntityType, uri: UriPath, crudContext: CrudContext, delegatePersistenceMap: Map[EntityName, CrudPersistence]) = Nil
     }
-    val crudContext = mock[CrudContext]
-    val stateHolder = new StateHolderForTesting
-    stub(crudContext.stateHolder).toReturn(stateHolder)
-    stub(crudContext.applicationState).toReturn(stateHolder.applicationState)
-    stub(crudContext.dataListenerHolder(Matchers.any[EntityName]())).toReturn(dataListenerHolder)
-    val persistence1 = mock[CrudPersistence]
-    val persistence2 = mock[CrudPersistence]
-    when(crudContext.openEntityPersistence(entity1)).thenReturn(persistence1)
-    when(crudContext.openEntityPersistence(entity2)).thenReturn(persistence2)
+    val persistence1 = mock[ThinPersistence]
+    val persistence2 = mock[ThinPersistence]
+    val crudContext = SimpleCrudContext(new CrudApplicationForTesting(new CrudTypeForTesting(entity1, persistence1), new CrudTypeForTesting(entity2, persistence2)))
     val persistence = factory.createEntityPersistence(mock[EntityType], crudContext)
     persistence.close()
     verify(persistence1).close()
