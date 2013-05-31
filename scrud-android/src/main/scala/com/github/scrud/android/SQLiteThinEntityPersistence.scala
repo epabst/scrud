@@ -102,6 +102,5 @@ class SQLiteThinEntityPersistence(entityType: EntityType, database: SQLiteDataba
 
   def close() {
     cursors.map(_.close())
-    database.close()
   }
 }
