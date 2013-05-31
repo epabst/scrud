@@ -53,23 +53,23 @@ class CrudFunctionalTest extends ActivityInstrumentationTestCase2(classOf[CrudAc
 
       assertEquals(CrudOperation(Author, CrudOperationType.List), currentCrudActivity.currentCrudOperation)
 
-      solo.clickOnButton("Add Author")
-      solo.waitForView(classOf[EditText])
+      solo.clickOnText("Add Author")
+      assertTrue(solo.waitForView(classOf[EditText]))
       assertEquals(CrudOperation(Author, CrudOperationType.Create), currentCrudActivity.currentCrudOperation)
 
       copyToCurrentActivity(authorEntityType.copyFrom(Map("name" -> Some("Orson Scott Card"))))
 
       solo.goBack()
-      solo.waitForText("Saved", 1, 5000)
-      solo.waitForView(classOf[ListView])
+      assertTrue(solo.waitForText("Saved", 1, 5000))
+      assertTrue(solo.waitForView(classOf[ListView]))
       assertEquals(CrudOperation(Author, CrudOperationType.List), currentCrudActivity.currentCrudOperation)
 
       solo.clickOnText("Orson Scott Card")
-      solo.waitForView(classOf[EditText])
+      assertTrue(solo.waitForText("Book Count"))
       assertEquals(CrudOperation(Book, CrudOperationType.List), currentCrudActivity.currentCrudOperation)
 
-      solo.clickOnButton("Add Book")
-      solo.waitForActivity(classOf[CrudActivity].getSimpleName)
+      solo.clickOnText("Add Book")
+      assertTrue(solo.waitForView(classOf[EditText]))
       assertEquals(CrudOperation(Book, CrudOperationType.Create), currentCrudActivity.currentCrudOperation)
 
       solo.enterText(0, "Ender's Game")
@@ -78,18 +78,17 @@ class CrudFunctionalTest extends ActivityInstrumentationTestCase2(classOf[CrudAc
       assertTrue("There should be a default Genre", bookData.apply("genre").isDefined)
 
       solo.goBack()
-      solo.waitForText("Saved", 1, 5000)
-      solo.waitForActivity(classOf[CrudActivity].getSimpleName)
+      assertTrue(solo.waitForText("Saved", 1, 5000))
+      assertTrue(solo.waitForActivity(classOf[CrudActivity].getSimpleName))
       assertEquals(CrudOperation(Book, CrudOperationType.List), currentCrudActivity.currentCrudOperation)
 
       solo.goBack()
-      solo.waitForText("Saved", 1, 5000)
-      solo.waitForActivity(classOf[CrudActivity].getSimpleName)
+      assertTrue(solo.waitForActivity(classOf[CrudActivity].getSimpleName))
       assertEquals(CrudOperation(Author, CrudOperationType.List), currentCrudActivity.currentCrudOperation)
 
       solo.clickLongOnText("Orson Scott Card")
       solo.clickOnText("Edit Author")
-      solo.waitForActivity(classOf[CrudActivity].getSimpleName)
+      assertTrue(solo.waitForActivity(classOf[CrudActivity].getSimpleName))
       assertEquals(CrudOperation(Author, CrudOperationType.Update), currentCrudActivity.currentCrudOperation)
       assertEquals(Some("Orson Scott Card"), copyFromCurrentActivity(Author).update(Map.empty[String,Option[Any]]).apply("name"))
 
@@ -98,8 +97,8 @@ class CrudFunctionalTest extends ActivityInstrumentationTestCase2(classOf[CrudAc
       assertEquals(Some("Mark Twain"), copyFromCurrentActivity(Author).update(Map.empty[String,Option[Any]]).apply("name"))
 
       solo.goBack()
-      solo.waitForText("Saved", 1, 5000)
-      solo.waitForActivity(classOf[CrudActivity].getSimpleName)
+      assertTrue(solo.waitForText("Saved", 1, 5000))
+      assertTrue(solo.waitForActivity(classOf[CrudActivity].getSimpleName))
       assertEquals(CrudOperation(Author, CrudOperationType.List), currentCrudActivity.currentCrudOperation)
 
       solo.clickLongOnText("Mark Twain")
@@ -115,12 +114,7 @@ class CrudFunctionalTest extends ActivityInstrumentationTestCase2(classOf[CrudAc
   }
 
   private def checkForExceptionInApp(crudContext: AndroidCrudContext) {
-    LastException.get(crudContext.stateHolder).foreach {
-      lastException =>
-        throw lastException
-      //          lastException.printStackTrace(System.err)
-      //          e.initCause(lastException)
-    }
+    LastException.get(crudContext.stateHolder).foreach { throw _ }
   }
 
   def copyToCurrentActivity(portableValue: PortableValue) {
