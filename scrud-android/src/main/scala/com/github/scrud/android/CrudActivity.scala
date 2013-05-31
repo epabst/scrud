@@ -299,7 +299,7 @@ class CrudActivity extends FragmentActivity with OptionsMenuActivity with Loader
       val actions = contextMenuActions
       val info = item.getMenuInfo.asInstanceOf[AdapterContextMenuInfo]
       actions.find(_.commandId == item.getItemId) match {
-        case Some(action) => action.invoke(uriWithId(info.id), crudContext); true
+        case Some(action) => crudContext.future { action.invoke(uriWithId(info.id), crudContext) }; true
         case None => super.onContextItemSelected(item)
       }
     }
