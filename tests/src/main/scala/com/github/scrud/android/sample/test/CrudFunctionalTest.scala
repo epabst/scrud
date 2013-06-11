@@ -52,6 +52,7 @@ class CrudFunctionalTest extends ActivityInstrumentationTestCase2(classOf[CrudAc
       import application._
 
       assertEquals(CrudOperation(Author, CrudOperationType.List), currentCrudActivity.currentCrudOperation)
+      waitForAndAssertText("Book Count")
 
       solo.clickOnText("Add Author")
       assertTrue(solo.waitForView(classOf[EditText]))
@@ -60,12 +61,12 @@ class CrudFunctionalTest extends ActivityInstrumentationTestCase2(classOf[CrudAc
       copyToCurrentActivity(authorEntityType.copyFrom(Map("name" -> Some("Orson Scott Card"))))
 
       solo.goBack()
-      assertTrue(solo.waitForText("Saved", 1, 5000))
+      waitForAndAssertText("Saved")
       assertTrue(solo.waitForView(classOf[ListView]))
       assertEquals(CrudOperation(Author, CrudOperationType.List), currentCrudActivity.currentCrudOperation)
 
       solo.clickOnText("Orson Scott Card")
-      assertTrue(solo.waitForText("Book Count"))
+      waitForAndAssertText("Book Count")
       assertEquals(CrudOperation(Book, CrudOperationType.List), currentCrudActivity.currentCrudOperation)
 
       solo.clickOnText("Add Book")
@@ -78,9 +79,11 @@ class CrudFunctionalTest extends ActivityInstrumentationTestCase2(classOf[CrudAc
       assertTrue("There should be a default Genre", bookData.apply("genre").isDefined)
 
       solo.goBack()
-      assertTrue(solo.waitForText("Saved", 1, 5000))
+      waitForAndAssertText("Saved")
       assertTrue(solo.waitForActivity(classOf[CrudActivity].getSimpleName))
       assertEquals(CrudOperation(Book, CrudOperationType.List), currentCrudActivity.currentCrudOperation)
+
+      waitForAndAssertText("Ender's Game")
 
       solo.goBack()
       assertTrue(solo.waitForActivity(classOf[CrudActivity].getSimpleName))
@@ -97,7 +100,7 @@ class CrudFunctionalTest extends ActivityInstrumentationTestCase2(classOf[CrudAc
       assertEquals(Some("Mark Twain"), copyFromCurrentActivity(Author).update(Map.empty[String,Option[Any]]).apply("name"))
 
       solo.goBack()
-      assertTrue(solo.waitForText("Saved", 1, 5000))
+      waitForAndAssertText("Saved")
       assertTrue(solo.waitForActivity(classOf[CrudActivity].getSimpleName))
       assertEquals(CrudOperation(Author, CrudOperationType.List), currentCrudActivity.currentCrudOperation)
 
@@ -111,6 +114,10 @@ class CrudFunctionalTest extends ActivityInstrumentationTestCase2(classOf[CrudAc
         checkForExceptionInApp(crudContext)
         throw e
     }
+  }
+
+  private def waitForAndAssertText(expectedText: String) {
+    assertTrue("'" + expectedText + "' should appear", solo.waitForText(expectedText))
   }
 
   private def checkForExceptionInApp(crudContext: AndroidCrudContext) {
