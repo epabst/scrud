@@ -1,7 +1,8 @@
 package com.github.scrud.persistence
 
 import com.github.scrud.{EntityName, UriPath, EntityType, CrudContext}
-import com.github.scrud.util.{MicrotestCompatible, ListenerHolder}
+import com.github.scrud.util.ListenerHolder
+import com.github.quality.MicrotestCompatible
 
 /** A factory for EntityPersistence specific to a storage type such as SQLite.
   * It shouldn't define code for any of its overridable methods to avoid bugs in [[com.github.scrud.persistence.DelegatingPersistenceFactory]].

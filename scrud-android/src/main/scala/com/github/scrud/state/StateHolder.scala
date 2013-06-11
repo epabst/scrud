@@ -1,6 +1,6 @@
 package com.github.scrud.state
 
-import com.github.scrud.util.MicrotestCompatible
+import com.github.quality.MicrotestCompatible
 
 /**
  * A trait for something that has (possibly various types of) State.

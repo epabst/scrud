@@ -6,10 +6,11 @@ import com.github.triangle.PortableField._
 import persistence.{PersistenceFactory, PersistenceFactoryMapping, DataListener, CrudPersistence}
 import platform.{PlatformTypes, PlatformDriver}
 import com.github.scrud.state.{SimpleStateHolder, StateHolder}
-import com.github.scrud.util.{MicrotestCompatible, ListenerHolder}
+import com.github.scrud.util.ListenerHolder
 import collection.mutable
 import java.util.concurrent.ConcurrentHashMap
 import scala.collection.JavaConversions._
+import com.github.quality.MicrotestCompatible
 
 /**
  * The context and state for the application code to interact with.

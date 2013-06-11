@@ -2,8 +2,9 @@ package com.github.scrud.persistence
 
 import com.github.scrud.platform.PlatformTypes._
 import com.github.triangle.Logging
-import com.github.scrud.util.{MicrotestCompatible, Common, ListenerSet}
+import com.github.scrud.util.{Common, ListenerSet}
 import com.github.scrud.{IdPk, UriPath, EntityType}
+import com.github.quality.MicrotestCompatible
 
 /** An EntityPersistence for a CrudType.
   * @author Eric Pabst (epabst@gmail.com)

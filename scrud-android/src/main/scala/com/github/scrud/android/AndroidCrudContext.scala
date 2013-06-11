@@ -12,7 +12,7 @@ import _root_.android.telephony.TelephonyManager
 import com.github.scrud.action.Undoable
 import com.github.scrud.persistence.PersistenceFactoryMapping
 import com.github.scrud.android.backup.CrudBackupAgent
-import com.github.scrud.util.MicrotestCompatible
+import com.github.quality.MicrotestCompatible
 
 /**
  * The context and state for the application code to interact with.
