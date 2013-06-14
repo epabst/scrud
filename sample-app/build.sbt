@@ -16,6 +16,8 @@ AndroidKeys.useProguard in AndroidKeys.Android := true
 
 resolvers += "Local Maven Repository" at "file://"+Path.userHome.absolutePath+"/.m2/repository"
 
+libraryDependencies += "com.github.epabst.quality" % "annotations-for-quality" % "1.0-SNAPSHOT"
+
 libraryDependencies += "org.scalatest" %% "scalatest" % "1.8" % "test"
 
 libraryDependencies += "org.slf4j" % "slf4j-jdk14" % "1.6.1" % "test"
