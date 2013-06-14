@@ -38,7 +38,7 @@ class ViewIdField[T](val viewRef: ViewRef, childViewField: PortableField[T]) ext
   protected val subjectGetter: PartialFunction[AnyRef,AnyRef] = {
     case ChildView(childView) =>
       childView
-    case actionResponse @ OperationResponse(GivenViewId, _) =>
+    case actionResponse: OperationResponse if actionResponse.viewIdRespondingTo == GivenViewId =>
       actionResponse
   }
 
