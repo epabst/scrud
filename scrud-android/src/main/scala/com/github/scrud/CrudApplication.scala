@@ -15,7 +15,6 @@ import state.ApplicationConcurrentMapVal
 import util.{Common, UrgentFutureExecutor}
 import java.util.NoSuchElementException
 import scala.actors.Future
-import PortableField.toSome
 import com.github.scrud
 import scrud.android.{CrudType,NamingConventions,res}
 import scrud.android.view.AndroidResourceAnalyzer._
@@ -87,14 +86,14 @@ abstract class CrudApplication(val platformDriver: PlatformDriver) extends Persi
     None, None)
 
   def commandToAddItem(entityName: EntityName): Command = Command(CommandId("add_" + entityNameLayoutPrefixFor(entityName)),
-    R.drawable.ic_menu_add,
-    getStringKey("add_" + entityNameLayoutPrefixFor(entityName)))
+    Some(R.drawable.ic_menu_add),
+    Some(getStringKey("add_" + entityNameLayoutPrefixFor(entityName))))
 
   def commandToEditItem(entityName: EntityName): Command = Command(CommandId("edit_" + entityNameLayoutPrefixFor(entityName)),
-    R.drawable.ic_menu_edit, getStringKey("edit_" + entityNameLayoutPrefixFor(entityName)))
+    Some(R.drawable.ic_menu_edit), Some(getStringKey("edit_" + entityNameLayoutPrefixFor(entityName))))
 
   def commandToDeleteItem(entityName: EntityName): Command = Command(CommandId("delete_" + entityNameLayoutPrefixFor(entityName)),
-    R.drawable.ic_menu_delete, res.R.string.delete_item)
+    Some(R.drawable.ic_menu_delete), Some(res.R.string.delete_item))
 
   def displayLayoutFor(entityName: EntityName): Option[LayoutKey] = findResourceIdWithName(rLayoutClasses, entityNameLayoutPrefixFor(entityName) + "_display")
   def hasDisplayPage(entityName: EntityName) = displayLayoutFor(entityName).isDefined

@@ -2,7 +2,6 @@ package com.github.scrud.android.view
 
 import org.junit.runner.RunWith
 import org.scalatest.matchers.MustMatchers
-import com.github.triangle.PortableField._
 import org.junit.Test
 import org.scalatest.mock.MockitoSugar
 import android.widget._
@@ -32,7 +31,7 @@ class EnumerationViewSpec extends MustMatchers with MockitoSugar {
     val adapterView = new Spinner(context)
     enumerationView.updateWithValue(adapterView, Some(MyEnum.C))
     val adapter = adapterView.getAdapter
-    (0 to (adapter.getCount - 1)).toList.map(adapter.getItem(_)) must be (List(MyEnum.A, MyEnum.B, MyEnum.C))
+    (0 to (adapter.getCount - 1)).toList.map(adapter.getItem) must be (List(MyEnum.A, MyEnum.B, MyEnum.C))
   }
 
   @Test
@@ -40,13 +39,13 @@ class EnumerationViewSpec extends MustMatchers with MockitoSugar {
     val adapterView = new Spinner(context)
     enumerationView.updateWithValue(adapterView, None)
     val adapter = adapterView.getAdapter
-    (0 to (adapter.getCount - 1)).toList.map(adapter.getItem(_)) must be (List(MyEnum.A, MyEnum.B, MyEnum.C))
+    (0 to (adapter.getCount - 1)).toList.map(adapter.getItem) must be (List(MyEnum.A, MyEnum.B, MyEnum.C))
   }
 
   @Test
   def itMustSetThePositionCorrectly() {
     val adapterView = new Spinner(context)
-    enumerationView.updateWithValue(adapterView, MyEnum.C)
+    enumerationView.updateWithValue(adapterView, Some(MyEnum.C))
     adapterView.getSelectedItemPosition must be (2)
   }
 

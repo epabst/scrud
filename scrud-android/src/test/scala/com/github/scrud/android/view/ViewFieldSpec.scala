@@ -43,7 +43,7 @@ class ViewFieldSpec extends MustMatchers with MockitoSugar {
     val stringField =
       persisted[String]("name") +
       viewId(101, textView) +
-      viewId(102, Getter[MyView,String](v => v.status).withSetter(v => v.status = _, noSetterForEmpty))
+      viewId(102, Getter[MyView,String](v => Some(v.status)).withSetter(v => v.status = _, noSetterForEmpty))
     stringField must not be (null)
   }
 
@@ -92,7 +92,7 @@ class ViewFieldSpec extends MustMatchers with MockitoSugar {
     val group = mock[View]
     val view = mockView[TextView]
     stub(group.findViewById(56)).toReturn(view)
-    val stringField = Getter[MyEntity,String](e => e.string).withSetter(e => e.string = _, noSetterForEmpty) +
+    val stringField = Getter[MyEntity,String](e => Some(e.string)).withSetter(e => e.string = _, noSetterForEmpty) +
       viewId(56, Getter[Spinner,String](_ => throw new IllegalStateException("must not be called")).
         withSetter(_ => throw new IllegalStateException("must not be called")))
     val myEntity1 = new MyEntity("my1", 1)
@@ -102,7 +102,7 @@ class ViewFieldSpec extends MustMatchers with MockitoSugar {
 
   @Test
   def itMustOnlyCopyToAndFromViewByIdIfIdIsFound() {
-    val stringField = Getter[MyEntity,String](e => e.string).withSetter(e => e.string = _, noSetterForEmpty) +
+    val stringField = Getter[MyEntity,String](e => Some(e.string)).withSetter(e => e.string = _, noSetterForEmpty) +
       viewId(56, Getter[Spinner,String](_ => throw new IllegalStateException("must not be called")).
         withSetter(_ => throw new IllegalStateException("must not be called")))
     val myEntity1 = new MyEntity("my1", 1)
@@ -123,7 +123,7 @@ class ViewFieldSpec extends MustMatchers with MockitoSugar {
 
   @Test
   def itMustHandleUnparseableValues() {
-    val intField = intView + Getter[MyEntity,Int](e => e.number).withSetter(e => e.number = _, noSetterForEmpty)
+    val intField = intView + Getter[MyEntity,Int](e => Some(e.number)).withSetter(e => e.number = _, noSetterForEmpty)
     val view = new TextView(context)
     view.setText("twenty")
     intField.getValue(view) must be (None)

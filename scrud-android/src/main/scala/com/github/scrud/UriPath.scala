@@ -62,5 +62,5 @@ object UriPath {
     UriPath(path: _*)
   }
 
-  def uriIdField(entityName: EntityName): TargetedGetter[UriPath,ID] = Getter[UriPath,ID](_.findId(entityName))
+  def uriIdField(entityName: EntityName): TargetedGetter[UriPath,ID] = Getter[UriPath,ID] { _.findId(entityName) }
 }
