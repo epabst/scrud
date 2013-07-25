@@ -44,9 +44,9 @@ object ViewIdField {
   private def findViewById(parent: View, viewRef: ViewRef): Option[View] = {
     // uses the "Alternative to the ViewHolder" pattern: http://www.screaming-penguin.com/node/7767#comment-16978
     viewRef.viewKeyOpt.flatMap(id => Option(parent.getTag(id).asInstanceOf[View]).orElse {
-      val foundView = Option(parent.findViewById(id))
-      foundView.foreach(parent.setTag(id, _))
-      foundView
+      val foundViewOpt = Option(parent.findViewById(id))
+      foundViewOpt.foreach(parent.setTag(id, _))
+      foundViewOpt
     })
   }
 }
