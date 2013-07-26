@@ -7,25 +7,34 @@ import com.github.triangle._
 import com.github.scrud.android.action.OperationResponse
 
 /** PortableField for a View resource within a given parent View */
-class ViewIdField[T](val viewRef: ViewRef, childViewField: PortableField[T])
-    extends NestedField[T]({
-      val givenViewId = viewRef.viewKeyOpt.getOrElse(View.NO_ID)
-      val responsePartialFunction: PartialFunction[AnyRef,Option[AnyRef]] = {
-        case actionResponse: OperationResponse if actionResponse.viewIdRespondingTo == givenViewId =>
-          Some(actionResponse)
-      }
-      Getter.single[AnyRef](new PartialFunct[AnyRef,Option[View]] {
+class ViewIdField[T] private (val viewRef: ViewRef, childViewField: PortableField[T],
+                              actionResponseGetter: PortableField[AnyRef], nestedViewGetter: PortableField[AnyRef])
+    extends Field[T](new NestedField[T](actionResponseGetter, childViewField) +
+        new NestedField[T](nestedViewGetter, childViewField)) with FieldWithDelegates[T] {
+
+  def this(viewRef: ViewRef, childViewField: PortableField[T]) {
+    this(viewRef, childViewField,
+      Getter.single[AnyRef] {
+        val givenViewId = viewRef.viewKeyOpt.getOrElse(View.NO_ID)
+        PartialFunct {
+          case actionResponse: OperationResponse if actionResponse.viewIdRespondingTo == givenViewId =>
+            Some(actionResponse)
+        }
+      },
+      Getter.single[AnyRef](new PartialFunct[AnyRef, Option[View]] {
         def isDefinedAt(subject: AnyRef) = attempt(subject).isDefined
 
         def attempt(subject: AnyRef) = subject match {
           case view: View =>
-            Some(ViewIdField.findViewById(view, viewRef))
+            ViewIdField.findViewById(view, viewRef).map(Some(_))
           case activity: Activity =>
-            viewRef.viewKeyOpt.flatMap(id => Some(Option(activity.findViewById(id))))
+            viewRef.viewKeyOpt.flatMap(id => Option(activity.findViewById(id))).map(Some(_))
           case _ => None
         }
-      }.orElse(responsePartialFunction))
-    }, childViewField) {
+      })
+    )
+  }
+
   private lazy val viewKeyMapField: PortableField[T] =
     viewRef.viewKeyOpt.map { key =>
       Getter.single[T]({
@@ -35,7 +44,7 @@ class ViewIdField[T](val viewRef: ViewRef, childViewField: PortableField[T])
 
   lazy val withViewKeyMapField: PortableField[T] = this + viewKeyMapField
 
-  protected def delegate = childViewField
+  protected def delegates = Seq(nestedViewGetter, childViewField)
 
   override lazy val toString = "viewId(" + viewRef + ", " + childViewField + ")"
 }
