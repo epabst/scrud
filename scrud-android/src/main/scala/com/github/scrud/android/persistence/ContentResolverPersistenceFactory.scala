@@ -33,7 +33,9 @@ class ContentResolverPersistenceFactory(delegate: PersistenceFactory) extends De
           crudContext.asInstanceOf[AndroidCrudContext].runOnUiThread {
             val observer = new ContentObserver(new Handler()) {
               override def onChange(selfChange: Boolean) {
-                delegateListenerSet.listeners.foreach(_.onChanged())
+                crudContext.withExceptionReporting {
+                  delegateListenerSet.listeners.foreach(_.onChanged())
+                }
               }
             }
             contentResolver.registerContentObserver(toUri(UriPath(entityType.entityName), crudContext.persistenceFactoryMapping), true, observer)

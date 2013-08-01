@@ -14,7 +14,9 @@ case class OnClickOperationSetter[T](viewOperation: View => Operation)
       case UpdaterInput(view: View, _, CrudContextField(Some(crudContext)) && UriField(Some(uri))) =>
         if (view.isClickable) {
           view.setOnClickListener { view: View =>
-            viewOperation(view).invoke(uri, crudContext)
+            crudContext.withExceptionReporting {
+              viewOperation(view).invoke(uri, crudContext)
+            }
           }
         }
     })
