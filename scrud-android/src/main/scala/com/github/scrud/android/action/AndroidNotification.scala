@@ -10,6 +10,8 @@ import com.github.scrud.platform.PlatformTypes
 trait AndroidNotification extends Notification {
   def context: Context
 
+  private lazy val contextAsActivity = context.asInstanceOf[Activity]
+
   def displayMessageToUser(message: String) {
     runOnUiThread {
       Toast.makeText(context, message, Toast.LENGTH_LONG).show()
@@ -27,6 +29,6 @@ trait AndroidNotification extends Notification {
   }
 
   def runOnUiThread[T](body: => T) {
-    context.asInstanceOf[Activity].runOnUiThread(Common.toRunnable(withExceptionReporting(body)))
+    contextAsActivity.runOnUiThread(Common.toRunnable(withExceptionReporting(body)))
   }
 }

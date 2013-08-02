@@ -10,7 +10,6 @@ import xml.NodeSeq
 import com.github.scrud.android.CrudActivity
 import com.github.scrud.android.AndroidCrudContext
 import scala.Some
-import com.github.scrud.android.util.ViewUtil._
 
 /** A ViewField that allows choosing a specific entity of a given EntityType or displaying its fields' values.
   * The layout for the EntityType that contains this EntityView may refer to fields of this view's EntityType
@@ -30,9 +29,11 @@ case class EntityView(entityName: EntityName)
               crudActivity.pickLayoutFor(entityType.entityName))
           }
           if (idOpt.isDefined) {
-            runOnUIThread(adapterView) {
+            val id = idOpt.get
+            crudContext.runOnUiThread {
               val adapter = adapterView.getAdapter
-              val position = (0 to (adapter.getCount - 1)).view.map(adapter.getItemId(_)).indexOf(idOpt.get)
+              val position: Int = (0 to (adapter.getCount - 1)).indexWhere(adapter.getItemId(_) == id)
+              require(position >= 0, "position should be above 0: " + position)
               adapterView.setSelection(position)
             }
           }

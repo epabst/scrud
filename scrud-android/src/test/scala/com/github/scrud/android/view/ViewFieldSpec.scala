@@ -43,7 +43,7 @@ class ViewFieldSpec extends MustMatchers with MockitoSugar {
     val stringField =
       persisted[String]("name") +
       viewId(101, textView) +
-      viewId(102, Getter[MyView,String](v => Some(v.status)).withSetter(v => v.status = _, noSetterForEmpty))
+      viewId(102, ViewGetter[MyView,String](v => Some(v.status)).withSetter(v => v.status = _, noSetterForEmpty))
     stringField must not be (null)
   }
 
@@ -65,7 +65,7 @@ class ViewFieldSpec extends MustMatchers with MockitoSugar {
     stub(viewGroup.findViewById(103)).toReturn(view3)
     val stringField =
       viewId(101, textView) +
-      viewId(102, Getter[TextView,String](v => Option(v.getText.toString)).withSetter(v => v.setText(_), _.setText("Please Fill")))
+      viewId(102, ViewGetter[TextView,String](v => Option(v.getText.toString)).withSetter(v => v.setText(_), _.setText("Please Fill")))
     stringField.updateWithValue(viewGroup, None)
     verify(view1).setText("")
     verify(view2).setText("Please Fill")
@@ -93,7 +93,7 @@ class ViewFieldSpec extends MustMatchers with MockitoSugar {
     val view = mockView[TextView]
     stub(group.findViewById(56)).toReturn(view)
     val stringField = Getter[MyEntity,String](e => Some(e.string)).withSetter(e => e.string = _, noSetterForEmpty) +
-      viewId(56, Getter[Spinner,String](_ => throw new IllegalStateException("must not be called")).
+      viewId(56, ViewGetter[Spinner,String](_ => throw new IllegalStateException("must not be called")).
         withSetter(_ => throw new IllegalStateException("must not be called")))
     val myEntity1 = new MyEntity("my1", 1)
     stringField.copy(myEntity1, group) //does nothing
@@ -103,7 +103,7 @@ class ViewFieldSpec extends MustMatchers with MockitoSugar {
   @Test
   def itMustOnlyCopyToAndFromViewByIdIfIdIsFound() {
     val stringField = Getter[MyEntity,String](e => Some(e.string)).withSetter(e => e.string = _, noSetterForEmpty) +
-      viewId(56, Getter[Spinner,String](_ => throw new IllegalStateException("must not be called")).
+      viewId(56, ViewGetter[Spinner,String](_ => throw new IllegalStateException("must not be called")).
         withSetter(_ => throw new IllegalStateException("must not be called")))
     val myEntity1 = new MyEntity("my1", 1)
     val group = new LinearLayout(context)

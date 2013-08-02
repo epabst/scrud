@@ -11,7 +11,8 @@ import android.widget._
 import com.github.scrud.android.view.AndroidResourceAnalyzer._
 import android.view.View
 import android.widget.LinearLayout
-import com.github.scrud.android.util.ViewUtil.withViewOnUIThread
+import com.github.scrud.CrudContextField
+import com.github.scrud.android.AndroidCrudContext
 
 /** A Map of ViewKey with values.
   * Wraps a map so that it is distinguished from persisted fields.
@@ -61,29 +62,27 @@ object ViewField {
 
   def apply[T](defaultLayout: FieldLayout, dataField: PortableField[T]): ViewField[T] = new ViewField[T](defaultLayout, dataField)
 
-  val textView: ViewField[String] = new ViewField[String](nameLayout, Getter[TextView,String] { v =>
+  val textView: ViewField[String] = new ViewField[String](nameLayout, ViewGetter[TextView,String] { v =>
     toOption(v.getText.toString.trim)
-  }.withSetter({v => valueOpt =>
-    withViewOnUIThread(v) {
-      _.setText(valueOpt.getOrElse(""))
-    }
-  })) {
+  }.withSetter {v => valueOpt =>
+    v.setText(valueOpt.getOrElse(""))
+  }) {
     override val toString = "textView"
   }
   def formattedTextView[T](toDisplayString: Converter[T,String], toEditString: Converter[T,String],
                            fromString: Converter[String,T], defaultLayout: FieldLayout = nameLayout): ViewField[T] =
     new ViewField[T](defaultLayout, Getter[TextView,T](view => toOption(view.getText.toString.trim).flatMap(fromString.convert(_))) +
         Setter[T] {
-          case UpdaterInput(view: EditText, valueOpt, _) => {
+          case UpdaterInput(view: EditText, valueOpt, CrudContextField(crudContext: AndroidCrudContext)) => {
             val text = valueOpt.flatMap(toEditString.convert(_)).getOrElse("")
-            withViewOnUIThread(view) {
-              _.setText(text)
+            crudContext.runOnUiThread {
+              view.setText(text)
             }
           }
-          case UpdaterInput(view: TextView, valueOpt, _) => {
+          case UpdaterInput(view: TextView, valueOpt, CrudContextField(crudContext: AndroidCrudContext)) => {
             val text = valueOpt.flatMap(toDisplayString.convert(_)).getOrElse("")
-            withViewOnUIThread(view) {
-              _.setText(text)
+            crudContext.runOnUiThread {
+              view.setText(text)
             }
           }
         }
@@ -95,24 +94,23 @@ object ViewField {
   lazy val doubleView: ViewField[Double] = ViewField[Double](doubleLayout, formatted(textView))
   lazy val percentageView: ViewField[Float] = formattedTextView[Float](percentageToString, percentageToEditString, stringToPercentage, doubleLayout)
   lazy val viewWeightField: Setter[Float] =
-    Setter((view: View) => (valueOpt: Option[Float]) => withViewOnUIThread(view) { view =>
+    ViewSetter { (view: View) => (valueOpt: Option[Float]) =>
       val oldLayoutParams = view.getLayoutParams.asInstanceOf[LinearLayout.LayoutParams]
       val newLayoutParams = new LinearLayout.LayoutParams(oldLayoutParams.width, oldLayoutParams.height, valueOpt.getOrElse(0.0f))
       view.setLayoutParams(newLayoutParams)
-    })
+    }
   lazy val currencyView = formattedTextView[Double](currencyToString, currencyToEditString, stringToCurrency, currencyLayout)
   lazy val intView: ViewField[Int] = ViewField[Int](intLayout, formatted[Int](textView))
   lazy val longView: ViewField[Long] = ViewField[Long](longLayout, formatted[Long](textView))
 
   private def toOption(string: String): Option[String] = if (string == "") None else Some(string)
 
-  private val calendarPickerField = Setter[Calendar] {
-    case UpdaterInput(picker: DatePicker, valueOpt, _) =>
-      val calendar = valueOpt.getOrElse(Calendar.getInstance())
-      withViewOnUIThread(picker) {
-        _.updateDate(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH))
-      }
-  } + Getter((p: DatePicker) => Some(new GregorianCalendar(p.getYear, p.getMonth, p.getDayOfMonth)))
+  private val calendarPickerField = ViewGetter[DatePicker,Calendar] {
+    (p: DatePicker) => Some(new GregorianCalendar(p.getYear, p.getMonth, p.getDayOfMonth))
+  }.withSetter { (picker: DatePicker) => valueOpt =>
+    val calendar = valueOpt.getOrElse(Calendar.getInstance())
+    picker.updateDate(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH))
+  }
 
   implicit val dateView: ViewField[Date] = new ViewField[Date](datePickerLayout,
     formattedTextView(dateToDisplayString, dateToString, stringToDate) +

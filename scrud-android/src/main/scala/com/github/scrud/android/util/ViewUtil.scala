@@ -10,15 +10,10 @@ import com.github.scrud.util.Common
  * Time: 4:23 PM
  */
 object ViewUtil {
+  /** Operate on a View in the UI Thread.  Note: this does not do any error reporting. */
   def withViewOnUIThread[V <: View](view: V)(f: V => Unit) {
     view.post(Common.toRunnable {
       f(view)
-    })
-  }
-
-  def runOnUIThread(view: View)(f: => Unit) {
-    view.post(Common.toRunnable {
-      f
     })
   }
 }
