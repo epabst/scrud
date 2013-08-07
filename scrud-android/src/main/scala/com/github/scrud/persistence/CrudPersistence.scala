@@ -58,4 +58,6 @@ trait CrudPersistence extends EntityPersistence with ListenerSet[DataListener] w
   override protected[scrud] def warn(f: => String) {
     super.warn(f)
   }
+
+  override def toString = super.toString + " for " + entityType
 }

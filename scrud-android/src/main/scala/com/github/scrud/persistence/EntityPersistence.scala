@@ -18,7 +18,9 @@ trait EntityPersistence extends ThinPersistence with ListenerSet[DataListener] {
     */
   def find(uri: UriPath): Option[AnyRef] = {
     val results = findAll(uri)
-    if (!results.isEmpty && !results.tail.isEmpty) throw new IllegalStateException("multiple results for " + uri + ": " + results.mkString(", "))
+    if (!results.isEmpty && !results.tail.isEmpty) {
+      throw new IllegalStateException("multiple results for " + uri + ": " + results.mkString(", ") + " in " + this)
+    }
     results.headOption
   }
 
