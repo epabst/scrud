@@ -209,7 +209,9 @@ abstract class CrudApplication(val platformDriver: PlatformDriver) extends Persi
     val key = (entityType, uriPathWithId, crudContext)
     cache.get(key).getOrElse {
       val futurePortableValue = executor.urgentFuture {
-        calculate
+        crudContext.withExceptionReportingHavingDefaultReturnValue(PortableValue.nothing) {
+          calculate
+        }
       }
       cache.putIfAbsent(key, futurePortableValue).getOrElse(futurePortableValue)
     }
