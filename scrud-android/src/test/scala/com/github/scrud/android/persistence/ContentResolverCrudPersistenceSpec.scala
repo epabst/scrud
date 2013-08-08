@@ -43,6 +43,28 @@ class ContentResolverCrudPersistenceSpec extends CrudMockitoSugar with MustMatch
   }
 
   @Test
+  def findAll_mustOnlyReturnRowsWithMatchingId() {
+    val persistence = ContentResolverCrudPersistenceForTesting(fooEntityType, testApplication)
+    val id1 = persistence.saveCopy(None, data1)
+    persistence.saveCopy(None, data2)
+    val uriPath = UriPath(fooEntityName, id1)
+    val results = persistence.findAll(uriPath)
+    results.size must be (1)
+    results.map(_ - CursorField.idFieldName) must be (List(data1))
+  }
+
+  @Test
+  def findAll_mustOnlyReturnRowsWithMatchingId_otherEntityLaterInPath() {
+    val persistence = ContentResolverCrudPersistenceForTesting(fooEntityType, testApplication)
+    val id1 = persistence.saveCopy(None, data1)
+    persistence.saveCopy(None, data2)
+    val uriPath = UriPath(fooEntityName, id1) / barEntityName
+    val results = persistence.findAll(uriPath)
+    results.size must be (1)
+    results.map(_ - CursorField.idFieldName) must be (List(data1))
+  }
+
+  @Test
   def update_mustModifyTheData() {
     val persistence = ContentResolverCrudPersistenceForTesting(fooEntityType, testApplication)
     val id1 = persistence.saveCopy(None, data1)

@@ -50,34 +50,15 @@ class UriPathSpec extends FunSpec with MustMatchers {
     it("must handle the case where it already ends with the EntitName followed by an ID") {
       UriPath("a", "b", "1").specifyLastEntityName(EntityName("b")) must be (UriPath("a", "b", "1"))
     }
-  }
 
-  describe("upToOptionalIdOf") {
-    it("must strip of whatever is after the ID") {
+    it("must strip off whatever is after the ID") {
       val uri = UriPath("abc", "123", entityName.name, "456", "def")
-      uri.upToOptionalIdOf(entityName) must be (UriPath("abc", "123", entityName.name, "456"))
+      uri.specifyLastEntityName(entityName) must be (UriPath("abc", "123", entityName.name, "456"))
     }
 
     it("must not fail if no ID found but also preserve what is there already") {
       val uri = UriPath("abc", "123", "def")
-      uri.upToOptionalIdOf(entityName).segments.startsWith(uri.segments) must be (true)
-    }
-  }
-
-  describe("upToIdOf") {
-    it("must strip of whatever is after the ID") {
-      val uri = UriPath("abc", "123", entityName.name, "456", "def")
-      uri.upToIdOf(entityName) must be (Some(UriPath("abc", "123", entityName.name, "456")))
-    }
-
-    it("must return None if no entityName not found") {
-      val uri = UriPath("abc", "123", "def")
-      uri.upToIdOf(entityName) must be (None)
-    }
-
-    it("must return None if no ID specified") {
-      val uri = UriPath("abc", "123", entityName.name)
-      uri.upToIdOf(entityName) must be (None)
+      uri.specifyLastEntityName(entityName).segments.startsWith(uri.segments) must be (true)
     }
   }
 

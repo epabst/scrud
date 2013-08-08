@@ -25,7 +25,7 @@ case class UriPath(segments: String*) {
   def specify(entityName: EntityName, id: ID): UriPath = specify(entityName.name, id.toString)
 
   def specifyLastEntityName(entityName: EntityName): UriPath =
-    if (lastEntityNameOption == Some(entityName)) this else specify(entityName)
+    specify(entityName.name +: findId(entityName).map(_.toString).toList:_*)
 
   lazy val lastEntityNameOption: Option[EntityName] = segments.reverse.find(idFormat.toValue(_).isEmpty).map(EntityName(_))
 
@@ -38,10 +38,6 @@ case class UriPath(segments: String*) {
       case _ :: idString :: tail => idFormat.toValue(idString)
       case _ => None
     }
-
-  def upToOptionalIdOf(entityName: EntityName): UriPath = specify(entityName.name +: findId(entityName).map(_.toString).toList:_*)
-
-  def upToIdOf(entityName: EntityName): Option[UriPath] = findId(entityName).map(id => specify(entityName, id))
 
   override lazy val toString = segments.mkString("/", "/", "")
 }
