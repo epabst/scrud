@@ -33,8 +33,11 @@ case class EntityView(entityName: EntityName)
             crudContext.runOnUiThread {
               val adapter = adapterView.getAdapter
               val position: Int = (0 to (adapter.getCount - 1)).indexWhere(adapter.getItemId(_) == id)
-              require(position >= 0, "position should be above 0: " + position)
-              adapterView.setSelection(position)
+              if (position >= 0) {
+                adapterView.setSelection(position)
+              } else {
+                crudContext.logger.info("Unable to set selection on adapterView=" + adapterView + " for entityName=" + entityName + " to id=" + id + " since position=" + position)
+              }
             }
           }
         }

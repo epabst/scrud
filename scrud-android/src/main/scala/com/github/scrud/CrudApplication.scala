@@ -230,9 +230,12 @@ abstract class CrudApplication(val platformDriver: PlatformDriver) extends Persi
   }
 
   protected def calculatePortableValue(entityType: EntityType, uriPathWithId: UriPath, crudContext: CrudContext): PortableValue = {
-    crudContext.withEntityPersistence(entityType)(_.find(uriPathWithId).map { entityData =>
-      calculatePortableValue(entityType, uriPathWithId, entityData, crudContext)
-    }).getOrElse(PortableValue.empty)
+    crudContext.withEntityPersistence(entityType) { persistence =>
+      val entityOpt = persistence.find(uriPathWithId)
+      entityOpt.map { entityData =>
+        calculatePortableValue(entityType, uriPathWithId, entityData, crudContext)
+      }
+    }.getOrElse(PortableValue.empty)
   }
 
   protected def calculatePortableValue(entityType: EntityType, uriPathWithId: UriPath, entityData: AnyRef, crudContext: CrudContext): PortableValue = {
