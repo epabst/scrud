@@ -2,17 +2,26 @@ package com.github.scrud.android
 
 import com.github.scrud
 import persistence.EntityTypePersistedInfo
-import scrud.action.{CommandId, Command}
-import scrud.android.action.{StartEntityIdActivityOperation, StartEntityActivityOperation}
 import action.AndroidOperation._
 import com.github.scrud.platform.PlatformDriver
-import scrud.{EntityType, EntityName}
+import scrud.EntityType
 import scrud.types._
 import view.ViewField._
-import view.{EntityView, EnumerationView, ViewRef}
 import view.FieldLayout._
-import scala.Some
+import view.ViewRef
 import com.github.triangle.PortableField
+import com.github.scrud.copy._
+import com.github.scrud.EntityName
+import com.github.scrud.android.action.StartEntityActivityOperation
+import com.github.scrud.android.view.EnumerationView
+import com.github.scrud.action.CommandId
+import scala.Some
+import com.github.scrud.android.action.StartEntityIdActivityOperation
+import com.github.scrud.types.EnumerationValueQT
+import com.github.scrud.android.view.EntityView
+import com.github.scrud.action.Command
+import com.github.scrud.copy.FieldApplicability
+import com.github.scrud.context.RequestContext
 
 /**
  * A PlatformDriver for the Android platform.
@@ -74,6 +83,36 @@ class AndroidPlatformDriver(rClass: Class[_], val activityClass: Class[_ <: Crud
   def listViewId(entityName: EntityName): Int = ViewRef(entityName + "_list", rClass, "id").viewKeyOrError
 
   def emptyListViewIdOpt(entityName: EntityName): Int = ViewRef(entityName + "_emptyList", rClass, "id").viewKeyOrError
+
+  def field[V](fieldName: String, qualifiedType: QualifiedType[V], applicability: FieldApplicability, entityName: EntityName): AdaptableField[V] = {
+    val sourceFields: Map[SourceType,SourceField[V]] = (for {
+      sourceType <- applicability.from
+    } yield (sourceType, makeSourceField(fieldName, qualifiedType, sourceType, entityName))).toMap
+
+    val targetFields: Map[TargetType,TargetField[V]] = (for {
+      targetType <- applicability.to
+    } yield (targetType, makeTargetField(fieldName, qualifiedType, targetType, entityName))).toMap
+
+    new AdaptableField[V] {
+      def findSourceField(sourceType: SourceType) = sourceFields.get(sourceType)
+
+      def findTargetField(targetType: TargetType) = targetFields.get(targetType)
+    }
+  }
+
+  protected def makeSourceField[V](fieldName: String, qualifiedType: QualifiedType[V], sourceType: SourceType, entityName: EntityName): SourceField[V] = {
+    new SourceField[V] {
+      def findValue(source: AnyRef, context: RequestContext) = None //todo
+    }
+  }
+
+  protected def makeTargetField[V](fieldName: String, qualifiedType: QualifiedType[V], targetType: TargetType, entityName: EntityName): TargetField[V] = {
+    new TargetField[V] {
+      def putValue(target: AnyRef, valueOpt: Option[V], context: RequestContext) = {
+        //todo
+      }
+    }
+  }
 }
 
 object AndroidPlatformDriver {

@@ -5,6 +5,7 @@ import com.github.scrud.action.{Command, Operation}
 import com.github.scrud.{EntityType, EntityName}
 import com.github.scrud.types.QualifiedType
 import com.github.triangle.PortableField
+import com.github.scrud.copy.{FieldApplicability, AdaptableField, TargetType}
 
 /**
  * An API for an app to interact with the host platform such as Android.
@@ -48,4 +49,6 @@ trait PlatformDriver {
    * @throws MatchError if the qualifiedType is not recognized.
    */
   def namedViewField[T](fieldName: String, qualifiedType: QualifiedType[T], entityName: EntityName): PortableField[T]
+
+  def field[V](fieldName: String, qualifiedType: QualifiedType[V], applicability: FieldApplicability, entityName: EntityName): AdaptableField[V]
 }

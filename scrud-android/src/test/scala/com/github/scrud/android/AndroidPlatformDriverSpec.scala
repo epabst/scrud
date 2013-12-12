@@ -5,7 +5,6 @@ import action.StartActivityOperation
 import com.github.scrud.UriPath
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.scalatest.matchers.MustMatchers
 import com.github.scrud.android.action.AndroidOperation.toRichItent
 import com.github.scrud.util.CrudMockitoSugar
 import res.R
@@ -13,12 +12,13 @@ import com.github.scrud.android.view.{EntityView, EnumerationView, ViewField}
 import com.github.scrud.types._
 import com.github.scrud.EntityName
 import com.github.scrud.action.Action
+import com.github.scrud.platform.PlatformDriverContractSpec
 
 /** A test for [[com.github.scrud.android.AndroidPlatformDriver]].
   * @author Eric Pabst (epabst@gmail.com)
   */
 @RunWith(classOf[CustomRobolectricTestRunner])
-class AndroidPlatformDriverSpec extends MustMatchers with CrudMockitoSugar {
+class AndroidPlatformDriverSpec extends PlatformDriverContractSpec with CrudMockitoSugar {
   //todo determine if shadowing, and run tests on real Android device as well.
   val isShadowing = true
   val driver = new AndroidPlatformDriver(classOf[R])
@@ -27,6 +27,8 @@ class AndroidPlatformDriverSpec extends MustMatchers with CrudMockitoSugar {
   }
 
   import EntityTypeForTesting.entityName
+
+  protected def makePlatformDriver() = driver
 
   val Action(_, createOperation: StartActivityOperation) = application.actionToCreate(EntityTypeForTesting).get
   val Action(_, listOperation: StartActivityOperation) = application.actionToList(EntityTypeForTesting).get

@@ -4,10 +4,14 @@ import com.github.scrud.persistence.ListBufferPersistenceFactory
 import com.github.scrud.{EntityType, CrudContext, UriPath, EntityName}
 import com.github.scrud.action.{Operation, CrudOperationType}
 import com.github.triangle.{Updater, Getter, PortableField}
-import com.github.scrud.action.CommandId
-import com.github.scrud.action.Command
 import com.github.scrud.view.NamedViewMap
 import com.github.scrud.types.QualifiedType
+import com.github.scrud.copy._
+import com.github.scrud.EntityName
+import com.github.scrud.action.CommandId
+import com.github.scrud.action.Command
+import com.github.scrud.copy.FieldApplicability
+import com.github.scrud.context.RequestContext
 
 /**
  * A simple PlatformDriver for testing.
@@ -62,6 +66,36 @@ class TestingPlatformDriver extends PlatformDriver {
     Getter.single[T]({
       case map: NamedViewMap if map.contains(fieldName) =>  map.apply(fieldName).asInstanceOf[Option[T]]
     }) + Updater((m: NamedViewMap) => (valueOpt: Option[T]) => m + (fieldName -> valueOpt))
+  }
+
+  def field[V](fieldName: String, qualifiedType: QualifiedType[V], applicability: FieldApplicability, entityName: EntityName): AdaptableField[V] = {
+    val someSourceField = Some(new TypedSourceField[MapStorage,V] {
+      def findValue(from: MapStorage, context: RequestContext) = {
+        from.get(entityName, fieldName).map(_.asInstanceOf[V])
+      }
+    })
+    val someTargetField = Some(new TypedTargetField[MapStorage,V] {
+      /** Updates the {{{target}}} subject using the {{{valueOpt}}} for this field and some context. */
+      def putValue(target: MapStorage, valueOpt: Option[V], context: RequestContext) = {
+        target.put(entityName, fieldName, valueOpt)
+      }
+    })
+    new AdaptableField[V] {
+      def findSourceField(sourceType: SourceType) =
+        if (applicability.contains(sourceType)) {
+          someSourceField
+        } else {
+          None
+        }
+
+      def findTargetField(targetType: TargetType) = {
+        if (applicability.contains(targetType)) {
+          someTargetField
+        } else {
+          None
+        }
+      }
+    }
   }
 }
 
