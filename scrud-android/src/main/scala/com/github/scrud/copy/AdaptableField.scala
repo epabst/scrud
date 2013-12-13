@@ -7,7 +7,7 @@ package com.github.scrud.copy
  *         Date: 12/11/13
  *         Time: 9:36 AM
  */
-trait AdaptableField[V] {
+abstract class AdaptableField[V] extends BaseAdaptableField {
   def findSourceField(sourceType: SourceType): Option[SourceField[V]]
 
   def findTargetField(targetType: TargetType): Option[TargetField[V]]

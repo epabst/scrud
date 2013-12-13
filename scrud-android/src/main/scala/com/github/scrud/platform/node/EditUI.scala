@@ -9,4 +9,6 @@ import com.github.scrud.copy.StorageType
  *          Date: 12/11/13
  *          Time: 9:16 AM
  */
-object EditUI extends StorageType
+object EditUI extends StorageType {
+  override def toFieldApplicability = super.toFieldApplicability + DetailUI
+}

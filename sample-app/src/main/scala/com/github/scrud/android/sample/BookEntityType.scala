@@ -9,10 +9,13 @@ import java.util.Date
 import com.github.scrud.Validation._
 import com.github.scrud.platform.PlatformDriver
 import com.github.scrud.types.{TitleQT, PositiveIntQT, EnumerationValueQT, DateWithoutTimeQT}
+import com.github.scrud.platform.node.{Persistence, SelectUI, EditUI}
 
 object Book extends EntityName("Book")
 
 class BookEntityType(platformDriver: PlatformDriver) extends EntityType(Book, platformDriver) {
+  field("name", TitleQT, Persistence + EditUI + SelectUI)
+
   val valueFields = List(
     ForeignKey[AuthorEntityType](Author),
 

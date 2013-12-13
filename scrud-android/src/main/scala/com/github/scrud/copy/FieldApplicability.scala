@@ -10,4 +10,8 @@ case class FieldApplicability(from: Set[SourceType], to: Set[TargetType]) {
   def contains(sourceType: SourceType): Boolean = from.contains(sourceType)
 
   def contains(targetType: TargetType): Boolean = to.contains(targetType)
+
+  def +(other: FieldApplicability): FieldApplicability = new FieldApplicability(from ++ other.from, to ++ other.to)
+
+  def +(other: FieldApplicabilityItem): FieldApplicability = this + other.toFieldApplicability
 }

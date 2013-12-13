@@ -7,6 +7,8 @@ import platform.PlatformDriver
 import platform.PlatformTypes._
 import com.github.scrud.types.QualifiedType
 import util.Common
+import com.github.scrud.copy.{FieldApplicability, BaseAdaptableField, AdaptableField}
+import scala.collection.mutable
 
 /** An entity configuration that provides information needed to map data to and from persistence.
   * This shouldn't depend on the platform (e.g. android).
@@ -42,6 +44,14 @@ abstract class EntityType(val entityName: EntityName, val platformDriver: Platfo
   lazy val parentFields: Seq[EntityField[_]] = EntityField.entityFields(this)
 
   lazy val parentEntityNames: Seq[EntityName] = parentFields.map(_.entityName)
+
+  private val adaptableFields: mutable.Buffer[BaseAdaptableField] = mutable.Buffer[BaseAdaptableField]()
+  
+  protected def field[V](fieldName: String, qualifiedType: QualifiedType[V], applicability: FieldApplicability): AdaptableField[V] = {
+    val newField = platformDriver.field(fieldName, qualifiedType, applicability, entityName)
+    adaptableFields += newField
+    newField
+  }
 
   /** A PortableField for modifying a named portion of a View. */
   protected def namedViewField[T](fieldName: String, childViewField: PortableField[T]): PortableField[T] =

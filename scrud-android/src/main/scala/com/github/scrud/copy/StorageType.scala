@@ -7,4 +7,6 @@ package com.github.scrud.copy
  * Date: 12/10/13
  * Time: 3:14 PM
  */
-trait StorageType extends TargetType with SourceType
+trait StorageType extends TargetType with SourceType {
+  override def toFieldApplicability: FieldApplicability = FieldApplicability(from = Set(this), to = Set(this))
+}

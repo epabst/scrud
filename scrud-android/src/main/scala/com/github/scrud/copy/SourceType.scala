@@ -6,4 +6,6 @@ package com.github.scrud.copy
   *         Date: 12/10/13
   *         Time: 3:14 PM
   */
-trait SourceType
+trait SourceType extends FieldApplicabilityItem {
+  def toFieldApplicability: FieldApplicability = FieldApplicability(from = Set(this), Set.empty)
+}
