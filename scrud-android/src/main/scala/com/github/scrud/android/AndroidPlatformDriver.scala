@@ -22,6 +22,7 @@ import com.github.scrud.android.view.EntityView
 import com.github.scrud.action.Command
 import com.github.scrud.copy.FieldApplicability
 import com.github.scrud.context.RequestContext
+import com.github.scrud.platform.node.{MapTargetField, MapStorage}
 
 /**
  * A PlatformDriver for the Android platform.
@@ -108,10 +109,15 @@ class AndroidPlatformDriver(rClass: Class[_], val activityClass: Class[_ <: Crud
   }
 
   protected def makeTargetField[V](fieldName: String, qualifiedType: QualifiedType[V], targetType: TargetType, entityName: EntityName): TargetField[V] = {
-    new TargetField[V] {
-      def putValue(target: AnyRef, valueOpt: Option[V], context: RequestContext) = {
-        //todo
-      }
+    targetType match {
+      case MapStorage =>
+        new MapTargetField[V](entityName, fieldName)
+      case _ =>
+        new TargetField[V] {
+          def putValue(target: AnyRef, valueOpt: Option[V], context: RequestContext) = {
+            //todo
+          }
+        }
     }
   }
 }
