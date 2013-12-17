@@ -1,4 +1,4 @@
-package com.github.scrud.platform
+package com.github.scrud.platform.node
 
 import com.github.scrud.copy._
 import scala.collection.parallel.mutable

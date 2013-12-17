@@ -12,6 +12,7 @@ import com.github.scrud.action.CommandId
 import com.github.scrud.action.Command
 import com.github.scrud.copy.FieldApplicability
 import com.github.scrud.context.RequestContext
+import com.github.scrud.platform.node.MapStorage
 
 /**
  * A simple PlatformDriver for testing.
@@ -68,18 +69,24 @@ class TestingPlatformDriver extends PlatformDriver {
     }) + Updater((m: NamedViewMap) => (valueOpt: Option[T]) => m + (fieldName -> valueOpt))
   }
 
-  def field[V](fieldName: String, qualifiedType: QualifiedType[V], applicability: FieldApplicability, entityName: EntityName): AdaptableField[V] = {
-    val someSourceField = Some(new TypedSourceField[MapStorage,V] {
-      def findValue(from: MapStorage, context: RequestContext) = {
+  protected def makeMapStorageSourceField[V](entityName: EntityName, fieldName: String): TypedSourceField[MapStorage,V] =
+    new TypedSourceField[MapStorage,V] {
+      def findValue(from: MapStorage, context: RequestContext): Option[V] = {
         from.get(entityName, fieldName).map(_.asInstanceOf[V])
       }
-    })
-    val someTargetField = Some(new TypedTargetField[MapStorage,V] {
+    }
+
+  protected def makeMapStorageTargetField[V](entityName: EntityName, fieldName: String): TypedTargetField[MapStorage,V] =
+    new TypedTargetField[MapStorage,V] {
       /** Updates the {{{target}}} subject using the {{{valueOpt}}} for this field and some context. */
-      def putValue(target: MapStorage, valueOpt: Option[V], context: RequestContext) = {
+      def putValue(target: MapStorage, valueOpt: Option[V], context: RequestContext) {
         target.put(entityName, fieldName, valueOpt)
       }
-    })
+    }
+
+  def field[V](fieldName: String, qualifiedType: QualifiedType[V], applicability: FieldApplicability, entityName: EntityName): AdaptableField[V] = {
+    val someSourceField = Some(makeMapStorageSourceField[V](entityName, fieldName))
+    val someTargetField = Some(makeMapStorageTargetField[V](entityName, fieldName))
     new AdaptableField[V] {
       def findSourceField(sourceType: SourceType) =
         if (applicability.contains(sourceType)) {
