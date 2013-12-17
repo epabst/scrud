@@ -70,12 +70,13 @@ class AndroidPlatformDriver(rClass: Class[_], val activityClass: Class[_ <: Crud
     val childViewField = (qualifiedType match {
       case TitleQT => textView.withDefaultLayout(textLayout("text|textCapWords|textAutoCorrect"))
       case DescriptionQT => textView.withDefaultLayout(textLayout("text|textCapSentences|textMultiLine|textAutoCorrect"))
-      case NaturalIntQT | PositiveIntQT => intView.withDefaultLayout(textLayout("number"))
       case CurrencyQT => currencyView
       case PercentageQT => percentageView
       case DateWithoutTimeQT => dateView
       case EnumerationValueQT(enumeration) => EnumerationView(enumeration)
       case e @ EntityName(_) => EntityView(e)
+      case _: StringQualifiedType => textView
+      case _: IntQualifiedType => intView.withDefaultLayout(textLayout("number"))
     }).asInstanceOf[PortableField[T]]
     namedViewField(fieldName, childViewField, entityName)
   }

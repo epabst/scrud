@@ -6,4 +6,4 @@ package com.github.scrud.types
  * Date: 2/22/13
  * Time: 4:47 PM
  */
-object TitleQT extends QualifiedType[String]
+object TitleQT extends StringQualifiedType
