@@ -70,14 +70,10 @@ class TestingPlatformDriver extends PlatformDriver {
   }
 
   protected def makeMapStorageSourceField[V](entityName: EntityName, fieldName: String): TypedSourceField[MapStorage,V] =
-    new TypedSourceField[MapStorage,V] {
-      def findValue(from: MapStorage, context: RequestContext): Option[V] = {
-        from.get(entityName, fieldName).map(_.asInstanceOf[V])
-      }
-    }
+    TypedSourceField[MapStorage,V](_.get(entityName, fieldName).map(_.asInstanceOf[V]))
 
   def field[V](fieldName: String, qualifiedType: QualifiedType[V], applicability: FieldApplicability, entityName: EntityName): AdaptableField[V] = {
-    val someSourceField = Some(makeMapStorageSourceField[V](entityName, fieldName))
+    val someSourceField = Some(TypedSourceField[MapStorage,V](_.get(entityName, fieldName).map(_.asInstanceOf[V])))
     val someTargetField = Some(new MapTargetField[V](entityName, fieldName))
     new AdaptableField[V] {
       def findSourceField(sourceType: SourceType) =

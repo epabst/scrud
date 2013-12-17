@@ -103,8 +103,13 @@ class AndroidPlatformDriver(rClass: Class[_], val activityClass: Class[_ <: Crud
   }
 
   protected def makeSourceField[V](fieldName: String, qualifiedType: QualifiedType[V], sourceType: SourceType, entityName: EntityName): SourceField[V] = {
-    new SourceField[V] {
-      def findValue(source: AnyRef, context: RequestContext) = None //todo
+    sourceType match {
+      case MapStorage =>
+        TypedSourceField[MapStorage,V](_.get(entityName, fieldName).map(_.asInstanceOf[V]))
+      case _ =>
+        new SourceField[V] {
+          def findValue(source: AnyRef, context: RequestContext) = None //todo
+        }
     }
   }
 

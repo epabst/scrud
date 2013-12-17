@@ -15,3 +15,15 @@ trait TypedSourceField[S <: Source,V] extends SourceField[V] {
   /** Get some value or None from the given Source. */
   final def findValue(source: AnyRef, context: RequestContext) = findValue(source.asInstanceOf[S], context)
 }
+
+object TypedSourceField {
+  def apply[S <: Source,V](findValue: S => Option[V])(implicit manifest: Manifest[S]): TypedSourceField[S,V] = {
+    val _findValue = findValue
+    new TypedSourceField[S,V] {
+      /** Get some value or None from the given Source. */
+      def findValue(source: S, context: RequestContext) = _findValue(source)
+
+      override def toString = super.toString + "[" + manifest + "]"
+    }
+  }
+}
