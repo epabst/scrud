@@ -7,8 +7,4 @@ package com.github.scrud.copy
  *         Date: 12/10/13
  *         Time: 3:16 PM
  */
-abstract class Source[D <: AnyRef] {
-  def data: D
-
-  def dataManifest: Manifest[D]
-}
+class SimpleSource[D <: AnyRef](val data: D)(implicit val dataManifest: Manifest[D]) extends Source[D]

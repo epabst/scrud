@@ -3,25 +3,25 @@ package com.github.scrud.copy
 import com.github.scrud.context.RequestContext
 
 /**
- * A field that can be get a value out of a [[com.github.scrud.copy.Source]].
+ * A field that can be get a value out of a source (often unwrapped from a Source).
  * @author Eric Pabst (epabst@gmail.com)
  *         Date: 12/10/13
  *         Time: 3:20 PM
  */
-trait TypedSourceField[S <: Source,V] extends SourceField[V] {
+trait TypedSourceField[D <: AnyRef,V] extends SourceField[V] {
   /** Get some value or None from the given Source. */
-  def findValue(source: S, context: RequestContext): Option[V]
+  def findFieldValue(sourceData: D, context: RequestContext): Option[V]
 
   /** Get some value or None from the given Source. */
-  final def findValue(source: AnyRef, context: RequestContext) = findValue(source.asInstanceOf[S], context)
+  final def findValue(sourceData: AnyRef, context: RequestContext) = findFieldValue(sourceData.asInstanceOf[D], context)
 }
 
 object TypedSourceField {
-  def apply[S <: Source,V](findValue: S => Option[V])(implicit manifest: Manifest[S]): TypedSourceField[S,V] = {
+  def apply[D <: AnyRef,V](findValue: D => Option[V])(implicit manifest: Manifest[D]): TypedSourceField[D,V] = {
     val _findValue = findValue
-    new TypedSourceField[S,V] {
+    new TypedSourceField[D,V] {
       /** Get some value or None from the given Source. */
-      def findValue(source: S, context: RequestContext) = _findValue(source)
+      def findFieldValue(sourceData: D, context: RequestContext) = _findValue(sourceData)
 
       override def toString = super.toString + "[" + manifest + "]"
     }

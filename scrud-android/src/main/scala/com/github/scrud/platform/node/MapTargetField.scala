@@ -12,7 +12,7 @@ import com.github.scrud.EntityName
  */
 class MapTargetField[V](entityName: EntityName, fieldName: String) extends TypedTargetField[MapStorage, V] {
   /** Updates the {{{target}}} subject using the {{{valueOpt}}} for this field and some context. */
-  def putValue(target: MapStorage, valueOpt: Option[V], context: RequestContext) {
+  def putFieldValue(target: MapStorage, valueOpt: Option[V], context: RequestContext) {
     target.put(entityName, fieldName, valueOpt)
   }
 }

@@ -10,8 +10,8 @@ import com.github.scrud.EntityName
  *         Date: 12/11/13
  *         Time: 9:54 PM
  */
-class MapStorage extends Storage(MapStorage) {
-  private val map = new mutable.ParHashMap[String,Any]
+class MapStorage extends Storage[mutable.ParHashMap[String,Any]](new mutable.ParHashMap[String,Any]) {
+  private val map = data
 
   def get(entityName: EntityName, fieldName: String) = map.get(toKey(entityName, fieldName))
 

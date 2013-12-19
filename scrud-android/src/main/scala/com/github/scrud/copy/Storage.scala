@@ -7,6 +7,4 @@ package com.github.scrud.copy
  * Date: 12/10/13
  * Time: 3:14 PM
  */
-abstract class Storage(storageType: StorageType) extends Source(storageType) with Target {
-  def targetType = storageType
-}
+class Storage[D <: AnyRef](data: D)(implicit override val dataManifest: Manifest[D]) extends SimpleSource[D](data) with Target[D]
