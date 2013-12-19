@@ -89,27 +89,26 @@ class AndroidPlatformDriver(rClass: Class[_], val activityClass: Class[_ <: Crud
   def field[V](fieldName: String, qualifiedType: QualifiedType[V], applicability: FieldApplicability, entityName: EntityName): AdaptableField[V] = {
     val sourceFields: Map[SourceType,SourceField[V]] = (for {
       sourceType <- applicability.from
-    } yield (sourceType, makeSourceField(fieldName, qualifiedType, sourceType, entityName))).toMap
+      tuple <- makeSourceFields(fieldName, qualifiedType, sourceType, entityName)
+    } yield tuple).toMap
 
     val targetFields: Map[TargetType,TargetField[V]] = (for {
       targetType <- applicability.to
     } yield (targetType, makeTargetField(fieldName, qualifiedType, targetType, entityName))).toMap
 
-    new AdaptableField[V] {
-      def findSourceField(sourceType: SourceType) = sourceFields.get(sourceType)
-
-      def findTargetField(targetType: TargetType) = targetFields.get(targetType)
-    }
+    new AdaptableFieldByType[V](sourceFields, targetFields)
   }
 
-  protected def makeSourceField[V](fieldName: String, qualifiedType: QualifiedType[V], sourceType: SourceType, entityName: EntityName): SourceField[V] = {
+  protected def makeSourceFields[V](fieldName: String, qualifiedType: QualifiedType[V], sourceType: SourceType, entityName: EntityName): Map[SourceType,SourceField[V]] = {
     sourceType match {
       case MapStorage =>
-        TypedSourceField[MapStorage,V](_.get(entityName, fieldName).map(_.asInstanceOf[V]))
+        val field = TypedSourceField[MapStorage, V](_.get(entityName, fieldName).map(_.asInstanceOf[V]))
+        Map(sourceType -> field)
       case _ =>
-        new SourceField[V] {
+        val field = new SourceField[V] {
           def findValue(source: AnyRef, context: RequestContext) = None //todo
         }
+        Map(sourceType -> field)
     }
   }
 
