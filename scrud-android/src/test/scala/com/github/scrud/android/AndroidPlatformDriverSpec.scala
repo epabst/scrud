@@ -17,6 +17,7 @@ import com.github.scrud.platform.PlatformDriverContractSpec
 /** A test for [[com.github.scrud.android.AndroidPlatformDriver]].
   * @author Eric Pabst (epabst@gmail.com)
   */
+//todo make contract tests run as well as JUnit tests.
 @RunWith(classOf[CustomRobolectricTestRunner])
 class AndroidPlatformDriverSpec extends PlatformDriverContractSpec with CrudMockitoSugar {
   //todo determine if shadowing, and run tests on real Android device as well.
