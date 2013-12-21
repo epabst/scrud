@@ -140,6 +140,7 @@ class CrudActivitySpec extends CrudMockitoSugar with MustMatchers {
     }
     activity.onCreateContextMenu(contextMenu, ignoredView, ignoredMenuInfo)
     verify(contextMenu).add(0, res.R.string.edit_test, 0, res.R.string.edit_test)
+    verify(contextMenu).add(0, res.R.string.delete_item, 1, res.R.string.delete_item)
   }
 
   @Test
