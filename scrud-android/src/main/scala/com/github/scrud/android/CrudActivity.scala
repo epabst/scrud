@@ -117,10 +117,8 @@ class CrudActivity extends FragmentActivity with OptionsMenuActivity with Loader
     super.onCreate(savedInstanceState)
 
     crudContext.withExceptionReporting {
-      if (savedInstanceState == null) {
-        setContentViewForOperation()
-        populateDataInViews()
-      }
+      setContentViewForOperation()
+      populateDataInViews()
       bindActionsToViews()
       if (crudApplication.maySpecifyEntityInstance(currentUriPath, entityType)) {
         crudContext.addCachedActivityStateListener(new CachedStateListener {
