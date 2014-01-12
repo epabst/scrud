@@ -1,7 +1,7 @@
 package com.github.scrud.platform
 
 import com.github.scrud.persistence.ListBufferPersistenceFactory
-import com.github.scrud.{EntityType, CrudContext, UriPath, EntityName}
+import com.github.scrud.{EntityType, CrudContext, UriPath}
 import com.github.scrud.action.{Operation, CrudOperationType}
 import com.github.triangle.{Updater, Getter, PortableField}
 import com.github.scrud.view.NamedViewMap
@@ -11,7 +11,6 @@ import com.github.scrud.EntityName
 import com.github.scrud.action.CommandId
 import com.github.scrud.action.Command
 import com.github.scrud.copy.FieldApplicability
-import com.github.scrud.context.RequestContext
 import com.github.scrud.platform.node.{MapTargetField, MapStorage}
 
 /**

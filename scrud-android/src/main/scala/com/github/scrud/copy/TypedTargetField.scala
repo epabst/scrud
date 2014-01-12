@@ -3,7 +3,7 @@ package com.github.scrud.copy
 import com.github.scrud.context.RequestContext
 
 /**
- * A field that can copy into a target (often unwrapped from a [[com.github.scrud.copy.Target]]).
+ * A field that can copy into a target.
  * @author Eric Pabst (epabst@gmail.com)
  *         Date: 12/10/13
  *         Time: 3:20 PM

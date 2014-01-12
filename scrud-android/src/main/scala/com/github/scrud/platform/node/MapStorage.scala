@@ -5,13 +5,13 @@ import scala.collection.parallel.mutable
 import com.github.scrud.EntityName
 
 /**
- * [[com.github.scrud.copy.Storage]] for data (especially useful when testing).
+ * A target and source for data (especially useful when testing).
  * @author Eric Pabst (epabst@gmail.com)
  *         Date: 12/11/13
  *         Time: 9:54 PM
  */
-class MapStorage extends Storage[mutable.ParHashMap[String,Any]](new mutable.ParHashMap[String,Any]) {
-  private val map = data
+class MapStorage {
+  private val map = new mutable.ParHashMap[String,Any]
 
   def get(entityName: EntityName, fieldName: String) = map.get(toKey(entityName, fieldName))
 
