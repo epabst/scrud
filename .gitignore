@@ -24,3 +24,9 @@ multiverse.log
 .eprj
 seed.txt
 .sonar*
+.gradle
+/local.properties
+/.idea/workspace.xml
+.DS_Store
+.idea
+build
