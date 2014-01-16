@@ -1,0 +1,47 @@
+group = 'com.github.epabst.scrud'
+version = '0.3-alpha8-SNAPSHOT'
+def scalaVersion = "2.9.2"
+
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:0.6.+'
+    }
+}
+//apply plugin: 'scala'
+apply plugin: 'android'
+
+repositories {
+    mavenCentral()
+}
+
+android {
+    compileSdkVersion 19
+    buildToolsVersion "19.0.0"
+
+    defaultConfig {
+        minSdkVersion 10
+        targetSdkVersion 19
+    }
+}
+
+dependencies {
+	compile 'com.android.support:appcompat-v7:+'
+	compile 'com.android.support:support-v4:18.0.0'
+    compile "com.github.epabst.quality:annotations-for-quality:1.0-SNAPSHOT"
+    compile "com.github.epabst.scrud:scrud-android-res:scrud-android-res:0.3-alpha8-SNAPSHOT"
+    testRuntime "org.slf4j:slf4j-jdk14:1.6.1"
+    compile "com.google.android:support-v4:r6"
+    testCompile "org.mockito:mockito-core:1.8.5"
+    testCompile "junit:junit:4.8.2"
+    testCompile "com.novocode:junit-interface:0.4" // Required to make sbt run junit tests
+    testCompile "com.pivotallabs:robolectric:1.1"
+    testCompile "org.scalatest:scalatest_$scalaVersion:1.8"
+    //todo eliminate easymock as a dependency
+    testCompile "org.easymock:easymock:2.5.2"
+
+    // todo don't include when running simple unit tests since slf4j-jdk14 should be used then.
+    runtime "org.slf4j:slf4j-android:1.6.1-RC1"
+}
