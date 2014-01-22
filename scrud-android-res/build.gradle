@@ -14,9 +14,20 @@ apply plugin: 'android-library'
 android {
     compileSdkVersion 19
     buildToolsVersion "19.0.0"
+
+    sourceSets {
+        main  {
+            java {
+                srcDir 'src/main/java'
+            }
+        }
+    }
 }
 
 repositories {
     mavenCentral()
 }
 
+task jar(type: Jar) {
+    from android.sourceSets.main.java
+}
