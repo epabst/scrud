@@ -16,7 +16,7 @@ android {
     buildToolsVersion "19.0.0"
 
     sourceSets {
-        main  {
+        main {
             java {
                 srcDir 'src/main/java'
             }
@@ -28,6 +28,6 @@ repositories {
     mavenCentral()
 }
 
-task jar(type: Jar) {
+task jar(type: Jar, dependsOn: 'compileDebug') {
     from android.sourceSets.main.java
 }
