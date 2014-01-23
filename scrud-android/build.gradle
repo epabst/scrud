@@ -1,39 +1,24 @@
 group = 'com.github.epabst.scrud'
 version = '0.3-alpha8-SNAPSHOT'
-def scalaVersion = "2.9.2"
 
-buildscript {
-    repositories {
-        mavenCentral()
-    }
-    dependencies {
-        classpath 'com.android.tools.build:gradle:0.6.+'
-    }
-}
-//apply plugin: 'scala'
-apply plugin: 'android'
+apply plugin: 'scala'
 
 repositories {
     mavenCentral()
 }
 
-android {
-    compileSdkVersion 19
-    buildToolsVersion "19.0.0"
-
-    defaultConfig {
-        minSdkVersion 10
-        targetSdkVersion 19
-    }
-}
+def scalaVersion = '2.9.2'
 
 dependencies {
-	compile 'com.android.support:appcompat-v7:+'
-	compile 'com.android.support:support-v4:18.0.0'
-    compile "com.github.epabst.quality:annotations-for-quality:1.0-SNAPSHOT"
-    compile "com.github.epabst.scrud:scrud-android-res:scrud-android-res:0.3-alpha8-SNAPSHOT"
+    compile "org.scala-lang:scala-library:$scalaVersion"
+    compile project(":triangle"); //"com.github.epabst.triangle:triangle:0.6-SNAPSHOT"
+    compile project(":annotations-for-quality"); //"com.github.epabst.quality:annotations-for-quality:1.0-SNAPSHOT"
+    // androidSdkDir must be set (e.g. in ~/.gradle/gradle.properties)
+    compile files("$androidSdkDir/platforms/android-19/android.jar")
+//	compile 'com.android.support:appcompat-v7:+'
+//	compile 'com.android.support:support-v4:18.0.0'
+//    compile project(":scrud:scrud-android-res"); // "com.github.epabst.scrud:scrud-android-res:scrud-android-res:0.3-alpha8-SNAPSHOT"
     testRuntime "org.slf4j:slf4j-jdk14:1.6.1"
-    compile "com.google.android:support-v4:r6"
     testCompile "org.mockito:mockito-core:1.8.5"
     testCompile "junit:junit:4.8.2"
     testCompile "com.novocode:junit-interface:0.4" // Required to make sbt run junit tests
