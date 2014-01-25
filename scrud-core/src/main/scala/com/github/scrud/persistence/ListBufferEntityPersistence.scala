@@ -1,10 +1,8 @@
 package com.github.scrud.persistence
 
 import com.github.scrud.util.ListenerSet
-import com.github.triangle.{Setter, Getter, Field}
 import com.github.scrud.platform.PlatformTypes._
-import com.github.scrud.{EntityName, UriPath, MutableIdPk, IdPk}
-import com.github.scrud.android.persistence.CursorField
+import com.github.scrud.{EntityName, UriPath}
 import collection.mutable
 import java.util.concurrent.atomic.AtomicLong
 
@@ -16,9 +14,11 @@ import java.util.concurrent.atomic.AtomicLong
  */
 class ListBufferEntityPersistence[T <: AnyRef](entityName: EntityName, newWritableFunction: => T,
                                                listenerSet: ListenerSet[DataListener]) extends SeqEntityPersistence[T] {
-  private object IdField extends Field[ID](Getter[IdPk,ID](_.id).withUpdater(e => e.withId(_)) +
-      Setter((e: MutableIdPk) => e.id = _) + CursorField.PersistedId)
-  val buffer = mutable.ListBuffer[T]()
+  private case class IDAndEntity(id: ID, entity: T) {
+    override def toString = id + " -> " + entity
+  }
+
+  private val buffer = mutable.ListBuffer[IDAndEntity]()
 
   // not a val since dynamic
   def listeners = listenerSet.listeners
@@ -27,29 +27,32 @@ class ListBufferEntityPersistence[T <: AnyRef](entityName: EntityName, newWritab
 
   def toUri(id: ID) = entityName.toUri(id)
 
-  def findAll(uri: UriPath) =
-    uri.findId(entityName).map(id => buffer.toList.filter(item => IdField(item) == Some(id))).getOrElse(buffer.toList)
+  def findAll(uri: UriPath): List[T] = rawFindAll(uri).map(_.entity)
+
+  private def rawFindAll(uri: UriPath): List[IDAndEntity] = {
+    uri.findId(entityName).map(id => buffer.toList.filter(item => item.id == id)).getOrElse(buffer.toList)
+  }
 
   def newWritable() = newWritableFunction
 
-  def doSave(idOpt: Option[ID], item: AnyRef) = {
+  def doSave(idOpt: Option[ID], entity: AnyRef) = {
     val newId = idOpt.getOrElse {
       nextId.incrementAndGet()
     }
-    val index = idOpt.map(id => buffer.indexWhere(IdField(_) == Some(id))).getOrElse(-1)
+    val index = idOpt.map(id => buffer.indexWhere(_.id == id)).getOrElse(-1)
     index match {
       case -1 =>
         // Prepend so that the newest ones come out first in results
-        buffer.prepend(IdField.updateWithValue(item.asInstanceOf[T], Some(newId)))
+        buffer.prepend(IDAndEntity(newId, entity.asInstanceOf[T]))
       case _ =>
-        buffer(index) = item.asInstanceOf[T]
+        buffer(index) = IDAndEntity(newId, entity.asInstanceOf[T])
     }
     newId
   }
 
   def doDelete(uri: UriPath): Int = {
-    val matches = findAll(uri)
-    matches.foreach(entity => buffer -= entity)
+    val matches = rawFindAll(uri)
+    matches.foreach(idAndEntity => buffer -= idAndEntity)
     matches.size
   }
 
