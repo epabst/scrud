@@ -1,0 +1,23 @@
+group = 'com.github.epabst.scrud'
+version = '0.3-alpha8-SNAPSHOT'
+
+apply plugin: 'scala'
+
+repositories {
+    mavenCentral()
+}
+
+def scalaVersion = '2.9.2'
+
+dependencies {
+    compile "org.scala-lang:scala-library:$scalaVersion"
+    compile project(":annotations-for-quality"); //"com.github.epabst.quality:annotations-for-quality:1.0-SNAPSHOT"
+    testRuntime "org.slf4j:slf4j-jdk14:1.6.1"
+    testCompile "org.mockito:mockito-core:1.8.5"
+    testCompile "org.scalatest:scalatest_$scalaVersion:1.8"
+}
+
+tasks.withType(Test) {
+    scanForTestClasses = false
+    include "**/*Spec.class"
+}
