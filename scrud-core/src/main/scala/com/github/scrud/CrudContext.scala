@@ -1,7 +1,7 @@
 package com.github.scrud
 
 import action.Undoable
-import persistence.{PersistenceFactory, PersistenceFactoryMapping, DataListener, CrudPersistence}
+import persistence.{PersistenceFactory, EntityTypeMap, DataListener, CrudPersistence}
 import platform.{PlatformTypes, PlatformDriver}
 import com.github.scrud.state.{SimpleStateHolder, StateHolder}
 import com.github.scrud.util.{Logging, ListenerHolder}
@@ -11,6 +11,7 @@ import scala.collection.JavaConversions._
 import com.github.annotations.quality.MicrotestCompatible
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
+import com.github.scrud.context.ApplicationName
 
 /**
  * The context and state for the application code to interact with.
@@ -19,18 +20,20 @@ import scala.concurrent.ExecutionContext.Implicits.global
  */
 @MicrotestCompatible(use = "SimpleCrudContext(application)")
 trait CrudContext extends Notification with Logging {
-  protected lazy val logTag = application.logTag
+  protected lazy val logTag = applicationName.logTag
 
-  def application: CrudApplication
+  def applicationName: ApplicationName = entityNavigation.applicationName
 
-  def persistenceFactoryMapping: PersistenceFactoryMapping = application
+  def entityNavigation: EntityNavigation
+
+  def entityTypeMap: EntityTypeMap = entityNavigation.entityTypeMap
 
   def stateHolder: StateHolder
 
   //final since only here as a convenience method.
   final def applicationState = stateHolder.applicationState
 
-  def platformDriver: PlatformDriver = application.platformDriver
+  def platformDriver: PlatformDriver = entityNavigation.platformDriver
 
   /** The ISO 2 country such as "US". */
   def isoCountry: String
@@ -66,13 +69,13 @@ trait CrudContext extends Notification with Logging {
   def newWritable(entityType: EntityType): AnyRef = persistenceFactory(entityType).newWritable()
 
   def dataListenerHolder(entityName: EntityName): ListenerHolder[DataListener] =
-    dataListenerHolder(persistenceFactoryMapping.entityType(entityName))
+    dataListenerHolder(entityTypeMap.entityType(entityName))
 
   def dataListenerHolder(entityType: EntityType): ListenerHolder[DataListener] =
     persistenceFactory(entityType).listenerHolder(entityType, this)
 
   /** May be overidden if needed. */
-  def persistenceFactory(entityName: EntityName): PersistenceFactory = persistenceFactoryMapping.persistenceFactory(entityName)
+  def persistenceFactory(entityName: EntityName): PersistenceFactory = entityTypeMap.persistenceFactory(entityName)
 
   /**
    * Marked final since it is only a convenience method for [[com.github.scrud.CrudContext.persistenceFactory(EntityName)]].
@@ -81,13 +84,13 @@ trait CrudContext extends Notification with Logging {
   final def persistenceFactory(entityType: EntityType): PersistenceFactory = persistenceFactory(entityType.entityName)
 
   def openEntityPersistence(entityName: EntityName): CrudPersistence =
-    openEntityPersistence(persistenceFactoryMapping.entityType(entityName))
+    openEntityPersistence(entityTypeMap.entityType(entityName))
 
   def openEntityPersistence(entityType: EntityType): CrudPersistence =
     persistenceFactory(entityType).createEntityPersistence(entityType, this)
 
   def withEntityPersistence[T](entityName: EntityName)(f: CrudPersistence => T): T = {
-    withEntityPersistence(persistenceFactoryMapping.entityType(entityName))(f)
+    withEntityPersistence(entityTypeMap.entityType(entityName))(f)
   }
 
   def withEntityPersistence[T](entityType: EntityType)(f: CrudPersistence => T): T = {
@@ -100,7 +103,7 @@ trait CrudContext extends Notification with Logging {
   def allowUndo(undoable: Undoable)
 }
 
-case class SimpleCrudContext(application: CrudApplication) extends CrudContext {
+case class SimpleCrudContext(entityNavigation: EntityNavigation) extends CrudContext {
   val stateHolder = new SimpleStateHolder
 
   /** The ISO 2 country such as "US". */

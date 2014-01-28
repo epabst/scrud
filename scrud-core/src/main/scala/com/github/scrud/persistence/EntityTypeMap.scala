@@ -10,7 +10,7 @@ import com.github.scrud.util.Logging
  * Time: 4:50 PM
  */
 
-abstract class PersistenceFactoryMapping extends Logging {
+abstract class EntityTypeMap extends Logging {
   def packageName: String
 
   def logTag: String
@@ -19,7 +19,7 @@ abstract class PersistenceFactoryMapping extends Logging {
 
   def persistenceFactory(entityType: EntityType): PersistenceFactory
 
-  /** Marked final since only a convenience method for the other [[com.github.scrud.persistence.PersistenceFactoryMapping.persistenceFactory]] method. */
+  /** Marked final since only a convenience method for the other [[com.github.scrud.persistence.EntityTypeMap.persistenceFactory]] method. */
   final def persistenceFactory(entityName: EntityName): PersistenceFactory = persistenceFactory(entityType(entityName))
 
   def entityType(entityName: EntityName): EntityType = allEntityTypes.find(_.entityName == entityName).getOrElse {
