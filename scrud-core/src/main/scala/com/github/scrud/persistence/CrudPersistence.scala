@@ -1,10 +1,12 @@
 package com.github.scrud.persistence
 
 import com.github.scrud.platform.PlatformTypes._
-import com.github.triangle.Logging
+import com.github.scrud.util.Logging
 import com.github.scrud.util.{Common, ListenerSet}
 import com.github.scrud.{IdPk, UriPath, EntityType}
 import com.github.annotations.quality.MicrotestCompatible
+import com.github.scrud.copy.{TargetType, SourceType, InstantiatingTargetType}
+import com.github.scrud.platform.node.Persistence
 
 /** An EntityPersistence for a CrudType.
   * @author Eric Pabst (epabst@gmail.com)
@@ -15,10 +17,14 @@ trait CrudPersistence extends EntityPersistence with ListenerSet[DataListener] w
 
   def entityType: EntityType
 
+  def sourceType: SourceType = Persistence
+
+  def targetType: TargetType = Persistence
+
   override def toUri(id: ID) = entityType.toUri(id)
 
-  def find[T <: AnyRef](uri: UriPath, instantiateItem: => T): Option[T] =
-    find(uri).map(entityType.fieldsIncludingIdPk.copyAndUpdate(_, instantiateItem))
+  def find[T <: AnyRef](uri: UriPath, targetType: InstantiatingTargetType[T]): Option[T] =
+    find(uri).map(entityType.copyAndUpdate(sourceType, _, targetType))
 
   /** Find an entity with a given ID using a baseUri. */
   def find(id: ID, baseUri: UriPath): Option[AnyRef] = find(baseUri.specify(entityType.entityName, id))
@@ -29,21 +35,11 @@ trait CrudPersistence extends EntityPersistence with ListenerSet[DataListener] w
     result
   }
 
-  def findAll[T <: AnyRef](uri: UriPath, instantiateItem: => T): Seq[T] =
-    findAll(uri).map(entityType.fieldsIncludingIdPk.copyAndUpdate(_, instantiateItem))
-
-  private lazy val writableClass = newWritable().getClass
-
-  def toWritable(data: AnyRef): AnyRef = if (writableClass.isInstance(data)) data else
-    entityType.copyAndUpdate(data, newWritable())
+  def findAll[T <: AnyRef](uri: UriPath, targetType: InstantiatingTargetType[T]): Seq[T] =
+    findAll(uri).map(entityType.copyAndUpdate(Persistence, _, targetType))
 
   /** Saves the entity.  This assumes that the entityType's fields support copying from the given modelEntity. */
-  def save(modelEntity: IdPk): ID = saveCopy(modelEntity.id, modelEntity)
-
-  /** Saves the entity.  This assumes that the entityType's fields support copying from the given modelEntity. */
-  def saveCopy(id: Option[ID], modelEntity: AnyRef): ID = {
-    save(id, toWritable(modelEntity))
-  }
+  def save(modelEntity: IdPk): ID = save(modelEntity.id, modelEntity) //todo convert to correct type
 
   def saveAll(modelEntityList: Seq[IdPk]): Seq[ID] = {
     modelEntityList.map(save(_))

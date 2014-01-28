@@ -1,6 +1,6 @@
 package com.github.scrud
 
-import com.github.triangle.Logging
+import com.github.scrud.util.Logging
 import platform.PlatformTypes
 
 trait Notification extends Logging {

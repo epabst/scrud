@@ -1,7 +1,5 @@
 package com.github.scrud
 
-import com.github.triangle.{Updater, UpdaterInput}
-
 /** A PortableField for validating data.  It updates a ValidationResult using a value.
   * @author Eric Pabst (epabst@gmail.com)
   */
@@ -22,7 +20,7 @@ object Validation {
     * It does allow the value to be an empty string, empty list, etc.
     * Example: <pre>field... + requiredAnd(_ != "")</pre>
     */
-  def requiredAnd[T](isValid: T => Boolean): Validation[T] = Validation(_.map(isValid(_)).getOrElse(false))
+  def requiredAnd[T](isValid: T => Boolean): Validation[T] = Validation(_.exists(isValid(_)))
 
   /** A Validation that requires that the value be defined and not one of the given values.
     * Example: <pre>field... + requiredAndNot("")</pre>

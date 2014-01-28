@@ -2,7 +2,6 @@ package com.github.scrud.context
 
 import com.github.scrud.UriPath
 import com.github.scrud.state.State
-import com.github.scrud.context.EntityRegistry
 
 /**
  * The context that is shared among all [[com.github.scrud.context.RequestContext]]s.

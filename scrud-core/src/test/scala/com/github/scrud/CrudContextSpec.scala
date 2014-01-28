@@ -1,6 +1,5 @@
 package com.github.scrud
 
-import android.{CrudApplicationForTesting, CrudTypeForTesting}
 import org.scalatest.FunSpec
 import org.mockito.Mockito._
 import com.github.scrud.persistence.ThinPersistence

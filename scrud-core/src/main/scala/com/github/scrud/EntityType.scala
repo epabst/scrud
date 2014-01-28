@@ -4,9 +4,10 @@ import persistence.CrudPersistence
 import platform.PlatformDriver
 import platform.PlatformTypes._
 import com.github.scrud.types.QualifiedType
-import util.Common
-import com.github.scrud.copy.{FieldApplicability, BaseAdaptableField, AdaptableField}
+import com.github.scrud.util.{Logging, Common}
+import com.github.scrud.copy._
 import scala.collection.mutable
+import com.github.scrud.copy.FieldApplicability
 
 /** An entity configuration that provides information needed to map data to and from persistence.
   * This shouldn't depend on the platform (e.g. android).
@@ -19,12 +20,20 @@ abstract class EntityType(val entityName: EntityName, val platformDriver: Platfo
   trace("Instantiated EntityType: " + this)
 
   private val adaptableFields: mutable.Buffer[BaseAdaptableField] = mutable.Buffer[BaseAdaptableField]()
-  
+
+  def findPersistedId(readable: AnyRef): Option[ID] //todo = platformDriver...
+
   protected def field[V](fieldName: String, qualifiedType: QualifiedType[V], applicability: FieldApplicability): AdaptableField[V] = {
     val newField = platformDriver.field(fieldName, qualifiedType, applicability, entityName)
     adaptableFields += newField
     newField
   }
+
+  def clearId(source: IdPk): IdPk = source.withId(None)
+
+  def clearId(source: AnyRef): AnyRef = new UnsupportedOperationException
+
+  def copyAndUpdate[T <: AnyRef](sourceType: SourceType, source: AnyRef, targetType: InstantiatingTargetType[T]): T
 
   def toUri(id: ID) = UriPath(entityName, id)
 

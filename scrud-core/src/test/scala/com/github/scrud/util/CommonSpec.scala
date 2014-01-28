@@ -1,7 +1,6 @@
 package com.github.scrud.util
 
-import org.junit.runner.RunWith
-import org.scalatest.junit.JUnitRunner
+//import org.junit.runner.RunWith
 import org.scalatest.matchers.MustMatchers
 import org.scalatest.FunSpec
 
@@ -9,7 +8,7 @@ import org.scalatest.FunSpec
   * @author Eric Pabst (epabst@gmail.com)
   */
 
-@RunWith(classOf[JUnitRunner])
+//@RunWith(classOf[JUnitRunner])
 class CommonSpec extends FunSpec with MustMatchers {
   describe("tryToEvaluate") {
     it("must evaluate and return the parameter") {
@@ -17,7 +16,7 @@ class CommonSpec extends FunSpec with MustMatchers {
     }
 
     it("must return None if an exception occurs") {
-      Common.tryToEvaluate(error("intentional")) must be (None)
+      Common.tryToEvaluate(sys.error("intentional")) must be (None)
     }
   }
 }

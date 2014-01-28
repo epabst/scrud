@@ -32,7 +32,7 @@ case class SingletonWithChangeLogCrudPersistence(manyPersistence: CrudPersistenc
 
   // Intentionally save without reusing the ID so that existing instances are never modified since a change-log
   def doSave(id: Option[PlatformTypes.ID], writable: AnyRef) = {
-    val writableWithoutId = entityType.idPkField.updateWithValue(writable, None)
+    val writableWithoutId = entityType.clearId(writable)
     manyPersistence.doSave(None, writableWithoutId)
   }
 

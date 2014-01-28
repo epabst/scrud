@@ -1,7 +1,7 @@
 package com.github.scrud.persistence
 
 import com.github.scrud.platform.PlatformTypes._
-import com.github.triangle.Logging
+import com.github.scrud.util.Logging
 import com.github.scrud.{UriPath, EntityType}
 import com.github.scrud.util.{MutableListenerSet, DelegatingListenerSet}
 

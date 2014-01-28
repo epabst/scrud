@@ -1,7 +1,6 @@
 package com.github.scrud.state
 
-import org.junit.runner.RunWith
-import org.scalatest.junit.JUnitRunner
+//import org.junit.runner.RunWith
 import org.scalatest.matchers.MustMatchers
 import org.scalatest.FunSpec
 import org.mockito.Mockito._
@@ -11,7 +10,7 @@ import org.scalatest.mock.MockitoSugar
   * @author Eric Pabst (epabst@gmail.com)
   */
 
-@RunWith(classOf[JUnitRunner])
+//@RunWith(classOf[JUnitRunner])
 class StateSpec extends FunSpec with MustMatchers with MockitoSugar {
   it("must retain its value for the same State") {
     object myVar extends StateVar[String]

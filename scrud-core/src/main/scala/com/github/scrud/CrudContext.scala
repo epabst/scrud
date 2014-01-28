@@ -1,16 +1,16 @@
 package com.github.scrud
 
 import action.Undoable
-import com.github.triangle.{Logging, Field}
-import com.github.triangle.PortableField._
 import persistence.{PersistenceFactory, PersistenceFactoryMapping, DataListener, CrudPersistence}
 import platform.{PlatformTypes, PlatformDriver}
 import com.github.scrud.state.{SimpleStateHolder, StateHolder}
-import com.github.scrud.util.ListenerHolder
-import collection.mutable
+import com.github.scrud.util.{Logging, ListenerHolder}
+import collection.concurrent
 import java.util.concurrent.ConcurrentHashMap
 import scala.collection.JavaConversions._
 import com.github.annotations.quality.MicrotestCompatible
+import scala.concurrent.Future
+import scala.concurrent.ExecutionContext.Implicits.global
 
 /**
  * The context and state for the application code to interact with.
@@ -35,13 +35,10 @@ trait CrudContext extends Notification with Logging {
   /** The ISO 2 country such as "US". */
   def isoCountry: String
 
-  private val workInProgress: mutable.ConcurrentMap[() => _,Unit] = new ConcurrentHashMap[() => _,Unit]()
+  private val workInProgress: concurrent.Map[() => _,Unit] = new ConcurrentHashMap[() => _,Unit]()
 
-  def future[T](body: => T): () => T = {
-    // Would prefer to use scala.concurrent.ops.future instead of scala.actors.Futures.future because it preserves exceptions
-    // However, scala.concurrent.ops.future has a problem with scala before 2.10.1 with missing sun.misc.Unsafe.throwException
-    //    scala.concurrent.ops.future(trackWorkInProgress(propagateWithExceptionReporting(body))())
-    scala.actors.Futures.future {
+  def future[T](body: => T): Future[T] = {
+    scala.concurrent.future {
       try {
         body
       } catch {

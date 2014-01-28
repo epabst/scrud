@@ -1,7 +1,6 @@
 package com.github.scrud
 
-import org.scalatest.junit.JUnitRunner
-import org.junit.runner.RunWith
+//import org.junit.runner.RunWith
 import org.scalatest.matchers.MustMatchers
 import org.scalatest.FunSpec
 import Validation._
@@ -9,7 +8,7 @@ import Validation._
 /** A behavior specification for [[com.github.scrud.Validation]].
   * @author Eric Pabst (epabst@gmail.com)
   */
-@RunWith(classOf[JUnitRunner])
+//@RunWith(classOf[JUnitRunner])
 class ValidationSpec extends FunSpec with MustMatchers {
   describe("required") {
     val requiredInt = required[Int]
@@ -53,7 +52,7 @@ class ValidationSpec extends FunSpec with MustMatchers {
     }
 
     it("must consider a non-empty string as valid") {
-      requiredString.(Some("hello")) must be (true)
+      requiredString.isValid(Some("hello")) must be (true)
     }
   }
 }

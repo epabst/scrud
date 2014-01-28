@@ -1,7 +1,7 @@
 package com.github.scrud.persistence
 
-import com.github.triangle._
 import com.github.scrud.{UriPath, EntityType, EntityName}
+import com.github.scrud.util.Logging
 
 /**
  * A stateless mapping between a set of EntityTypes and the PersistenceFactory for each one.
