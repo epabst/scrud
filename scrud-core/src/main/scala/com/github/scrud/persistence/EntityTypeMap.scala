@@ -9,15 +9,24 @@ import com.github.scrud.{UriPath, EntityType, EntityName}
  * Time: 4:50 PM
  */
 
-case class EntityTypeMap(map: Map[EntityType,PersistenceFactory]) {
-  def allEntityTypes: Seq[EntityType] = map.keys.toSeq
+case class EntityTypeMap(entityTypesAndFactories: (EntityType, PersistenceFactory)*) {
+  val allEntityTypes: Seq[EntityType] = entityTypesAndFactories.map(_._1)
 
-  def persistenceFactory(entityType: EntityType): PersistenceFactory = map.apply(entityType)
+  private val persistenceFactoryByEntityType: Map[EntityType, PersistenceFactory] = Map(entityTypesAndFactories: _*)
+
+  private val entityTypeByEntityName: Map[EntityName, EntityType] =
+    allEntityTypes.map(entityType => (entityType.entityName, entityType)).toMap
+
+  if (entityTypeByEntityName.size < entityTypesAndFactories.size) {
+    throw new IllegalArgumentException("EntityTypes must have unique names: " + entityTypesAndFactories.map(_._1).mkString(","))
+  }
+
+  def persistenceFactory(entityType: EntityType): PersistenceFactory = persistenceFactoryByEntityType.apply(entityType)
 
   /** Marked final since only a convenience method for the other [[com.github.scrud.persistence.EntityTypeMap.persistenceFactory]] method. */
   final def persistenceFactory(entityName: EntityName): PersistenceFactory = persistenceFactory(entityType(entityName))
 
-  def entityType(entityName: EntityName): EntityType = allEntityTypes.find(_.entityName == entityName).getOrElse {
+  def entityType(entityName: EntityName): EntityType = entityTypeByEntityName.get(entityName).getOrElse {
     throw new IllegalArgumentException("Unknown entity: entityName=" + entityName)
   }
 

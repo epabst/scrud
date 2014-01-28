@@ -8,7 +8,7 @@ import com.github.annotations.quality.MicrotestCompatible
   * It shouldn't define code for any of its overridable methods to avoid bugs in [[com.github.scrud.persistence.DelegatingPersistenceFactory]].
   * @author Eric Pabst (epabst@gmail.com)
   */
-@MicrotestCompatible(use = "new CrudApplicationForTesting(new CrudTypeForTesting(...)).persistenceFactory(...)")
+@MicrotestCompatible(use = "ListBufferPersistenceFactoryForTesting")
 abstract class PersistenceFactory {
   /** Indicates if an entity can be saved. */
   def canSave: Boolean
