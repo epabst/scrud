@@ -1,7 +1,6 @@
 package com.github.scrud.persistence
 
 import com.github.scrud.{UriPath, EntityType, EntityName}
-import com.github.scrud.util.Logging
 
 /**
  * A stateless mapping between a set of EntityTypes and the PersistenceFactory for each one.
@@ -10,14 +9,10 @@ import com.github.scrud.util.Logging
  * Time: 4:50 PM
  */
 
-abstract class EntityTypeMap extends Logging {
-  def packageName: String
+case class EntityTypeMap(map: Map[EntityType,PersistenceFactory]) {
+  def allEntityTypes: Seq[EntityType] = map.keys.toSeq
 
-  def logTag: String
-
-  def allEntityTypes: Seq[EntityType]
-
-  def persistenceFactory(entityType: EntityType): PersistenceFactory
+  def persistenceFactory(entityType: EntityType): PersistenceFactory = map.apply(entityType)
 
   /** Marked final since only a convenience method for the other [[com.github.scrud.persistence.EntityTypeMap.persistenceFactory]] method. */
   final def persistenceFactory(entityName: EntityName): PersistenceFactory = persistenceFactory(entityType(entityName))
