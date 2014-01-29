@@ -1,13 +1,14 @@
 package com.github.scrud.action
 
 import org.scalatest.FunSpec
-import com.github.scrud.persistence.{ThinPersistence, CrudPersistenceUsingThin}
+import com.github.scrud.persistence._
 import org.mockito.Mockito._
 import collection.mutable
-import com.github.scrud.{EntityTypeForTesting, SimpleCrudContext, UriPath}
+import com.github.scrud.{EntityNavigationForTesting, EntityTypeForTesting, UriPath}
 import com.github.scrud.util.CrudMockitoSugar
 import com.github.scrud.platform.TestingPlatformDriver
 import org.scalatest.matchers.MustMatchers
+import com.github.scrud.context.RequestContextForTesting
 
 /**
  * A behavior specification for [[com.github.scrud.action.StartEntityDeleteOperation]].
@@ -20,42 +21,42 @@ class StartEntityDeleteOperationSpec extends FunSpec with CrudMockitoSugar with 
 
   it("must delete with option to undo") {
     val entity = new EntityTypeForTesting
-    val readable = null //todo mutable.Map[String,Option[Any]](CursorField.idFieldName -> Some(345L), "name" -> Some("George"))
+    val readable = mutable.Map[String,Option[Any]](entity.idFieldName -> Some(345L), "name" -> Some("George"))
     val uri = UriPath(entity.entityName) / 345L
     val persistence = mock[ThinPersistence]
     stub(persistence.newWritable()).toReturn(Map.empty)
     stub(persistence.findAll(uri)).toReturn(Seq(readable))
-    val application = null //todo new CrudApplicationForTesting(platformDriver, new CrudTypeForTesting(entity, persistence))
     var allowUndoCalled = false
-    val crudContext = new SimpleCrudContext(application) {
+    val entityTypeMap = new PersistenceFactoryForTesting(entity, persistence).toEntityTypeMap
+    val requestContext = new RequestContextForTesting(entityTypeMap) {
       override def allowUndo(undoable: Undoable) {
         allowUndoCalled = true
         undoable.closeOperation.foreach(_.invoke(uri, this))
       }
     }
-    val actionToDelete = null //todo application.actionToDelete(entity).get
-    null //todo actionToDelete.invoke(uri, crudContext)
+    val actionToDelete = new EntityNavigationForTesting(entityTypeMap).actionToDelete(entity).get
+    actionToDelete.invoke(uri, requestContext)
     verify(persistence).delete(uri)
     allowUndoCalled must be (true)
   }
 
   it("undo must work") {
     val entity = new EntityTypeForTesting
-    val readable = null //todo mutable.Map[String,Option[Any]](CursorField.idFieldName -> Some(345L), "name" -> Some("George"))
+    val readable = mutable.Map[String,Option[Any]](entity.idFieldName -> Some(345L), "name" -> Some("George"))
     val uri = UriPath(entity.entityName) / 345L
     val thinPersistence = mock[ThinPersistence]
-    val crudPersistence = new CrudPersistenceUsingThin(entity, thinPersistence)
     stub(thinPersistence.findAll(uri)).toReturn(Seq(readable))
     stub(thinPersistence.newWritable()).toReturn(mutable.Map.empty[String,Option[Any]])
-    val application = null //todo new CrudApplicationForTesting(platformDriver, new CrudTypeForTesting(entity, crudPersistence))
-    val crudContext = new SimpleCrudContext(application) {
+    val persistenceFactory = new PersistenceFactoryForTesting(entity, thinPersistence)
+    val entityTypeMap = persistenceFactory.toEntityTypeMap
+    val requestContext = new RequestContextForTesting(entityTypeMap) {
       override def allowUndo(undoable: Undoable) {
         undoable.undoAction.invoke(uri, this)
       }
     }
     val operation = new StartEntityDeleteOperation(entity)
-    operation.invoke(uri, crudPersistence, crudContext)
+    operation.invoke(uri, persistenceFactory.createEntityPersistence(entity, requestContext.sharedContext), requestContext)
     verify(thinPersistence).delete(uri)
-    null //todo verify(thinPersistence).save(Some(345L), mutable.Map(CursorField.idFieldName -> Some(345L), "name" -> Some("George")))
+    verify(thinPersistence).save(Some(345L), mutable.Map(entity.idFieldName -> Some(345L), "name" -> Some("George")))
   }
 }

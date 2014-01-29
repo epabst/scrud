@@ -18,7 +18,8 @@ case class EntityTypeMap(entityTypesAndFactories: (EntityType, PersistenceFactor
     allEntityTypes.map(entityType => (entityType.entityName, entityType)).toMap
 
   if (entityTypeByEntityName.size < entityTypesAndFactories.size) {
-    throw new IllegalArgumentException("EntityTypes must have unique names: " + entityTypesAndFactories.map(_._1).mkString(","))
+    val duplicates: Seq[String] = allEntityTypes.groupBy(_.entityName).filter(_._2.size > 1).keys.toSeq.map(_.name).sorted
+    throw new IllegalArgumentException("EntityType names must be unique.  Duplicates=" + duplicates.mkString(","))
   }
 
   def persistenceFactory(entityType: EntityType): PersistenceFactory = persistenceFactoryByEntityType.apply(entityType)

@@ -1,7 +1,7 @@
 package com.github.scrud.platform
 
 import com.github.scrud.persistence.ListBufferPersistenceFactory
-import com.github.scrud.{EntityType, CrudContext, UriPath}
+import com.github.scrud.{EntityType, UriPath}
 import com.github.scrud.action.{Operation, CrudOperationType}
 import com.github.scrud.types.QualifiedType
 import com.github.scrud.copy._
@@ -10,6 +10,7 @@ import com.github.scrud.action.CommandId
 import com.github.scrud.action.Command
 import com.github.scrud.copy.FieldApplicability
 import com.github.scrud.platform.node.{MapTargetField, MapStorage}
+import com.github.scrud.context.RequestContext
 
 /**
  * A simple PlatformDriver for testing.
@@ -23,6 +24,18 @@ class TestingPlatformDriver extends PlatformDriver {
   val localDatabasePersistenceFactory = new ListBufferPersistenceFactory[AnyRef](Map.empty[String,Any])
 
   def calculateDataVersion(entityTypes: Seq[EntityType]) = 1
+
+  def idFieldName(entityName: EntityName): String = "id"
+
+  def commandToAddItem(entityName: EntityName) = Command(CommandId("Add"), None, None)
+
+  def commandToDeleteItem(entityName: EntityName) = Command(CommandId("Delete"), None, None)
+
+  def commandToDisplayItem(entityName: EntityName) = Command(CommandId("View"), None, None)
+
+  def commandToEditItem(entityName: EntityName) = Command(CommandId("Edit"), None, None)
+
+  def commandToListItems(entityName: EntityName) = Command(CommandId("List"), None, None)
 
   /** An Operation that will show the UI to the user for creating an entity instance. */
   def operationToShowCreateUI(entityName: EntityName) =
@@ -71,8 +84,8 @@ class TestingPlatformDriver extends PlatformDriver {
 object TestingPlatformDriver extends TestingPlatformDriver
 
 case class ShowEntityUIOperationForTesting(entityName: EntityName, operationType: CrudOperationType.Value) extends Operation {
-  /** Runs the operation, given the uri and the current CrudContext. */
-  def invoke(uri: UriPath, crudContext: CrudContext) {
+  /** Runs the operation, given the uri and the current RequestContext. */
+  def invoke(uri: UriPath, requestContext: RequestContext) {
     println("Showing Entity UI Operation: entityName=" + entityName + " operation=" + operationType)
   }
 }

@@ -21,6 +21,8 @@ abstract class EntityType(val entityName: EntityName, val platformDriver: Platfo
 
   private val adaptableFields: mutable.Buffer[BaseAdaptableField] = mutable.Buffer[BaseAdaptableField]()
 
+  def idFieldName: String = platformDriver.idFieldName(entityName)
+
   def findPersistedId(readable: AnyRef): Option[ID] //todo = platformDriver...
 
   protected def field[V](fieldName: String, qualifiedType: QualifiedType[V], applicability: FieldApplicability): AdaptableField[V] = {

@@ -1,7 +1,8 @@
 package com.github.scrud.action
 
 import com.github.scrud.platform.PlatformTypes._
-import com.github.scrud.{CrudContext, UriPath}
+import com.github.scrud.UriPath
+import com.github.scrud.context.RequestContext
 
 /**
  * Represents an action that a user can initiate.
@@ -13,8 +14,8 @@ import com.github.scrud.{CrudContext, UriPath}
 case class Action(command: Command, operation: Operation) {
   def commandId: CommandNumber = command.commandNumber
 
-  def invoke(uri: UriPath, crudContext: CrudContext) {
-    operation.invoke(uri, crudContext)
+  def invoke(uri: UriPath, requestContext: RequestContext) {
+    operation.invoke(uri, requestContext)
   }
 
   /**

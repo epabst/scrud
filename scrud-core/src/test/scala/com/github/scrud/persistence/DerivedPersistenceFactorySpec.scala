@@ -6,6 +6,7 @@ import org.scalatest.matchers.MustMatchers
 import org.mockito.Mockito._
 import com.github.scrud.util.CrudMockitoSugar
 import com.github.scrud._
+import com.github.scrud.context._
 import com.github.scrud.EntityName
 
 /** A specification for [[com.github.scrud.persistence.DerivedPersistenceFactory]].
@@ -19,14 +20,16 @@ class DerivedPersistenceFactorySpec extends FunSpec with MustMatchers with CrudM
     val persistence1 = mock[ThinPersistence]
     val persistence2 = mock[ThinPersistence]
     val factory = new DerivedPersistenceFactory[String](entity1, entity2) {
-      def findAll(entityType: EntityType, uri: UriPath, crudContext: CrudContext, delegatePersistenceMap: Map[EntityName, CrudPersistence]) = {
+      def findAll(entityType: EntityType, uri: UriPath, sharedContext: SharedContext, delegatePersistenceMap: Map[EntityName, CrudPersistence]) = {
         delegatePersistenceMap.keySet must be (Set(entity1, entity2))
         delegatePersistenceMap.values.forall(_.entityType != null)
         List("findAll", "was", "called")
       }
     }
-    val crudContext = SimpleCrudContext(new CrudApplicationForTesting(new CrudTypeForTesting(entity1, persistence1), new CrudTypeForTesting(entity2, persistence2)))
-    val persistence = factory.createEntityPersistence(mock[EntityType], crudContext)
+    val persistenceFactory1 = new PersistenceFactoryForTesting(new EntityTypeForTesting(entity1), persistence1)
+    val persistenceFactory2 = new PersistenceFactoryForTesting(new EntityTypeForTesting(entity2), persistence2)
+    val sharedContext = new SharedContextForTesting(new EntityTypeMap(persistenceFactory1.toTuple, persistenceFactory2.toTuple))
+    val persistence = factory.createEntityPersistence(mock[EntityType], sharedContext)
     persistence.findAll(UriPath()) must be (List("findAll", "was", "called"))
   }
 
@@ -34,12 +37,13 @@ class DerivedPersistenceFactorySpec extends FunSpec with MustMatchers with CrudM
     val entity1 = EntityName("entity1")
     val entity2 = EntityName("entity2")
     val factory = new DerivedPersistenceFactory[String](entity1, entity2) {
-      def findAll(entityType: EntityType, uri: UriPath, crudContext: CrudContext, delegatePersistenceMap: Map[EntityName, CrudPersistence]) = Nil
+      def findAll(entityType: EntityType, uri: UriPath, sharedContext: SharedContext, delegatePersistenceMap: Map[EntityName, CrudPersistence]) = Nil
     }
     val persistence1 = mock[ThinPersistence]
     val persistence2 = mock[ThinPersistence]
-    val crudContext = SimpleCrudContext(new CrudApplicationForTesting(new CrudTypeForTesting(entity1, persistence1), new CrudTypeForTesting(entity2, persistence2)))
-    val persistence = factory.createEntityPersistence(mock[EntityType], crudContext)
+    val sharedContext = new SharedContextForTesting(EntityTypeMap(new PersistenceFactoryForTesting(new EntityTypeForTesting(entity1), persistence1).toTuple,
+      new PersistenceFactoryForTesting(new EntityTypeForTesting(entity2), persistence2).toTuple))
+    val persistence = factory.createEntityPersistence(mock[EntityType], sharedContext)
     persistence.close()
     verify(persistence1).close()
     verify(persistence2).close()

@@ -1,8 +1,9 @@
 package com.github.scrud.persistence
 
-import com.github.scrud.{EntityName, UriPath, EntityType, CrudContext}
+import com.github.scrud.{EntityName, UriPath, EntityType}
 import com.github.scrud.util.ListenerHolder
 import com.github.annotations.quality.MicrotestCompatible
+import com.github.scrud.context.SharedContext
 
 /** A factory for EntityPersistence specific to a storage type such as SQLite.
   * It shouldn't define code for any of its overridable methods to avoid bugs in [[com.github.scrud.persistence.DelegatingPersistenceFactory]].
@@ -31,16 +32,16 @@ abstract class PersistenceFactory {
     */
   def newWritable(): AnyRef
 
-  def createEntityPersistence(entityType: EntityType, crudContext: CrudContext): CrudPersistence
+  def createEntityPersistence(entityType: EntityType, sharedContext: SharedContext): CrudPersistence
 
   /** Returns true if the URI is worth calling EntityPersistence.find to try to get an entity instance.
     * It may be overridden in cases where an entity instance can be found even if no ID is present in the URI.
     */
   def maySpecifyEntityInstance(entityName: EntityName, uri: UriPath): Boolean
 
-  final def addListener(listener: DataListener, entityType: EntityType, crudContext: CrudContext) {
-    listenerHolder(entityType, crudContext).addListener(listener)
+  final def addListener(listener: DataListener, entityType: EntityType, sharedContext: SharedContext) {
+    listenerHolder(entityType, sharedContext).addListener(listener)
   }
 
-  def listenerHolder(entityType: EntityType, crudContext: CrudContext): ListenerHolder[DataListener]
+  def listenerHolder(entityType: EntityType, sharedContext: SharedContext): ListenerHolder[DataListener]
 }

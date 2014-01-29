@@ -1,18 +1,21 @@
 package com.github.scrud.platform
 
 import com.github.scrud.persistence.PersistenceFactory
-import com.github.scrud.action.{Command, Operation}
-import com.github.scrud.{EntityType, EntityName}
+import com.github.scrud.action.Operation
+import com.github.scrud.EntityType
 import com.github.scrud.types.QualifiedType
-import com.github.scrud.copy.{FieldApplicability, AdaptableField}
+import com.github.scrud.copy.AdaptableField
+import com.github.scrud.EntityName
+import com.github.scrud.action.Command
+import com.github.scrud.copy.FieldApplicability
 
 /**
  * An API for an app to interact with the host platform such as Android.
  * It should be constructable without any kind of container.
- * Use subtypes of CrudContext for state that is available in a container.
+ * Use subtypes of RequestContext for state that is available in a container.
  * The model is that the custom platform is implemented for all applications by
  * delegating to the CrudApplication to make business logic decisions.
- * Then the CrudApplication can call into this PlatformDriver or CrudContext for any calls it needs to make.
+ * Then the CrudApplication can call into this PlatformDriver or RequestContext for any calls it needs to make.
  * If direct access to the specific host platform is needed by a specific app, cast this
  * to the appropriate subclass, ideally using a scala match expression.
  * @author Eric Pabst (epabst@gmail.com)
@@ -23,6 +26,18 @@ trait PlatformDriver {
   def localDatabasePersistenceFactory: PersistenceFactory
 
   def calculateDataVersion(entityTypes: Seq[EntityType]): Int
+
+  def idFieldName(entityName: EntityName): String
+
+  def commandToListItems(entityName: EntityName): Command
+
+  def commandToDisplayItem(entityName: EntityName): Command
+
+  def commandToAddItem(entityName: EntityName): Command
+
+  def commandToEditItem(entityName: EntityName): Command
+
+  def commandToDeleteItem(entityName: EntityName): Command
 
   /** An Operation that will show the UI to the user for creating an entity instance. */
   def operationToShowCreateUI(entityName: EntityName): Operation

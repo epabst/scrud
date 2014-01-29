@@ -1,6 +1,7 @@
 package com.github.scrud.persistence
 
-import com.github.scrud.{UriPath, EntityName, CrudContext, EntityType}
+import com.github.scrud.{UriPath, EntityName, EntityType}
+import com.github.scrud.context.SharedContext
 
 /**
  * A [[com.github.scrud.persistence.PersistenceFactory]] that delegates all its calls to another.
@@ -21,6 +22,6 @@ abstract class DelegatingPersistenceFactory(delegate: PersistenceFactory) extend
 
   def newWritable() = delegate.newWritable()
 
-  def createEntityPersistence(entityType: EntityType, crudContext: CrudContext) =
-    delegate.createEntityPersistence(entityType, crudContext)
+  def createEntityPersistence(entityType: EntityType, sharedContext: SharedContext) =
+    delegate.createEntityPersistence(entityType, sharedContext)
 }

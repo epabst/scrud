@@ -1,10 +1,10 @@
 package com.github.scrud
 
-import action.Undoable
-import persistence.{PersistenceFactory, EntityTypeMap, DataListener, CrudPersistence}
-import platform.{PlatformTypes, PlatformDriver}
-import com.github.scrud.state.{SimpleStateHolder, StateHolder}
-import com.github.scrud.util.{Logging, ListenerHolder}
+import com.github.scrud.action.Undoable
+import persistence.{PersistenceFactory, EntityTypeMap}
+import platform.PlatformDriver
+import com.github.scrud.state.StateHolder
+import com.github.scrud.util.Logging
 import collection.concurrent
 import java.util.concurrent.ConcurrentHashMap
 import scala.collection.JavaConversions._
@@ -66,67 +66,9 @@ trait CrudContext extends Notification with Logging {
     debug("Waited for work in progress for " + (System.currentTimeMillis() - start) + "ms")
   }
 
-  def newWritable(entityType: EntityType): AnyRef = persistenceFactory(entityType).newWritable()
-
-  def dataListenerHolder(entityName: EntityName): ListenerHolder[DataListener] =
-    dataListenerHolder(entityTypeMap.entityType(entityName))
-
-  def dataListenerHolder(entityType: EntityType): ListenerHolder[DataListener] =
-    persistenceFactory(entityType).listenerHolder(entityType, this)
-
   /** May be overidden if needed. */
   def persistenceFactory(entityName: EntityName): PersistenceFactory = entityTypeMap.persistenceFactory(entityName)
 
-  /**
-   * Marked final since it is only a convenience method for [[com.github.scrud.CrudContext.persistenceFactory(EntityName)]].
-   * This makes it clear which one needs to be overridden if needed.
-   */
-  final def persistenceFactory(entityType: EntityType): PersistenceFactory = persistenceFactory(entityType.entityName)
-
-  def openEntityPersistence(entityName: EntityName): CrudPersistence =
-    openEntityPersistence(entityTypeMap.entityType(entityName))
-
-  def openEntityPersistence(entityType: EntityType): CrudPersistence =
-    persistenceFactory(entityType).createEntityPersistence(entityType, this)
-
-  def withEntityPersistence[T](entityName: EntityName)(f: CrudPersistence => T): T = {
-    withEntityPersistence(entityTypeMap.entityType(entityName))(f)
-  }
-
-  def withEntityPersistence[T](entityType: EntityType)(f: CrudPersistence => T): T = {
-    val persistence = openEntityPersistence(entityType)
-    try f(persistence)
-    finally persistence.close()
-  }
-
   /** Provides a way for the user to undo an operation. */
   def allowUndo(undoable: Undoable)
-}
-
-case class SimpleCrudContext(entityNavigation: EntityNavigation) extends CrudContext {
-  val stateHolder = new SimpleStateHolder
-
-  /** The ISO 2 country such as "US". */
-  lazy val isoCountry = java.util.Locale.getDefault.getCountry
-
-  /**
-   * Display a message to the user temporarily.
-   * @param message the message to display
-   */
-  def displayMessageToUser(message: String) {
-    println("Message to User: " + message)
-  }
-
-  /**
-   * Display a message to the user temporarily.
-   * @param messageKey the key of the message to display
-   */
-  def displayMessageToUserBriefly(messageKey: PlatformTypes.SKey) {
-    println("Message Key to User: " + messageKey)
-  }
-
-  /** Provides a way for the user to undo an operation. */
-  def allowUndo(undoable: Undoable) {
-    println("Allowed Undo: " + undoable)
-  }
 }

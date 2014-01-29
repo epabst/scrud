@@ -3,7 +3,7 @@ package com.github.scrud.persistence
 import com.github.scrud.util.{CachedFunction, MutableListenerSet}
 import com.github.scrud.EntityType
 import com.github.scrud.state.LazyApplicationVal
-import com.github.scrud.CrudContext
+import com.github.scrud.context.SharedContext
 
 /**
  * A holder of DataListeners.
@@ -16,9 +16,9 @@ trait DataListenerSetValHolder {
     extends LazyApplicationVal[CachedFunction[EntityType, MutableListenerSet[DataListener]]](
       CachedFunction[EntityType, MutableListenerSet[DataListener]](_ => new MutableListenerSet[DataListener]))
 
-  def listenerSet(entityType: EntityType, crudContext: CrudContext): MutableListenerSet[DataListener] =
-    ListenersByEntityType.get(crudContext.stateHolder).apply(entityType)
+  def listenerSet(entityType: EntityType, sharedContext: SharedContext): MutableListenerSet[DataListener] =
+    ListenersByEntityType.get(sharedContext).apply(entityType)
 
-  def listenerHolder(entityType: EntityType, crudContext: CrudContext): MutableListenerSet[DataListener] =
-    ListenersByEntityType.get(crudContext.stateHolder).apply(entityType)
+  def listenerHolder(entityType: EntityType, sharedContext: SharedContext): MutableListenerSet[DataListener] =
+    ListenersByEntityType.get(sharedContext).apply(entityType)
 }

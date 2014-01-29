@@ -1,6 +1,7 @@
 package com.github.scrud.persistence
 
-import com.github.scrud.{EntityName, UriPath, EntityType, CrudContext}
+import com.github.scrud.{EntityName, UriPath, EntityType}
+import com.github.scrud.context.SharedContext
 
 
 /**
@@ -16,12 +17,12 @@ class SingletonWithChangeLogPersistenceFactory(delegate: PersistenceFactory) ext
 
   def newWritable() = delegate.newWritable()
 
-  def createEntityPersistence(entityType: EntityType, crudContext: CrudContext) =
-    new SingletonWithChangeLogCrudPersistence(delegate.createEntityPersistence(entityType, crudContext),
-      delegate.listenerHolder(entityType, crudContext))
+  def createEntityPersistence(entityType: EntityType, sharedContext: SharedContext) =
+    new SingletonWithChangeLogCrudPersistence(delegate.createEntityPersistence(entityType, sharedContext),
+      delegate.listenerHolder(entityType, sharedContext))
 
   /** Since the first is used, no ID is required to find one. */
   override def maySpecifyEntityInstance(entityName: EntityName, uri: UriPath) = true
 
-  def listenerHolder(entityType: EntityType, crudContext: CrudContext) = delegate.listenerHolder(entityType, crudContext)
+  def listenerHolder(entityType: EntityType, sharedContext: SharedContext) = delegate.listenerHolder(entityType, sharedContext)
 }
