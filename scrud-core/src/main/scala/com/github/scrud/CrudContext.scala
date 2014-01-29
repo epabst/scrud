@@ -1,7 +1,6 @@
 package com.github.scrud
 
-import com.github.scrud.action.Undoable
-import persistence.{PersistenceFactory, EntityTypeMap}
+import persistence.EntityTypeMap
 import platform.PlatformDriver
 import com.github.scrud.state.StateHolder
 import com.github.scrud.util.Logging
@@ -35,9 +34,6 @@ trait CrudContext extends Notification with Logging {
 
   def platformDriver: PlatformDriver = entityNavigation.platformDriver
 
-  /** The ISO 2 country such as "US". */
-  def isoCountry: String
-
   private val workInProgress: concurrent.Map[() => _,Unit] = new ConcurrentHashMap[() => _,Unit]()
 
   def future[T](body: => T): Future[T] = {
@@ -65,10 +61,4 @@ trait CrudContext extends Notification with Logging {
     workInProgress.keys.foreach(_.apply())
     debug("Waited for work in progress for " + (System.currentTimeMillis() - start) + "ms")
   }
-
-  /** May be overidden if needed. */
-  def persistenceFactory(entityName: EntityName): PersistenceFactory = entityTypeMap.persistenceFactory(entityName)
-
-  /** Provides a way for the user to undo an operation. */
-  def allowUndo(undoable: Undoable)
 }

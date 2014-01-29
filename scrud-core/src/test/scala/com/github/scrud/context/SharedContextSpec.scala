@@ -20,7 +20,7 @@ class SharedContextSpec extends FunSpec with MockitoSugar {
       val persistence = mock[ThinPersistence]
       val entityTypeMap = new PersistenceFactoryForTesting(entityType, persistence).toEntityTypeMap
       val sharedContext = new SimpleSharedContext(entityTypeMap, TestingPlatformDriver)
-      sharedContext.withEntityPersistence(entityType) { p => p.findAll(UriPath.EMPTY) }
+      sharedContext.withPersistence { p => p.persistenceFor(entityType).findAll(UriPath.EMPTY) }
       verify(persistence).close()
     }
 
@@ -30,8 +30,11 @@ class SharedContextSpec extends FunSpec with MockitoSugar {
       val entityTypeMap = new PersistenceFactoryForTesting(entityType, persistence).toEntityTypeMap
       val sharedContext = new SimpleSharedContext(entityTypeMap, TestingPlatformDriver)
       try {
-        sharedContext.withEntityPersistence(entityType) { p => throw new IllegalArgumentException("intentional") }
-        fail("should have propogated exception")
+        sharedContext.withPersistence { p =>
+          p.persistenceFor(entityType)
+          throw new IllegalArgumentException("intentional")
+        }
+        fail("should have propagated exception")
       } catch {
         case e: IllegalArgumentException => "expected"
       }

@@ -2,7 +2,6 @@ package com.github.scrud.persistence
 
 import com.github.scrud.EntityType
 import com.github.scrud.util.CachedFunction
-import com.github.scrud.context.SharedContext
 
 /**
  * A PersistenceFactory for generated data.
@@ -15,7 +14,7 @@ trait GeneratedPersistenceFactory[T <: AnyRef] extends AbstractPersistenceFactor
 
   def newWritable(): T = throw new UnsupportedOperationException("not supported")
 
-  def createEntityPersistence(entityType: EntityType, sharedContext: SharedContext): SeqCrudPersistence[T]
+  def createEntityPersistence(entityType: EntityType, persistenceConnection: PersistenceConnection): SeqCrudPersistence[T]
 }
 
 
@@ -24,6 +23,6 @@ object GeneratedPersistenceFactory {
   def apply[T <: AnyRef](persistenceFunction: EntityType => SeqCrudPersistence[T]): GeneratedPersistenceFactory[T] = new GeneratedPersistenceFactory[T] with DataListenerSetValHolder {
     private val cachedPersistenceFunction = CachedFunction(persistenceFunction)
 
-    def createEntityPersistence(entityType: EntityType, sharedContext: SharedContext) = cachedPersistenceFunction(entityType)
+    def createEntityPersistence(entityType: EntityType, persistenceConnection: PersistenceConnection) = cachedPersistenceFunction(entityType)
   }
 }

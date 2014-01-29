@@ -12,5 +12,7 @@ class State extends SimpleListenerHolder[DestroyStateListener] {
 
   def onDestroyState() {
     listeners.foreach(_.onDestroyState())
+    listeners.foreach(removeListener(_))
+    variables.clear()
   }
 }

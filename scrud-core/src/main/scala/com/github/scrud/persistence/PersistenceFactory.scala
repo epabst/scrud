@@ -32,7 +32,7 @@ abstract class PersistenceFactory {
     */
   def newWritable(): AnyRef
 
-  def createEntityPersistence(entityType: EntityType, sharedContext: SharedContext): CrudPersistence
+  def createEntityPersistence(entityType: EntityType, persistenceConnection: PersistenceConnection): CrudPersistence
 
   /** Returns true if the URI is worth calling EntityPersistence.find to try to get an entity instance.
     * It may be overridden in cases where an entity instance can be found even if no ID is present in the URI.

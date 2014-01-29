@@ -27,5 +27,6 @@ trait ThinPersistence {
   def delete(uri: UriPath): Int
 
   /** Indicate that the persistence will no longer be used. */
+  //todo delete this!!!
   def close()
 }

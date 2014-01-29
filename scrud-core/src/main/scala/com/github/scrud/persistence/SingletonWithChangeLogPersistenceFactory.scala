@@ -17,9 +17,9 @@ class SingletonWithChangeLogPersistenceFactory(delegate: PersistenceFactory) ext
 
   def newWritable() = delegate.newWritable()
 
-  def createEntityPersistence(entityType: EntityType, sharedContext: SharedContext) =
-    new SingletonWithChangeLogCrudPersistence(delegate.createEntityPersistence(entityType, sharedContext),
-      delegate.listenerHolder(entityType, sharedContext))
+  def createEntityPersistence(entityType: EntityType, persistenceConnection: PersistenceConnection) =
+    new SingletonWithChangeLogCrudPersistence(delegate.createEntityPersistence(entityType, persistenceConnection),
+      delegate.listenerHolder(entityType, persistenceConnection.sharedContext))
 
   /** Since the first is used, no ID is required to find one. */
   override def maySpecifyEntityInstance(entityName: EntityName, uri: UriPath) = true

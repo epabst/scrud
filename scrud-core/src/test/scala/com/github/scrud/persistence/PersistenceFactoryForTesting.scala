@@ -1,7 +1,6 @@
 package com.github.scrud.persistence
 
 import com.github.scrud.EntityType
-import com.github.scrud.context.SharedContext
 
 /**
  * A PersistenceFactory to use during tests.
@@ -17,7 +16,7 @@ class PersistenceFactoryForTesting(persistence: CrudPersistence) extends Abstrac
 
   override def newWritable() = Map.empty[String,Any]
 
-  def createEntityPersistence(entityType: EntityType, sharedContext: SharedContext) = persistence
+  def createEntityPersistence(entityType: EntityType, persistenceConnection: PersistenceConnection) = persistence
 
   def toTuple: (EntityType,PersistenceFactory) = persistence.entityType -> this
 

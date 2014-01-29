@@ -3,7 +3,7 @@ package com.github.scrud.context
 import com.github.scrud.{EntityType, EntityName}
 import com.github.scrud.state.{StateHolder, State}
 import com.github.scrud.util.ListenerHolder
-import com.github.scrud.persistence.{CrudPersistence, EntityTypeMap, DataListener}
+import com.github.scrud.persistence.{PersistenceConnection, EntityTypeMap, DataListener}
 import com.github.scrud.platform.PlatformDriver
 
 /**
@@ -29,19 +29,9 @@ trait SharedContext extends StateHolder {
   def dataListenerHolder(entityType: EntityType): ListenerHolder[DataListener] =
     entityTypeMap.persistenceFactory(entityType).listenerHolder(entityType, this)
 
-  def openEntityPersistence(entityName: EntityName): CrudPersistence =
-    openEntityPersistence(entityTypeMap.entityType(entityName))
-
-  def openEntityPersistence(entityType: EntityType): CrudPersistence =
-    entityTypeMap.persistenceFactory(entityType).createEntityPersistence(entityType, this)
-
-  def withEntityPersistence[T](entityName: EntityName)(f: CrudPersistence => T): T = {
-    withEntityPersistence(entityTypeMap.entityType(entityName))(f)
-  }
-
-  def withEntityPersistence[T](entityType: EntityType)(f: CrudPersistence => T): T = {
-    val persistence = openEntityPersistence(entityType)
-    try f(persistence)
-    finally persistence.close()
+  def withPersistence[T](f: PersistenceConnection => T): T = {
+    val persistenceConnection = new PersistenceConnection(entityTypeMap, this)
+    try f(persistenceConnection)
+    finally persistenceConnection.close()
   }
 }

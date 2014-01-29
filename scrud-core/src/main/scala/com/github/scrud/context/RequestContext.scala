@@ -25,6 +25,9 @@ trait RequestContext {
 
   def platformDriver: PlatformDriver = sharedContext.platformDriver
 
+  /** The ISO 2 country such as "US". */
+  def isoCountry: String
+
   private[context] val state: State = new State
 
   /** Provides a way for the user to undo an operation. */

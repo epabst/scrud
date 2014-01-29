@@ -2,7 +2,6 @@ package com.github.scrud.persistence
 
 import com.github.scrud.{EntityName, EntityType}
 import com.github.scrud.state.ApplicationConcurrentMapVal
-import com.github.scrud.context.SharedContext
 
 /**
  * A PersistenceFactory for storing in-memory.
@@ -18,10 +17,10 @@ class ListBufferPersistenceFactory[T <: AnyRef](instantiateItem: => T) extends A
   def newWritable() = instantiateItem
 
   // synchronized so that only one persistence instance is used and onCreateDatabase completes before any thread uses the instance.
-  def createEntityPersistence(entityType: EntityType, sharedContext: SharedContext) = synchronized {
-    val persistenceByEntityName = PersistenceByEntityName.get(sharedContext)
+  def createEntityPersistence(entityType: EntityType, persistenceConnection: PersistenceConnection) = synchronized {
+    val persistenceByEntityName = PersistenceByEntityName.get(persistenceConnection.sharedContext)
     persistenceByEntityName.get(entityType.entityName).getOrElse {
-      val persistence = new ListBufferCrudPersistence[T](newWritable(), entityType, sharedContext, listenerSet(entityType, sharedContext))
+      val persistence = new ListBufferCrudPersistence[T](newWritable(), entityType, persistenceConnection.sharedContext, listenerSet(entityType, persistenceConnection.sharedContext))
       persistenceByEntityName.putIfAbsent(entityType.entityName, persistence)
       entityType.onCreateDatabase(persistence)
       persistence

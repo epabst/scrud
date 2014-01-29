@@ -3,35 +3,28 @@ package com.github.scrud.persistence
 import com.github.scrud.state.DestroyStateListener
 import com.github.scrud.util.{DelegatingListenerSet, ListenerSet}
 import com.github.scrud.EntityName
-import com.github.scrud.context.SharedContext
 
 /** A CrudPersistence that is derived from related CrudType persistence(s).
   * @author Eric Pabst (epabst@gmail.com)
   * @see DerivedPersistenceFactory
+  * @param delegateEntityNames used to be notified when they change.
   */
-abstract class DerivedCrudPersistence[T <: AnyRef](val sharedContext: SharedContext,
+abstract class DerivedCrudPersistence[T <: AnyRef](val persistenceConnection: PersistenceConnection,
                                                    protected val listenerSet: ListenerSet[DataListener],
-                                                   delegates: EntityName*)
+                                                   delegateEntityNames: EntityName*)
         extends SeqCrudPersistence[T] with ReadOnlyPersistence with DelegatingListenerSet[DataListener] {
   {
+    val sharedContext = persistenceConnection.sharedContext
     val listenerForDelegateChanges = NotifyDataListenerSetListener(listenerSet)
-    delegates.foreach { delegate =>
-      sharedContext.dataListenerHolder(delegate).addListenerIfNotPresent(listenerForDelegateChanges)
+    delegateEntityNames.foreach { delegateEntityName =>
+      sharedContext.dataListenerHolder(delegateEntityName).addListenerIfNotPresent(listenerForDelegateChanges)
     }
     sharedContext.applicationState.addListener(new DestroyStateListener {
       def onDestroyState() {
-        delegates.foreach { delegate =>
-          sharedContext.dataListenerHolder(delegate).removeListener(listenerForDelegateChanges)
+        delegateEntityNames.foreach { delegateEntityName =>
+          sharedContext.dataListenerHolder(delegateEntityName).removeListener(listenerForDelegateChanges)
         }
       }
     })
-  }
-
-  val delegatePersistenceMap: Map[EntityName,CrudPersistence] =
-    delegates.map(delegate => delegate -> sharedContext.openEntityPersistence(delegate)).toMap
-
-  override def close() {
-    delegatePersistenceMap.values.foreach(_.close())
-    super.close()
   }
 }

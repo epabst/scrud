@@ -55,7 +55,7 @@ class StartEntityDeleteOperationSpec extends FunSpec with CrudMockitoSugar with 
       }
     }
     val operation = new StartEntityDeleteOperation(entity)
-    operation.invoke(uri, persistenceFactory.createEntityPersistence(entity, requestContext.sharedContext), requestContext)
+    operation.invoke(uri, new PersistenceConnection(entityTypeMap, requestContext.sharedContext), requestContext)
     verify(thinPersistence).delete(uri)
     verify(thinPersistence).save(Some(345L), mutable.Map(entity.idFieldName -> Some(345L), "name" -> Some("George")))
   }
