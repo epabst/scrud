@@ -7,7 +7,7 @@ import com.github.scrud.types.QualifiedType
 import com.github.scrud.util.{Logging, Common}
 import com.github.scrud.copy._
 import scala.collection.mutable
-import com.github.scrud.copy.FieldApplicability
+import com.github.scrud.platform.representation.Representation
 
 /** An entity configuration that provides information needed to map data to and from persistence.
   * This shouldn't depend on the platform (e.g. android).
@@ -25,8 +25,8 @@ abstract class EntityType(val entityName: EntityName, val platformDriver: Platfo
 
   def findPersistedId(readable: AnyRef): Option[ID] //todo = platformDriver...
 
-  protected def field[V](fieldName: String, qualifiedType: QualifiedType[V], applicability: FieldApplicability): AdaptableField[V] = {
-    val newField = platformDriver.field(fieldName, qualifiedType, applicability, entityName)
+  protected def field[V](fieldName: String, qualifiedType: QualifiedType[V], representations: Seq[Representation]): AdaptableField[V] = {
+    val newField = platformDriver.field(entityName, fieldName, qualifiedType, representations)
     adaptableFields += newField
     newField
   }

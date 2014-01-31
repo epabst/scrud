@@ -9,8 +9,8 @@ import com.github.scrud.EntityName
 import com.github.scrud.action.CommandId
 import com.github.scrud.action.Command
 import com.github.scrud.copy.FieldApplicability
-import com.github.scrud.platform.node.{MapTargetField, MapStorage}
 import com.github.scrud.context.RequestContext
+import com.github.scrud.platform.representation.{Representation, MapStorage}
 
 /**
  * A simple PlatformDriver for testing.
@@ -59,7 +59,12 @@ class TestingPlatformDriver extends PlatformDriver {
   protected def makeMapStorageSourceField[V](entityName: EntityName, fieldName: String): TypedSourceField[MapStorage,V] =
     TypedSourceField[MapStorage,V](_.get(entityName, fieldName).map(_.asInstanceOf[V]))
 
-  def field[V](fieldName: String, qualifiedType: QualifiedType[V], applicability: FieldApplicability, entityName: EntityName): AdaptableField[V] = {
+  def toFieldApplicability(representation: Representation): FieldApplicability = {
+    representation.toPlatformIndependentFieldApplicability
+  }
+
+  def field[V](entityName: EntityName, fieldName: String, qualifiedType: QualifiedType[V], representations: Seq[Representation]): AdaptableField[V] = {
+    val applicability = representations.foldLeft(FieldApplicability.Empty)(_ + toFieldApplicability(_))
     val someSourceField = Some(TypedSourceField[MapStorage,V](_.get(entityName, fieldName).map(_.asInstanceOf[V])))
     val someTargetField = Some(new MapTargetField[V](entityName, fieldName))
     new AdaptableField[V] {

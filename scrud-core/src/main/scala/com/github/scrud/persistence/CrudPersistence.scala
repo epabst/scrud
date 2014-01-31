@@ -6,7 +6,7 @@ import com.github.scrud.util.{Common, ListenerSet}
 import com.github.scrud.{IdPk, UriPath, EntityType}
 import com.github.annotations.quality.MicrotestCompatible
 import com.github.scrud.copy.{TargetType, SourceType, InstantiatingTargetType}
-import com.github.scrud.platform.node.Persistence
+import com.github.scrud.platform.representation.Persistence
 
 /** An EntityPersistence for a CrudType.
   * @author Eric Pabst (epabst@gmail.com)

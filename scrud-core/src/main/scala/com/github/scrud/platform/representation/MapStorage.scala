@@ -1,4 +1,4 @@
-package com.github.scrud.platform.node
+package com.github.scrud.platform.representation
 
 import com.github.scrud.copy._
 import scala.collection.parallel.mutable
@@ -27,4 +27,4 @@ class MapStorage {
   }
 }
 
-object MapStorage extends StorageType
+object MapStorage extends StorageType with Representation

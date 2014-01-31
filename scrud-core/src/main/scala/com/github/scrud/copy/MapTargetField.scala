@@ -1,8 +1,8 @@
-package com.github.scrud.platform.node
+package com.github.scrud.copy
 
-import com.github.scrud.copy.TypedTargetField
 import com.github.scrud.context.RequestContext
 import com.github.scrud.EntityName
+import com.github.scrud.platform.representation.MapStorage
 
 /**
  * A TargetField for MapStorage.

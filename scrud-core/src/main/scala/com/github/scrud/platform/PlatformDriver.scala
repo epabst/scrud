@@ -7,7 +7,7 @@ import com.github.scrud.types.QualifiedType
 import com.github.scrud.copy.AdaptableField
 import com.github.scrud.EntityName
 import com.github.scrud.action.Command
-import com.github.scrud.copy.FieldApplicability
+import com.github.scrud.platform.representation.Representation
 
 /**
  * An API for an app to interact with the host platform such as Android.
@@ -54,5 +54,5 @@ trait PlatformDriver {
   /** The command to undo the last delete. */
   def commandToUndoDelete: Command
 
-  def field[V](fieldName: String, qualifiedType: QualifiedType[V], applicability: FieldApplicability, entityName: EntityName): AdaptableField[V]
+  def field[V](entityName: EntityName, fieldName: String, qualifiedType: QualifiedType[V], representations: Seq[Representation]): AdaptableField[V]
 }
