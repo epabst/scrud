@@ -1,6 +1,5 @@
 package com.github.scrud
 
-import com.github.scrud.copy.{InstantiatingTargetType, SourceType}
 import com.github.scrud.platform.TestingPlatformDriver
 
 /**
@@ -9,11 +8,6 @@ import com.github.scrud.platform.TestingPlatformDriver
  *         Date: 1/25/14
  *         Time: 3:52 PM
  */
-class EntityTypeForTesting(entityName: EntityName = EntityName("MyEntity")) extends EntityType(entityName, TestingPlatformDriver) {
-  def copyAndUpdate[T <: AnyRef](sourceType: SourceType, source: AnyRef, targetType: InstantiatingTargetType[T]) =
-    throw new UnsupportedOperationException
-
-  def findPersistedId(readable: AnyRef) = throw new UnsupportedOperationException
-}
+class EntityTypeForTesting(entityName: EntityName = EntityName("MyEntity")) extends EntityType(entityName, TestingPlatformDriver)
 
 object EntityTypeForTesting extends EntityTypeForTesting(EntityName("MyEntity"))

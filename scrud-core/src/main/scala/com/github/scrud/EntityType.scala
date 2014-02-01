@@ -23,7 +23,7 @@ abstract class EntityType(val entityName: EntityName, val platformDriver: Platfo
 
   def idFieldName: String = platformDriver.idFieldName(entityName)
 
-  def findPersistedId(readable: AnyRef): Option[ID] //todo = platformDriver...
+  def findPersistedId(readable: AnyRef): Option[ID] = throw new UnsupportedOperationException("not implemented") //todo = platformDriver...
 
   protected def field[V](fieldName: String, qualifiedType: QualifiedType[V], representations: Seq[Representation]): AdaptableField[V] = {
     val newField = platformDriver.field(entityName, fieldName, qualifiedType, representations)
@@ -35,7 +35,8 @@ abstract class EntityType(val entityName: EntityName, val platformDriver: Platfo
 
   def clearId(source: AnyRef): AnyRef = new UnsupportedOperationException
 
-  def copyAndUpdate[T <: AnyRef](sourceType: SourceType, source: AnyRef, targetType: InstantiatingTargetType[T]): T
+  def copyAndUpdate[T <: AnyRef](sourceType: SourceType, source: AnyRef, targetType: InstantiatingTargetType[T]): T =
+    throw new UnsupportedOperationException("not implemented")
 
   def toUri(id: ID) = UriPath(entityName, id)
 
