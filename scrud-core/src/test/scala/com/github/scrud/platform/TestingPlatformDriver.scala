@@ -1,15 +1,14 @@
 package com.github.scrud.platform
 
 import com.github.scrud.persistence.ListBufferPersistenceFactory
-import com.github.scrud.{EntityType, UriPath}
-import com.github.scrud.action.{Operation, CrudOperationType}
+import com.github.scrud.EntityType
+import com.github.scrud.action.CrudOperationType
 import com.github.scrud.types.QualifiedType
 import com.github.scrud.copy._
 import com.github.scrud.EntityName
 import com.github.scrud.action.CommandId
 import com.github.scrud.action.Command
 import com.github.scrud.copy.FieldApplicability
-import com.github.scrud.context.RequestContext
 import com.github.scrud.platform.representation.{Representation, MapStorage}
 
 /**
@@ -39,19 +38,19 @@ class TestingPlatformDriver extends PlatformDriver {
 
   /** An Operation that will show the UI to the user for creating an entity instance. */
   def operationToShowCreateUI(entityName: EntityName) =
-    ShowEntityUIOperationForTesting(entityName, CrudOperationType.Create)
+    CrudOperationForTesting(entityName, CrudOperationType.Create)
 
   /** An Operation that will show the UI to the user that displays an entity instance. */
   def operationToShowDisplayUI(entityName: EntityName) =
-    ShowEntityUIOperationForTesting(entityName, CrudOperationType.Read)
+    CrudOperationForTesting(entityName, CrudOperationType.Read)
 
   /** An Operation that will show the UI to the user that lists the entity instances. */
   def operationToShowListUI(entityName: EntityName) =
-    ShowEntityUIOperationForTesting(entityName, CrudOperationType.List)
+    CrudOperationForTesting(entityName, CrudOperationType.List)
 
   /** An Operation that will show the UI to the user for updating an entity instance. */
   def operationToShowUpdateUI(entityName: EntityName) =
-    ShowEntityUIOperationForTesting(entityName, CrudOperationType.Update)
+    CrudOperationForTesting(entityName, CrudOperationType.Update)
 
   /** The command to undo the last delete. */
   def commandToUndoDelete = Command(CommandId("command1"), None, None)
@@ -87,10 +86,3 @@ class TestingPlatformDriver extends PlatformDriver {
 }
 
 object TestingPlatformDriver extends TestingPlatformDriver
-
-case class ShowEntityUIOperationForTesting(entityName: EntityName, operationType: CrudOperationType.Value) extends Operation {
-  /** Runs the operation, given the uri and the current RequestContext. */
-  def invoke(uri: UriPath, requestContext: RequestContext) {
-    println("Showing Entity UI Operation: entityName=" + entityName + " operation=" + operationType)
-  }
-}
