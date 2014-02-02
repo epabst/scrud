@@ -1,6 +1,8 @@
 package com.github.scrud.persistence
 
-import com.github.scrud.{UriPath, EntityType, EntityName}
+import com.github.scrud.{EntityType, UriPath, EntityName}
+import com.github.scrud.platform.PlatformDriver
+import scala.collection.mutable
 
 /**
  * A stateless mapping between a set of EntityTypes and the PersistenceFactory for each one.
@@ -9,17 +11,26 @@ import com.github.scrud.{UriPath, EntityType, EntityName}
  * Time: 4:50 PM
  */
 
-case class EntityTypeMap(entityTypesAndFactories: (EntityType, PersistenceFactory)*) {
-  val allEntityTypes: Seq[EntityType] = entityTypesAndFactories.map(_._1)
+abstract class EntityTypeMap(platformDriver: PlatformDriver) {
+  private[this] val entityTypesAndFactoriesBuffer: mutable.Buffer[(EntityType, PersistenceFactory)] = mutable.Buffer[(EntityType, PersistenceFactory)]()
 
-  private val persistenceFactoryByEntityType: Map[EntityType, PersistenceFactory] = Map(entityTypesAndFactories: _*)
+  lazy val entityTypesAndFactories: Seq[(EntityType, PersistenceFactory)] = entityTypesAndFactoriesBuffer.toList
 
-  private val entityTypeByEntityName: Map[EntityName, EntityType] =
-    allEntityTypes.map(entityType => (entityType.entityName, entityType)).toMap
+  protected def entityType(entityType: EntityType, persistenceFactory: PersistenceFactory) {
+    entityTypesAndFactoriesBuffer += entityType -> persistenceFactory
+  }
+  
+  final lazy val allEntityTypes: Seq[EntityType] = entityTypesAndFactories.map(_._1)
 
-  if (entityTypeByEntityName.size < entityTypesAndFactories.size) {
-    val duplicates: Seq[String] = allEntityTypes.groupBy(_.entityName).filter(_._2.size > 1).keys.toSeq.map(_.name).sorted
-    throw new IllegalArgumentException("EntityType names must be unique.  Duplicates=" + duplicates.mkString(","))
+  private[this] lazy val persistenceFactoryByEntityType: Map[EntityType, PersistenceFactory] = Map(entityTypesAndFactories: _*)
+
+  private lazy val entityTypeByEntityName: Map[EntityName, EntityType] = {
+    val entityTypeByEntityName = allEntityTypes.map(entityType => (entityType.entityName, entityType)).toMap
+    if (entityTypeByEntityName.size < entityTypesAndFactories.size) {
+      val duplicates: Seq[String] = allEntityTypes.groupBy(_.entityName).filter(_._2.size > 1).keys.toSeq.map(_.name).sorted
+      throw new IllegalArgumentException("EntityType names must be unique.  Duplicates=" + duplicates.mkString(","))
+    }
+    entityTypeByEntityName
   }
 
   def persistenceFactory(entityType: EntityType): PersistenceFactory = persistenceFactoryByEntityType.apply(entityType)
@@ -27,9 +38,11 @@ case class EntityTypeMap(entityTypesAndFactories: (EntityType, PersistenceFactor
   /** Marked final since only a convenience method for the other [[com.github.scrud.persistence.EntityTypeMap.persistenceFactory]] method. */
   final def persistenceFactory(entityName: EntityName): PersistenceFactory = persistenceFactory(entityType(entityName))
 
-  def entityType(entityName: EntityName): EntityType = entityTypeByEntityName.get(entityName).getOrElse {
+  def entityType(entityName: EntityName): EntityType = findEntityType(entityName).getOrElse {
     throw new IllegalArgumentException("Unknown entity: entityName=" + entityName)
   }
+
+  def findEntityType(entityName: EntityName): Option[EntityType] = entityTypeByEntityName.get(entityName)
 
   /** Returns true if the URI is worth calling EntityPersistence.find to try to get an entity instance. */
   def maySpecifyEntityInstance(uri: UriPath, entityType: EntityType): Boolean =
@@ -46,4 +59,15 @@ case class EntityTypeMap(entityTypesAndFactories: (EntityType, PersistenceFactor
 
   def isDeletable(entityType: EntityType): Boolean = persistenceFactory(entityType).canDelete
   def isDeletable(entityName: EntityName): Boolean = persistenceFactory(entityName).canDelete
+}
+
+object EntityTypeMap {
+  def apply(entityTypesAndFactories: (EntityType, PersistenceFactory)*): EntityTypeMap = {
+    val _entityTypesAndFactories = entityTypesAndFactories
+    val entityTypeMap = new EntityTypeMap(entityTypesAndFactories.head._1.platformDriver) {
+      override lazy val entityTypesAndFactories = _entityTypesAndFactories
+    }
+    entityTypeMap.entityTypeByEntityName
+    entityTypeMap
+  }
 }

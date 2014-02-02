@@ -28,7 +28,7 @@ class DerivedPersistenceFactorySpec extends FunSpec with MustMatchers with CrudM
     }
     val persistenceFactory1 = new PersistenceFactoryForTesting(new EntityTypeForTesting(entity1), persistence1)
     val persistenceFactory2 = new PersistenceFactoryForTesting(new EntityTypeForTesting(entity2), persistence2)
-    val entityTypeMap = new EntityTypeMap(persistenceFactory1.toTuple, persistenceFactory2.toTuple)
+    val entityTypeMap = EntityTypeMap(persistenceFactory1.toTuple, persistenceFactory2.toTuple)
     val sharedContext = new SharedContextForTesting(entityTypeMap)
     val persistenceConnection = new PersistenceConnection(entityTypeMap, sharedContext)
     val persistence = factory.createEntityPersistence(mock[EntityType], persistenceConnection)
