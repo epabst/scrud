@@ -10,4 +10,6 @@ import com.github.scrud.util.{Logging, Name}
  */
 case class ApplicationName(name: String) extends Name with Logging {
   def logTag = name
+
+  val packageName: String = getClass.getPackage.getName
 }

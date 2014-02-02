@@ -9,10 +9,12 @@ import com.github.scrud.copy._
 import scala.collection.mutable
 import com.github.scrud.platform.representation.Representation
 
-/** An entity configuration that provides information needed to map data to and from persistence.
-  * This shouldn't depend on the platform (e.g. android).
-  * @author Eric Pabst (epabst@gmail.com)
-  * @param entityName  this is used to identify the EntityType and for internationalized strings
+/**
+ * A stateless configuration of an entity, providing information needed to map data to and from persistence, UI, model, etc.
+ * Each subclass should call the field(String, QualifiedType[V], Seq[Representation]) method for each field.
+ * Ideally each subclass won't assume the platform (e.g. android) so that it can be re-used for multiple platforms.
+ * @author Eric Pabst (epabst@gmail.com)
+ * @param entityName  this is used to identify the EntityType and for internationalized strings
   */
 abstract class EntityType(val entityName: EntityName, val platformDriver: PlatformDriver) extends Logging {
   override val logTag = Common.tryToEvaluate(entityName.name).getOrElse(Common.logTag)

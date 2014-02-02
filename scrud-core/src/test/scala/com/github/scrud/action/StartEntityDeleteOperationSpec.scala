@@ -21,8 +21,9 @@ class StartEntityDeleteOperationSpec extends FunSpec with CrudMockitoSugar with 
 
   it("must delete with option to undo") {
     val entity = new EntityTypeForTesting
+    val entityName = entity.entityName
     val readable = mutable.Map[String,Option[Any]](entity.idFieldName -> Some(345L), "name" -> Some("George"))
-    val uri = UriPath(entity.entityName) / 345L
+    val uri = UriPath(entityName) / 345L
     val persistence = mock[ThinPersistence]
     stub(persistence.newWritable()).toReturn(Map.empty)
     stub(persistence.findAll(uri)).toReturn(Seq(readable))
@@ -34,7 +35,7 @@ class StartEntityDeleteOperationSpec extends FunSpec with CrudMockitoSugar with 
         undoable.closeOperation.foreach(_.invoke(uri, this))
       }
     }
-    val actionToDelete = new EntityNavigationForTesting(entityTypeMap).actionToDelete(entity).get
+    val actionToDelete = new EntityNavigationForTesting(entityTypeMap).actionToDelete(entityName).get
     actionToDelete.invoke(uri, requestContext)
     verify(persistence).delete(uri)
     allowUndoCalled must be (true)

@@ -6,6 +6,8 @@ import scala.collection.mutable
 
 /**
  * A stateless mapping between a set of EntityTypes and the PersistenceFactory for each one.
+ * Each subclass should call the entityType(EntityType, PersistenceFactory) method for each EntityType.
+ * Ideally each subclass won't assume the platform (e.g. android) so that it can be re-used for multiple platforms.
  * @author Eric Pabst (epabst@gmail.com)
  * Date: 3/31/11
  * Time: 4:50 PM
@@ -25,6 +27,7 @@ abstract class EntityTypeMap(platformDriver: PlatformDriver) {
   private[this] lazy val persistenceFactoryByEntityType: Map[EntityType, PersistenceFactory] = Map(entityTypesAndFactories: _*)
 
   private lazy val entityTypeByEntityName: Map[EntityName, EntityType] = {
+    if (allEntityTypes.isEmpty) throw new IllegalStateException("no EntityTypes defined.  Call entityType(EntityType, PersistenceFactory) for each one.")
     val entityTypeByEntityName = allEntityTypes.map(entityType => (entityType.entityName, entityType)).toMap
     if (entityTypeByEntityName.size < entityTypesAndFactories.size) {
       val duplicates: Seq[String] = allEntityTypes.groupBy(_.entityName).filter(_._2.size > 1).keys.toSeq.map(_.name).sorted
