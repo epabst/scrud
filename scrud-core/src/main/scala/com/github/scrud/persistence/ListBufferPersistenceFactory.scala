@@ -9,10 +9,10 @@ import com.github.scrud.state.ApplicationConcurrentMapVal
  *         Date: 10/20/12
  *         Time: 5:27 PM
  */
-class ListBufferPersistenceFactory[T <: AnyRef](instantiateItem: => T) extends AbstractPersistenceFactory with DataListenerSetValHolder {
+class ListBufferPersistenceFactory[E <: AnyRef](instantiateItem: => E) extends AbstractPersistenceFactory with DataListenerSetValHolder {
   val canSave = true
 
-  private object PersistenceByEntityName extends ApplicationConcurrentMapVal[EntityName,ListBufferCrudPersistence[T]]
+  private object PersistenceByEntityName extends ApplicationConcurrentMapVal[EntityName,ListBufferCrudPersistence[E]]
 
   def newWritable() = instantiateItem
 
@@ -20,7 +20,7 @@ class ListBufferPersistenceFactory[T <: AnyRef](instantiateItem: => T) extends A
   def createEntityPersistence(entityType: EntityType, persistenceConnection: PersistenceConnection) = synchronized {
     val persistenceByEntityName = PersistenceByEntityName.get(persistenceConnection.sharedContext)
     persistenceByEntityName.get(entityType.entityName).getOrElse {
-      val persistence = new ListBufferCrudPersistence[T](newWritable(), entityType, persistenceConnection.sharedContext, listenerSet(entityType, persistenceConnection.sharedContext))
+      val persistence = new ListBufferCrudPersistence[E](newWritable(), entityType, persistenceConnection.sharedContext, listenerSet(entityType, persistenceConnection.sharedContext))
       persistenceByEntityName.putIfAbsent(entityType.entityName, persistence)
       entityType.onCreateDatabase(persistence)
       persistence

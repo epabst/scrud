@@ -6,4 +6,4 @@ package com.github.scrud.persistence
  *         Date: 10/20/12
  *         Time: 5:27 PM
  */
-trait SeqCrudPersistence[T <: AnyRef] extends SeqEntityPersistence[T] with CrudPersistence
+trait SeqCrudPersistence[E <: AnyRef] extends SeqEntityPersistence[E] with CrudPersistence

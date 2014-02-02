@@ -9,10 +9,10 @@ import com.github.scrud.EntityName
   * @see DerivedPersistenceFactory
   * @param delegateEntityNames used to be notified when they change.
   */
-abstract class DerivedCrudPersistence[T <: AnyRef](val persistenceConnection: PersistenceConnection,
+abstract class DerivedCrudPersistence[E <: AnyRef](val persistenceConnection: PersistenceConnection,
                                                    protected val listenerSet: ListenerSet[DataListener],
                                                    delegateEntityNames: EntityName*)
-        extends SeqCrudPersistence[T] with ReadOnlyPersistence with DelegatingListenerSet[DataListener] {
+        extends SeqCrudPersistence[E] with ReadOnlyPersistence with DelegatingListenerSet[DataListener] {
   {
     val sharedContext = persistenceConnection.sharedContext
     val listenerForDelegateChanges = NotifyDataListenerSetListener(listenerSet)

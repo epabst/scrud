@@ -12,9 +12,9 @@ import java.util.concurrent.atomic.AtomicLong
  *         Date: 10/20/12
  *         Time: 4:57 PM
  */
-class ListBufferEntityPersistence[T <: AnyRef](entityName: EntityName, newWritableFunction: => T,
-                                               listenerSet: ListenerSet[DataListener]) extends SeqEntityPersistence[T] {
-  private case class IDAndEntity(id: ID, entity: T) {
+class ListBufferEntityPersistence[E <: AnyRef](entityName: EntityName, newWritableFunction: => E,
+                                               listenerSet: ListenerSet[DataListener]) extends SeqEntityPersistence[E] {
+  private case class IDAndEntity(id: ID, entity: E) {
     override def toString = id + " -> " + entity
   }
 
@@ -27,7 +27,7 @@ class ListBufferEntityPersistence[T <: AnyRef](entityName: EntityName, newWritab
 
   def toUri(id: ID) = entityName.toUri(id)
 
-  def findAll(uri: UriPath): List[T] = rawFindAll(uri).map(_.entity)
+  def findAll(uri: UriPath): List[E] = rawFindAll(uri).map(_.entity)
 
   private def rawFindAll(uri: UriPath): List[IDAndEntity] = {
     uri.findId(entityName).map(id => buffer.toList.filter(item => item.id == id)).getOrElse(buffer.toList)
@@ -43,9 +43,9 @@ class ListBufferEntityPersistence[T <: AnyRef](entityName: EntityName, newWritab
     index match {
       case -1 =>
         // Prepend so that the newest ones come out first in results
-        buffer.prepend(IDAndEntity(newId, entity.asInstanceOf[T]))
+        buffer.prepend(IDAndEntity(newId, entity.asInstanceOf[E]))
       case _ =>
-        buffer(index) = IDAndEntity(newId, entity.asInstanceOf[T])
+        buffer(index) = IDAndEntity(newId, entity.asInstanceOf[E])
     }
     newId
   }

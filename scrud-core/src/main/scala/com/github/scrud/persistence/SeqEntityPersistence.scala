@@ -4,8 +4,8 @@ package com.github.scrud.persistence
   * @author Eric Pabst (epabst@gmail.com)
   */
 
-trait SeqEntityPersistence[T <: AnyRef] extends EntityPersistence {
-  def newWritable(): T
+trait SeqEntityPersistence[E <: AnyRef] extends EntityPersistence {
+  def newWritable(): E
 }
 
 
