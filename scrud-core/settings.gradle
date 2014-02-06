@@ -1,3 +1,0 @@
-include ':annotations-for-quality'
-
-project(':annotations-for-quality').projectDir = new File('../../annotations-for-quality')
