@@ -9,18 +9,6 @@ import java.io.Closeable
 object Common {
   val logTag = "scrud"
 
-  /** Evaluates the given function and returns the result.  If it throws an exception or returns null, it returns None. */
-  def tryToEvaluate[T](f: => T): Option[T] = evaluateOrIntercept(f).left.toOption.flatMap(Option(_))
-
-  /** Evaluates the given function and returns the result or the exception. */
-  def evaluateOrIntercept[T](f: => T): Either[T,Throwable] = {
-    try { Left(f) }
-    catch {
-      case exception: Throwable =>
-        Right(exception)
-    }
-  }
-
   def withCloseable[C <: Closeable,T](closeable: C)(f: C => T): T = {
     try { f(closeable) }
     finally { closeable.close() }

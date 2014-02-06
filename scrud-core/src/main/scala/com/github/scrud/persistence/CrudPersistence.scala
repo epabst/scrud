@@ -8,13 +8,14 @@ import com.github.annotations.quality.MicrotestCompatible
 import com.github.scrud.copy.{TargetType, SourceType, InstantiatingTargetType}
 import com.github.scrud.platform.representation.{EntityModel, Persistence}
 import com.github.scrud.context.SharedContext
+import scala.util.Try
 
 /** An EntityPersistence for a CrudType.
   * @author Eric Pabst (epabst@gmail.com)
   */
 @MicrotestCompatible(use = "new CrudPersistenceUsingThin")
 trait CrudPersistence extends EntityPersistence with ListenerSet[DataListener] with Logging {
-  override protected lazy val logTag: String = Common.tryToEvaluate(entityType.logTag).getOrElse(Common.logTag)
+  override protected lazy val logTag: String = Try(entityType.logTag).getOrElse(Common.logTag)
 
   def entityType: EntityType
 

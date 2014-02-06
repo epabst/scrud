@@ -9,6 +9,7 @@ import com.github.scrud.copy._
 import scala.collection.mutable
 import com.github.scrud.platform.representation._
 import com.github.scrud.context.RequestContext
+import scala.util.Try
 
 /**
  * A stateless configuration of an entity, providing information needed to map data to and from persistence, UI, model, etc.
@@ -18,7 +19,7 @@ import com.github.scrud.context.RequestContext
  * @param entityName  this is used to identify the EntityType and for internationalized strings
   */
 abstract class EntityType(val entityName: EntityName, val platformDriver: PlatformDriver) extends AdaptableFieldSeq with Logging {
-  override val logTag = Common.tryToEvaluate(entityName.name).getOrElse(Common.logTag)
+  override val logTag = Try(entityName.name).getOrElse(Common.logTag)
 
   trace("Instantiated EntityType: " + this)
 
