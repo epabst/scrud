@@ -1,8 +1,6 @@
 package com.github.scrud.state
 
-import collection.mutable
-import java.util.concurrent.ConcurrentHashMap
-import scala.collection.JavaConversions._
+import scala.collection.concurrent
 
 /**
  * A [[com.github.scrud.state.LazyApplicationVal]] with a ConcurrentMap.
@@ -10,4 +8,4 @@ import scala.collection.JavaConversions._
  * Date: 4/6/13
  * Time: 5:11 PM
  */
-class ApplicationConcurrentMapVal[K,V] extends LazyApplicationVal[mutable.ConcurrentMap[K,V]](new ConcurrentHashMap[K,V]())
+class ApplicationConcurrentMapVal[K,V] extends LazyApplicationVal[concurrent.Map[K,V]](concurrent.TrieMap[K,V]())

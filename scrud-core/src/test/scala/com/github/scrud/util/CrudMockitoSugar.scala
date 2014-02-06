@@ -12,7 +12,7 @@ import org.mockito.{Matchers, Mockito}
 trait CrudMockitoSugar extends MockitoSugar {
 
   def namedMock[T <: AnyRef](name: String)(implicit manifest: Manifest[T]): T = {
-    Mockito.mock(manifest.erasure.asInstanceOf[Class[T]], name)
+    Mockito.mock(manifest.runtimeClass.asInstanceOf[Class[T]], name)
   }
 
   class CapturingAnswer[T](result: => T) extends Answer[T] {

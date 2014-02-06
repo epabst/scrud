@@ -1,9 +1,7 @@
 package com.github.scrud.util
 
-import java.util.concurrent.ConcurrentHashMap
-import collection.mutable
-import scala.collection.JavaConversions._
 import scala.collection.Set
+import scala.collection.concurrent
 
 /** A Listener holder
   * @author Eric Pabst (epabst@gmail.com)
@@ -51,7 +49,7 @@ trait DelegatingListenerHolder[L] extends ListenerHolder[L] {
 }
 
 class MutableListenerSet[L] extends ListenerSet[L] with ListenerHolder[L] {
-  private val theListeners: mutable.ConcurrentMap[L,L] = new ConcurrentHashMap[L,L]()
+  private val theListeners: concurrent.Map[L,L] = concurrent.TrieMap[L,L]()
 
   protected val listenerSet: ListenerSet[L] = new ListenerSet[L] {
     def listeners = theListeners.keySet
