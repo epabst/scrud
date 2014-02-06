@@ -8,7 +8,7 @@ package com.github.scrud.util
  *         Time: 11:16 PM
  */
 trait Name {
-  /** A name as a Java identifier such as PoliceOfficer or crescentWrench. */
+  /** A name as a Java identifier such as PoliceOfficer (pascal case) or crescentWrench (camel case). */
   def name: String
 
   override def equals(p1: scala.Any): Boolean
@@ -16,6 +16,9 @@ trait Name {
   override def hashCode(): Int
 
   override val toString = name
+
+  /** The name but with the first letter lower-case. */
+  lazy val toCamelCase: String = name.charAt(0).toLower + name.substring(1)
 
   lazy val toDisplayableString: String = name.replaceAll("([a-z])([A-Z])", "$1 $2")
 }

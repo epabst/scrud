@@ -10,13 +10,13 @@ object Book extends EntityName("Book")
 class BookEntityType(platformDriver: PlatformDriver) extends EntityType(Book, platformDriver) {
   field("name", TitleQT, Seq(Persistence, EditUI, SelectUI)) //todo requiredString
 
-  field("authorId", Author, Seq(Persistence, EditUI))
+  field(Author, Seq(Persistence, EditUI))
 
   field("edition", PositiveIntQT, Seq(Persistence, EditUI))
 
   field("genre", EnumerationValueQT[Genre.Value](Genre), Seq(Persistence, EditUI)) //todo default(Genre.Fantasy)
 
-  field("publisherId", Publisher, Seq(Persistence, EditUI)) //todo Persistence(dataVersion = 2)
+  field(Publisher, Seq(Persistence, EditUI)) //todo Persistence(dataVersion = 2)
 
   field("publishDate", DateWithoutTimeQT, Seq(Persistence, EditUI))
 }

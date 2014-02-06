@@ -43,13 +43,23 @@ abstract class EntityType(val entityName: EntityName, val platformDriver: Platfo
   }
 
   /**
+   * Creates a field that references another entity (by ID).
+   * @param entityName the EntityName of the entity to have a reference to.
+   * @param representations the various representations that the field can have.  This may include Persistence, UI, Model, etc.
+   * @tparam V the Java data type for the field.
+   * @return an AdaptableField which can be ignored since it is automatically stored in the EntityType.
+   */
+  protected def field[V](entityName: EntityName, representations: Seq[Representation]): AdaptableField[ID] =
+    field(platformDriver.idFieldName(entityName, primaryKey = false), entityName, representations)
+
+  /**
    * Specifies the name of the ID field.
    * Normally this should be dictated by the PlatformDriver since some platforms
    * (e.g. Android with SQLite) need the field to have a specific name.
    * @return a Seq of Representation
    * @see [[com.github.scrud.EntityType.idField]]
    */
-  def idFieldName: String = platformDriver.idFieldName(entityName)
+  def idFieldName: String = platformDriver.idFieldName(entityName, primaryKey = true)
 
   /**
    * Specifies the Representations that an ID has for this entity.

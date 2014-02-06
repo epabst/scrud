@@ -24,7 +24,13 @@ class TestingPlatformDriver extends PlatformDriver {
 
   def calculateDataVersion(entityTypes: Seq[EntityType]) = 1
 
-  def idFieldName(entityName: EntityName): String = "id"
+  def idFieldName(entityName: EntityName, primaryKey: Boolean = true): String = {
+    if (primaryKey) {
+      "id"
+    } else {
+      entityName.toCamelCase + "Id"
+    }
+  }
 
   def commandToAddItem(entityName: EntityName) = Command(CommandId("Add"), None, None)
 

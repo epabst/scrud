@@ -29,7 +29,14 @@ trait PlatformDriver {
 
   def calculateDataVersion(entityTypes: Seq[EntityType]): Int
 
-  def idFieldName(entityName: EntityName): String
+  /**
+   * Gets the name of a field that contains an entity ID.
+   * @param entityName the entity whose id field is needed
+   * @param primaryKey true if the primary key field for the entity, false if referenced from another entity
+   * @return the name of the field
+   * @see [[com.github.scrud.EntityType.idField]]
+   */
+  def idFieldName(entityName: EntityName, primaryKey: Boolean = true): String
 
   def commandToListItems(entityName: EntityName): Command
 
