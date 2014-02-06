@@ -3,6 +3,8 @@ package com.github.scrud.persistence
 import org.scalatest.FunSpec
 import org.scalatest.matchers.MustMatchers
 import com.github.scrud.{EntityName, EntityTypeForTesting}
+import org.junit.runner.RunWith
+import org.scalatest.junit.JUnitRunner
 
 /**
  * A behavior specification for [[com.github.scrud.persistence.EntityTypeMap]].
@@ -10,6 +12,7 @@ import com.github.scrud.{EntityName, EntityTypeForTesting}
  *         Date: 1/28/14
  *         Time: 9:42 AM
  */
+@RunWith(classOf[JUnitRunner])
 class EntityTypeMapSpec extends FunSpec with MustMatchers {
   it("must enforce unique EntityNames") {
     val entityType1 = new EntityTypeForTesting(EntityName("Entity1"))

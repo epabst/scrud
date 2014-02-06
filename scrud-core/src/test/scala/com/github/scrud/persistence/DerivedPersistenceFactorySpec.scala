@@ -1,6 +1,6 @@
 package com.github.scrud.persistence
 
-//import org.junit.runner.RunWith
+import org.junit.runner.RunWith
 import org.scalatest.FunSpec
 import org.scalatest.matchers.MustMatchers
 import org.mockito.Mockito._
@@ -8,11 +8,12 @@ import com.github.scrud.util.CrudMockitoSugar
 import com.github.scrud._
 import com.github.scrud.context._
 import com.github.scrud.EntityName
+import org.scalatest.junit.JUnitRunner
 
 /** A specification for [[com.github.scrud.persistence.DerivedPersistenceFactory]].
   * @author Eric Pabst (epabst@gmail.com)
   */
-//@RunWith(classOf[JUnitRunner])
+@RunWith(classOf[JUnitRunner])
 class DerivedPersistenceFactorySpec extends FunSpec with MustMatchers with CrudMockitoSugar {
   it("must make the CrudPersistence for the delegate EntityNames available") {
     val entity1 = EntityName("entity1")

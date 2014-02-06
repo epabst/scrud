@@ -3,6 +3,8 @@ package com.github.scrud.types
 import org.scalatest.FunSpec
 import com.github.scrud.EntityName
 import org.scalatest.matchers.MustMatchers
+import org.junit.runner.RunWith
+import org.scalatest.junit.JUnitRunner
 
 /**
  * A behavior specification for [[com.github.scrud.types.MultiSelectQT]].
@@ -10,6 +12,7 @@ import org.scalatest.matchers.MustMatchers
  *         Date: 1/31/14
  *         Time: 3:22 PM
  */
+@RunWith(classOf[JUnitRunner])
 class MultiSelectQTSpec extends FunSpec with MustMatchers {
   val qualifiedType = MultiSelectQT(EntityName("Foo"))
   

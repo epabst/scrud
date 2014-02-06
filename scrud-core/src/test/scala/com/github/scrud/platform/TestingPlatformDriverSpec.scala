@@ -1,6 +1,7 @@
 package com.github.scrud.platform
 
-//import org.junit.runner.RunWith
+import org.junit.runner.RunWith
+import org.scalatest.junit.JUnitRunner
 
 /**
  * The behavior specification for [[com.github.scrud.platform.TestingPlatformDriver]].
@@ -8,7 +9,7 @@ package com.github.scrud.platform
  *         Date: 12/12/13
  *         Time: 11:16 AM
  */
-//@RunWith(classOf[JUnitRunner])
-class TestingPlatformDriverSpec extends PlatformDriverContractSpec {
+@RunWith(classOf[JUnitRunner])
+class TestingPlatformDriverSpec extends PlatformDriverContract {
   protected def makePlatformDriver() = TestingPlatformDriver
 }

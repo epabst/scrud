@@ -7,6 +7,8 @@ import org.scalatest.matchers.MustMatchers
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Await
 import scala.concurrent.duration.Duration
+import org.junit.runner.RunWith
+import org.scalatest.junit.JUnitRunner
 
 /**
  * A test for [[com.github.scrud.util.UrgentFutureExecutor]].
@@ -14,6 +16,7 @@ import scala.concurrent.duration.Duration
  * Date: 10/6/12
  * Time: 6:34 AM
  */
+@RunWith(classOf[JUnitRunner])
 class UrgentFutureExecutorSpec extends FunSpec with MustMatchers {
   private val twoSeconds = Duration(2, TimeUnit.SECONDS)
 

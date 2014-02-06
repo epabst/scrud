@@ -1,15 +1,16 @@
 package com.github.scrud.persistence
 
-//import org.junit.runner.RunWith
+import org.junit.runner.RunWith
 import org.scalatest.matchers.MustMatchers
 import org.scalatest.FunSpec
 import com.github.scrud.platform.PlatformTypes._
 import com.github.scrud.UriPath
+import org.scalatest.junit.JUnitRunner
 
 /** A behavior specification for [[com.github.scrud.persistence.EntityPersistence]].
   * @author Eric Pabst (epabst@gmail.com)
   */
-//@RunWith(classOf[JUnitRunner])
+@RunWith(classOf[JUnitRunner])
 class EntityPersistenceSpec extends FunSpec with MustMatchers {
   describe("find") {
     it("must delegate to findAll and return the first result") {

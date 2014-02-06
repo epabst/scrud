@@ -1,14 +1,15 @@
 package com.github.scrud.util
 
-//import org.junit.runner.RunWith
 import org.scalatest.matchers.MustMatchers
 import org.scalatest.FunSpec
+import org.junit.runner.RunWith
+import org.scalatest.junit.JUnitRunner
 
 /** A behavior specification for [[com.github.scrud.util.Common]].
   * @author Eric Pabst (epabst@gmail.com)
   */
 
-//@RunWith(classOf[JUnitRunner])
+@RunWith(classOf[JUnitRunner])
 class CommonSpec extends FunSpec with MustMatchers {
   describe("tryToEvaluate") {
     it("must evaluate and return the parameter") {

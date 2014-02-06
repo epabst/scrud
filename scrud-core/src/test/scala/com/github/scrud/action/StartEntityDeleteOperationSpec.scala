@@ -9,6 +9,8 @@ import com.github.scrud.platform.TestingPlatformDriver
 import org.scalatest.matchers.MustMatchers
 import com.github.scrud.context.RequestContextForTesting
 import com.github.scrud.platform.representation.MapStorage
+import org.junit.runner.RunWith
+import org.scalatest.junit.JUnitRunner
 
 /**
  * A behavior specification for [[com.github.scrud.action.StartEntityDeleteOperation]].
@@ -16,6 +18,7 @@ import com.github.scrud.platform.representation.MapStorage
  * Date: 11/30/12
  * Time: 3:32 PM
  */
+@RunWith(classOf[JUnitRunner])
 class StartEntityDeleteOperationSpec extends FunSpec with CrudMockitoSugar with MustMatchers {
   val platformDriver = TestingPlatformDriver
 

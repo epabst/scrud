@@ -1,13 +1,14 @@
 package com.github.scrud
 
-//import org.junit.runner.RunWith
+import org.junit.runner.RunWith
 import org.scalatest.matchers.MustMatchers
 import org.scalatest.FunSpec
+import org.scalatest.junit.JUnitRunner
 
 /** A behavior specification for [[com.github.scrud.UriPath]].
   * @author Eric Pabst (epabst@gmail.com)
   */
-//@RunWith(classOf[JUnitRunner])
+@RunWith(classOf[JUnitRunner])
 class UriPathSpec extends FunSpec with MustMatchers {
   val entityName = EntityTypeForTesting.entityName
 

@@ -18,6 +18,7 @@ dependencies {
     testCompile "org.mockito:mockito-core:1.8.5"
 //    testCompile "org.scalatest:scalatest_$scalaVersion:1.8"
     testCompile "org.scalatest:scalatest_2.10.0-RC5:2.0.M5-B1"
+    testCompile "junit:junit:4.9"
 }
 
 tasks.withType(Test) {

@@ -1,14 +1,15 @@
 package com.github.scrud
 
-//import org.junit.runner.RunWith
 import org.scalatest.matchers.MustMatchers
 import org.scalatest.FunSpec
 import Validation._
+import org.junit.runner.RunWith
+import org.scalatest.junit.JUnitRunner
 
 /** A behavior specification for [[com.github.scrud.Validation]].
   * @author Eric Pabst (epabst@gmail.com)
   */
-//@RunWith(classOf[JUnitRunner])
+@RunWith(classOf[JUnitRunner])
 class ValidationSpec extends FunSpec with MustMatchers {
   describe("required") {
     val requiredInt = required[Int]

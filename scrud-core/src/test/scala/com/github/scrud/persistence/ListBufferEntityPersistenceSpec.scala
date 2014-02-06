@@ -4,6 +4,8 @@ import org.scalatest.FunSpec
 import org.scalatest.matchers.MustMatchers
 import com.github.scrud.{UriPath, EntityName}
 import com.github.scrud.util.MutableListenerSet
+import org.junit.runner.RunWith
+import org.scalatest.junit.JUnitRunner
 
 /**
  * A behavior specification for [[com.github.scrud.persistence.ListBufferEntityPersistence]].
@@ -11,7 +13,7 @@ import com.github.scrud.util.MutableListenerSet
  * Date: 1/5/13
  * Time: 12:14 AM
  */
-//@RunWith(classOf[JUnitRunner])
+@RunWith(classOf[JUnitRunner])
 class ListBufferEntityPersistenceSpec extends FunSpec with MustMatchers {
   describe("findAll") {
     it("must find the entry with the same id") {

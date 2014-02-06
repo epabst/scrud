@@ -6,6 +6,8 @@ import com.github.scrud.persistence.{PersistenceFactoryForTesting, ThinPersisten
 import org.scalatest.mock.MockitoSugar
 import com.github.scrud.{UriPath, EntityTypeForTesting}
 import com.github.scrud.platform.TestingPlatformDriver
+import org.scalatest.junit.JUnitRunner
+import org.junit.runner.RunWith
 
 /**
  * A specification for [[com.github.scrud.context.SharedContext]].
@@ -13,6 +15,7 @@ import com.github.scrud.platform.TestingPlatformDriver
  * Date: 4/11/13
  * Time: 4:06 PM
  */
+@RunWith(classOf[JUnitRunner])
 class SharedContextSpec extends FunSpec with MockitoSugar {
   describe("withPersistence") {
     it("must close persistence") {

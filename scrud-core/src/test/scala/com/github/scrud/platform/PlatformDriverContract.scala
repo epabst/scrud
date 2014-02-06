@@ -13,7 +13,7 @@ import com.github.scrud.EntityName
  *         Date: 12/12/13
  *         Time: 10:54 AM
  */
-abstract class PlatformDriverContractSpec extends FunSpec with MustMatchers {
+abstract class PlatformDriverContract extends FunSpec with MustMatchers {
   protected def makePlatformDriver(): PlatformDriver
 
   describe("field") {
