@@ -3,12 +3,12 @@ package com.github.scrud.action
 import org.scalatest.FunSpec
 import com.github.scrud.persistence._
 import org.mockito.Mockito._
-import collection.mutable
 import com.github.scrud.{EntityNavigationForTesting, EntityTypeForTesting, UriPath}
 import com.github.scrud.util.CrudMockitoSugar
 import com.github.scrud.platform.TestingPlatformDriver
 import org.scalatest.matchers.MustMatchers
 import com.github.scrud.context.RequestContextForTesting
+import com.github.scrud.platform.representation.MapStorage
 
 /**
  * A behavior specification for [[com.github.scrud.action.StartEntityDeleteOperation]].
@@ -22,10 +22,10 @@ class StartEntityDeleteOperationSpec extends FunSpec with CrudMockitoSugar with 
   it("must delete with option to undo") {
     val entity = new EntityTypeForTesting
     val entityName = entity.entityName
-    val readable = mutable.Map[String,Option[Any]](entity.idFieldName -> Some(345L), "name" -> Some("George"))
+    val readable = new MapStorage(entityName, entity.idFieldName -> Some(345L), "name" -> Some("George"))
     val uri = UriPath(entityName) / 345L
     val persistence = mock[ThinPersistence]
-    stub(persistence.newWritable()).toReturn(Map.empty)
+    stub(persistence.newWritable()).toReturn(new MapStorage)
     stub(persistence.findAll(uri)).toReturn(Seq(readable))
     var allowUndoCalled = false
     val entityTypeMap = new PersistenceFactoryForTesting(entity, persistence).toEntityTypeMap
@@ -43,11 +43,12 @@ class StartEntityDeleteOperationSpec extends FunSpec with CrudMockitoSugar with 
 
   it("undo must work") {
     val entity = new EntityTypeForTesting
-    val readable = mutable.Map[String,Option[Any]](entity.idFieldName -> Some(345L), "name" -> Some("George"))
-    val uri = UriPath(entity.entityName) / 345L
+    val entityName = entity.entityName
+    val readable = new MapStorage(entityName, entity.idFieldName -> Some(345L), "name" -> Some("George"))
+    val uri = UriPath(entityName) / 345L
     val thinPersistence = mock[ThinPersistence]
     stub(thinPersistence.findAll(uri)).toReturn(Seq(readable))
-    stub(thinPersistence.newWritable()).toReturn(mutable.Map.empty[String,Option[Any]])
+    stub(thinPersistence.newWritable()).toReturn(new MapStorage)
     val persistenceFactory = new PersistenceFactoryForTesting(entity, thinPersistence)
     val entityTypeMap = persistenceFactory.toEntityTypeMap
     val requestContext = new RequestContextForTesting(entityTypeMap) {
@@ -58,6 +59,6 @@ class StartEntityDeleteOperationSpec extends FunSpec with CrudMockitoSugar with 
     val operation = new StartEntityDeleteOperation(entity)
     operation.invoke(uri, new PersistenceConnection(entityTypeMap, requestContext.sharedContext), requestContext)
     verify(thinPersistence).delete(uri)
-    verify(thinPersistence).save(Some(345L), mutable.Map(entity.idFieldName -> Some(345L), "name" -> Some("George")))
+    verify(thinPersistence).save(Some(345L), new MapStorage(entityName, entity.idFieldName -> Some(345L), "name" -> Some("George")))
   }
 }

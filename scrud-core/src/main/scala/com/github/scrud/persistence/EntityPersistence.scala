@@ -36,7 +36,7 @@ trait EntityPersistence extends ThinPersistence with ListenerSet[DataListener] {
     id
   }
 
-  def doSave(id: Option[ID], writable: AnyRef): ID
+  protected[persistence] def doSave(id: Option[ID], writable: AnyRef): ID
 
   /** Delete a set of entities by uri.
     * This should NOT delete child entities because that would make the "undo" functionality incomplete.

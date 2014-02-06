@@ -1,6 +1,8 @@
 package com.github.scrud
 
 import com.github.scrud.platform.TestingPlatformDriver
+import com.github.scrud.types.TitleQT
+import com.github.scrud.platform.representation.{Persistence, MapStorage}
 
 /**
  * An EntityType for use when testing.
@@ -8,6 +10,8 @@ import com.github.scrud.platform.TestingPlatformDriver
  *         Date: 1/25/14
  *         Time: 3:52 PM
  */
-class EntityTypeForTesting(entityName: EntityName = EntityName("MyEntity")) extends EntityType(entityName, TestingPlatformDriver)
+class EntityTypeForTesting(entityName: EntityName = EntityName("MyEntity")) extends EntityType(entityName, TestingPlatformDriver) {
+  field("name", TitleQT, Seq(MapStorage, Persistence))
+}
 
 object EntityTypeForTesting extends EntityTypeForTesting(EntityName("MyEntity"))

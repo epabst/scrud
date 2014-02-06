@@ -23,6 +23,8 @@ trait SharedContext extends StateHolder {
 
   val applicationState: State = new State
 
+  lazy val asStubRequestContext: StubRequestContext = new StubRequestContext(this)
+
   def dataListenerHolder(entityName: EntityName): ListenerHolder[DataListener] =
     dataListenerHolder(entityTypeMap.entityType(entityName))
 

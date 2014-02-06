@@ -6,7 +6,8 @@ import com.github.scrud.util.{Common, ListenerSet}
 import com.github.scrud.{IdPk, UriPath, EntityType}
 import com.github.annotations.quality.MicrotestCompatible
 import com.github.scrud.copy.{TargetType, SourceType, InstantiatingTargetType}
-import com.github.scrud.platform.representation.Persistence
+import com.github.scrud.platform.representation.{EntityModel, Persistence}
+import com.github.scrud.context.SharedContext
 
 /** An EntityPersistence for a CrudType.
   * @author Eric Pabst (epabst@gmail.com)
@@ -17,14 +18,22 @@ trait CrudPersistence extends EntityPersistence with ListenerSet[DataListener] w
 
   def entityType: EntityType
 
+  def sharedContext: SharedContext
+
   def sourceType: SourceType = Persistence
 
   def targetType: TargetType = Persistence
 
   override def toUri(id: ID) = entityType.toUri(id)
 
-  def find[T <: AnyRef](uri: UriPath, targetType: InstantiatingTargetType[T]): Option[T] =
-    find(uri).map(entityType.copyAndUpdate(sourceType, _, targetType))
+  def find[T <: AnyRef](uri: UriPath, targetType: InstantiatingTargetType[T]): Option[T] = {
+    val adaptedFieldSeq = entityType.adapt(sourceType, targetType)
+    val stubRequestContext = sharedContext.asStubRequestContext
+    find(uri).map { source =>
+      val target = targetType.makeTarget(stubRequestContext)
+      adaptedFieldSeq.copyAndUpdate(source, target, stubRequestContext)
+    }
+  }
 
   /** Find an entity with a given ID using a baseUri. */
   def find(id: ID, baseUri: UriPath): Option[AnyRef] = find(baseUri.specify(entityType.entityName, id))
@@ -35,11 +44,27 @@ trait CrudPersistence extends EntityPersistence with ListenerSet[DataListener] w
     result
   }
 
-  def findAll[T <: AnyRef](uri: UriPath, targetType: InstantiatingTargetType[T]): Seq[T] =
-    findAll(uri).map(entityType.copyAndUpdate(Persistence, _, targetType))
+  def findAll[T <: AnyRef](uri: UriPath, targetType: InstantiatingTargetType[T]): Seq[T] = {
+    val adaptedFieldSeq = entityType.adapt(sourceType, targetType)
+    val stubRequestContext = sharedContext.asStubRequestContext
+    findAll(uri).map { source =>
+      val target = targetType.makeTarget(stubRequestContext)
+      adaptedFieldSeq.copyAndUpdate(source, target, stubRequestContext)
+    }
+  }
 
   /** Saves the entity.  This assumes that the entityType's fields support copying from the given modelEntity. */
-  def save(modelEntity: IdPk): ID = save(modelEntity.id, modelEntity) //todo convert to correct type
+  def save(modelEntity: IdPk): ID = {
+    val adaptedFieldSeq = entityType.adapt(EntityModel, Persistence)
+    val writable = adaptedFieldSeq.copyAndUpdate(modelEntity, newWritable(), sharedContext.asStubRequestContext)
+    save(modelEntity.id, writable)
+  }
+
+  def toWritable(sourceType: SourceType, source: AnyRef): AnyRef = {
+    val target = newWritable()
+    val adaptedFieldSeq = entityType.adapt(sourceType, Persistence)
+    adaptedFieldSeq.copyAndUpdate(source, target, sharedContext.asStubRequestContext)
+  }
 
   def saveAll(modelEntityList: Seq[IdPk]): Seq[ID] = {
     modelEntityList.map(save(_))

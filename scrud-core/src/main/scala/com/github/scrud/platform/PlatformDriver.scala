@@ -2,12 +2,14 @@ package com.github.scrud.platform
 
 import com.github.scrud.persistence.PersistenceFactory
 import com.github.scrud.action.Operation
-import com.github.scrud.EntityType
-import com.github.scrud.types.QualifiedType
-import com.github.scrud.copy.AdaptableField
+import com.github.scrud.{IdPk, EntityType}
+import com.github.scrud.types.{IdQualifiedType, QualifiedType}
+import com.github.scrud.copy._
+import com.github.scrud.platform.representation.{EntityModel, Representation}
+import com.github.scrud.platform.PlatformTypes.ID
+import com.github.scrud.context.RequestContext
 import com.github.scrud.EntityName
 import com.github.scrud.action.Command
-import com.github.scrud.platform.representation.Representation
 
 /**
  * An API for an app to interact with the host platform such as Android.
@@ -54,5 +56,23 @@ trait PlatformDriver {
   /** The command to undo the last delete. */
   def commandToUndoDelete: Command
 
-  def field[V](entityName: EntityName, fieldName: String, qualifiedType: QualifiedType[V], representations: Seq[Representation]): AdaptableField[V]
+  private val idPkSourceField: SourceField[ID] = new TypedSourceField[IdPk,ID] {
+    /** Get some value or None from the given source. */
+    def findFieldValue(sourceData: IdPk, context: RequestContext) = sourceData.id
+  }
+
+  private val idPkTargetField: TargetField[ID] = new TypedTargetField[IdPk,ID] {
+    /** Updates the {{{target}}} subject using the {{{valueOpt}}} for this field and some context. */
+    def updateFieldValue(target: IdPk, valueOpt: Option[ID], context: RequestContext) =
+      target.withId(valueOpt)
+  }
+
+  def field[V](entityName: EntityName, fieldName: String, qualifiedType: QualifiedType[V], representations: Seq[Representation]): AdaptableField[V] = {
+    qualifiedType match {
+      case IdQualifiedType if representations.contains(EntityModel) =>
+        AdaptableField[ID](Map(EntityModel -> idPkSourceField), Map(EntityModel -> idPkTargetField)).asInstanceOf[AdaptableField[V]]
+      case _ =>
+        AdaptableField.empty
+    }
+  }
 }

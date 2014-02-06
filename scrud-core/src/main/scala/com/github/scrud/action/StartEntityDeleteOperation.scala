@@ -4,6 +4,7 @@ import com.github.scrud.{UriPath, EntityType}
 import com.github.scrud.persistence.PersistenceConnection
 import com.github.scrud.platform.PlatformTypes._
 import com.github.scrud.context.RequestContext
+import com.github.scrud.platform.representation.Persistence
 
 /**
  * Delete an entity by Uri with an undo option.  It can be wrapped to do a confirmation box if desired.
@@ -18,7 +19,7 @@ final case class StartEntityDeleteOperation(entityType: EntityType) extends Pers
     val persistence = persistenceConnection.persistenceFor(entityType)
     persistence.find(uri).foreach { readable =>
       val idOpt: Option[ID] = entityType.findPersistedId(readable)
-      val writable = null //todo persistence.toWritable(readable)
+      val writable = persistence.toWritable(Persistence, readable)
       persistence.delete(uri)
       val undoDeleteOperation = new PersistenceOperation {
         def invoke(uri: UriPath, persistenceConnection: PersistenceConnection, requestContext: RequestContext) {

@@ -10,9 +10,10 @@ import com.github.scrud.platform.representation.MapStorage
  *         Date: 12/17/13
  *         Time: 8:58 AM
  */
-class MapTargetField[V](entityName: EntityName, fieldName: String) extends TypedTargetField[MapStorage, V] {
+case class MapTargetField[V](entityName: EntityName, fieldName: String) extends TypedTargetField[MapStorage, V] {
   /** Updates the {{{target}}} subject using the {{{valueOpt}}} for this field and some context. */
-  def putFieldValue(target: MapStorage, valueOpt: Option[V], context: RequestContext) {
+  def updateFieldValue(target: MapStorage, valueOpt: Option[V], context: RequestContext) = {
     target.put(entityName, fieldName, valueOpt)
+    target
   }
 }

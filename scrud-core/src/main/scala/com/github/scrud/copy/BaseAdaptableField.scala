@@ -6,4 +6,14 @@ package com.github.scrud.copy
  *         Date: 12/12/13
  *         Time: 3:08 PM
  */
-class BaseAdaptableField
+abstract class BaseAdaptableField {
+  def attemptToAdapt(sourceType: SourceType, targetType: TargetType): Option[BaseAdaptedField]
+
+  def findSourceField(sourceType: SourceType): Option[SourceField[Any]]
+
+  def findTargetField(targetType: TargetType): Option[TargetField[Nothing]]
+
+  def hasSourceField(sourceType: SourceType) = findSourceField(sourceType).isDefined
+
+  def hasTargetField(targetType: TargetType) = findTargetField(targetType).isDefined
+}

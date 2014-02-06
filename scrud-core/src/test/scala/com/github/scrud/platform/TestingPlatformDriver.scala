@@ -1,6 +1,6 @@
 package com.github.scrud.platform
 
-import com.github.scrud.persistence.ListBufferPersistenceFactory
+import com.github.scrud.persistence.ListBufferPersistenceFactoryForTesting
 import com.github.scrud.EntityType
 import com.github.scrud.action.CrudOperationType
 import com.github.scrud.types.QualifiedType
@@ -20,7 +20,7 @@ import com.github.scrud.platform.representation.{Representation, MapStorage}
 class TestingPlatformDriver extends PlatformDriver {
   protected def logTag = getClass.getSimpleName
 
-  val localDatabasePersistenceFactory = new ListBufferPersistenceFactory[AnyRef](Map.empty[String,Any])
+  val localDatabasePersistenceFactory = ListBufferPersistenceFactoryForTesting
 
   def calculateDataVersion(entityTypes: Seq[EntityType]) = 1
 
@@ -62,7 +62,7 @@ class TestingPlatformDriver extends PlatformDriver {
     representation.toPlatformIndependentFieldApplicability
   }
 
-  def field[V](entityName: EntityName, fieldName: String, qualifiedType: QualifiedType[V], representations: Seq[Representation]): AdaptableField[V] = {
+  override def field[V](entityName: EntityName, fieldName: String, qualifiedType: QualifiedType[V], representations: Seq[Representation]): AdaptableField[V] = {
     val applicability = representations.foldLeft(FieldApplicability.Empty)(_ + toFieldApplicability(_))
     val someSourceField = Some(TypedSourceField[MapStorage,V](_.get(entityName, fieldName).map(_.asInstanceOf[V])))
     val someTargetField = Some(new MapTargetField[V](entityName, fieldName))
@@ -81,7 +81,7 @@ class TestingPlatformDriver extends PlatformDriver {
           None
         }
       }
-    }
+    }.orElse(super.field(entityName, fieldName, qualifiedType, representations))
   }
 }
 

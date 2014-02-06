@@ -10,10 +10,10 @@ import com.github.scrud.context.RequestContext
  */
 abstract class TypedTargetField[D <: AnyRef,V] extends TargetField[V] {
   /** Updates the {{{target}}} subject using the {{{valueOpt}}} for this field and some context. */
-  def putFieldValue(target: D, valueOpt: Option[V], context: RequestContext)
+  def updateFieldValue(target: D, valueOpt: Option[V], context: RequestContext): D
 
   /** Updates the {{{target}}} subject using the {{{valueOpt}}} for this field and some context. */
-  final def putValue(target: AnyRef, valueOpt: Option[V], context: RequestContext) = {
-    putFieldValue(target.asInstanceOf[D], valueOpt, context)
+  final def updateValue[T](target: T, valueOpt: Option[V], context: RequestContext): T = {
+    updateFieldValue(target.asInstanceOf[D], valueOpt, context).asInstanceOf[T]
   }
 }

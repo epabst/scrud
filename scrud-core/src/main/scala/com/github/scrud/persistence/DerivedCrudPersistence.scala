@@ -27,4 +27,6 @@ abstract class DerivedCrudPersistence[E <: AnyRef](val persistenceConnection: Pe
       }
     })
   }
+
+  val sharedContext = persistenceConnection.sharedContext
 }

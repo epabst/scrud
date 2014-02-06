@@ -10,7 +10,14 @@ import com.github.scrud.EntityName
  *         Date: 12/11/13
  *         Time: 9:54 PM
  */
-class MapStorage {
+class MapStorage extends AnyRef {
+  def this(entityName: EntityName, tuples: (String,Option[Any])*) {
+    this()
+    for ((fieldName, valueOpt) <- tuples) {
+      put(entityName, fieldName, valueOpt)
+    }
+  }
+
   private val map = new mutable.ParHashMap[String,Any]
 
   def get(entityName: EntityName, fieldName: String) = map.get(toKey(entityName, fieldName))
@@ -25,6 +32,18 @@ class MapStorage {
   private def toKey(entityName: EntityName, fieldName: String): String = {
     entityName.name + "." + fieldName
   }
+
+  override def equals(other: Any) = other match {
+    case otherMapStorage: MapStorage =>
+      map.equals(otherMapStorage.map)
+    case _ =>
+      false
+  }
+
+  override def hashCode() = map.hashCode() + 13
+
+  override def toString = map.mkString("MapStorage(", ", ", ")")
 }
 
+/** This is a reference to the storage type that the class MapStorage represents. */
 object MapStorage extends StorageType with Representation

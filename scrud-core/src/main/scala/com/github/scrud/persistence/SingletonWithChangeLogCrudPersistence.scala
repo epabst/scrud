@@ -16,6 +16,8 @@ case class SingletonWithChangeLogCrudPersistence(manyPersistence: CrudPersistenc
 
   val entityType = manyPersistence.entityType
 
+  def sharedContext = manyPersistence.sharedContext
+
   private lazy val cacheClearingListener = new DataListener {
     def onChanged() { cachedFindAll.clear() }
   }
@@ -31,8 +33,9 @@ case class SingletonWithChangeLogCrudPersistence(manyPersistence: CrudPersistenc
   def newWritable() = manyPersistence.newWritable()
 
   // Intentionally save without reusing the ID so that existing instances are never modified since a change-log
-  def doSave(id: Option[PlatformTypes.ID], writable: AnyRef) = {
+  protected[persistence] def doSave(id: Option[PlatformTypes.ID], writable: AnyRef) = {
     val writableWithoutId = entityType.clearId(writable)
+    //todo why not just call save?  would the listeners be notified twice?  TEST THIS
     manyPersistence.doSave(None, writableWithoutId)
   }
 
