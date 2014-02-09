@@ -14,6 +14,7 @@ dependencies {
     compile "org.slf4j:slf4j-api:1.6.1"
     compile 'commons-codec:commons-codec:1.9'
     compile project(":scrud:scrud-core");
+    testCompile project(path: ":scrud:scrud-core", configuration: 'tests')
     testRuntime "org.slf4j:slf4j-jdk14:1.6.1"
     testCompile "org.mockito:mockito-core:1.8.5"
 //    testCompile "org.scalatest:scalatest_$scalaVersion:1.8"
