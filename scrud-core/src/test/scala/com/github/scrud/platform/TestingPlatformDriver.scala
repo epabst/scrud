@@ -68,26 +68,14 @@ class TestingPlatformDriver extends PlatformDriver {
     representation.toPlatformIndependentFieldApplicability
   }
 
-  override def field[V](entityName: EntityName, fieldName: String, qualifiedType: QualifiedType[V], representations: Seq[Representation]): AdaptableField[V] = {
+  override def field[V](entityName: EntityName, fieldName: String, qualifiedType: QualifiedType[V], representations: Seq[Representation]): ExtensibleAdaptableField[V] = {
     val applicability = representations.foldLeft(FieldApplicability.Empty)(_ + toFieldApplicability(_))
-    val someSourceField = Some(TypedSourceField[MapStorage,V](_.get(entityName, fieldName).map(_.asInstanceOf[V])))
-    val someTargetField = Some(new MapTargetField[V](entityName, fieldName))
-    new AdaptableField[V] {
-      def findSourceField(sourceType: SourceType) =
-        if (applicability.contains(sourceType)) {
-          someSourceField
-        } else {
-          None
-        }
-
-      def findTargetField(targetType: TargetType) = {
-        if (applicability.contains(targetType)) {
-          someTargetField
-        } else {
-          None
-        }
-      }
-    }.orElse(super.field(entityName, fieldName, qualifiedType, representations))
+    val sourceField = TypedSourceField[MapStorage,V] { mapStorage =>
+      val valueOpt = mapStorage.get(entityName, fieldName)
+      valueOpt.map(_.asInstanceOf[V])
+    }
+    val targetField = new MapTargetField[V](entityName, fieldName)
+    new AdaptableFieldByType[V](applicability.from.map(_ -> sourceField).toMap, applicability.to.map(_ -> targetField).toMap)
   }
 }
 

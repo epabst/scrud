@@ -7,7 +7,7 @@ package com.github.scrud.copy
  *         Time: 9:07 AM
  */
 class AdaptableFieldByType[V](private val sourceFields: Map[SourceType,SourceField[V]], private val targetFields: Map[TargetType,TargetField[V]])
-    extends AdaptableField[V] {
+    extends ExtensibleAdaptableField[V] {
   def findSourceField(sourceType: SourceType) = sourceFields.get(sourceType)
 
   def findTargetField(targetType: TargetType) = targetFields.get(targetType)

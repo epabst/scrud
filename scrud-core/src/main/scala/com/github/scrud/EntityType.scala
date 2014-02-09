@@ -10,6 +10,7 @@ import scala.collection.mutable
 import com.github.scrud.platform.representation._
 import com.github.scrud.context.RequestContext
 import scala.util.Try
+import com.github.scrud.identity.IdPkField
 
 /**
  * A stateless configuration of an entity, providing information needed to map data to and from persistence, UI, model, etc.
@@ -36,9 +37,12 @@ abstract class EntityType(val entityName: EntityName, val platformDriver: Platfo
    * @param representations the various representations that the field can have.  This may include Persistence, UI, Model, etc.
    * @tparam V the Java data type for the field.
    * @return an AdaptableField which can be ignored since it is automatically stored in the EntityType.
+   *         It does not return an ExtensibleAdaptableField since any extensions would not be registered.
    */
-  protected def field[V](fieldName: String, qualifiedType: QualifiedType[V], representations: Seq[Representation]): AdaptableField[V] = {
-    val newField = platformDriver.field(entityName, fieldName, qualifiedType, representations)
+  protected def field[V](fieldName: String, qualifiedType: QualifiedType[V], representations: Seq[Representation],
+                         orElse: AdaptableField[V]*): AdaptableField[V] = {
+    val extensions = CompositeAdaptableField(orElse)
+    val newField = platformDriver.field(entityName, fieldName, qualifiedType, representations).orElse(extensions)
     adaptableFieldsBuffer += newField
     newField
   }
@@ -70,12 +74,21 @@ abstract class EntityType(val entityName: EntityName, val platformDriver: Platfo
   protected def idFieldRepresentations: Seq[Representation] = Seq(Persistence, Query, EntityModel, MapStorage)
 
   /**
+   * Specifies additional AdaptableFields that an ID field should include has for this entity.
+   * @return a Seq of AdaptableField[ID]
+   * @see [[com.github.scrud.EntityType.idField]]
+   */
+  protected def idFieldExtensions: Seq[AdaptableField[ID]] = EntityType.idFieldExtensions
+
+  /**
    * The ID field for this entity.
    * This calls [[com.github.scrud.EntityType.field]] with a type of [[com.github.scrud.types.IdQualifiedType]].
    * Rather than overriding this, it is recommended to override
    * [[com.github.scrud.EntityType.idFieldName]] and/or [[com.github.scrud.EntityType.idFieldRepresentations]].
    */
-  lazy val idField: AdaptableField[ID] = field(idFieldName, IdQualifiedType, idFieldRepresentations)
+  lazy val idField: AdaptableField[ID] = {
+    field(idFieldName, IdQualifiedType, idFieldRepresentations, idFieldExtensions: _*)
+  }
 
   def findPersistedId(readable: AnyRef): Option[ID] = idField.findSourceField(Persistence).flatMap(_.findValue(readable, null))
 
@@ -102,4 +115,8 @@ abstract class EntityType(val entityName: EntityName, val platformDriver: Platfo
   def onCreateDatabase(lowLevelPersistence: CrudPersistence) {}
 
   override def toString = entityName.toString
+}
+
+object EntityType {
+  private val idFieldExtensions = Seq(AdaptableField[ID](Map(EntityModel -> IdPkField), Map(EntityModel -> IdPkField)))
 }
