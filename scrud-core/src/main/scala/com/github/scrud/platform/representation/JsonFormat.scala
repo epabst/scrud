@@ -8,4 +8,4 @@ import com.github.scrud.copy.StorageType
   *         Date: 12/11/13
   *         Time: 9:16 AM
   */
-object JsonFormat extends StorageType with SerializedFormat
+object JsonFormat extends StorageType with SerializedFormat with RepresentationByType

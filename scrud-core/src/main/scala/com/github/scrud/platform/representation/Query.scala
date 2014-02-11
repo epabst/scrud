@@ -8,4 +8,4 @@ import com.github.scrud.copy.StorageType
  *          Date: 12/11/13
  *          Time: 9:16 AM
  */
-object Query extends StorageType with Representation
+object Query extends StorageType with RepresentationByType

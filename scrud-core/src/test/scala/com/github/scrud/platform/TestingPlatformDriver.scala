@@ -8,8 +8,8 @@ import com.github.scrud.copy._
 import com.github.scrud.EntityName
 import com.github.scrud.action.CommandId
 import com.github.scrud.action.Command
-import com.github.scrud.copy.FieldApplicability
-import com.github.scrud.platform.representation.{Representation, MapStorage}
+import com.github.scrud.platform.representation.Representation
+import com.github.scrud.util.Logging
 
 /**
  * A simple PlatformDriver for testing.
@@ -17,7 +17,7 @@ import com.github.scrud.platform.representation.{Representation, MapStorage}
  *         Date: 8/28/12
  *         Time: 1:27 PM
  */
-class TestingPlatformDriver extends PlatformDriver {
+class TestingPlatformDriver extends PlatformDriver with Logging {
   protected def logTag = getClass.getSimpleName
 
   val localDatabasePersistenceFactory = ListBufferPersistenceFactoryForTesting
@@ -61,21 +61,14 @@ class TestingPlatformDriver extends PlatformDriver {
   /** The command to undo the last delete. */
   def commandToUndoDelete = Command(CommandId("command1"), None, None)
 
-  protected def makeMapStorageSourceField[V](entityName: EntityName, fieldName: String): TypedSourceField[MapStorage,V] =
-    TypedSourceField[MapStorage,V](_.get(entityName, fieldName).map(_.asInstanceOf[V]))
-
-  def toFieldApplicability(representation: Representation): FieldApplicability = {
-    representation.toPlatformIndependentFieldApplicability
-  }
-
   override def field[V](entityName: EntityName, fieldName: String, qualifiedType: QualifiedType[V], representations: Seq[Representation]): ExtensibleAdaptableField[V] = {
-    val applicability = representations.foldLeft(FieldApplicability.Empty)(_ + toFieldApplicability(_))
-    val sourceField = TypedSourceField[MapStorage,V] { mapStorage =>
-      val valueOpt = mapStorage.get(entityName, fieldName)
-      valueOpt.map(_.asInstanceOf[V])
+    val resultFieldAndUnused = MapStorageAdaptableFieldFactory.adapt(entityName, fieldName, qualifiedType,
+      AdaptableFieldAndUnusedRepresentations(AdaptableField.empty, representations))
+    (resultFieldAndUnused.field, resultFieldAndUnused.unusedRepresentations)
+    if (!resultFieldAndUnused.unusedRepresentations.isEmpty) {
+      info("Representations that were not used: " + resultFieldAndUnused.unusedRepresentations.mkString(", "))
     }
-    val targetField = new MapTargetField[V](entityName, fieldName)
-    new AdaptableFieldByType[V](applicability.from.map(_ -> sourceField).toMap, applicability.to.map(_ -> targetField).toMap)
+    resultFieldAndUnused.field
   }
 }
 

@@ -35,6 +35,16 @@ abstract class PlatformDriverContract extends FunSpec with MustMatchers {
         val field = platformDriver.field(EntityName("Foo"), "foo", TitleQT, representations)
         field.findSourceField(EditUI) must be (None)
       }
+
+      it("must ignore unknown SourceTypes and TargetTypes") {
+        object UnknownRepresentation extends Representation
+        val platformDriver = makePlatformDriver()
+        val representations = Seq[Representation](MapStorage, UnknownRepresentation, JsonFormat)
+        val field = platformDriver.field(EntityName("Foo"), "foo", TitleQT, representations)
+        field.findSourceField(MapStorage).isDefined must be (true)
+        field.findSourceField(JsonFormat).isDefined must be (true)
+        //Shouldn't compile: field.findSourceField(UnknownRepresentation).isDefined must be (false)
+      }
     }
     
     describe("findTargetField") {  
