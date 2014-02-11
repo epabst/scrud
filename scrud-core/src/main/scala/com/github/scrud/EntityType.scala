@@ -40,7 +40,7 @@ abstract class EntityType(val entityName: EntityName, val platformDriver: Platfo
    *         It does not return an ExtensibleAdaptableField since any extensions would not be registered.
    */
   protected def field[V](fieldName: String, qualifiedType: QualifiedType[V], representations: Seq[Representation],
-                         orElse: AdaptableField[V]*): AdaptableField[V] = {
+                         orElse: ExtensibleAdaptableField[V]*): AdaptableField[V] = {
     val extensions = CompositeAdaptableField(orElse)
     val newField = platformDriver.field(entityName, fieldName, qualifiedType, representations).orElse(extensions)
     adaptableFieldsBuffer += newField
@@ -78,7 +78,7 @@ abstract class EntityType(val entityName: EntityName, val platformDriver: Platfo
    * @return a Seq of AdaptableField[ID]
    * @see [[com.github.scrud.EntityType.idField]]
    */
-  protected def idFieldExtensions: Seq[AdaptableField[ID]] = EntityType.idFieldExtensions
+  protected def idFieldExtensions: Seq[ExtensibleAdaptableField[ID]] = EntityType.idFieldExtensions
 
   /**
    * The ID field for this entity.

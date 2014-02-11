@@ -13,7 +13,7 @@ class AdaptableFieldByType[V](private val sourceFields: Map[SourceType,SourceFie
   def findTargetField(targetType: TargetType) = targetFields.get(targetType)
 
   // Override this to make the result much simpler to examine rather than as a composite of AdaptableFields.
-  override def orElse(adaptableField: AdaptableField[V]) = {
+  override def orElse(adaptableField: ExtensibleAdaptableField[V]) = {
     adaptableField match {
       case adaptableFieldByType: AdaptableFieldByType[V] =>
         new AdaptableFieldByType[V](

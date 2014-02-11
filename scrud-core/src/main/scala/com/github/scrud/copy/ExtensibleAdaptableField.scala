@@ -18,7 +18,7 @@ abstract class ExtensibleAdaptableField[V] extends AdaptableField[V] { self =>
    * @param adaptableField another AdaptableField to delegate to next if this one didn't work.
    * @return a CompositeAdaptableField
    */
-  def orElse(adaptableField: AdaptableField[V]): ExtensibleAdaptableField[V] =
+  def orElse(adaptableField: ExtensibleAdaptableField[V]): ExtensibleAdaptableField[V] =
     CompositeAdaptableField[V](Vector(this, adaptableField))
 
   def orElse(value: V): ExtensibleAdaptableField[V] = orElse(Default(value))

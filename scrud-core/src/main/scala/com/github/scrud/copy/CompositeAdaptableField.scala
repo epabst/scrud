@@ -9,7 +9,7 @@ package com.github.scrud.copy
  *         Date: 2/8/14
  *         Time: 11:08 PM
  */
-final case class CompositeAdaptableField[V](delegates: Seq[AdaptableField[V]]) extends ExtensibleAdaptableField[V] {
+final case class CompositeAdaptableField[V](delegates: Seq[ExtensibleAdaptableField[V]]) extends ExtensibleAdaptableField[V] {
   def findSourceField(sourceType: SourceType) = {
     val sourceFields = delegates.flatMap(_.findSourceField(sourceType))
     if (sourceFields.isEmpty || sourceFields.tail.isEmpty) {
@@ -26,7 +26,7 @@ final case class CompositeAdaptableField[V](delegates: Seq[AdaptableField[V]]) e
     } yield targetField).headOption
   }
 
-  override def orElse(adaptableField: AdaptableField[V]) = {
+  override def orElse(adaptableField: ExtensibleAdaptableField[V]) = {
     adaptableField match {
       case composite: CompositeAdaptableField[V] =>
         //unwrap the composite to simplify debugging

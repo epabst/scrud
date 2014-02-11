@@ -30,10 +30,7 @@ object AdaptableField {
 
     def findTargetField(targetType: TargetType): Option[Nothing] = None
 
-    override def orElse(adaptableField: AdaptableField[Any]) = adaptableField match {
-      case extensible: ExtensibleAdaptableField[Any] => extensible
-      case _ => super.orElse(adaptableField)
-    }
+    override def orElse(adaptableField: ExtensibleAdaptableField[Any]) = adaptableField
   }
 
   def empty[V] = Empty.asInstanceOf[ExtensibleAdaptableField[V]]
