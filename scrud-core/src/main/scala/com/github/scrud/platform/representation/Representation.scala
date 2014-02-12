@@ -16,4 +16,8 @@ package com.github.scrud.platform.representation
  *         Date: 1/29/14
  *         Time: 11:20 PM
  */
-trait Representation
+trait Representation {
+  def equals(that: Any): Boolean
+
+  def hashCode(): Int
+}
