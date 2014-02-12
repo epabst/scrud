@@ -20,7 +20,7 @@ abstract class PlatformDriverContract extends FunSpec with MustMatchers {
     describe("findSourceField") {
       it("must support the basic SourceTypes") {
         val platformDriver = makePlatformDriver()
-        val representations = Seq[Representation](MapStorage, Persistence, XmlFormat, JsonFormat, EditUI)
+        val representations = Seq[Representation](MapStorage, Persistence(1), XmlFormat, JsonFormat, EditUI)
         val field = platformDriver.field(EntityName("Foo"), "foo", TitleQT, representations)
         for (sourceType <- representations.collect { case s: SourceType => s }) {
           withClue(sourceType) {
@@ -31,7 +31,7 @@ abstract class PlatformDriverContract extends FunSpec with MustMatchers {
   
       it("must not return a field for a SourceType not provided in the FieldApplicability") {
         val platformDriver = makePlatformDriver()
-        val representations = Seq[Representation](Persistence, XmlFormat)
+        val representations = Seq[Representation](Persistence(1), XmlFormat)
         val field = platformDriver.field(EntityName("Foo"), "foo", TitleQT, representations)
         field.findSourceField(EditUI) must be (None)
       }
@@ -50,7 +50,7 @@ abstract class PlatformDriverContract extends FunSpec with MustMatchers {
     describe("findTargetField") {  
       it("must support the basic SourceTypes") {
         val platformDriver = makePlatformDriver()
-        val representations = Seq[Representation](MapStorage, Persistence, XmlFormat, JsonFormat, EditUI, SelectUI, SummaryUI, DetailUI)
+        val representations = Seq[Representation](MapStorage, Persistence(1), XmlFormat, JsonFormat, EditUI, SelectUI, SummaryUI, DetailUI)
         val field = platformDriver.field(EntityName("Foo"), "foo", TitleQT, representations)
         for (targetType <- representations.collect { case t: TargetType => t }) {
           withClue(targetType) {
@@ -61,7 +61,7 @@ abstract class PlatformDriverContract extends FunSpec with MustMatchers {
 
       it("must not return a field for a SourceType not provided in the FieldApplicability") {
         val platformDriver = makePlatformDriver()
-        val representations = Seq[Representation](Persistence, XmlFormat)
+        val representations = Seq[Representation](Persistence(1), XmlFormat)
         val field = platformDriver.field(EntityName("Foo"), "foo", TitleQT, representations)
         field.findTargetField(EditUI) must be (None)
       }

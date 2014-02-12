@@ -21,9 +21,9 @@ trait CrudPersistence extends EntityPersistence with ListenerSet[DataListener] w
 
   def sharedContext: SharedContext
 
-  def sourceType: SourceType = Persistence
+  def sourceType: SourceType = Persistence.Latest
 
-  def targetType: TargetType = Persistence
+  def targetType: TargetType = Persistence.Latest
 
   override def toUri(id: ID) = entityType.toUri(id)
 
@@ -56,14 +56,14 @@ trait CrudPersistence extends EntityPersistence with ListenerSet[DataListener] w
 
   /** Saves the entity.  This assumes that the entityType's fields support copying from the given modelEntity. */
   def save(modelEntity: IdPk): ID = {
-    val adaptedFieldSeq = entityType.adapt(EntityModel, Persistence)
+    val adaptedFieldSeq = entityType.adapt(EntityModel, Persistence.Latest)
     val writable = adaptedFieldSeq.copyAndUpdate(modelEntity, newWritable(), sharedContext.asStubRequestContext)
     save(modelEntity.id, writable)
   }
 
   def toWritable(sourceType: SourceType, source: AnyRef): AnyRef = {
     val target = newWritable()
-    val adaptedFieldSeq = entityType.adapt(sourceType, Persistence)
+    val adaptedFieldSeq = entityType.adapt(sourceType, Persistence.Latest)
     adaptedFieldSeq.copyAndUpdate(source, target, sharedContext.asStubRequestContext)
   }
 

@@ -11,7 +11,7 @@ import com.github.scrud.platform.representation.{Persistence, MapStorage}
  *         Time: 3:52 PM
  */
 class EntityTypeForTesting(entityName: EntityName = EntityName("MyEntity")) extends EntityType(entityName, TestingPlatformDriver) {
-  field("name", TitleQT, Seq(MapStorage, Persistence))
+  field("name", TitleQT, Seq(MapStorage, Persistence(1)))
 }
 
 object EntityTypeForTesting extends EntityTypeForTesting(EntityName("MyEntity"))

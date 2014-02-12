@@ -18,7 +18,7 @@ class BookEntityTypeSpec extends FunSpec with MustMatchers {
   val entityType = new BookEntityType(TestingPlatformDriver)
 
   it("must have a default genre of Fantasy") {
-    val sourceField = entityType.genre.findSourceField(Persistence)
+    val sourceField = entityType.genre.findSourceField(Persistence.Latest)
     sourceField.flatMap(_.findValue(new MapStorage, null)) must be (Some(Genre.Fantasy))
   }
 }

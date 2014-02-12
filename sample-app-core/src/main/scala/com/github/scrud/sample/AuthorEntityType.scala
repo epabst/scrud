@@ -8,7 +8,7 @@ import com.github.scrud.platform.representation.{EditUI, Persistence}
 object Author extends EntityName("Author")
 
 class AuthorEntityType(platformDriver: PlatformDriver) extends EntityType(Author, platformDriver) {
-  field("name", TitleQT, Seq(Persistence, EditUI))  //todo + requiredString,
+  field("name", TitleQT, Seq(Persistence(1), EditUI))  //todo + requiredString,
 //
 //    namedViewField("bookCount", NaturalIntQT) +
 //            bundleField[Int]("bookCount") +

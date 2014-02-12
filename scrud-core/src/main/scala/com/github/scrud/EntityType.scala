@@ -71,7 +71,7 @@ abstract class EntityType(val entityName: EntityName, val platformDriver: Platfo
    * @return a Seq of Representation
    * @see [[com.github.scrud.EntityType.idField]]
    */
-  protected def idFieldRepresentations: Seq[Representation] = Seq(Persistence, Query, EntityModel, MapStorage)
+  protected def idFieldRepresentations: Seq[Representation] = Seq(Persistence(Int.MinValue), Query, EntityModel, MapStorage)
 
   /**
    * Specifies additional AdaptableFields that an ID field should include has for this entity.
@@ -90,7 +90,7 @@ abstract class EntityType(val entityName: EntityName, val platformDriver: Platfo
     field(idFieldName, IdQualifiedType, idFieldRepresentations, idFieldExtensions: _*)
   }
 
-  def findPersistedId(readable: AnyRef): Option[ID] = idField.findSourceField(Persistence).flatMap(_.findValue(readable, null))
+  def findPersistedId(readable: AnyRef): Option[ID] = idField.findSourceField(Persistence.Latest).flatMap(_.findValue(readable, null))
 
   def clearId(source: IdPk): IdPk = source.withId(None)
 

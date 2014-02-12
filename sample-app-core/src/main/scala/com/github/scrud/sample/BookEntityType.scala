@@ -9,15 +9,15 @@ import com.github.scrud.copy.types.Default
 object Book extends EntityName("Book")
 
 class BookEntityType(platformDriver: PlatformDriver) extends EntityType(Book, platformDriver) {
-  field("name", TitleQT, Seq(Persistence, EditUI, SelectUI)) //todo requiredString
+  field("name", TitleQT, Seq(Persistence(1), EditUI, SelectUI)) //todo requiredString
 
-  field(Author, Seq(Persistence, EditUI))
+  field(Author, Seq(Persistence(1), EditUI))
 
-  field("edition", PositiveIntQT, Seq(Persistence, EditUI))
+  field("edition", PositiveIntQT, Seq(Persistence(1), EditUI))
 
-  val genre = field("genre", EnumerationValueQT[Genre.Value](Genre), Seq(Persistence, EditUI), Default(Genre.Fantasy))
+  val genre = field("genre", EnumerationValueQT[Genre.Value](Genre), Seq(Persistence(1), EditUI), Default(Genre.Fantasy))
 
-  field(Publisher, Seq(Persistence, EditUI)) //todo Persistence(dataVersion = 2)
+  field(Publisher, Seq(Persistence(2), EditUI))
 
-  field("publishDate", DateWithoutTimeQT, Seq(Persistence, EditUI))
+  field("publishDate", DateWithoutTimeQT, Seq(Persistence(1), EditUI))
 }

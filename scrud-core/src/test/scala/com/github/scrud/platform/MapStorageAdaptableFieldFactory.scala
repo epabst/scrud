@@ -20,16 +20,24 @@ class MapStorageAdaptableFieldFactory extends AdaptableFieldFactory {
       case representationByType: RepresentationByType => representationByType
     }
     val applicability = representationsByType.foldLeft(FieldApplicability.Empty)(_ + toFieldApplicability(_))
-    val sourceField = TypedSourceField[MapStorage,V] { mapStorage =>
-      val valueOpt = mapStorage.get(entityName, fieldName)
-      valueOpt.map(_.asInstanceOf[V])
-    }
-    val targetField = new MapTargetField[V](entityName, fieldName)
+    val sourceField = createSourceField[V](entityName, fieldName, qualifiedType)
+    val targetField = createTargetField[V](entityName, fieldName, qualifiedType)
     val fieldByType = new AdaptableFieldByType[V](
       applicability.from.map(_ -> sourceField).toMap,
       applicability.to.map(_ -> targetField).toMap)
     AdaptableFieldWithRepresentations(fieldByType, representationsByType.toSet)
   }
+
+  def createSourceField[V](entityName: EntityName, fieldName: String, qualifiedType: QualifiedType[V]): TypedSourceField[MapStorage, V] = {
+    TypedSourceField[MapStorage, V] {
+      mapStorage =>
+        val valueOpt = mapStorage.get(entityName, fieldName)
+        valueOpt.map(_.asInstanceOf[V])
+    }
+  }
+
+  def createTargetField[V](entityName: EntityName, fieldName: String, qualifiedType: QualifiedType[V]): TypedTargetField[MapStorage, V] =
+    new MapTargetField[V](entityName, fieldName)
 
   def toFieldApplicability(representation: RepresentationByType): FieldApplicability = {
     representation.toPlatformIndependentFieldApplicability

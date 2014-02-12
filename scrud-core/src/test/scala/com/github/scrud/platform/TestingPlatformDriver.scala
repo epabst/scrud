@@ -22,6 +22,15 @@ class TestingPlatformDriver extends PlatformDriver with Logging {
 
   val localDatabasePersistenceFactory = ListBufferPersistenceFactoryForTesting
 
+  private val persistenceFieldFactory = new PersistenceAdaptableFieldFactory {
+    def sourceField[V](entityName: EntityName, fieldName: String, qualifiedType: QualifiedType[V]) =
+      MapStorageAdaptableFieldFactory.createSourceField(entityName, fieldName, qualifiedType)
+
+    def targetField[V](entityName: EntityName, fieldName: String, qualifiedType: QualifiedType[V]) =
+      MapStorageAdaptableFieldFactory.createTargetField(entityName, fieldName, qualifiedType)
+  }
+
+  //todo implement
   def calculateDataVersion(entityTypes: Seq[EntityType]) = 1
 
   def idFieldName(entityName: EntityName, primaryKey: Boolean = true): String = {
@@ -64,10 +73,12 @@ class TestingPlatformDriver extends PlatformDriver with Logging {
   override def field[V](entityName: EntityName, fieldName: String, qualifiedType: QualifiedType[V], representations: Seq[Representation]): ExtensibleAdaptableField[V] = {
     val adaptableFieldRepresentations = MapStorageAdaptableFieldFactory.adapt(entityName, fieldName, qualifiedType, representations)
     val unusedRepresentations = representations.filterNot(adaptableFieldRepresentations.representations.contains(_))
-    if (!unusedRepresentations.isEmpty) {
-      info("Representations that were not used: " + unusedRepresentations.mkString(", "))
+    val persistedFieldWithRepresentations = persistenceFieldFactory.adapt(entityName, fieldName, qualifiedType, unusedRepresentations)
+    val unusedRepresentations2 = unusedRepresentations.filterNot(persistedFieldWithRepresentations.representations.contains(_))
+    if (!unusedRepresentations2.isEmpty) {
+      info("Representations that were not used: " + unusedRepresentations2.mkString(", "))
     }
-    adaptableFieldRepresentations.field
+    adaptableFieldRepresentations.orElse(persistedFieldWithRepresentations).field
   }
 }
 

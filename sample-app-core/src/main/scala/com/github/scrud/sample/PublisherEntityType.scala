@@ -9,7 +9,7 @@ import com.github.scrud.platform.representation.{SelectUI, Persistence, EditUI}
 object Publisher extends EntityName("Publisher")
 
 class PublisherEntityType(platformDriver: PlatformDriver) extends EntityType(Publisher, platformDriver) {
-  field("name", TitleQT, Seq(Persistence, EditUI, SelectUI)) //todo requiredString, Persistence(dataVersion = 2)
+  field("name", TitleQT, Seq(Persistence(2), EditUI, SelectUI)) //todo requiredString
 //    namedViewField("bookCount", NaturalIntQT) + bundleField[Int]("bookCount") + Getter[Int] {
 //      case UriField(Some(uri)) && CrudContextField(Some(crudContext)) => {
 //        println("calculating bookCount for " + uri + " and " + crudContext)
