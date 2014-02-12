@@ -62,13 +62,12 @@ class TestingPlatformDriver extends PlatformDriver with Logging {
   def commandToUndoDelete = Command(CommandId("command1"), None, None)
 
   override def field[V](entityName: EntityName, fieldName: String, qualifiedType: QualifiedType[V], representations: Seq[Representation]): ExtensibleAdaptableField[V] = {
-    val resultFieldAndUnused = MapStorageAdaptableFieldFactory.adapt(entityName, fieldName, qualifiedType,
-      AdaptableFieldAndUnusedRepresentations(AdaptableField.empty, representations))
-    (resultFieldAndUnused.field, resultFieldAndUnused.unusedRepresentations)
-    if (!resultFieldAndUnused.unusedRepresentations.isEmpty) {
-      info("Representations that were not used: " + resultFieldAndUnused.unusedRepresentations.mkString(", "))
+    val adaptableFieldRepresentations = MapStorageAdaptableFieldFactory.adapt(entityName, fieldName, qualifiedType, representations)
+    val unusedRepresentations = representations.filterNot(adaptableFieldRepresentations.representations.contains(_))
+    if (!unusedRepresentations.isEmpty) {
+      info("Representations that were not used: " + unusedRepresentations.mkString(", "))
     }
-    resultFieldAndUnused.field
+    adaptableFieldRepresentations.field
   }
 }
 

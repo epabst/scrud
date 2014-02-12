@@ -1,8 +1,9 @@
 package com.github.scrud.platform
 
-import com.github.scrud.copy.AdaptableFieldAndUnusedRepresentations
+import com.github.scrud.copy.AdaptableFieldWithRepresentations
 import com.github.scrud.EntityName
 import com.github.scrud.types.QualifiedType
+import com.github.scrud.platform.representation.Representation
 
 /**
  * A factory that turns some set of [[com.github.scrud.platform.representation.Representation]]s
@@ -14,16 +15,16 @@ import com.github.scrud.types.QualifiedType
  */
 trait AdaptableFieldFactory {
   /**
-   * Turns some set of [[com.github.scrud.platform.representation.Representation]]s
-   * into [[com.github.scrud.copy.AdaptableField]]s.
-   * The other Representations are returned for processing by other factories.
+   * Turns some sequence of [[com.github.scrud.platform.representation.Representation]]s
+   * into an [[com.github.scrud.copy.AdaptableField]].
+   * Any Representations not included in the result are often processed by other factories.
    * @param entityName the name of the entity that contains the field
    * @param fieldName the name of the field in the entity
    * @param qualifiedType the type of the field in the entity
-   * @param fieldAndUnused the baseline AdaptableField and unused Representations to consider
+   * @param representations the Representations to consider adapting to
    * @tparam V the type of the field's value
-   * @return the field and the unused representations
+   * @return the field and the representations it adapts to
    */
   def adapt[V](entityName: EntityName, fieldName: String, qualifiedType: QualifiedType[V],
-               fieldAndUnused: AdaptableFieldAndUnusedRepresentations[V]): AdaptableFieldAndUnusedRepresentations[V]
+               representations: Seq[Representation]): AdaptableFieldWithRepresentations[V]
 }
