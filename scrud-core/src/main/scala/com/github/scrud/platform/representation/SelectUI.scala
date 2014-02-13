@@ -1,6 +1,6 @@
 package com.github.scrud.platform.representation
 
-import com.github.scrud.copy.StorageType
+import com.github.scrud.copy.{RepresentationByType, StorageType}
 
 /**
  * A TargetType for the UI for selecting an entity instance.

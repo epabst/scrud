@@ -2,9 +2,10 @@ package com.github.scrud.platform
 
 import com.github.scrud.copy._
 import com.github.scrud.types.QualifiedType
-import com.github.scrud.platform.representation.Representation
-import com.github.scrud.platform.representation.PersistenceRange
+import com.github.scrud.copy.AdaptableFieldWithRepresentations
 import com.github.scrud.EntityName
+import com.github.scrud.platform.representation.PersistenceRange
+import scala.Some
 
 /**
  * An AdaptableFieldFactory for [[com.github.scrud.platform.representation.Persistence]]

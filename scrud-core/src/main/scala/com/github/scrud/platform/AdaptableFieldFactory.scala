@@ -1,12 +1,11 @@
 package com.github.scrud.platform
 
-import com.github.scrud.copy.AdaptableFieldWithRepresentations
+import com.github.scrud.copy.{Representation, AdaptableFieldWithRepresentations}
 import com.github.scrud.EntityName
 import com.github.scrud.types.QualifiedType
-import com.github.scrud.platform.representation.Representation
 
 /**
- * A factory that turns some set of [[com.github.scrud.platform.representation.Representation]]s
+ * A factory that turns some set of [[com.github.scrud.copy.Representation]]s
  * into [[com.github.scrud.copy.AdaptableField]]s.
  * The other Representations are returned for processing by other factories.
  * @author Eric Pabst (epabst@gmail.com)
@@ -15,7 +14,7 @@ import com.github.scrud.platform.representation.Representation
  */
 trait AdaptableFieldFactory {
   /**
-   * Turns some sequence of [[com.github.scrud.platform.representation.Representation]]s
+   * Turns some sequence of [[Representation]]s
    * into an [[com.github.scrud.copy.AdaptableField]].
    * Any Representations not included in the result are often processed by other factories.
    * @param entityName the name of the entity that contains the field

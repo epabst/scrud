@@ -1,8 +1,10 @@
-package com.github.scrud.platform.representation
+package com.github.scrud.copy.types
 
 import com.github.scrud.copy._
 import scala.collection.parallel.mutable
 import com.github.scrud.EntityName
+import com.github.scrud.EntityName
+import scala.Some
 
 /**
  * A target and source for data (especially useful when testing).

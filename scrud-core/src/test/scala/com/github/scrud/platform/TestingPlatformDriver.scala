@@ -5,11 +5,10 @@ import com.github.scrud.EntityType
 import com.github.scrud.action.CrudOperationType
 import com.github.scrud.types.QualifiedType
 import com.github.scrud.copy._
+import com.github.scrud.util.Logging
 import com.github.scrud.EntityName
 import com.github.scrud.action.CommandId
 import com.github.scrud.action.Command
-import com.github.scrud.platform.representation.Representation
-import com.github.scrud.util.Logging
 
 /**
  * A simple PlatformDriver for testing.

@@ -1,4 +1,4 @@
-package com.github.scrud.platform.representation
+package com.github.scrud.copy
 
 /**
  * A representation of data such as persistence, XML, JSON, or display UI.
@@ -10,7 +10,7 @@ package com.github.scrud.platform.representation
  * These allow filtering which fields should be copied.
  * Alternatively, it is also common for a companion object to be a
  * [[com.github.scrud.copy.SourceType]] and/or a [[com.github.scrud.copy.TargetType]]
- * while the companion class is a [[com.github.scrud.platform.representation.Representation]] which has constructor parameters.
+ * while the companion class is a [[Representation]] which has constructor parameters.
  * A PlatformDriver will convert this into an AdaptableField.
  * @author Eric Pabst (epabst@gmail.com)
  *         Date: 1/29/14

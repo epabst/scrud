@@ -1,7 +1,6 @@
-package com.github.scrud
+package com.github.scrud.platform
 
 import com.github.scrud.util.Logging
-import platform.PlatformTypes
 
 trait Notification extends Logging {
   /**

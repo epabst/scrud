@@ -1,4 +1,4 @@
-package com.github.scrud
+package com.github.scrud.model
 
 import com.github.scrud.platform.PlatformTypes._
 

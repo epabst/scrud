@@ -1,6 +1,6 @@
 package com.github.scrud.platform.representation
 
-import com.github.scrud.copy.StorageType
+import com.github.scrud.copy.{RepresentationByType, StorageType}
 
 /**
   * A StorageType for copying to and from a model entity.

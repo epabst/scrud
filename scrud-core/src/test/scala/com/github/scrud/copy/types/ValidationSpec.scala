@@ -1,4 +1,4 @@
-package com.github.scrud
+package com.github.scrud.copy.types
 
 import org.scalatest.matchers.MustMatchers
 import org.scalatest.FunSpec
@@ -6,7 +6,7 @@ import Validation._
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 
-/** A behavior specification for [[com.github.scrud.Validation]].
+/** A behavior specification for [[Validation]].
   * @author Eric Pabst (epabst@gmail.com)
   */
 @RunWith(classOf[JUnitRunner])

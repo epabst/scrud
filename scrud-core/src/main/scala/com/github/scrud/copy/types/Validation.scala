@@ -1,4 +1,4 @@
-package com.github.scrud
+package com.github.scrud.copy.types
 
 /** A PortableField for validating data.  It updates a ValidationResult using a value.
   * @author Eric Pabst (epabst@gmail.com)
@@ -29,15 +29,4 @@ object Validation {
 
   /** A Validation that requires that the value not be empty (after trimming). */
   lazy val requiredString: Validation[String] = requiredAnd(_.trim != "")
-}
-
-case class ValidationResult(numInvalid: Int) {
-  val isValid: Boolean = numInvalid == 0
-
-  def +(isValid: Boolean): ValidationResult = if (isValid) this else ValidationResult(numInvalid + 1)
-}
-
-object ValidationResult {
-  /** The result for valid data.  It is capitalized so it can be used in case statements. */
-  val Valid: ValidationResult = ValidationResult(0)
 }

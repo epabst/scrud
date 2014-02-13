@@ -1,7 +1,7 @@
 package com.github.scrud.persistence
 
 import com.github.scrud.EntityType
-import com.github.scrud.platform.representation.MapStorage
+import com.github.scrud.copy.types.MapStorage
 
 /**
  * A PersistenceFactory to use during tests.

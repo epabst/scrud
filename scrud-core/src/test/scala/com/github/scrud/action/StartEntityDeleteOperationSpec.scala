@@ -8,9 +8,9 @@ import com.github.scrud.util.CrudMockitoSugar
 import com.github.scrud.platform.TestingPlatformDriver
 import org.scalatest.matchers.MustMatchers
 import com.github.scrud.context.RequestContextForTesting
-import com.github.scrud.platform.representation.MapStorage
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
+import com.github.scrud.copy.types.MapStorage
 
 /**
  * A behavior specification for [[com.github.scrud.action.StartEntityDeleteOperation]].

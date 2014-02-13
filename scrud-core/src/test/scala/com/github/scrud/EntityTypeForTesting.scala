@@ -2,7 +2,8 @@ package com.github.scrud
 
 import com.github.scrud.platform.TestingPlatformDriver
 import com.github.scrud.types.TitleQT
-import com.github.scrud.platform.representation.{Persistence, MapStorage}
+import com.github.scrud.platform.representation.{Persistence}
+import com.github.scrud.copy.types.MapStorage
 
 /**
  * An EntityType for use when testing.

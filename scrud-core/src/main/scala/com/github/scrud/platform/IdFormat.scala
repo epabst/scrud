@@ -1,4 +1,4 @@
-package com.github.scrud
+package com.github.scrud.platform
 
 import com.github.scrud.platform.PlatformTypes.ID
 import scala.util.Try

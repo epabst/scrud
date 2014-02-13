@@ -1,7 +1,6 @@
-package com.github.scrud.identity
+package com.github.scrud.model
 
 import com.github.scrud.copy.{TypedSourceField, TypedTargetField}
-import com.github.scrud.IdPk
 import com.github.scrud.platform.PlatformTypes._
 import com.github.scrud.context.RequestContext
 

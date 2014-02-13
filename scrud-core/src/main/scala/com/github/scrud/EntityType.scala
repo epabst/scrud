@@ -10,7 +10,8 @@ import scala.collection.mutable
 import com.github.scrud.platform.representation._
 import com.github.scrud.context.RequestContext
 import scala.util.Try
-import com.github.scrud.identity.IdPkField
+import com.github.scrud.model.{IdPk, IdPkField}
+import com.github.scrud.copy.types.MapStorage
 
 /**
  * A stateless configuration of an entity, providing information needed to map data to and from persistence, UI, model, etc.

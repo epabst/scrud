@@ -3,12 +3,13 @@ package com.github.scrud.persistence
 import com.github.scrud.platform.PlatformTypes._
 import com.github.scrud.util.Logging
 import com.github.scrud.util.{Common, ListenerSet}
-import com.github.scrud.{IdPk, UriPath, EntityType}
+import com.github.scrud.{UriPath, EntityType}
 import com.github.annotations.quality.MicrotestCompatible
 import com.github.scrud.copy.{TargetType, SourceType, InstantiatingTargetType}
 import com.github.scrud.platform.representation.{EntityModel, Persistence}
 import com.github.scrud.context.SharedContext
 import scala.util.Try
+import com.github.scrud.model.IdPk
 
 /** An EntityPersistence for a CrudType.
   * @author Eric Pabst (epabst@gmail.com)

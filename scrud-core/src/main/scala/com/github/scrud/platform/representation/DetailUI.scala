@@ -1,6 +1,6 @@
 package com.github.scrud.platform.representation
 
-import com.github.scrud.copy.TargetType
+import com.github.scrud.copy.{RepresentationByType, TargetType}
 
 /**
  *  A UI Representation that shows detail information (as opposed to just summary).

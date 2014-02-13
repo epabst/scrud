@@ -2,7 +2,7 @@ package com.github.scrud.copy
 
 import com.github.scrud.context.RequestContext
 import com.github.scrud.EntityName
-import com.github.scrud.platform.representation.MapStorage
+import com.github.scrud.copy.types.MapStorage
 
 /**
  * A TargetField for MapStorage.

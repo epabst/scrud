@@ -1,6 +1,7 @@
 package com.github.scrud
 
 import com.github.scrud.platform.PlatformTypes._
+import com.github.scrud.platform.IdFormat
 
 /** A convenience wrapper for UriPath.
   * It helps in that UriPath.EMPTY is null when running unit tests, and helps prepare for multi-platform support.

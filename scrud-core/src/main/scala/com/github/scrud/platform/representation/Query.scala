@@ -1,6 +1,6 @@
 package com.github.scrud.platform.representation
 
-import com.github.scrud.copy.StorageType
+import com.github.scrud.copy.{RepresentationByType, StorageType}
 
 /**
  *  A Representation for querying for instances with a matching field value.

@@ -1,6 +1,6 @@
 package com.github.scrud.persistence
 
-import com.github.scrud.platform.representation.MapStorage
+import com.github.scrud.copy.types.MapStorage
 
 /**
  * A [[com.github.scrud.persistence.PersistenceFactory]] for testing.

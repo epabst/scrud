@@ -1,11 +1,11 @@
 package com.github.scrud.platform
 
 import com.github.scrud.copy._
-import com.github.scrud.platform.representation.{Representation, MapStorage, RepresentationByType}
 import com.github.scrud.copy.AdaptableFieldWithRepresentations
 import com.github.scrud.copy.MapTargetField
 import com.github.scrud.EntityName
 import com.github.scrud.types.QualifiedType
+import com.github.scrud.copy.types.MapStorage
 
 /**
  * An [[com.github.scrud.platform.AdaptableFieldFactory]] that simply uses MapStorage

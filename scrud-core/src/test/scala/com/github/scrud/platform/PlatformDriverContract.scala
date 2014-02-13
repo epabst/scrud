@@ -1,11 +1,12 @@
 package com.github.scrud.platform
 
 import org.scalatest.FunSpec
-import com.github.scrud.copy.{TargetType, SourceType}
+import com.github.scrud.copy.{Representation, TargetType, SourceType}
 import com.github.scrud.types.TitleQT
 import org.scalatest.matchers.MustMatchers
 import com.github.scrud.platform.representation._
 import com.github.scrud.EntityName
+import com.github.scrud.copy.types.MapStorage
 
 /**
  * A specification of the contract that every [[com.github.scrud.platform.PlatformDriver]] must comply with.
