@@ -15,7 +15,7 @@ import com.github.scrud.copy.types.MapStorage
 
 /**
  * A stateless configuration of an entity, providing information needed to map data to and from persistence, UI, model, etc.
- * Each subclass should call the field(String, QualifiedType[V], Seq[Representation]) method for each field.
+ * Each subclass should call the field(String, QualifiedType[V], Seq[Representation[V]]) method for each field.
  * Ideally each subclass won't assume the platform (e.g. android) so that it can be re-used for multiple platforms.
  * @author Eric Pabst (epabst@gmail.com)
  * @param entityName  this is used to identify the EntityType and for internationalized strings
@@ -40,7 +40,7 @@ abstract class EntityType(val entityName: EntityName, val platformDriver: Platfo
    * @return an AdaptableField which can be ignored since it is automatically stored in the EntityType.
    *         It does not return an ExtensibleAdaptableField since any extensions would not be registered.
    */
-  protected def field[V](fieldName: String, qualifiedType: QualifiedType[V], representations: Seq[Representation],
+  protected def field[V](fieldName: String, qualifiedType: QualifiedType[V], representations: Seq[Representation[V]],
                          orElse: ExtensibleAdaptableField[V]*): AdaptableField[V] = {
     val extensions = CompositeAdaptableField(orElse)
     val newField = platformDriver.field(entityName, fieldName, qualifiedType, representations).orElse(extensions)
@@ -55,7 +55,7 @@ abstract class EntityType(val entityName: EntityName, val platformDriver: Platfo
    * @tparam V the Java data type for the field.
    * @return an AdaptableField which can be ignored since it is automatically stored in the EntityType.
    */
-  protected def field[V](entityName: EntityName, representations: Seq[Representation]): AdaptableField[ID] =
+  protected def field[V](entityName: EntityName, representations: Seq[Representation[ID]]): AdaptableField[ID] =
     field(platformDriver.idFieldName(entityName, primaryKey = false), entityName, representations)
 
   /**
@@ -72,7 +72,7 @@ abstract class EntityType(val entityName: EntityName, val platformDriver: Platfo
    * @return a Seq of Representation
    * @see [[com.github.scrud.EntityType.idField]]
    */
-  protected def idFieldRepresentations: Seq[Representation] = Seq(Persistence(Int.MinValue), Query, EntityModel, MapStorage)
+  protected def idFieldRepresentations: Seq[Representation[ID]] = Seq(Persistence(Int.MinValue), Query, EntityModel, MapStorage)
 
   /**
    * Specifies additional AdaptableFields that an ID field should include has for this entity.

@@ -48,4 +48,4 @@ class MapStorage extends AnyRef {
 }
 
 /** This is a reference to the storage type that the class MapStorage represents. */
-object MapStorage extends StorageType with RepresentationByType
+object MapStorage extends StorageType with RepresentationByType[Nothing]

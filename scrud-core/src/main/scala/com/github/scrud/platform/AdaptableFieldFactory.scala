@@ -25,5 +25,5 @@ trait AdaptableFieldFactory {
    * @return the field and the representations it adapts to
    */
   def adapt[V](entityName: EntityName, fieldName: String, qualifiedType: QualifiedType[V],
-               representations: Seq[Representation]): AdaptableFieldWithRepresentations[V]
+               representations: Seq[Representation[V]]): AdaptableFieldWithRepresentations[V]
 }

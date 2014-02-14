@@ -9,4 +9,4 @@ import com.github.scrud.copy.{RepresentationByType, TargetType}
  *         Date: 12/11/13
  *         Time: 9:16 AM
  */
-object SummaryUI extends TargetType with RepresentationByType
+object SummaryUI extends TargetType with RepresentationByType[Nothing]

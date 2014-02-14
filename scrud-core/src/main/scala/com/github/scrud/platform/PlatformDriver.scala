@@ -62,5 +62,5 @@ trait PlatformDriver {
   /** The command to undo the last delete. */
   def commandToUndoDelete: Command
 
-  def field[V](entityName: EntityName, fieldName: String, qualifiedType: QualifiedType[V], representations: Seq[Representation]): ExtensibleAdaptableField[V]
+  def field[V](entityName: EntityName, fieldName: String, qualifiedType: QualifiedType[V], representations: Seq[Representation[V]]): ExtensibleAdaptableField[V]
 }

@@ -15,7 +15,7 @@ import scala.Some
  *         Time: 8:21 AM
  */
 abstract class PersistenceAdaptableFieldFactory extends AdaptableFieldFactory {
-  def adapt[V](entityName: EntityName, fieldName: String, qualifiedType: QualifiedType[V], representations: Seq[Representation]) = {
+  def adapt[V](entityName: EntityName, fieldName: String, qualifiedType: QualifiedType[V], representations: Seq[Representation[V]]) = {
     val persistenceRanges = representations.collect {
       case persistenceRange: PersistenceRange => persistenceRange
     }

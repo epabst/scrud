@@ -15,9 +15,9 @@ import com.github.scrud.copy.types.MapStorage
  *         Time: 3:13 PM
  */
 class MapStorageAdaptableFieldFactory extends AdaptableFieldFactory {
-  def adapt[V](entityName: EntityName, fieldName: String, qualifiedType: QualifiedType[V], representations: Seq[Representation]): AdaptableFieldWithRepresentations[V] = {
+  def adapt[V](entityName: EntityName, fieldName: String, qualifiedType: QualifiedType[V], representations: Seq[Representation[V]]): AdaptableFieldWithRepresentations[V] = {
     val representationsByType = representations.collect {
-      case representationByType: RepresentationByType => representationByType
+      case representationByType: RepresentationByType[V] => representationByType
     }
     val applicability = representationsByType.foldLeft(FieldApplicability.Empty)(_ + toFieldApplicability(_))
     val sourceField = createSourceField[V](entityName, fieldName, qualifiedType)
@@ -39,7 +39,7 @@ class MapStorageAdaptableFieldFactory extends AdaptableFieldFactory {
   def createTargetField[V](entityName: EntityName, fieldName: String, qualifiedType: QualifiedType[V]): TypedTargetField[MapStorage, V] =
     new MapTargetField[V](entityName, fieldName)
 
-  def toFieldApplicability(representation: RepresentationByType): FieldApplicability = {
+  def toFieldApplicability(representation: RepresentationByType[Any]): FieldApplicability = {
     representation.toPlatformIndependentFieldApplicability
   }
 }

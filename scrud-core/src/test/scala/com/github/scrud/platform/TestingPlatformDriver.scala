@@ -69,7 +69,7 @@ class TestingPlatformDriver extends PlatformDriver with Logging {
   /** The command to undo the last delete. */
   def commandToUndoDelete = Command(CommandId("command1"), None, None)
 
-  override def field[V](entityName: EntityName, fieldName: String, qualifiedType: QualifiedType[V], representations: Seq[Representation]): ExtensibleAdaptableField[V] = {
+  override def field[V](entityName: EntityName, fieldName: String, qualifiedType: QualifiedType[V], representations: Seq[Representation[V]]): ExtensibleAdaptableField[V] = {
     val adaptableFieldRepresentations = MapStorageAdaptableFieldFactory.adapt(entityName, fieldName, qualifiedType, representations)
     val unusedRepresentations = representations.filterNot(adaptableFieldRepresentations.representations.contains(_))
     val persistedFieldWithRepresentations = persistenceFieldFactory.adapt(entityName, fieldName, qualifiedType, unusedRepresentations)

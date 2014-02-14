@@ -8,4 +8,4 @@ import com.github.scrud.copy.{RepresentationByType, StorageType}
   *         Date: 12/11/13
   *         Time: 9:16 AM
   */
-object EntityModel extends StorageType with RepresentationByType
+object EntityModel extends StorageType with RepresentationByType[Nothing]

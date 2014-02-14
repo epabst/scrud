@@ -7,7 +7,7 @@ package com.github.scrud.copy
  *         Date: 2/11/14
  *         Time: 8:53 AM
  */
-case class AdaptableFieldWithRepresentations[V](field: ExtensibleAdaptableField[V], representations: Set[Representation]) {
+case class AdaptableFieldWithRepresentations[V](field: ExtensibleAdaptableField[V], representations: Set[Representation[V]]) {
   def orElse(other: AdaptableFieldWithRepresentations[V]): AdaptableFieldWithRepresentations[V] =
     AdaptableFieldWithRepresentations(field.orElse(other.field), representations ++ other.representations)
 }

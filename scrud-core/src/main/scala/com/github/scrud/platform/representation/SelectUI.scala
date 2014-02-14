@@ -9,4 +9,4 @@ import com.github.scrud.copy.{RepresentationByType, StorageType}
  *         Date: 12/11/13
  *         Time: 9:16 AM
  */
-object SelectUI extends StorageType with RepresentationByType
+object SelectUI extends StorageType with RepresentationByType[Nothing]
