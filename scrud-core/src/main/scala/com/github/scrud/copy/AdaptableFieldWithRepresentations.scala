@@ -11,3 +11,9 @@ case class AdaptableFieldWithRepresentations[V](field: ExtensibleAdaptableField[
   def orElse(other: AdaptableFieldWithRepresentations[V]): AdaptableFieldWithRepresentations[V] =
     AdaptableFieldWithRepresentations(field.orElse(other.field), representations ++ other.representations)
 }
+
+object AdaptableFieldWithRepresentations {
+  private val Empty = AdaptableFieldWithRepresentations[_](AdaptableField.empty, Set.empty)
+
+  def empty[V]: AdaptableFieldWithRepresentations[V] = Empty.asInstanceOf[AdaptableFieldWithRepresentations[V]]
+}

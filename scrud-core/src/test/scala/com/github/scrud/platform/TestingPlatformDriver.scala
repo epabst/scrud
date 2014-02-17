@@ -4,8 +4,6 @@ import com.github.scrud.persistence.ListBufferPersistenceFactoryForTesting
 import com.github.scrud.EntityType
 import com.github.scrud.action.CrudOperationType
 import com.github.scrud.types.QualifiedType
-import com.github.scrud.copy._
-import com.github.scrud.util.Logging
 import com.github.scrud.EntityName
 import com.github.scrud.action.CommandId
 import com.github.scrud.action.Command
@@ -16,7 +14,7 @@ import com.github.scrud.action.Command
  *         Date: 8/28/12
  *         Time: 1:27 PM
  */
-class TestingPlatformDriver extends PlatformDriver with Logging {
+class TestingPlatformDriver extends PlatformDriver {
   protected def logTag = getClass.getSimpleName
 
   val localDatabasePersistenceFactory = ListBufferPersistenceFactoryForTesting
@@ -69,16 +67,7 @@ class TestingPlatformDriver extends PlatformDriver with Logging {
   /** The command to undo the last delete. */
   def commandToUndoDelete = Command(CommandId("command1"), None, None)
 
-  override def field[V](entityName: EntityName, fieldName: String, qualifiedType: QualifiedType[V], representations: Seq[Representation[V]]): ExtensibleAdaptableField[V] = {
-    val adaptableFieldRepresentations = MapStorageAdaptableFieldFactory.adapt(entityName, fieldName, qualifiedType, representations)
-    val unusedRepresentations = representations.filterNot(adaptableFieldRepresentations.representations.contains(_))
-    val persistedFieldWithRepresentations = persistenceFieldFactory.adapt(entityName, fieldName, qualifiedType, unusedRepresentations)
-    val unusedRepresentations2 = unusedRepresentations.filterNot(persistedFieldWithRepresentations.representations.contains(_))
-    if (!unusedRepresentations2.isEmpty) {
-      info("Representations that were not used: " + unusedRepresentations2.mkString(", "))
-    }
-    adaptableFieldRepresentations.orElse(persistedFieldWithRepresentations).field
-  }
+  val fieldFactories = Seq(MapStorageAdaptableFieldFactory, persistenceFieldFactory)
 }
 
 object TestingPlatformDriver extends TestingPlatformDriver

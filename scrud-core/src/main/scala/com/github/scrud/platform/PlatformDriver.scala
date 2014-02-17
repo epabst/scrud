@@ -7,8 +7,7 @@ import com.github.scrud.types.QualifiedType
 import com.github.scrud.copy._
 import com.github.scrud.EntityName
 import com.github.scrud.action.Command
-import com.github.scrud.EntityName
-import com.github.scrud.action.Command
+import com.github.scrud.util.Logging
 
 /**
  * An API for an app to interact with the host platform such as Android.
@@ -23,7 +22,7 @@ import com.github.scrud.action.Command
  *         Date: 8/25/12
  *         Time: 9:57 PM
  */
-trait PlatformDriver {
+trait PlatformDriver extends Logging {
   def localDatabasePersistenceFactory: PersistenceFactory
 
   def calculateDataVersion(entityTypes: Seq[EntityType]): Int
@@ -62,5 +61,29 @@ trait PlatformDriver {
   /** The command to undo the last delete. */
   def commandToUndoDelete: Command
 
-  def field[V](entityName: EntityName, fieldName: String, qualifiedType: QualifiedType[V], representations: Seq[Representation[V]]): ExtensibleAdaptableField[V]
+  def fieldFactories: Seq[AdaptableFieldFactory]
+
+  private lazy val fieldFactoriesVal = fieldFactories
+
+  def field[V](entityName: EntityName, fieldName: String, qualifiedType: QualifiedType[V], representations: Seq[Representation[V]]): ExtensibleAdaptableField[V] = {
+    val fieldWithRepresentations = adapt(fieldFactoriesVal, entityName, fieldName, qualifiedType, representations)
+    fieldWithRepresentations.field
+  }
+
+  protected def adapt[V](fieldFactories: Seq[AdaptableFieldFactory], entityName: EntityName, fieldName: String,
+                         qualifiedType: QualifiedType[V], representations: Seq[Representation[V]]): AdaptableFieldWithRepresentations[V] = {
+    fieldFactories.headOption match {
+      case Some(fieldFactory) =>
+        val adaptableFieldWithRepresentations = fieldFactory.adapt(entityName, fieldName, qualifiedType, representations)
+        val unusedRepresentations = representations.filterNot(adaptableFieldWithRepresentations.representations.contains(_))
+        adapt(fieldFactories.tail, entityName, fieldName, qualifiedType, unusedRepresentations)
+      case None =>
+        adaptUnusedRepresentations(entityName, fieldName, qualifiedType, representations)
+    }
+  }
+
+  protected def adaptUnusedRepresentations[V](entityName: EntityName, fieldName: String, qualifiedType: QualifiedType[V], unusedRepresentations: Seq[Representation[V]]): AdaptableFieldWithRepresentations[V] = {
+    info("Representations that were not used: " + unusedRepresentations.mkString(", "))
+    AdaptableFieldWithRepresentations.empty
+  }
 }
