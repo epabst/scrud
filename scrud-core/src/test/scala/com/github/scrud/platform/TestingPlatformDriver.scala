@@ -19,7 +19,7 @@ class TestingPlatformDriver extends PlatformDriver {
 
   val localDatabasePersistenceFactory = ListBufferPersistenceFactoryForTesting
 
-  private val persistenceFieldFactory = new PersistenceAdaptableFieldFactory {
+  private object PersistenceFieldFactory extends PersistenceAdaptableFieldFactory {
     def sourceField[V](entityName: EntityName, fieldName: String, qualifiedType: QualifiedType[V]) =
       MapStorageAdaptableFieldFactory.createSourceField(entityName, fieldName, qualifiedType)
 
@@ -67,7 +67,7 @@ class TestingPlatformDriver extends PlatformDriver {
   /** The command to undo the last delete. */
   def commandToUndoDelete = Command(CommandId("command1"), None, None)
 
-  val fieldFactories = Seq(MapStorageAdaptableFieldFactory, persistenceFieldFactory)
+  val fieldFactories = Seq(MapStorageAdaptableFieldFactory, PersistenceFieldFactory)
 }
 
 object TestingPlatformDriver extends TestingPlatformDriver

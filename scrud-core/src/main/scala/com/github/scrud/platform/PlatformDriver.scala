@@ -76,14 +76,17 @@ trait PlatformDriver extends Logging {
       case Some(fieldFactory) =>
         val adaptableFieldWithRepresentations = fieldFactory.adapt(entityName, fieldName, qualifiedType, representations)
         val unusedRepresentations = representations.filterNot(adaptableFieldWithRepresentations.representations.contains(_))
-        adapt(fieldFactories.tail, entityName, fieldName, qualifiedType, unusedRepresentations)
+        val tailField = adapt(fieldFactories.tail, entityName, fieldName, qualifiedType, unusedRepresentations)
+        adaptableFieldWithRepresentations.orElse(tailField)
       case None =>
         adaptUnusedRepresentations(entityName, fieldName, qualifiedType, representations)
     }
   }
 
   protected def adaptUnusedRepresentations[V](entityName: EntityName, fieldName: String, qualifiedType: QualifiedType[V], unusedRepresentations: Seq[Representation[V]]): AdaptableFieldWithRepresentations[V] = {
-    info("Representations that were not used: " + unusedRepresentations.mkString(", "))
+    if (!unusedRepresentations.isEmpty) {
+      info("Representations that were not used: " + unusedRepresentations.mkString(", "))
+    }
     AdaptableFieldWithRepresentations.empty
   }
 }

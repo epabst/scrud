@@ -1,5 +1,7 @@
 package com.github.scrud.copy.types
 
+import com.github.scrud.copy.TargetType
+
 /**
  * The target of a validation check.
  * @author Eric Pabst (epabst@gmail.com)
@@ -12,7 +14,7 @@ case class ValidationResult(numInvalid: Int) {
   def +(isValid: Boolean): ValidationResult = if (isValid) this else ValidationResult(numInvalid + 1)
 }
 
-object ValidationResult {
+case object ValidationResult extends TargetType {
   /** The result for valid data.  It is capitalized so it can be used in case statements. */
   val Valid: ValidationResult = ValidationResult(0)
 }

@@ -13,7 +13,7 @@ case class AdaptableFieldWithRepresentations[V](field: ExtensibleAdaptableField[
 }
 
 object AdaptableFieldWithRepresentations {
-  private val Empty = AdaptableFieldWithRepresentations[_](AdaptableField.empty, Set.empty)
+  private val Empty = AdaptableFieldWithRepresentations[Any](AdaptableField.empty, Set.empty)
 
   def empty[V]: AdaptableFieldWithRepresentations[V] = Empty.asInstanceOf[AdaptableFieldWithRepresentations[V]]
 }

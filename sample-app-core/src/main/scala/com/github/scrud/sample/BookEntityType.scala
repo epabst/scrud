@@ -4,12 +4,12 @@ import com.github.scrud.{EntityName, EntityType}
 import com.github.scrud.platform.PlatformDriver
 import com.github.scrud.types.{TitleQT, PositiveIntQT, EnumerationValueQT, DateWithoutTimeQT}
 import com.github.scrud.platform.representation.{SelectUI, EditUI, Persistence}
-import com.github.scrud.copy.types.Default
+import com.github.scrud.copy.types.{Validation, Default}
 
 object Book extends EntityName("Book")
 
 class BookEntityType(platformDriver: PlatformDriver) extends EntityType(Book, platformDriver) {
-  field("name", TitleQT, Seq(Persistence(1), EditUI, SelectUI)) //todo requiredString
+  field("name", TitleQT, Seq(Persistence(1), EditUI, SelectUI, Validation.requiredString))
 
   field(Author, Seq(Persistence(1), EditUI))
 

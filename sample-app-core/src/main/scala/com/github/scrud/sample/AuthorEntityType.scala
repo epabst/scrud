@@ -4,11 +4,12 @@ import com.github.scrud.{EntityName, EntityType}
 import com.github.scrud.platform.PlatformDriver
 import com.github.scrud.types.TitleQT
 import com.github.scrud.platform.representation.{EditUI, Persistence}
+import com.github.scrud.copy.types.Validation
 
 object Author extends EntityName("Author")
 
 class AuthorEntityType(platformDriver: PlatformDriver) extends EntityType(Author, platformDriver) {
-  field("name", TitleQT, Seq(Persistence(1), EditUI))  //todo + requiredString,
+  field("name", TitleQT, Seq(Persistence(1), EditUI, Validation.requiredString))
 //
 //    namedViewField("bookCount", NaturalIntQT) +
 //            bundleField[Int]("bookCount") +
