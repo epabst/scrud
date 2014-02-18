@@ -9,4 +9,7 @@ import com.github.scrud.copy.Representation
  *         Date: 2/12/14
  *         Time: 8:00 AM
  */
-case class PersistenceRange(minDataVersion: Int, maxDataVersion: Int) extends Representation[Nothing]
+case class PersistenceRange(minDataVersion: Int, maxDataVersion: Int) extends Representation[Nothing] {
+  def includes(persistence: Persistence): Boolean =
+    persistence.dataVersion >= minDataVersion && persistence.dataVersion <= maxDataVersion
+}

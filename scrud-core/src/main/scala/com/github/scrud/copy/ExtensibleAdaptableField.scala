@@ -10,7 +10,7 @@ import com.github.scrud.copy.types.Default
  *         Date: 12/11/13
  *         Time: 9:36 AM
  */
-abstract class ExtensibleAdaptableField[V] extends AdaptableField[V] { self =>
+abstract class ExtensibleAdaptableField[V] extends AdaptableField[V] with AdaptableFieldConvertible[V] { self =>
   /**
    * Combines this field and the given field.
    * The result will look in this one, and if the SourceField returns no data or a SourceField isn't even found,
@@ -29,4 +29,10 @@ abstract class ExtensibleAdaptableField[V] extends AdaptableField[V] { self =>
   def orElse(value: V): ExtensibleAdaptableField[V] = orElse(Default(value))
 
   def orElse(valueOpt: Option[V]): ExtensibleAdaptableField[V] = orElse(Default(valueOpt))
+
+  /**
+   * Converts this [[com.github.scrud.copy.AdaptableField]].
+   * @return the field
+   */
+  def toAdaptableField = this
 }

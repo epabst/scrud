@@ -8,7 +8,7 @@ import com.github.scrud.context.RequestContext
  *         Date: 2/7/14
  *         Time: 3:00 PM
  */
-abstract class GeneratedField[V] extends ExtensibleAdaptableField[V] with SourceField[V] {
+abstract class GeneratedField[V] extends ExtensibleAdaptableField[V] with SourceField[V] with Representation[V] {
   private val sourceFieldOpt: Option[SourceField[V]] = Some(this)
 
   /** Get some value or None from the given source. */

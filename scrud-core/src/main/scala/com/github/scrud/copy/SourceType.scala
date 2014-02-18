@@ -17,3 +17,7 @@ trait SourceType {
   /** Gets the FieldApplicability that is intrinsic to this Representation.  The PlatformDriver may replace this type needed. */
   def toPlatformIndependentFieldApplicability: FieldApplicability = FieldApplicability(from = Set(this), Set.empty)
 }
+
+object SourceType {
+  val none: SourceType = new SourceType {}
+}

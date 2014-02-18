@@ -67,7 +67,7 @@ class TestingPlatformDriver extends PlatformDriver {
   /** The command to undo the last delete. */
   def commandToUndoDelete = Command(CommandId("command1"), None, None)
 
-  val fieldFactories = Seq(MapStorageAdaptableFieldFactory, PersistenceFieldFactory)
+  val platformSpecificFieldFactories = Seq(MapStorageAdaptableFieldFactory, PersistenceFieldFactory)
 }
 
 object TestingPlatformDriver extends TestingPlatformDriver

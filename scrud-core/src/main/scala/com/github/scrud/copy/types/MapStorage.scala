@@ -22,7 +22,7 @@ class MapStorage extends AnyRef {
 
   private val map = new mutable.ParHashMap[String,Any]
 
-  def get(entityName: EntityName, fieldName: String) = map.get(toKey(entityName, fieldName))
+  def get(entityName: EntityName, fieldName: String): Option[Any] = map.get(toKey(entityName, fieldName))
 
   def put(entityName: EntityName, fieldName: String, valueOpt: Option[_]) = {
     valueOpt match {

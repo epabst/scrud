@@ -13,7 +13,7 @@ import com.github.scrud.copy.StorageType
  *         Date: 12/11/13
  *         Time: 9:16 AM
  */
-class Persistence(dataVersion: Int) extends PersistenceRange(dataVersion, Persistence.NoMaxVersion) with StorageType
+class Persistence(val dataVersion: Int) extends PersistenceRange(dataVersion, Persistence.NoMaxVersion) with StorageType
 
 object Persistence {
   val NoMaxVersion: Int = Int.MaxValue

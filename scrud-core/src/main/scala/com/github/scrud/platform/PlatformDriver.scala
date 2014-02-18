@@ -61,12 +61,22 @@ trait PlatformDriver extends Logging {
   /** The command to undo the last delete. */
   def commandToUndoDelete: Command
 
-  def fieldFactories: Seq[AdaptableFieldFactory]
+  def platformSpecificFieldFactories: Seq[AdaptableFieldFactory]
 
-  private lazy val fieldFactoriesVal = fieldFactories
+  private object AdaptableFieldConvertibleFactory extends AdaptableFieldFactory {
+    def adapt[V](entityName: EntityName, fieldName: String, qualifiedType: QualifiedType[V], representations: Seq[Representation[V]]) = {
+      val convertibles = representations.collect {
+        case convertible: AdaptableFieldConvertible[V] => convertible
+      }
+      val field = CompositeAdaptableField(convertibles.map(_.toAdaptableField))
+      AdaptableFieldWithRepresentations(field, convertibles.toSet)
+    }
+  }
+
+  final lazy val fieldFactories = platformSpecificFieldFactories :+ AdaptableFieldConvertibleFactory
 
   def field[V](entityName: EntityName, fieldName: String, qualifiedType: QualifiedType[V], representations: Seq[Representation[V]]): ExtensibleAdaptableField[V] = {
-    val fieldWithRepresentations = adapt(fieldFactoriesVal, entityName, fieldName, qualifiedType, representations)
+    val fieldWithRepresentations = adapt(fieldFactories, entityName, fieldName, qualifiedType, representations)
     fieldWithRepresentations.field
   }
 

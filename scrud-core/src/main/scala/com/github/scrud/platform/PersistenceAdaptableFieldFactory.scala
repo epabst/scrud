@@ -4,7 +4,7 @@ import com.github.scrud.copy._
 import com.github.scrud.types.QualifiedType
 import com.github.scrud.copy.AdaptableFieldWithRepresentations
 import com.github.scrud.EntityName
-import com.github.scrud.platform.representation.PersistenceRange
+import com.github.scrud.platform.representation.{Persistence, PersistenceRange}
 import scala.Some
 
 /**
@@ -24,7 +24,7 @@ abstract class PersistenceAdaptableFieldFactory extends AdaptableFieldFactory {
     val adaptableField = new ExtensibleAdaptableField[V] {
       def findSourceField(sourceType: SourceType) = {
         sourceType match {
-          case persistenceRange: PersistenceRange =>
+          case persistence: Persistence if persistenceRanges.exists(_.includes(persistence)) =>
             someSourceField
           case _ =>
             None
@@ -33,7 +33,7 @@ abstract class PersistenceAdaptableFieldFactory extends AdaptableFieldFactory {
 
       def findTargetField(targetType: TargetType) = {
         targetType match {
-          case persistenceRange: PersistenceRange =>
+          case persistence: Persistence if persistenceRanges.exists(_.includes(persistence)) =>
             someTargetField
           case _ =>
             None

@@ -9,5 +9,9 @@ import com.github.scrud.context.RequestContext
  *         Time: 3:08 PM
  */
 abstract class BaseAdaptedField {
+  def sourceField: SourceField[Any]
+
+  def targetField: TargetField[Nothing]
+
   def copyAndUpdate[T <: AnyRef](source: AnyRef, target: T, requestContext: RequestContext): T
 }
