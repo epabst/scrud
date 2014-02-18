@@ -8,6 +8,7 @@ import com.github.scrud.copy._
 import com.github.scrud.EntityName
 import com.github.scrud.action.Command
 import com.github.scrud.util.Logging
+import com.github.scrud.platform.representation.PersistenceRange
 
 /**
  * An API for an app to interact with the host platform such as Android.
@@ -25,7 +26,21 @@ import com.github.scrud.util.Logging
 trait PlatformDriver extends Logging {
   def localDatabasePersistenceFactory: PersistenceFactory
 
-  def calculateDataVersion(entityTypes: Seq[EntityType]): Int
+  def calculateDataVersion(entityTypes: Seq[EntityType]) = {
+    (for {
+      entityType <- entityTypes
+      fieldDeclaration <- entityType.fieldDeclarations
+      persistenceRange <- fieldDeclaration.representations.collect {
+        case persistenceRange: PersistenceRange => persistenceRange
+      }
+    } yield {
+      if (persistenceRange.maxDataVersion < Int.MaxValue) {
+        persistenceRange.maxDataVersion + 1
+      } else {
+        persistenceRange.minDataVersion
+      }
+    }).max
+  }
 
   /**
    * Gets the name of a field that contains an entity ID.

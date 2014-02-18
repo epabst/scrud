@@ -25,9 +25,11 @@ abstract class EntityType(val entityName: EntityName, val platformDriver: Platfo
 
   trace("Instantiated EntityType: " + this)
 
-  private val adaptableFieldsBuffer: mutable.Buffer[BaseAdaptableField] = mutable.Buffer[BaseAdaptableField]()
+  private val fieldDeclarationsBuffer: mutable.Buffer[BaseFieldDeclaration] = mutable.Buffer[BaseFieldDeclaration]()
 
-  final lazy val adaptableFields: Seq[BaseAdaptableField] = adaptableFieldsBuffer.toSeq
+  final lazy val fieldDeclarations: Seq[BaseFieldDeclaration] = fieldDeclarationsBuffer.toSeq
+
+  final lazy val adaptableFields: Seq[BaseAdaptableField] = fieldDeclarations.map(_.toAdaptableField)
 
   /**
    * Creates a new field for this entity.
@@ -40,10 +42,10 @@ abstract class EntityType(val entityName: EntityName, val platformDriver: Platfo
    * @return an AdaptableField which can be ignored since it is automatically stored in the EntityType.
    *         It does not return an ExtensibleAdaptableField since any extensions would not be registered.
    */
-  protected def field[V](fieldName: String, qualifiedType: QualifiedType[V], representations: Seq[Representation[V]]): AdaptableField[V] = {
-    val newField = platformDriver.field(entityName, fieldName, qualifiedType, representations)
-    adaptableFieldsBuffer += newField
-    newField
+  protected def field[V](fieldName: String, qualifiedType: QualifiedType[V], representations: Seq[Representation[V]]): FieldDeclaration[V] = {
+    val newFieldDeclaration = FieldDeclaration(entityName, fieldName, qualifiedType, representations, platformDriver)
+    fieldDeclarationsBuffer += newFieldDeclaration
+    newFieldDeclaration
   }
 
   /**
@@ -53,7 +55,7 @@ abstract class EntityType(val entityName: EntityName, val platformDriver: Platfo
    * @tparam V the Java data type for the field.
    * @return an AdaptableField which can be ignored since it is automatically stored in the EntityType.
    */
-  protected def field[V](referencedEntityName: EntityName, representations: Seq[Representation[ID]]): AdaptableField[ID] =
+  protected def field[V](referencedEntityName: EntityName, representations: Seq[Representation[ID]]): FieldDeclaration[ID] =
     field(platformDriver.idFieldName(referencedEntityName, primaryKey = false), referencedEntityName, representations)
 
   /**
@@ -73,12 +75,20 @@ abstract class EntityType(val entityName: EntityName, val platformDriver: Platfo
   protected def idFieldRepresentations: Seq[Representation[ID]] = Seq(Persistence(Int.MinValue), Query, EntityModel, MapStorage, IdPkField)
 
   /**
+   * The ID field declaration for this entity.
+   * This calls [[com.github.scrud.EntityType.field]] with a type of [[com.github.scrud.types.IdQualifiedType]].
+   * Rather than overriding this, it is recommended to override
+   * [[com.github.scrud.EntityType.idFieldName]] and/or [[com.github.scrud.EntityType.idFieldRepresentations]].
+   */
+  lazy val idFieldDeclaration: FieldDeclaration[ID] = field(idFieldName, IdQualifiedType, idFieldRepresentations)
+
+  /**
    * The ID field for this entity.
    * This calls [[com.github.scrud.EntityType.field]] with a type of [[com.github.scrud.types.IdQualifiedType]].
    * Rather than overriding this, it is recommended to override
    * [[com.github.scrud.EntityType.idFieldName]] and/or [[com.github.scrud.EntityType.idFieldRepresentations]].
    */
-  lazy val idField: AdaptableField[ID] = field(idFieldName, IdQualifiedType, idFieldRepresentations)
+  def idField: AdaptableField[ID] = idFieldDeclaration.toAdaptableField
 
   def findPersistedId(readable: AnyRef): Option[ID] = idField.findSourceField(Persistence.Latest).flatMap(_.findValue(readable, null))
 

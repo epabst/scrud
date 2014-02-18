@@ -5,8 +5,8 @@ import com.github.scrud.copy.{Representation, TargetType, SourceType}
 import com.github.scrud.types.TitleQT
 import org.scalatest.matchers.MustMatchers
 import com.github.scrud.platform.representation._
-import com.github.scrud.EntityName
-import com.github.scrud.copy.types.MapStorage
+import com.github.scrud.{EntityType, EntityName}
+import com.github.scrud.copy.types.{Default, MapStorage}
 
 /**
  * A specification of the contract that every [[com.github.scrud.platform.PlatformDriver]] must comply with.
@@ -66,6 +66,30 @@ abstract class PlatformDriverContract extends FunSpec with MustMatchers {
         val field = platformDriver.field(EntityName("Foo"), "foo", TitleQT, representations)
         field.findTargetField(EditUI) must be (None)
       }
+    }
+  }
+
+  describe("calculateDataVersion") {
+    it("must find the maximum of the dataVersions used (when no maxDataVersions are used)") {
+      val platformDriver = makePlatformDriver()
+      val entityName = EntityName("Foo")
+      val entityType = new EntityType(entityName, platformDriver) {
+        field("bar1", TitleQT, Seq(Persistence(3), Default("bar1")))
+        field("bar3", TitleQT, Seq(Persistence(1), Default("bar3")))
+        field("bar4", TitleQT, Seq(Persistence(2), Default("bar4")))
+      }
+      platformDriver.calculateDataVersion(Seq(entityType)) must be (3)
+    }
+
+    it("must use one more than the maximum of the maxDataVersions used") {
+      val platformDriver = makePlatformDriver()
+      val entityName = EntityName("Foo")
+      val entityType = new EntityType(entityName, platformDriver) {
+        field("bar1", TitleQT, Seq(Persistence(3), Default("bar1")))
+        field("bar3", TitleQT, Seq(Persistence(1, 4), Default("bar3")))
+        field("bar4", TitleQT, Seq(Persistence(2, 3), Default("bar4")))
+      }
+      platformDriver.calculateDataVersion(Seq(entityType)) must be (5)
     }
   }
 }

@@ -9,7 +9,7 @@ package com.github.scrud.copy
  */
 trait AdaptableFieldConvertible[V] {
   /**
-   * Converts this [[com.github.scrud.copy.AdaptableField]].
+   * Converts this to an [[com.github.scrud.copy.AdaptableField]].
    * @return the field
    */
   def toAdaptableField: ExtensibleAdaptableField[V]

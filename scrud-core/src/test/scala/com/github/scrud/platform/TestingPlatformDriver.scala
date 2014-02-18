@@ -1,7 +1,6 @@
 package com.github.scrud.platform
 
 import com.github.scrud.persistence.ListBufferPersistenceFactoryForTesting
-import com.github.scrud.EntityType
 import com.github.scrud.action.CrudOperationType
 import com.github.scrud.types.QualifiedType
 import com.github.scrud.EntityName
@@ -26,9 +25,6 @@ class TestingPlatformDriver extends PlatformDriver {
     def targetField[V](entityName: EntityName, fieldName: String, qualifiedType: QualifiedType[V]) =
       MapStorageAdaptableFieldFactory.createTargetField(entityName, fieldName, qualifiedType)
   }
-
-  //todo implement
-  def calculateDataVersion(entityTypes: Seq[EntityType]) = 1
 
   def idFieldName(entityName: EntityName, primaryKey: Boolean = true): String = {
     if (primaryKey) {
