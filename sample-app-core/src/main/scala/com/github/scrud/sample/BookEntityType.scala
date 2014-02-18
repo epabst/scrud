@@ -15,7 +15,7 @@ class BookEntityType(platformDriver: PlatformDriver) extends EntityType(Book, pl
 
   field("edition", PositiveIntQT, Seq(Persistence(1), EditUI))
 
-  val genre = field("genre", EnumerationValueQT[Genre.Value](Genre), Seq(Persistence(1), EditUI), Default(Genre.Fantasy))
+  val genre = field("genre", EnumerationValueQT[Genre.Value](Genre), Seq(Persistence(1), EditUI, Default(Genre.Fantasy)))
 
   field(Publisher, Seq(Persistence(2), EditUI))
 

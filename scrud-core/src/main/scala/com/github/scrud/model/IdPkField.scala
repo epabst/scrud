@@ -1,8 +1,9 @@
 package com.github.scrud.model
 
-import com.github.scrud.copy.{TypedSourceField, TypedTargetField}
+import com.github.scrud.copy._
 import com.github.scrud.platform.PlatformTypes._
 import com.github.scrud.context.RequestContext
+import com.github.scrud.platform.representation.EntityModel
 
 /**
  * A TargetField and SourceField for an IdPk.
@@ -11,11 +12,17 @@ import com.github.scrud.context.RequestContext
  *         Time: 11:27 PM
  */
 
-object IdPkField extends TypedTargetField[IdPk,ID] with TypedSourceField[IdPk,ID] {
+object IdPkField extends TypedTargetField[IdPk,ID] with TypedSourceField[IdPk,ID] with AdaptableFieldConvertible[ID] with Representation[ID] {
   /** Get some value or None from the given source. */
   def findFieldValue(sourceData: IdPk, context: RequestContext) = sourceData.id
 
   /** Updates the {{{target}}} subject using the {{{valueOpt}}} for this field and some context. */
   def updateFieldValue(target: IdPk, valueOpt: Option[ID], context: RequestContext) =
     target.withId(valueOpt)
+
+  /**
+   * Converts this [[com.github.scrud.copy.AdaptableField]].
+   * @return the field
+   */
+  val toAdaptableField = AdaptableField[ID](Map(EntityModel -> IdPkField), Map(EntityModel -> IdPkField))
 }

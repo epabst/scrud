@@ -40,23 +40,21 @@ abstract class EntityType(val entityName: EntityName, val platformDriver: Platfo
    * @return an AdaptableField which can be ignored since it is automatically stored in the EntityType.
    *         It does not return an ExtensibleAdaptableField since any extensions would not be registered.
    */
-  protected def field[V](fieldName: String, qualifiedType: QualifiedType[V], representations: Seq[Representation[V]],
-                         orElse: ExtensibleAdaptableField[V]*): AdaptableField[V] = {
-    val extensions = CompositeAdaptableField(orElse)
-    val newField = platformDriver.field(entityName, fieldName, qualifiedType, representations).orElse(extensions)
+  protected def field[V](fieldName: String, qualifiedType: QualifiedType[V], representations: Seq[Representation[V]]): AdaptableField[V] = {
+    val newField = platformDriver.field(entityName, fieldName, qualifiedType, representations)
     adaptableFieldsBuffer += newField
     newField
   }
 
   /**
    * Creates a field that references another entity (by ID).
-   * @param entityName the EntityName of the entity to have a reference to.
+   * @param referencedEntityName the EntityName of the entity to have a reference to.
    * @param representations the various representations that the field can have.  This may include Persistence, UI, Model, etc.
    * @tparam V the Java data type for the field.
    * @return an AdaptableField which can be ignored since it is automatically stored in the EntityType.
    */
-  protected def field[V](entityName: EntityName, representations: Seq[Representation[ID]]): AdaptableField[ID] =
-    field(platformDriver.idFieldName(entityName, primaryKey = false), entityName, representations)
+  protected def field[V](referencedEntityName: EntityName, representations: Seq[Representation[ID]]): AdaptableField[ID] =
+    field(platformDriver.idFieldName(referencedEntityName, primaryKey = false), referencedEntityName, representations)
 
   /**
    * Specifies the name of the ID field.
@@ -72,14 +70,7 @@ abstract class EntityType(val entityName: EntityName, val platformDriver: Platfo
    * @return a Seq of Representation
    * @see [[com.github.scrud.EntityType.idField]]
    */
-  protected def idFieldRepresentations: Seq[Representation[ID]] = Seq(Persistence(Int.MinValue), Query, EntityModel, MapStorage)
-
-  /**
-   * Specifies additional AdaptableFields that an ID field should include has for this entity.
-   * @return a Seq of AdaptableField[ID]
-   * @see [[com.github.scrud.EntityType.idField]]
-   */
-  protected def idFieldExtensions: Seq[ExtensibleAdaptableField[ID]] = EntityType.idFieldExtensions
+  protected def idFieldRepresentations: Seq[Representation[ID]] = Seq(Persistence(Int.MinValue), Query, EntityModel, MapStorage, IdPkField)
 
   /**
    * The ID field for this entity.
@@ -87,9 +78,7 @@ abstract class EntityType(val entityName: EntityName, val platformDriver: Platfo
    * Rather than overriding this, it is recommended to override
    * [[com.github.scrud.EntityType.idFieldName]] and/or [[com.github.scrud.EntityType.idFieldRepresentations]].
    */
-  lazy val idField: AdaptableField[ID] = {
-    field(idFieldName, IdQualifiedType, idFieldRepresentations, idFieldExtensions: _*)
-  }
+  lazy val idField: AdaptableField[ID] = field(idFieldName, IdQualifiedType, idFieldRepresentations)
 
   def findPersistedId(readable: AnyRef): Option[ID] = idField.findSourceField(Persistence.Latest).flatMap(_.findValue(readable, null))
 
@@ -116,8 +105,4 @@ abstract class EntityType(val entityName: EntityName, val platformDriver: Platfo
   def onCreateDatabase(lowLevelPersistence: CrudPersistence) {}
 
   override def toString = entityName.toString
-}
-
-object EntityType {
-  private val idFieldExtensions = Seq(AdaptableField[ID](Map(EntityModel -> IdPkField), Map(EntityModel -> IdPkField)))
 }
