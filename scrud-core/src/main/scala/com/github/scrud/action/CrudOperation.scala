@@ -1,6 +1,7 @@
 package com.github.scrud.action
 
 import com.github.scrud.EntityName
+import com.github.scrud.action.CrudOperationType.CrudOperationType
 
 /**
  * An Create, Read, Update, or Delete operation on an EntityType.
@@ -9,7 +10,7 @@ import com.github.scrud.EntityName
  * Date: 10/3/12
  * Time: 6:42 PM
  */
-case class CrudOperation(entityName: EntityName, operationType: CrudOperationType.Value)
+case class CrudOperation(entityName: EntityName, operationType: CrudOperationType)
 
 /**
  * The kinds of operations that a user may want to do to one or more entities.
@@ -18,9 +19,6 @@ case class CrudOperation(entityName: EntityName, operationType: CrudOperationTyp
  * They explicitly support the concept of interactively creating or updating an entity.
  */
 object CrudOperationType extends Enumeration {
-  val Create = Value("Create")
-  val List = Value("List")
-  val Read = Value("Read")
-  val Update = Value("Update")
-  val Delete = Value("Delete")
+  type CrudOperationType = Value
+  val Create, List, Read, Update, Delete = Value
 }

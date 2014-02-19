@@ -1,7 +1,7 @@
 package com.github.scrud.platform
 
 import com.github.scrud.persistence.ListBufferPersistenceFactoryForTesting
-import com.github.scrud.action.CrudOperationType
+import com.github.scrud.action.CrudOperationType._
 import com.github.scrud.types.QualifiedType
 import com.github.scrud.EntityName
 import com.github.scrud.action.CommandId
@@ -46,19 +46,19 @@ class TestingPlatformDriver extends PlatformDriver {
 
   /** An Operation that will show the UI to the user for creating an entity instance. */
   def operationToShowCreateUI(entityName: EntityName) =
-    CrudOperationForTesting(entityName, CrudOperationType.Create)
+    CrudOperationForTesting(entityName, Create)
 
   /** An Operation that will show the UI to the user that displays an entity instance. */
   def operationToShowDisplayUI(entityName: EntityName) =
-    CrudOperationForTesting(entityName, CrudOperationType.Read)
+    CrudOperationForTesting(entityName, Read)
 
   /** An Operation that will show the UI to the user that lists the entity instances. */
   def operationToShowListUI(entityName: EntityName) =
-    CrudOperationForTesting(entityName, CrudOperationType.List)
+    CrudOperationForTesting(entityName, List)
 
   /** An Operation that will show the UI to the user for updating an entity instance. */
   def operationToShowUpdateUI(entityName: EntityName) =
-    CrudOperationForTesting(entityName, CrudOperationType.Update)
+    CrudOperationForTesting(entityName, Update)
 
   /** The command to undo the last delete. */
   def commandToUndoDelete = Command(CommandId("command1"), None, None)

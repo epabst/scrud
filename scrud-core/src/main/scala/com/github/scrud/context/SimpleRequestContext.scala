@@ -4,6 +4,7 @@ import com.github.scrud.action.{Undoable, CrudOperationType}
 import com.github.scrud.{EntityNavigation, UriPath}
 import com.github.scrud.state.SimpleStateHolder
 import com.github.scrud.platform.PlatformTypes
+import com.github.scrud.action.CrudOperationType.CrudOperationType
 
 /**
  * A simple implementation of a RequestContext.
@@ -11,7 +12,7 @@ import com.github.scrud.platform.PlatformTypes
  *         Date: 1/28/14
  *         Time: 2:10 PM
  */
-case class SimpleRequestContext(operationType: CrudOperationType.Value, uri: UriPath, sharedContext: SharedContext,
+case class SimpleRequestContext(operationType: CrudOperationType, uri: UriPath, sharedContext: SharedContext,
                                 entityNavigation: EntityNavigation) extends RequestContext {
   val stateHolder = new SimpleStateHolder
 

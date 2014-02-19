@@ -5,6 +5,7 @@ import com.github.scrud.platform.PlatformDriver
 import com.github.scrud.types.{TitleQT, PositiveIntQT, EnumerationValueQT, DateWithoutTimeQT}
 import com.github.scrud.platform.representation.{SelectUI, EditUI, Persistence}
 import com.github.scrud.copy.types.{Validation, Default}
+import com.github.scrud.sample.Genre._
 
 object Book extends EntityName("Book")
 
@@ -15,7 +16,7 @@ class BookEntityType(platformDriver: PlatformDriver) extends EntityType(Book, pl
 
   field("edition", PositiveIntQT, Seq(Persistence(1), EditUI))
 
-  val genre = field("genre", EnumerationValueQT[Genre.Value](Genre), Seq(Persistence(1), EditUI, Default(Genre.Fantasy)))
+  val genre = field("genre", EnumerationValueQT[Genre](Genre), Seq(Persistence(1), EditUI, Default(Fantasy)))
 
   field(Publisher, Seq(Persistence(2), EditUI))
 

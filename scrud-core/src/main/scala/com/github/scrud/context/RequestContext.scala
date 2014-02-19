@@ -2,9 +2,10 @@ package com.github.scrud.context
 
 import com.github.scrud.UriPath
 import com.github.scrud.state.State
-import com.github.scrud.action.{Undoable, CrudOperationType}
+import com.github.scrud.action.Undoable
 import com.github.scrud.platform.PlatformDriver
 import com.github.scrud.persistence.EntityTypeMap
+import com.github.scrud.action.CrudOperationType.CrudOperationType
 
 /**
  * The context for a given interaction or request/response.
@@ -18,7 +19,7 @@ import com.github.scrud.persistence.EntityTypeMap
  *         Time: 3:25 PM
  */
 trait RequestContext {
-  def operationType: CrudOperationType.Value
+  def operationType: CrudOperationType
 
   def uri: UriPath
 

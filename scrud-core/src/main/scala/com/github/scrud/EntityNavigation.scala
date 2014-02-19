@@ -4,6 +4,7 @@ import com.github.scrud.platform.PlatformDriver
 import com.github.scrud.persistence.EntityTypeMap
 import com.github.scrud.context.ApplicationName
 import com.github.scrud.action.{CrudOperationType, CrudOperation, StartEntityDeleteOperation, Action}
+import CrudOperationType._
 
 /**
  * The stateless definition of what navigation is available with respect to EntityTypes.
@@ -27,15 +28,15 @@ class EntityNavigation(val applicationName: ApplicationName, val entityTypeMap: 
    * May be overridden to adjust the list of actions.
    */
   def actionsFromCrudOperation(crudOperation: CrudOperation): Seq[Action] = crudOperation match {
-    case CrudOperation(entityName, CrudOperationType.Create) =>
+    case CrudOperation(entityName, Create) =>
 //todo      parentEntityNames(entityName).flatMap(actionsToManage(_)) ++
           actionToDelete(entityName).toSeq
-    case CrudOperation(entityName, CrudOperationType.Read) =>
+    case CrudOperation(entityName, Read) =>
 //    todo  childEntityNames(entityName).flatMap(actionToList(_)) ++
           actionToUpdate(entityName).toSeq ++ actionToDelete(entityName).toSeq
-    case CrudOperation(entityName, CrudOperationType.List) =>
+    case CrudOperation(entityName, List) =>
       actionToCreate(entityName).toSeq ++ actionsToUpdateAndListChildrenOfOnlyParentWithoutDisplayAction(entityName)
-    case CrudOperation(entityName, CrudOperationType.Update) =>
+    case CrudOperation(entityName, Update) =>
       actionToDisplay(entityName).toSeq ++ //todo parentEntityNames(entityName).flatMap(actionsToManage(_)) ++
           actionToDelete(entityName).toSeq
   }

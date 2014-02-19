@@ -1,10 +1,10 @@
 package com.github.scrud.context
 
-import com.github.scrud.action.CrudOperationType
 import com.github.scrud.{EntityType, ApplicationNameForTesting, EntityNavigation, UriPath}
 import com.github.scrud.persistence.{ThinPersistence, PersistenceFactoryForTesting, EntityTypeMap}
 import com.github.scrud.platform.{TestingPlatformDriver, PlatformDriver}
 import org.scalatest.mock.MockitoSugar
+import com.github.scrud.action.CrudOperationType._
 
 /**
  * A RequestContext to use during testing.
@@ -12,11 +12,11 @@ import org.scalatest.mock.MockitoSugar
  *         Date: 1/28/14
  *         Time: 4:18 PM
  */
-class RequestContextForTesting(operationType: CrudOperationType.Value, uri: UriPath, sharedContext: SharedContext,
+class RequestContextForTesting(operationType: CrudOperationType, uri: UriPath, sharedContext: SharedContext,
                                entityNavigation: EntityNavigation)
     extends SimpleRequestContext(operationType, uri, sharedContext, entityNavigation) {
   def this(entityTypeMap: EntityTypeMap, platformDriver: PlatformDriver) {
-    this(CrudOperationType.Read, UriPath.EMPTY, new SimpleSharedContext(entityTypeMap, platformDriver),
+    this(Read, UriPath.EMPTY, new SimpleSharedContext(entityTypeMap, platformDriver),
       new EntityNavigation(ApplicationNameForTesting, entityTypeMap, platformDriver))
   }
 
