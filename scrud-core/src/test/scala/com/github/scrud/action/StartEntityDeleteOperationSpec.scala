@@ -31,7 +31,8 @@ class StartEntityDeleteOperationSpec extends FunSpec with CrudMockitoSugar with 
     stub(persistence.newWritable()).toReturn(new MapStorage)
     stub(persistence.findAll(uri)).toReturn(Seq(readable))
     var allowUndoCalled = false
-    val entityTypeMap = new PersistenceFactoryForTesting(entity, persistence).toEntityTypeMap
+    val persistenceFactory = new PersistenceFactoryForTesting(entity, persistence)
+    val entityTypeMap = EntityTypeMapForTesting(persistenceFactory)
     val requestContext = new RequestContextForTesting(entityTypeMap) {
       override def allowUndo(undoable: Undoable) {
         allowUndoCalled = true
@@ -53,7 +54,7 @@ class StartEntityDeleteOperationSpec extends FunSpec with CrudMockitoSugar with 
     stub(thinPersistence.findAll(uri)).toReturn(Seq(readable))
     stub(thinPersistence.newWritable()).toReturn(new MapStorage)
     val persistenceFactory = new PersistenceFactoryForTesting(entity, thinPersistence)
-    val entityTypeMap = persistenceFactory.toEntityTypeMap
+    val entityTypeMap = EntityTypeMapForTesting(persistenceFactory)
     val requestContext = new RequestContextForTesting(entityTypeMap) {
       override def allowUndo(undoable: Undoable) {
         undoable.undoAction.invoke(uri, this)

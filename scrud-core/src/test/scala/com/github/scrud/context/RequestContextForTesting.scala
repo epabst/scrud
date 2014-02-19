@@ -1,9 +1,8 @@
 package com.github.scrud.context
 
 import com.github.scrud.{EntityType, ApplicationNameForTesting, EntityNavigation, UriPath}
-import com.github.scrud.persistence.{ThinPersistence, PersistenceFactoryForTesting, EntityTypeMap}
+import com.github.scrud.persistence.{EntityTypeMapForTesting, PersistenceFactoryForTesting, EntityTypeMap}
 import com.github.scrud.platform.{TestingPlatformDriver, PlatformDriver}
-import org.scalatest.mock.MockitoSugar
 import com.github.scrud.action.CrudOperationType._
 
 /**
@@ -25,6 +24,6 @@ class RequestContextForTesting(operationType: CrudOperationType, uri: UriPath, s
   }
 
   def this(entityType: EntityType) {
-    this(EntityTypeMap(entityType -> new PersistenceFactoryForTesting(entityType, MockitoSugar.mock[ThinPersistence])))
+    this(EntityTypeMapForTesting(new PersistenceFactoryForTesting(entityType)))
   }
 }

@@ -2,7 +2,7 @@ package com.github.scrud.context
 
 import org.scalatest.FunSpec
 import org.mockito.Mockito._
-import com.github.scrud.persistence.{PersistenceFactoryForTesting, ThinPersistence}
+import com.github.scrud.persistence.{EntityTypeMapForTesting, PersistenceFactoryForTesting, ThinPersistence}
 import org.scalatest.mock.MockitoSugar
 import com.github.scrud.{UriPath, EntityTypeForTesting}
 import com.github.scrud.platform.TestingPlatformDriver
@@ -20,28 +20,26 @@ class SharedContextSpec extends FunSpec with MockitoSugar {
   describe("withPersistence") {
     it("must close persistence") {
       val entityType = EntityTypeForTesting
-      val persistence = mock[ThinPersistence]
-      val entityTypeMap = new PersistenceFactoryForTesting(entityType, persistence).toEntityTypeMap
-      val sharedContext = new SimpleSharedContext(entityTypeMap, TestingPlatformDriver)
+      val persistenceFactory = new PersistenceFactoryForTesting(entityType, mock[ThinPersistence])
+      val sharedContext = new SimpleSharedContext(EntityTypeMapForTesting(persistenceFactory), TestingPlatformDriver)
       sharedContext.withPersistence { p => p.persistenceFor(entityType).findAll(UriPath.EMPTY) }
-      verify(persistence).close()
+      verify(persistenceFactory.thinPersistence).close()
     }
 
     it("must close persistence on failure") {
       val entityType = EntityTypeForTesting
-      val persistence = mock[ThinPersistence]
-      val entityTypeMap = new PersistenceFactoryForTesting(entityType, persistence).toEntityTypeMap
-      val sharedContext = new SimpleSharedContext(entityTypeMap, TestingPlatformDriver)
+      val persistenceFactory = new PersistenceFactoryForTesting(entityType, mock[ThinPersistence])
+      val sharedContext = new SimpleSharedContext(EntityTypeMapForTesting(persistenceFactory), TestingPlatformDriver)
       try {
-        sharedContext.withPersistence { p =>
-          p.persistenceFor(entityType)
+        sharedContext.withPersistence { persistenceConnection =>
+          persistenceConnection.persistenceFor(entityType)
           throw new IllegalArgumentException("intentional")
         }
         fail("should have propagated exception")
       } catch {
         case e: IllegalArgumentException => "expected"
       }
-      verify(persistence).close()
+      verify(persistenceFactory.thinPersistence).close()
     }
   }
 }

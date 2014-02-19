@@ -18,8 +18,6 @@ class DerivedPersistenceFactorySpec extends FunSpec with MustMatchers with CrudM
   it("must make the CrudPersistence for the delegate EntityNames available") {
     val entity1 = EntityName("entity1")
     val entity2 = EntityName("entity2")
-    val persistence1 = mock[ThinPersistence]
-    val persistence2 = mock[ThinPersistence]
     val factory = new DerivedPersistenceFactory[String](entity1, entity2) {
       def findAll(entityType: EntityType, uri: UriPath, persistenceConnection: PersistenceConnection) = {
         persistenceConnection.persistenceFor(entity1) must not be null
@@ -27,9 +25,9 @@ class DerivedPersistenceFactorySpec extends FunSpec with MustMatchers with CrudM
         List("findAll", "was", "called")
       }
     }
-    val persistenceFactory1 = new PersistenceFactoryForTesting(new EntityTypeForTesting(entity1), persistence1)
-    val persistenceFactory2 = new PersistenceFactoryForTesting(new EntityTypeForTesting(entity2), persistence2)
-    val entityTypeMap = EntityTypeMap(persistenceFactory1.toTuple, persistenceFactory2.toTuple)
+    val persistenceFactory1 = new PersistenceFactoryForTesting(new EntityTypeForTesting(entity1))
+    val persistenceFactory2 = new PersistenceFactoryForTesting(new EntityTypeForTesting(entity2))
+    val entityTypeMap = EntityTypeMapForTesting(persistenceFactory1, persistenceFactory2)
     val sharedContext = new SharedContextForTesting(entityTypeMap)
     val persistenceConnection = new PersistenceConnection(entityTypeMap, sharedContext)
     val persistence = factory.createEntityPersistence(mock[EntityType], persistenceConnection)
@@ -41,9 +39,9 @@ class DerivedPersistenceFactorySpec extends FunSpec with MustMatchers with CrudM
     val entity2 = EntityName("entity2")
     val persistence1 = mock[ThinPersistence]
     val persistence2 = mock[ThinPersistence]
-    val entityTypeMap = EntityTypeMap(
-      new PersistenceFactoryForTesting(new EntityTypeForTesting(entity1), persistence1).toTuple,
-      new PersistenceFactoryForTesting(new EntityTypeForTesting(entity2), persistence2).toTuple)
+    val entityTypeMap = EntityTypeMapForTesting(
+      new PersistenceFactoryForTesting(new EntityTypeForTesting(entity1), persistence1),
+      new PersistenceFactoryForTesting(new EntityTypeForTesting(entity2), persistence2))
     val sharedContext = new SharedContextForTesting(entityTypeMap)
     val persistenceConnection = new PersistenceConnection(entityTypeMap, sharedContext)
     val factory = new DerivedPersistenceFactory[String](entity1, entity2) {
