@@ -29,27 +29,27 @@ class EntityNavigation(val applicationName: ApplicationName, val entityTypeMap: 
    */
   def actionsFromCrudOperation(crudOperation: CrudOperation): Seq[Action] = crudOperation match {
     case CrudOperation(entityName, Create) =>
-      entityTypeMap.parentEntityNames(entityName).flatMap(actionsToManage(_)) ++ actionsToDelete(entityName)
+      entityTypeMap.upstreamEntityNames(entityName).flatMap(actionsToManage(_)) ++ actionsToDelete(entityName)
     case CrudOperation(entityName, Read) =>
-      entityTypeMap.childEntityNames(entityName).flatMap(actionsToList(_)) ++
+      entityTypeMap.downstreamEntityNames(entityName).flatMap(actionsToList(_)) ++
           actionsToUpdate(entityName) ++ actionsToDelete(entityName)
     case CrudOperation(entityName, List) =>
-      actionsToCreate(entityName) ++ actionsToUpdateAndListChildrenOfOnlyParentWithoutDisplayAction(entityName)
+      actionsToCreate(entityName) ++ actionsToUpdateAndListDownstreamsOfOnlyUpstreamWithoutDisplayAction(entityName)
     case CrudOperation(entityName, Update) =>
-      actionsToDisplay(entityName) ++ entityTypeMap.parentEntityNames(entityName).flatMap(actionsToManage(_)) ++
+      actionsToDisplay(entityName) ++ entityTypeMap.upstreamEntityNames(entityName).flatMap(actionsToManage(_)) ++
           actionsToDelete(entityName)
   }
 
-  protected def actionsToUpdateAndListChildrenOfOnlyParentWithoutDisplayAction(entityName: EntityName): Seq[Action] = {
+  protected def actionsToUpdateAndListDownstreamsOfOnlyUpstreamWithoutDisplayAction(entityName: EntityName): Seq[Action] = {
 //    val thisEntity = entityTypeMap.entityType(entityName)
-//    thisEntity.parentFields match {
-//      //exactly one parent w/o a display page
-//      case parentField :: Nil if !actionToDisplay(parentField.entityName).isDefined => {
-//        val parentEntityType = entityType(parentField.entityName)
-//        //the parent's actionToUpdate should be shown since clicking on the parent entity brought the user
-//        //to the list of child entities instead of to a display page for the parent entity.
-//        actionsToUpdate(parentEntityType) ++
-//            childEntityTypes(parentEntityType).filter(_ != thisEntity).flatMap(actionToList(_))
+//    thisEntity.upstreamFields match {
+//      //exactly one upstream w/o a display page
+//      case upstreamField :: Nil if !actionToDisplay(upstreamField.entityName).isDefined => {
+//        val upstreamEntityType = entityType(upstreamField.entityName)
+//        //the upstream's actionToUpdate should be shown since clicking on the upstream entity brought the user
+//        //to the list of downstream entities instead of to a display page for the upstream entity.
+//        actionsToUpdate(upstreamEntityType) ++
+//            downstreamEntityTypes(upstreamEntityType).filter(_ != thisEntity).flatMap(actionToList(_))
 //      }
 //      case _ => 
         Nil

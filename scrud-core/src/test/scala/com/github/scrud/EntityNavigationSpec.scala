@@ -17,30 +17,30 @@ import com.github.scrud.action.CrudOperation
  */
 @RunWith(classOf[JUnitRunner])
 class EntityNavigationSpec extends FunSpec with MustMatchers {
-  val parentName1 = EntityName("Foo")
-  val parentEntity1 = new EntityTypeForTesting(parentName1)
-  val parentName2 = EntityName("Bar")
-  val parentEntity2 = new EntityTypeForTesting(parentName2)
+  val upstreamName1 = EntityName("Foo")
+  val upstreamEntity1 = new EntityTypeForTesting(upstreamName1)
+  val upstreamName2 = EntityName("Bar")
+  val upstreamEntity2 = new EntityTypeForTesting(upstreamName2)
   val entityType = new EntityTypeForTesting() {
-    field(parentName1, Seq(Persistence(1), EditUI))
-    field(parentName2, Seq(Persistence(1), EditUI))
+    field(upstreamName1, Seq(Persistence(1), EditUI))
+    field(upstreamName2, Seq(Persistence(1), EditUI))
   }
   val entityName = entityType.entityName
-  val entityTypeMap = EntityTypeMapForTesting(Set[EntityType](entityType, parentEntity1, parentEntity2))
+  val entityTypeMap = EntityTypeMapForTesting(Set[EntityType](entityType, upstreamEntity1, upstreamEntity2))
   val navigation = new EntityNavigationForTesting(entityTypeMap)
 
   describe("actionsFromCrudOperation") {
     describe(Create.toString) {
-      it("must allow Managing parents and Delete self") {
+      it("must allow Managing upstreams and Delete self") {
         navigation.actionsFromCrudOperation(CrudOperation(entityName, Create)) must be (
-          navigation.actionsToManage(parentName1) ++ navigation.actionsToManage(parentName2) ++ navigation.actionsToDelete(entityName))
+          navigation.actionsToManage(upstreamName1) ++ navigation.actionsToManage(upstreamName2) ++ navigation.actionsToDelete(entityName))
       }
     }
 
     describe(Update.toString) {
-      it("must allow Display, Managing parents, and Delete self") {
+      it("must allow Display, Managing upstreams, and Delete self") {
         navigation.actionsFromCrudOperation(CrudOperation(entityName, Update)) must be (
-          navigation.actionsToDisplay(entityName) ++ navigation.actionsToManage(parentName1) ++ navigation.actionsToManage(parentName2) ++ navigation.actionsToDelete(entityName))
+          navigation.actionsToDisplay(entityName) ++ navigation.actionsToManage(upstreamName1) ++ navigation.actionsToManage(upstreamName2) ++ navigation.actionsToDelete(entityName))
       }
     }
 
@@ -50,9 +50,9 @@ class EntityNavigationSpec extends FunSpec with MustMatchers {
           navigation.actionsToUpdate(entityName) ++ navigation.actionsToDelete(entityName))
       }
 
-      it("must allow Listing children, Update, and Delete self if children exist") {
-        navigation.actionsFromCrudOperation(CrudOperation(parentName1, Read)) must be (
-          navigation.actionsToList(entityName) ++ navigation.actionsToUpdate(parentName1) ++ navigation.actionsToDelete(parentName1))
+      it("must allow Listing downstreams if downstreams exist") {
+        navigation.actionsFromCrudOperation(CrudOperation(upstreamName1, Read)) must be (
+          navigation.actionsToList(entityName) ++ navigation.actionsToUpdate(upstreamName1) ++ navigation.actionsToDelete(upstreamName1))
       }
     }
 

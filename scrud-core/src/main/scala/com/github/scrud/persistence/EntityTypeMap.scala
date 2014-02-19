@@ -47,14 +47,14 @@ abstract class EntityTypeMap(platformDriver: PlatformDriver) {
 
   def findEntityType(entityName: EntityName): Option[EntityType] = entityTypeByEntityName.get(entityName)
 
-  def parentEntityNames(entityName: EntityName): Seq[EntityName] = entityType(entityName).parentEntityNames
+  def upstreamEntityNames(entityName: EntityName): Seq[EntityName] = entityType(entityName).upstreamEntityNames
 
-  def childEntityNames(entityName: EntityName): Seq[EntityName] = childEntityTypes(entityType(entityName)).map(_.entityName)
+  def downstreamEntityNames(entityName: EntityName): Seq[EntityName] = downstreamEntityTypes(entityType(entityName)).map(_.entityName)
 
-  def childEntityTypes(entityType: EntityType): Seq[EntityType] = {
+  def downstreamEntityTypes(entityType: EntityType): Seq[EntityType] = {
     allEntityTypes.filter { nextEntity =>
-      val parentEntityNames = nextEntity.parentEntityNames
-      parentEntityNames.contains(entityType.entityName)
+      val upstreamEntityNames = nextEntity.upstreamEntityNames
+      upstreamEntityNames.contains(entityType.entityName)
     }
   }
 
