@@ -39,7 +39,7 @@ class StartEntityDeleteOperationSpec extends FunSpec with CrudMockitoSugar with 
         undoable.closeOperation.foreach(_.invoke(uri, this))
       }
     }
-    val actionToDelete = new EntityNavigationForTesting(entityTypeMap).actionToDelete(entityName).get
+    val actionToDelete = new EntityNavigationForTesting(entityTypeMap).actionsToDelete(entityName).head
     actionToDelete.invoke(uri, requestContext)
     verify(persistence).delete(uri)
     allowUndoCalled must be (true)

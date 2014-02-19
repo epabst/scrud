@@ -47,6 +47,17 @@ abstract class EntityTypeMap(platformDriver: PlatformDriver) {
 
   def findEntityType(entityName: EntityName): Option[EntityType] = entityTypeByEntityName.get(entityName)
 
+  def parentEntityNames(entityName: EntityName): Seq[EntityName] = entityType(entityName).parentEntityNames
+
+  def childEntityNames(entityName: EntityName): Seq[EntityName] = childEntityTypes(entityType(entityName)).map(_.entityName)
+
+  def childEntityTypes(entityType: EntityType): Seq[EntityType] = {
+    allEntityTypes.filter { nextEntity =>
+      val parentEntityNames = nextEntity.parentEntityNames
+      parentEntityNames.contains(entityType.entityName)
+    }
+  }
+
   /** Returns true if the URI is worth calling EntityPersistence.find to try to get an entity instance. */
   def maySpecifyEntityInstance(uri: UriPath, entityType: EntityType): Boolean =
     persistenceFactory(entityType).maySpecifyEntityInstance(entityType.entityName, uri)

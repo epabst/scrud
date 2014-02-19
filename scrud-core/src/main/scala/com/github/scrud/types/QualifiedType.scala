@@ -10,4 +10,4 @@ package com.github.scrud.types
  * Date: 2/21/13
  * Time: 7:45 AM
  */
-abstract class QualifiedType[T](implicit val manifest: Manifest[T])
+abstract class QualifiedType[T](implicit val manifest: Manifest[T]) extends BaseQualifiedType

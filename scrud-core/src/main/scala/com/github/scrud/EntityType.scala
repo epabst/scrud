@@ -90,6 +90,10 @@ abstract class EntityType(val entityName: EntityName, val platformDriver: Platfo
    */
   def idField: AdaptableField[ID] = idFieldDeclaration.toAdaptableField
 
+  lazy val parentEntityNames: Seq[EntityName] = fieldDeclarations.map(_.qualifiedType).collect {
+    case parentName: EntityName => parentName
+  }
+
   def findPersistedId(readable: AnyRef): Option[ID] = idField.findSourceField(Persistence.Latest).flatMap(_.findValue(readable, null))
 
   def clearId(source: IdPk): IdPk = source.withId(None)

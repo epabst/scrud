@@ -16,4 +16,7 @@ object EntityTypeMapForTesting {
   def apply(persistenceFactoryByEntityType: Map[EntityType, PersistenceFactory]): EntityTypeMap = {
     EntityTypeMap(persistenceFactoryByEntityType.toSeq: _*)
   }
+
+  def apply(entityTypes: Set[EntityType]): EntityTypeMap =
+    apply(entityTypes.toSeq.map(new PersistenceFactoryForTesting(_)): _*)
 }
