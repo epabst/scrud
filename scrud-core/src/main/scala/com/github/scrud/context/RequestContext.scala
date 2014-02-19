@@ -4,6 +4,7 @@ import com.github.scrud.UriPath
 import com.github.scrud.state.State
 import com.github.scrud.action.{Undoable, CrudOperationType}
 import com.github.scrud.platform.PlatformDriver
+import com.github.scrud.persistence.EntityTypeMap
 
 /**
  * The context for a given interaction or request/response.
@@ -22,6 +23,8 @@ trait RequestContext {
   def uri: UriPath
 
   def sharedContext: SharedContext
+
+  def entityTypeMap: EntityTypeMap = sharedContext.entityTypeMap
 
   def platformDriver: PlatformDriver = sharedContext.platformDriver
 
