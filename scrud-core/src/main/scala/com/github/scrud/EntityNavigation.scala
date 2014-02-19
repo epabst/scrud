@@ -29,14 +29,14 @@ class EntityNavigation(val applicationName: ApplicationName, val entityTypeMap: 
    */
   def actionsFromCrudOperation(crudOperation: CrudOperation): Seq[Action] = crudOperation match {
     case CrudOperation(entityName, Create) =>
-      entityTypeMap.upstreamEntityNames(entityName).flatMap(actionsToManage(_)) ++ actionsToDelete(entityName)
+      entityTypeMap.upstreamEntityNames(entityName).flatMap(actionsToManageList(_)) ++ actionsToDelete(entityName)
     case CrudOperation(entityName, Read) =>
       entityTypeMap.downstreamEntityNames(entityName).flatMap(actionsToList(_)) ++
           actionsToUpdate(entityName) ++ actionsToDelete(entityName)
     case CrudOperation(entityName, List) =>
       actionsToCreate(entityName) ++ actionsToUpdateAndListDownstreamsOfOnlyUpstreamWithoutDisplayAction(entityName)
     case CrudOperation(entityName, Update) =>
-      actionsToDisplay(entityName) ++ entityTypeMap.upstreamEntityNames(entityName).flatMap(actionsToManage(_)) ++
+      actionsToDisplay(entityName) ++ entityTypeMap.upstreamEntityNames(entityName).flatMap(actionsToManageList(_)) ++
           actionsToDelete(entityName)
   }
 
@@ -56,8 +56,14 @@ class EntityNavigation(val applicationName: ApplicationName, val entityTypeMap: 
 //    }
   }
 
-  def actionsToManage(entityName: EntityName): Seq[Action] =
-    actionsToCreate(entityName).flatMap(_ +: actionsToList(entityName))
+  def actionsToManageList(entityName: EntityName): Seq[Action] = {
+    val createActions = actionsToCreate(entityName)
+    if (!createActions.isEmpty) {
+      createActions ++ actionsToList(entityName)
+    } else {
+      Nil
+    }
+  }
 
   /** Gets the action(s) to display the list that matches the criteria copied from criteriaSource using entityType.copy. */
   def actionsToList(entityName: EntityName): Seq[Action] =

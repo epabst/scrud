@@ -31,33 +31,33 @@ class EntityNavigationSpec extends FunSpec with MustMatchers {
 
   describe("actionsFromCrudOperation") {
     describe(Create.toString) {
-      it("must allow Managing upstreams and Delete self") {
+      it("must allow managing upstreams' lists and deleting self") {
         navigation.actionsFromCrudOperation(CrudOperation(entityName, Create)) must be (
-          navigation.actionsToManage(upstreamName1) ++ navigation.actionsToManage(upstreamName2) ++ navigation.actionsToDelete(entityName))
+          navigation.actionsToManageList(upstreamName1) ++ navigation.actionsToManageList(upstreamName2) ++ navigation.actionsToDelete(entityName))
       }
     }
 
     describe(Update.toString) {
-      it("must allow Display, Managing upstreams, and Delete self") {
+      it("must allow displaying, managing upstreams' lists, and deleting self") {
         navigation.actionsFromCrudOperation(CrudOperation(entityName, Update)) must be (
-          navigation.actionsToDisplay(entityName) ++ navigation.actionsToManage(upstreamName1) ++ navigation.actionsToManage(upstreamName2) ++ navigation.actionsToDelete(entityName))
+          navigation.actionsToDisplay(entityName) ++ navigation.actionsToManageList(upstreamName1) ++ navigation.actionsToManageList(upstreamName2) ++ navigation.actionsToDelete(entityName))
       }
     }
 
     describe(Read.toString) {
-      it("must allow Update and Delete self") {
+      it("must allow updating and deleting self") {
         navigation.actionsFromCrudOperation(CrudOperation(entityName, Read)) must be (
           navigation.actionsToUpdate(entityName) ++ navigation.actionsToDelete(entityName))
       }
 
-      it("must allow Listing downstreams if downstreams exist") {
+      it("must allow listing downstreams if downstreams exist") {
         navigation.actionsFromCrudOperation(CrudOperation(upstreamName1, Read)) must be (
           navigation.actionsToList(entityName) ++ navigation.actionsToUpdate(upstreamName1) ++ navigation.actionsToDelete(upstreamName1))
       }
     }
 
     describe(List.toString) {
-      it("must allow Create") {
+      it("must allow creating") {
         navigation.actionsFromCrudOperation(CrudOperation(entityName, List)) must be (
           navigation.actionsToCreate(entityName))
       }
