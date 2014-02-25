@@ -43,10 +43,13 @@ abstract class EntityType(val entityName: EntityName, val platformDriver: Platfo
    *         It does not return an ExtensibleAdaptableField since any extensions would not be registered.
    */
   protected def field[V](fieldName: String, qualifiedType: QualifiedType[V], representations: Seq[Representation[V]]): FieldDeclaration[V] = {
-    val newFieldDeclaration = FieldDeclaration(entityName, fieldName, qualifiedType, representations, platformDriver)
+    val newFieldDeclaration = FieldDeclaration(entityName, fieldName, qualifiedType, representations ++ impliedRepresentations, platformDriver)
     fieldDeclarationsBuffer += newFieldDeclaration
     newFieldDeclaration
   }
+
+  /** These Representations are included in ALL fields. Override this to add or remove some. */
+  val impliedRepresentations: Seq[Representation[Nothing]] = Seq(MapStorage)
 
   /**
    * Creates a field that references another entity (by ID).
