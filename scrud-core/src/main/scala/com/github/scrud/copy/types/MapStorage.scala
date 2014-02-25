@@ -2,9 +2,9 @@ package com.github.scrud.copy.types
 
 import com.github.scrud.copy._
 import scala.collection.parallel.mutable
-import com.github.scrud.EntityName
-import com.github.scrud.EntityName
+import com.github.scrud.{FieldDeclaration, BaseFieldDeclaration, EntityName}
 import scala.Some
+import com.github.scrud.context.RequestContext
 
 /**
  * A target and source for data (especially useful when testing).
@@ -13,6 +13,13 @@ import scala.Some
  *         Time: 9:54 PM
  */
 class MapStorage extends AnyRef {
+  def this(fieldTuples: (BaseFieldDeclaration,Option[Any])*) {
+    this()
+    for ((declaration, valueOpt) <- fieldTuples) {
+      put(declaration.entityName, declaration.fieldName, valueOpt)
+    }
+  }
+  
   def this(entityName: EntityName, tuples: (String,Option[Any])*) {
     this()
     for ((fieldName, valueOpt) <- tuples) {
@@ -23,6 +30,9 @@ class MapStorage extends AnyRef {
   private val map = new mutable.ParHashMap[String,Any]
 
   def get(entityName: EntityName, fieldName: String): Option[Any] = map.get(toKey(entityName, fieldName))
+
+  def get[V](fieldDeclaration: FieldDeclaration[V]): Option[V] =
+    get(fieldDeclaration.entityName, fieldDeclaration.fieldName).asInstanceOf[Option[V]]
 
   def put(entityName: EntityName, fieldName: String, valueOpt: Option[_]) = {
     valueOpt match {
@@ -48,4 +58,6 @@ class MapStorage extends AnyRef {
 }
 
 /** This is a reference to the storage type that the class MapStorage represents. */
-case object MapStorage extends StorageType with RepresentationByType[Nothing]
+case object MapStorage extends StorageType with RepresentationByType[Nothing] with InstantiatingTargetType[MapStorage] {
+  override def makeTarget(requestContext: RequestContext) = new MapStorage()
+}

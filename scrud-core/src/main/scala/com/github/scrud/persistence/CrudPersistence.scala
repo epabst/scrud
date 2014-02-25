@@ -7,7 +7,7 @@ import com.github.scrud.{UriPath, EntityType}
 import com.github.annotations.quality.MicrotestCompatible
 import com.github.scrud.copy.{TargetType, SourceType, InstantiatingTargetType}
 import com.github.scrud.platform.representation.{EntityModel, Persistence}
-import com.github.scrud.context.SharedContext
+import com.github.scrud.context.{RequestContext, SharedContext}
 import scala.util.Try
 import com.github.scrud.model.IdPk
 
@@ -28,12 +28,12 @@ trait CrudPersistence extends EntityPersistence with ListenerSet[DataListener] w
 
   override def toUri(id: ID) = entityType.toUri(id)
 
-  def find[T <: AnyRef](uri: UriPath, targetType: InstantiatingTargetType[T]): Option[T] = {
+  def find[T <: AnyRef](uri: UriPath, targetType: InstantiatingTargetType[T],
+                        requestContext: RequestContext): Option[T] = {
     val adaptedFieldSeq = entityType.adapt(sourceType, targetType)
-    val stubRequestContext = sharedContext.asStubRequestContext
     find(uri).map { source =>
-      val target = targetType.makeTarget(stubRequestContext)
-      adaptedFieldSeq.copyAndUpdate(source, target, stubRequestContext)
+      val target = targetType.makeTarget(requestContext)
+      adaptedFieldSeq.copyAndUpdate(source, target, requestContext)
     }
   }
 
@@ -46,30 +46,30 @@ trait CrudPersistence extends EntityPersistence with ListenerSet[DataListener] w
     result
   }
 
-  def findAll[T <: AnyRef](uri: UriPath, targetType: InstantiatingTargetType[T]): Seq[T] = {
+  def findAll[T <: AnyRef](uri: UriPath, targetType: InstantiatingTargetType[T],
+                          requestContext: RequestContext): Seq[T] = {
     val adaptedFieldSeq = entityType.adapt(sourceType, targetType)
-    val stubRequestContext = sharedContext.asStubRequestContext
     findAll(uri).map { source =>
-      val target = targetType.makeTarget(stubRequestContext)
-      adaptedFieldSeq.copyAndUpdate(source, target, stubRequestContext)
+      val target = targetType.makeTarget(requestContext)
+      adaptedFieldSeq.copyAndUpdate(source, target, requestContext)
     }
   }
 
   /** Saves the entity.  This assumes that the entityType's fields support copying from the given modelEntity. */
-  def save(modelEntity: IdPk): ID = {
+  def save(modelEntity: IdPk, requestContext: RequestContext): ID = {
     val adaptedFieldSeq = entityType.adapt(EntityModel, Persistence.Latest)
-    val writable = adaptedFieldSeq.copyAndUpdate(modelEntity, newWritable(), sharedContext.asStubRequestContext)
+    val writable = adaptedFieldSeq.copyAndUpdate(modelEntity, newWritable(), requestContext)
     save(modelEntity.id, writable)
   }
 
-  def toWritable(sourceType: SourceType, source: AnyRef): AnyRef = {
+  def toWritable(sourceType: SourceType, source: AnyRef, requestContext: RequestContext): AnyRef = {
     val target = newWritable()
     val adaptedFieldSeq = entityType.adapt(sourceType, Persistence.Latest)
-    adaptedFieldSeq.copyAndUpdate(source, target, sharedContext.asStubRequestContext)
+    adaptedFieldSeq.copyAndUpdate(source, target, requestContext)
   }
 
-  def saveAll(modelEntityList: Seq[IdPk]): Seq[ID] = {
-    modelEntityList.map(save(_))
+  def saveAll(modelEntityList: Seq[IdPk], requestContext: RequestContext): Seq[ID] = {
+    modelEntityList.map(save(_, requestContext))
   }
 
   // Available for cases where logging needs to happen outside, based on the entityType known here.

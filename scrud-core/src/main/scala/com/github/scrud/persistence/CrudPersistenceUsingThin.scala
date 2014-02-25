@@ -19,16 +19,16 @@ class CrudPersistenceUsingThin(val entityType: EntityType, val thinPersistence: 
   def newWritable() = thinPersistence.newWritable()
 
   protected[persistence] def doSave(idOption: Option[ID], writable: AnyRef): ID = {
-    val targetFieldOpt = entityType.idField.findTargetField(targetType)
+    val targetIdFieldOpt = entityType.idField.findTargetField(targetType)
     val writableWithIdOpt: Option[AnyRef] = for {
       id <- idOption
-      targetField <- targetFieldOpt
-    } yield targetField.updateValue(writable, Some(id), sharedContext.asStubRequestContext)
+      targetIdField <- targetIdFieldOpt
+    } yield targetIdField.updateValue(writable, Some(id), sharedContext.asStubRequestContext)
     val writableToSave = writableWithIdOpt.getOrElse(writable)
 
     val id = thinPersistence.save(idOption, writableToSave)
     if (idOption.isEmpty) {
-      targetFieldOpt.foreach(_.updateValue(writable, Some(id), sharedContext.asStubRequestContext))
+      targetIdFieldOpt.foreach(_.updateValue(writable, Some(id), sharedContext.asStubRequestContext))
     }
     id
   }

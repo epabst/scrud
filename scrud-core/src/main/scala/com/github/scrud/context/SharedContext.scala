@@ -32,8 +32,12 @@ trait SharedContext extends StateHolder {
     entityTypeMap.persistenceFactory(entityType).listenerHolder(entityType, this)
 
   def withPersistence[T](f: PersistenceConnection => T): T = {
-    val persistenceConnection = new PersistenceConnection(entityTypeMap, this)
+    val persistenceConnection = openPersistence()
     try f(persistenceConnection)
     finally persistenceConnection.close()
+  }
+
+  def openPersistence(): PersistenceConnection = {
+    new PersistenceConnection(entityTypeMap, this)
   }
 }

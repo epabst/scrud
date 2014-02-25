@@ -10,9 +10,9 @@ import com.github.scrud.sample.Genre._
 object Book extends EntityName("Book")
 
 class BookEntityType(platformDriver: PlatformDriver) extends EntityType(Book, platformDriver) {
-  field("name", TitleQT, Seq(Persistence(1), EditUI, SelectUI, Validation.requiredString))
+  val nameField = field("name", TitleQT, Seq(Persistence(1), EditUI, SelectUI, Validation.requiredString))
 
-  field(Author, Seq(Persistence(1), EditUI))
+  val author = field(Author, Seq(Persistence(1), EditUI))
 
   field("edition", PositiveIntQT, Seq(Persistence(1), EditUI))
 

@@ -9,9 +9,9 @@ import com.github.scrud.context.RequestContext
  *         Date: 2/6/14
  *         Time: 3:12 PM
  */
-case class Default[V](valueOpt: Option[V]) extends GeneratedField[V] {
+case class Default[V](valueOpt: Option[V]) extends Calculation[V] {
   /** Get some value or None from the given source. */
-  def generateValue(context: RequestContext) = valueOpt
+  def calculate(context: RequestContext) = valueOpt
 }
 
 object Default {

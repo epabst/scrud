@@ -18,4 +18,6 @@ case class FieldDeclaration[V](entityName: EntityName, fieldName: String, qualif
    * @return the field
    */
   val toAdaptableField = platformDriver.field(entityName, fieldName, qualifiedType, representations)
+
+  def ->(valueOpt: Option[V]): (this.type, Option[V]) = (this, valueOpt)
 }
