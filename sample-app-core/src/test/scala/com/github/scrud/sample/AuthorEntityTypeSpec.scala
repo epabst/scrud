@@ -34,4 +34,16 @@ class AuthorEntityTypeSpec extends FunSpec with MustMatchers {
     val author = requestContext.findAll(Author, MapStorage).head
     author.get(authorType.bookCount) must be (Some(4))
   }
+
+  it("must calculate the author's nick name using the name and bookCount") {
+    val requestContext = new RequestContextForTesting(entityTypeMap)
+    val authorId = requestContext.save(Author, MapStorage, None, new MapStorage(
+      authorType.nameField -> Some("Tolkien")))
+    requestContext.save(Book, MapStorage, None, new MapStorage(
+      bookType.nameField -> Some("The Hobbit"), bookType.author -> Some(authorId)))
+    requestContext.save(Book, MapStorage, None, new MapStorage(
+      bookType.nameField -> Some("The Fellowship of the Ring"), bookType.author -> Some(authorId)))
+    val author = requestContext.findAll(Author, MapStorage).head
+    author.get(authorType.nickname) must be (Some("Tolkien-2"))
+  }
 }
