@@ -9,7 +9,7 @@ import com.github.scrud.types.BaseQualifiedType
  *         Date: 2/18/14
  *         Time: 12:19 AM
  */
-abstract class BaseFieldDeclaration {
+trait BaseFieldDeclaration {
   def entityName: EntityName
 
   def fieldName: String
