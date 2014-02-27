@@ -26,13 +26,7 @@ class TestingPlatformDriver extends PlatformDriver {
       MapStorageAdaptableFieldFactory.createTargetField(entityName, fieldName, qualifiedType)
   }
 
-  def idFieldName(entityName: EntityName, primaryKey: Boolean = true): String = {
-    if (primaryKey) {
-      "id"
-    } else {
-      entityName.toCamelCase + "Id"
-    }
-  }
+  def idFieldName(entityName: EntityName): String = "id"
 
   def commandToAddItem(entityName: EntityName) = Command(CommandId("Add"), None, None)
 

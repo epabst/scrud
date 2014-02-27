@@ -43,13 +43,12 @@ trait PlatformDriver extends Logging {
   }
 
   /**
-   * Gets the name of a field that contains an entity ID.
+   * Gets the name of a field that contains the entity's ID.
    * @param entityName the entity whose id field is needed
-   * @param primaryKey true if the primary key field for the entity, false if referenced from another entity
    * @return the name of the field
    * @see [[com.github.scrud.EntityType.idField]]
    */
-  def idFieldName(entityName: EntityName, primaryKey: Boolean = true): String
+  def idFieldName(entityName: EntityName): String
 
   def commandToListItems(entityName: EntityName): Command
 

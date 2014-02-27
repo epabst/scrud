@@ -16,13 +16,8 @@ class TestingPlatformDriverSpec extends PlatformDriverContract {
 
   describe("idFieldName") {
     it("must be 'id' for a primary key") {
-      val fieldName = makePlatformDriver().idFieldName(EntityName("MyEntity"), primaryKey = true)
+      val fieldName = makePlatformDriver().idFieldName(EntityName("MyEntity"))
       fieldName must be ("id")
-    }
-
-    it("must make the first character lower-case and append 'Id' for an external reference") {
-      val fieldName = makePlatformDriver().idFieldName(EntityName("MyEntity"), primaryKey = false)
-      fieldName must be ("myEntityId")
     }
   }
 }
