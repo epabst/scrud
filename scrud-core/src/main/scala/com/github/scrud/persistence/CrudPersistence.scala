@@ -62,6 +62,9 @@ trait CrudPersistence extends EntityPersistence with ListenerSet[DataListener] w
     save(modelEntity.id, writable)
   }
 
+  def save(idOption: Option[ID], sourceType: SourceType, source: AnyRef, requestContext: RequestContext): ID =
+    save(idOption, toWritable(sourceType, source, requestContext))
+
   def toWritable(sourceType: SourceType, source: AnyRef, requestContext: RequestContext): AnyRef = {
     val target = newWritable()
     val adaptedFieldSeq = entityType.adapt(sourceType, Persistence.Latest)

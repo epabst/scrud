@@ -83,7 +83,7 @@ abstract class EntityType(val entityName: EntityName, val platformDriver: Platfo
    * Rather than overriding this, it is recommended to override
    * [[com.github.scrud.EntityType.idFieldName]] and/or [[com.github.scrud.EntityType.idFieldRepresentations]].
    */
-  lazy val idFieldDeclaration: FieldDeclaration[ID] = field(idFieldName, IdQualifiedType, idFieldRepresentations)
+  lazy val id: FieldDeclaration[ID] = field(idFieldName, IdQualifiedType, idFieldRepresentations)
 
   /**
    * The ID field for this entity.
@@ -91,7 +91,7 @@ abstract class EntityType(val entityName: EntityName, val platformDriver: Platfo
    * Rather than overriding this, it is recommended to override
    * [[com.github.scrud.EntityType.idFieldName]] and/or [[com.github.scrud.EntityType.idFieldRepresentations]].
    */
-  def idField: AdaptableField[ID] = idFieldDeclaration.toAdaptableField
+  def idField: AdaptableField[ID] = id.toAdaptableField
 
   lazy val upstreamEntityNames: Seq[EntityName] = fieldDeclarations.map(_.qualifiedType).collect {
     case upstreamName: EntityName => upstreamName
