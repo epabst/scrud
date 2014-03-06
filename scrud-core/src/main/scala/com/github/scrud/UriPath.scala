@@ -8,40 +8,39 @@ import com.github.scrud.platform.IdFormat
   * @author Eric Pabst (epabst@gmail.com)
   */
 case class UriPath(segments: String*) {
-  private lazy val idFormat = IdFormat
-
   def /(segment: String): UriPath = UriPath(segments :+ segment:_*)
 
   def /(entityName: EntityName): UriPath = this / entityName.name
 
-  def /(id: ID): UriPath = this / idFormat.toString(id)
+  def /(id: ID): UriPath = this / id.toString
 
-  def specify(finalSegments: String*): UriPath =
-    UriPath.replacePathSegments(this, _.takeWhile(_ != finalSegments.head) ++ finalSegments.toList)
+  @deprecated("use UriPath.specify(this, finalSegments: _*)", since = "03/06/2014")
+  def specify(finalSegments: String*): UriPath = UriPath.specify(this, finalSegments: _*)
 
-  def specify(entityName: EntityName): UriPath = specify(entityName.name)
+  @deprecated("use UriPath.specify(this, entityName)", since = "03/06/2014")
+  def specify(entityName: EntityName): UriPath = UriPath.specify(this, entityName)
 
-  def specify(entityName: EntityName, id: ID): UriPath = specify(entityName.name, id.toString)
+  @deprecated("use UriPath.specify(this, entityName, id)", since = "03/06/2014")
+  def specify(entityName: EntityName, id: ID): UriPath = UriPath.specify(this, entityName, id)
 
-  def specifyLastEntityName(entityName: EntityName): UriPath =
-    specify(entityName.name +: findId(entityName).map(_.toString).toList:_*)
+  @deprecated("use UriPath.specifyLastEntityName(this, entityName)", since = "03/06/2014")
+  def specifyLastEntityName(entityName: EntityName): UriPath = UriPath.specifyLastEntityName(this, entityName)
 
-  lazy val lastEntityNameOption: Option[EntityName] = segments.reverse.find(idFormat.toValue(_).isFailure).map(EntityName(_))
+  @deprecated("use UriPath.lastEntityNameOption(this)", since = "03/06/2014")
+  lazy val lastEntityNameOption: Option[EntityName] = UriPath.lastEntityNameOption(this)
 
-  def lastEntityNameOrFail: EntityName = lastEntityNameOption.getOrElse {
-    throw new IllegalArgumentException("an EntityName must be specified in the URI but uri=" + this)
-  }
+  @deprecated("use UriPath.lastEntityNameOrFail(this)", since = "03/06/2014")
+  def lastEntityNameOrFail: EntityName = UriPath.lastEntityNameOrFail(this)
 
-  def findId(entityName: EntityName): Option[ID] =
-    segments.dropWhile(_ != entityName.name).toList match {
-      case _ :: idString :: tail => idFormat.toValue(idString).toOption
-      case _ => None
-    }
+  @deprecated("use UriPath.findId(this, entityName)", since = "03/06/2014")
+  def findId(entityName: EntityName): Option[ID] = UriPath.findId(this, entityName)
 
   override lazy val toString = segments.mkString("/", "/", "")
 }
 
 object UriPath {
+  private lazy val idFormat = IdFormat
+
   val EMPTY: UriPath = UriPath()
 
   private def toOption(string: String): Option[String] = if (string == "") None else Some(string)
@@ -55,5 +54,29 @@ object UriPath {
   private[UriPath] def replacePathSegments(uri: UriPath, f: Seq[String] => Seq[String]): UriPath = {
     val path = f(uri.segments)
     UriPath(path: _*)
+  }
+
+  def specify(uri: UriPath, finalSegments: String*): UriPath =
+    replacePathSegments(uri, _.takeWhile(_ != finalSegments.head) ++ finalSegments.toList)
+
+  def specify(uri: UriPath, entityName: EntityName): UriPath = UriPath.specify(uri, entityName.name)
+
+  def specify(uri: UriPath, entityName: EntityName, id: ID): UriPath =
+    specify(uri, entityName.name, id.toString)
+
+  def specifyLastEntityName(uri: UriPath, entityName: EntityName): UriPath =
+    UriPath.specify(uri, entityName.name +: findId(uri, entityName).map(_.toString).toList:_*)
+
+  def findId(uri: UriPath, entityName: EntityName): Option[ID] =
+    uri.segments.dropWhile(_ != entityName.name).toList match {
+      case _ :: idString :: tail => idFormat.toValue(idString).toOption
+      case _ => None
+    }
+
+  def lastEntityNameOption(uri: UriPath): Option[EntityName] =
+    uri.segments.reverse.find(idFormat.toValue(_).isFailure).map(EntityName(_))
+
+  def lastEntityNameOrFail(uri: UriPath): EntityName = lastEntityNameOption(uri).getOrElse {
+    throw new IllegalArgumentException("an EntityName must be specified in the URI but uri=" + uri)
   }
 }
