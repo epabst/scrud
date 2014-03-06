@@ -14,27 +14,6 @@ case class UriPath(segments: String*) {
 
   def /(id: ID): UriPath = this / id.toString
 
-  @deprecated("use UriPath.specify(this, finalSegments: _*)", since = "03/06/2014")
-  def specify(finalSegments: String*): UriPath = UriPath.specify(this, finalSegments: _*)
-
-  @deprecated("use UriPath.specify(this, entityName)", since = "03/06/2014")
-  def specify(entityName: EntityName): UriPath = UriPath.specify(this, entityName)
-
-  @deprecated("use UriPath.specify(this, entityName, id)", since = "03/06/2014")
-  def specify(entityName: EntityName, id: ID): UriPath = UriPath.specify(this, entityName, id)
-
-  @deprecated("use UriPath.specifyLastEntityName(this, entityName)", since = "03/06/2014")
-  def specifyLastEntityName(entityName: EntityName): UriPath = UriPath.specifyLastEntityName(this, entityName)
-
-  @deprecated("use UriPath.lastEntityNameOption(this)", since = "03/06/2014")
-  lazy val lastEntityNameOption: Option[EntityName] = UriPath.lastEntityNameOption(this)
-
-  @deprecated("use UriPath.lastEntityNameOrFail(this)", since = "03/06/2014")
-  def lastEntityNameOrFail: EntityName = UriPath.lastEntityNameOrFail(this)
-
-  @deprecated("use UriPath.findId(this, entityName)", since = "03/06/2014")
-  def findId(entityName: EntityName): Option[ID] = UriPath.findId(this, entityName)
-
   override lazy val toString = segments.mkString("/", "/", "")
 }
 

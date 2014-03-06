@@ -30,7 +30,7 @@ class ListBufferEntityPersistence[E <: AnyRef](entityName: EntityName, newWritab
   def findAll(uri: UriPath): List[E] = rawFindAll(uri).map(_.entity)
 
   private def rawFindAll(uri: UriPath): List[IDAndEntity] = {
-    uri.findId(entityName).map(id => buffer.toList.filter(item => item.id == id)).getOrElse(buffer.toList)
+    UriPath.findId(uri, entityName).map(id => buffer.toList.filter(item => item.id == id)).getOrElse(buffer.toList)
   }
 
   def newWritable() = newWritableFunction
