@@ -7,12 +7,14 @@ repositories {
     mavenCentral()
 }
 
+def scalaMajorVersion = '2.10'
 def scalaVersion = '2.10.3'
 
 dependencies {
     compile "org.scala-lang:scala-library:$scalaVersion"
     compile "org.slf4j:slf4j-api:1.6.1"
     compile 'commons-codec:commons-codec:1.9'
+    compile "com.netaporter:scala-uri_$scalaMajorVersion:0.4.1"
     compile project(":annotations-for-quality"); //"com.github.epabst.quality:annotations-for-quality:1.0-SNAPSHOT"
     testRuntime "org.slf4j:slf4j-jdk14:1.6.1"
     testCompile "org.mockito:mockito-core:1.8.5"
