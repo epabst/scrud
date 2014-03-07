@@ -29,6 +29,15 @@ class EntityNavigationSpec extends FunSpec with MustMatchers {
   val entityTypeMap = EntityTypeMapForTesting(Set[EntityType](entityType, upstreamEntity1, upstreamEntity2))
   val navigation = new EntityNavigationForTesting(entityTypeMap)
 
+  describe("topLevelActions") {
+    it("must include listing the primary entity") {
+      val topLevelActions = navigation.topLevelActions
+
+      val expectedActions = navigation.actionsToList(entityType.entityName)
+      expectedActions.foreach(topLevelActions must contain(_))
+    }
+  }
+
   describe("actionsFromCrudOperation") {
     describe(Create.toString) {
       it("must allow managing upstreams' lists and deleting self") {

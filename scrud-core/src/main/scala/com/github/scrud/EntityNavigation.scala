@@ -24,6 +24,13 @@ class EntityNavigation(val applicationName: ApplicationName, val entityTypeMap: 
   val primaryEntityType: EntityType = entityTypeMap.allEntityTypes.head
 
   /**
+   * Gets the actions that a user can perform from the main application entry point.
+   * May be overridden to adjust as needed.
+   */
+  //todo this should have a better default of which entities are useful to list as top-level entities.
+  def topLevelActions: Seq[Action] = actionsToList(primaryEntityType.entityName)
+
+  /**
    * Gets the actions that a user can perform from a given CrudOperation.
    * May be overridden to adjust the list of actions.
    */
