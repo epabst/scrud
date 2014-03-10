@@ -59,7 +59,7 @@ abstract class EntityType(val entityName: EntityName, val platformDriver: Platfo
    * @return an AdaptableField which can be ignored since it is automatically stored in the EntityType.
    */
   protected def field[V](qualifiedType: QualifiedTypeProvidingFieldName[V], representations: Seq[Representation[V]]): FieldDeclaration[V] =
-    field[V](qualifiedType.toFieldName, qualifiedType.asInstanceOf[QualifiedType[V]], representations)
+    field[V](qualifiedType.toFieldName, qualifiedType, representations)
 
   /**
    * Specifies the name of the ID field.
