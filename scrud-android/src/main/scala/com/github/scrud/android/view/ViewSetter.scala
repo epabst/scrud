@@ -3,7 +3,6 @@ package com.github.scrud.android.view
 import android.view.View
 import com.github.triangle.{UpdaterInput, TargetedSetter}
 import com.github.scrud.android.AndroidCrudContext
-import com.github.scrud.CrudContextField
 
 /**
  * A Setter that operates on a View.  It automatically runs the operation on the UI thread.

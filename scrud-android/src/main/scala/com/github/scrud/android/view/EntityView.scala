@@ -1,6 +1,6 @@
 package com.github.scrud.android.view
 
-import com.github.scrud.{EntityName, CrudContextField, UriField}
+import com.github.scrud.{EntityName, UriField}
 import com.github.scrud.platform.PlatformTypes.ID
 import com.github.triangle._
 import android.widget._
@@ -25,7 +25,7 @@ case class EntityView(entityName: EntityName)
           //don't do it again if already done from a previous time
           if (adapterView.getAdapter == null) {
             val entityType = crudActivity.crudApplication.entityType(entityName)
-            crudActivity.setListAdapter(adapterView, entityType, crudContext, crudActivity.contextItems.copy(uri), crudActivity,
+            crudActivity.setListAdapter(adapterView, entityType, crudContext, crudActivity.requestContext.copy(uri), crudActivity,
               crudActivity.pickLayoutFor(entityType.entityName))
           }
           if (idOpt.isDefined) {

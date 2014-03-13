@@ -108,7 +108,7 @@ class CrudApplicationSpec extends FunSpec with MustMatchers with MockitoSugar {
       val application = new CrudApplicationForTesting(entityType -> new PersistenceFactoryForTesting(crudPersistence))
       val entity = Map[String,Option[Any]]("name" -> Some("Bob"), "age" -> Some(25))
       val uri = UriPath(entityType.entityName)
-      application.saveIfValid(entity, entityType, new CrudContextItems(uri, new SimpleCrudContext(application)))
+      application.saveIfValid(entity, entityType, new RequestContext(uri, new SimpleCrudContext(application)))
       verify(persistence).save(None, Map[String,Option[Any]](CursorField.idFieldName -> None, "name" -> Some("Bob"), "age" -> Some(25), "uri" -> Some(uri.toString)))
       verify(persistence, never()).findAll(uri)
     }
@@ -119,7 +119,7 @@ class CrudApplicationSpec extends FunSpec with MustMatchers with MockitoSugar {
       val application = new CrudApplicationForTesting(entityType -> new PersistenceFactoryForTesting(crudPersistence))
       val entity = Map[String,Option[Any]]("name" -> Some("Bob"), "age" -> Some(25))
       val uri = UriPath(entityType.entityName) / 200
-      application.saveIfValid(entity, entityType, new CrudContextItems(uri, new SimpleCrudContext(application)))
+      application.saveIfValid(entity, entityType, new RequestContext(uri, new SimpleCrudContext(application)))
       verify(persistence).save(Some(200), Map[String,Option[Any]](CursorField.idFieldName -> Some(200), "name" -> Some("Bob"), "age" -> Some(25), "uri" -> Some(uri.toString)))
     }
   }

@@ -91,10 +91,10 @@ class CrudActivity extends FragmentActivity with OptionsMenuActivity with Loader
   //final since only here as a convenience method.
   final def stateHolder = crudContext.stateHolder
 
-  lazy val contextItems: CrudContextItems = new CrudContextItems(currentUriPath, crudContext, PortableField.UseDefaults)
+  lazy val requestContext: RequestContext = new RequestContext(currentUriPath, crudContext, PortableField.UseDefaults)
 
   // not a val because not used enough to store
-  def contextItemsWithoutUseDefaults: CrudContextItems = new CrudContextItems(currentUriPath, crudContext)
+  def contextItemsWithoutUseDefaults: RequestContext = new RequestContext(currentUriPath, crudContext)
 
   protected lazy val logTag = Common.tryToEvaluate(crudApplication.name).getOrElse(Common.logTag)
 
@@ -134,7 +134,7 @@ class CrudActivity extends FragmentActivity with OptionsMenuActivity with Loader
 
           def onRestoreState(savedInstanceState: Bundle) {
             val portableValue = entityType.copyFrom(savedInstanceState)
-            crudContext.runOnUiThread { portableValue.update(this, contextItems) }
+            crudContext.runOnUiThread { portableValue.update(this, requestContext) }
           }
         })
       }
@@ -191,7 +191,7 @@ class CrudActivity extends FragmentActivity with OptionsMenuActivity with Loader
           if (crudApplication.maySpecifyEntityInstance(currentPath, entityType)) {
             populateFromUri(entityType, currentPath)
           } else {
-            entityType.copy(PortableField.UseDefaults +: contextItems, this)
+            entityType.copy(PortableField.UseDefaults +: requestContext, this)
           }
         }
     }
@@ -341,7 +341,7 @@ class CrudActivity extends FragmentActivity with OptionsMenuActivity with Loader
     }
   }
   def populateFromUri(entityType: EntityType, uri: UriPath) {
-    populateFromUri(entityType, uri, UpdaterInput(this, contextItems))
+    populateFromUri(entityType, uri, UpdaterInput(this, requestContext))
   }
 
   def populateFromUri(entityType: EntityType, uri: UriPath, updaterInput: UpdaterInput[AnyRef,Nothing]) {
@@ -401,7 +401,7 @@ class CrudActivity extends FragmentActivity with OptionsMenuActivity with Loader
   }
 
   protected def bindNormalActionsToViews() {
-    normalOperationSetters.defaultValue.update(this, contextItems)
+    normalOperationSetters.defaultValue.update(this, requestContext)
   }
 
   private[android] def onCommandsChanged() {
@@ -432,13 +432,13 @@ class CrudActivity extends FragmentActivity with OptionsMenuActivity with Loader
   }
 
   final def setListAdapterUsingUri(crudContext: AndroidCrudContext, activity: CrudActivity) {
-    setListAdapter(activity.getAdapterView, entityType, crudContext, activity.contextItems, activity, rowLayout)
+    setListAdapter(activity.getAdapterView, entityType, crudContext, activity.requestContext, activity, rowLayout)
   }
 
-  def setListAdapter[A <: Adapter](adapterView: AdapterView[A], entityType: EntityType, crudContext: AndroidCrudContext, contextItems: CrudContextItems, activity: Activity, itemLayout: LayoutKey) {
+  def setListAdapter[A <: Adapter](adapterView: AdapterView[A], entityType: EntityType, crudContext: AndroidCrudContext, requestContext: RequestContext, activity: Activity, itemLayout: LayoutKey) {
     val entityTypePersistedInfo = EntityTypePersistedInfo(entityType)
-    val uri = toUri(contextItems.currentUriPath, crudContext.persistenceFactoryMapping)
-    val adapter = new EntityCursorAdapter(entityType, contextItems, new ViewInflater(itemLayout, activity.getLayoutInflater), null)
+    val uri = toUri(requestContext.currentUriPath, crudContext.persistenceFactoryMapping)
+    val adapter = new EntityCursorAdapter(entityType, requestContext, new ViewInflater(itemLayout, activity.getLayoutInflater), null)
     val cursorLoaderData = CursorLoaderData(ContentQuery(uri, entityTypePersistedInfo.queryFieldNames), adapter)
     runOnUiThread {
       adapterView.setAdapter(adapter.asInstanceOf[A])

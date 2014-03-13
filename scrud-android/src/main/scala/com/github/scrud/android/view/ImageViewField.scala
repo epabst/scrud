@@ -4,7 +4,6 @@ import android.net.Uri
 import android.widget.ImageView
 import com.github.scrud.android.res.R
 import com.github.triangle._
-import com.github.scrud.CrudContextField
 import com.github.scrud.android.util.ImageViewLoader
 import scala.xml.NodeSeq
 

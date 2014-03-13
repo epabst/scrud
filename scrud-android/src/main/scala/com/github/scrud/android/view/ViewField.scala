@@ -11,7 +11,6 @@ import android.widget._
 import com.github.scrud.android.view.AndroidResourceAnalyzer._
 import android.view.View
 import android.widget.LinearLayout
-import com.github.scrud.CrudContextField
 import com.github.scrud.android.AndroidCrudContext
 
 /** A Map of ViewKey with values.

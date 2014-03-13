@@ -10,13 +10,11 @@ import action.StartEntityDeleteOperation
 import persistence.{PersistenceFactoryMapping, PersistenceFactory}
 import platform.PlatformDriver
 import platform.PlatformTypes._
-import com.github.triangle._
 import state.ApplicationConcurrentMapVal
-import util.{Common, UrgentFutureExecutor}
+import com.github.scrud.util.{Logging, Common, UrgentFutureExecutor}
 import java.util.NoSuchElementException
-import scala.actors.Future
 import com.github.scrud
-import scrud.android.{CrudType,NamingConventions,res}
+import scrud.android.{CrudType,NamingConventions}
 import scrud.android.view.AndroidResourceAnalyzer._
 
 /**
@@ -29,7 +27,7 @@ import scrud.android.view.AndroidResourceAnalyzer._
  * Date: 3/31/11
  * Time: 4:50 PM
  */
-
+@deprecated("use EntityNavigation or EntityTypeMap")
 abstract class CrudApplication(val platformDriver: PlatformDriver) extends PersistenceFactoryMapping with Logging {
   lazy val logTag = Common.tryToEvaluate(nameId).getOrElse(Common.logTag)
 
@@ -184,14 +182,14 @@ abstract class CrudApplication(val platformDriver: PlatformDriver) extends Persi
    * Save the data into the persistence for entityType.
    * If data is invalid (based on updating a ValidationResult), returns None, otherwise returns the created or updated ID.
    */
-  def saveIfValid(data: AnyRef, entityType: EntityType, contextItems: CrudContextItems): Option[ID] = {
-    val crudContext = contextItems.crudContext
-    val updaterInput = UpdaterInput(crudContext.newWritable(entityType), contextItems)
+  def saveIfValid(data: AnyRef, entityType: EntityType, requestContext: RequestContext): Option[ID] = {
+    val crudContext = requestContext.crudContext
+    val updaterInput = UpdaterInput(crudContext.newWritable(entityType), requestContext)
     val relevantFields = entityType.copyableTo(updaterInput)
-    val portableValue = relevantFields.copyFrom(data +: contextItems)
+    val portableValue = relevantFields.copyFrom(data +: requestContext)
     if (portableValue.update(ValidationResult.Valid).isValid) {
       val updatedWritable = portableValue.update(updaterInput)
-      val idOpt = entityType.IdField(contextItems.currentUriPath)
+      val idOpt = entityType.IdField(requestContext.currentUriPath)
       val newId = crudContext.withEntityPersistence(entityType)(_.save(idOpt, updatedWritable))
       debug("Saved " + portableValue + " into id=" + newId + " entityType=" + entityType)
       crudContext.displayMessageToUserBriefly(res.R.string.data_saved_notification)
@@ -239,8 +237,8 @@ abstract class CrudApplication(val platformDriver: PlatformDriver) extends Persi
   }
 
   protected def calculatePortableValue(entityType: EntityType, uriPathWithId: UriPath, entityData: AnyRef, crudContext: CrudContext): PortableValue = {
-    val contextItems = GetterInput(uriPathWithId, crudContext, PortableField.UseDefaults)
+    val requestContext = GetterInput(uriPathWithId, crudContext, PortableField.UseDefaults)
     debug("Copying " + entityType.entityName + "#" + entityType.IdField.getRequired(entityData))
-    entityType.copyFrom(entityData +: contextItems)
+    entityType.copyFrom(entityData +: requestContext)
   }
 }
