@@ -7,6 +7,8 @@ import com.github.scrud.context.RequestContext
  * @author Eric Pabst (epabst@gmail.com)
  *         Date: 12/10/13
  *         Time: 3:20 PM
+ * @tparam D the data type
+ * @tparam V the type of the field value
  */
 abstract class TypedTargetField[D <: AnyRef,V] extends TargetField[V] {
   /** Updates the {{{target}}} subject using the {{{valueOpt}}} for this field and some context. */

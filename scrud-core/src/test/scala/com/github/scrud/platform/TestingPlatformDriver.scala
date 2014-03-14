@@ -6,6 +6,9 @@ import com.github.scrud.types.QualifiedType
 import com.github.scrud.EntityName
 import com.github.scrud.action.CommandId
 import com.github.scrud.action.Command
+import com.github.scrud.util.Name
+import com.netaporter.uri.Uri
+import scala.util.Success
 
 /**
  * A simple PlatformDriver for testing.
@@ -15,6 +18,8 @@ import com.github.scrud.action.Command
  */
 class TestingPlatformDriver extends PlatformDriver {
   protected def logTag = getClass.getSimpleName
+
+  override def tryResource(resourceName: Name) = Success(Uri.parse("image:" + resourceName.toCamelCase))
 
   val localDatabasePersistenceFactory = ListBufferPersistenceFactoryForTesting
 

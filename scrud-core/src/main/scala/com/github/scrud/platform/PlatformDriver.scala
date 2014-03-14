@@ -7,8 +7,10 @@ import com.github.scrud.types.QualifiedType
 import com.github.scrud.copy._
 import com.github.scrud.EntityName
 import com.github.scrud.action.Command
-import com.github.scrud.util.Logging
+import com.github.scrud.util.{Name, Logging}
 import com.github.scrud.platform.representation.PersistenceRange
+import com.netaporter.uri.Uri
+import scala.util.Try
 
 /**
  * An API for an app to interact with the host platform such as Android.
@@ -24,6 +26,8 @@ import com.github.scrud.platform.representation.PersistenceRange
  *         Time: 9:57 PM
  */
 trait PlatformDriver extends Logging {
+  def tryResource(resourceName: Name): Try[Uri]
+  
   def localDatabasePersistenceFactory: PersistenceFactory
 
   def calculateDataVersion(entityTypes: Seq[EntityType]) = {
