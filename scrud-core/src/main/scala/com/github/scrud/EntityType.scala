@@ -12,6 +12,7 @@ import com.github.scrud.context.RequestContext
 import scala.util.Try
 import com.github.scrud.model.{IdPk, IdPkField}
 import com.github.scrud.copy.types.MapStorage
+import com.github.scrud.SortOrder.SortOrder
 
 /**
  * A stateless configuration of an entity, providing information needed to map data to and from persistence, UI, model, etc.
@@ -92,6 +93,8 @@ abstract class EntityType(val entityName: EntityName, val platformDriver: Platfo
    * [[com.github.scrud.EntityType.idFieldName]] and/or [[com.github.scrud.EntityType.idFieldRepresentations]].
    */
   def idField: AdaptableField[ID] = id.toAdaptableField
+
+  def sortOrder: Seq[(BaseFieldDeclaration,SortOrder)] = Seq.empty
 
   lazy val upstreamEntityNames: Seq[EntityName] = fieldDeclarations.map(_.qualifiedType).collect {
     case upstreamName: EntityName => upstreamName
