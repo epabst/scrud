@@ -28,6 +28,8 @@ trait RequestContext {
 
   def sharedContext: SharedContext
 
+  def withUri(uri: UriPath): RequestContext
+
   def entityTypeMap: EntityTypeMap = sharedContext.entityTypeMap
 
   def platformDriver: PlatformDriver = sharedContext.platformDriver
@@ -49,8 +51,13 @@ trait RequestContext {
     }
 
   /** Find using this RequestContext's URI. */
+  def find[T <: AnyRef](entityName: EntityName, targetType: InstantiatingTargetType[T]): Option[T] =
+    persistenceConnection.persistenceFor(entityName).find(uri, targetType, this)
+
+  /** Find using this RequestContext's URI. */
   def findAll(entityName: EntityName): Seq[AnyRef] = persistenceConnection.persistenceFor(entityName).findAll(uri)
 
+  /** Find using this RequestContext's URI. */
   def findAll[T <: AnyRef](entityName: EntityName, targetType: InstantiatingTargetType[T]): Seq[T] =
     persistenceConnection.persistenceFor(entityName).findAll[T](uri, targetType, this)
 

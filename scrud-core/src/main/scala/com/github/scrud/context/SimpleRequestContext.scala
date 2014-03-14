@@ -14,6 +14,8 @@ import com.github.scrud.action.CrudOperationType.CrudOperationType
  */
 case class SimpleRequestContext(operationType: CrudOperationType, uri: UriPath, sharedContext: SharedContext,
                                 entityNavigation: EntityNavigation) extends RequestContext {
+  override def withUri(uri: UriPath) = copy(uri = uri)
+
   val stateHolder = new SimpleStateHolder
 
   /** The ISO 2 country such as "US". */

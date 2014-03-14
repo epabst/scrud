@@ -1,6 +1,7 @@
 package com.github.scrud.context
 
 import com.github.scrud.action.Undoable
+import com.github.scrud.UriPath
 
 /**
  * A RequestContext that simply wraps a SharedContext and can't be used for anything else.
@@ -20,4 +21,6 @@ class StubRequestContext(val sharedContext: SharedContext) extends RequestContex
   def operationType = notSupported
 
   def uri = notSupported
+
+  override def withUri(uri: UriPath) = notSupported
 }
