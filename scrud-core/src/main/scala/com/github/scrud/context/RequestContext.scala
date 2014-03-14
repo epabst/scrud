@@ -1,14 +1,14 @@
 package com.github.scrud.context
 
-import com.github.scrud.UriPath
+import com.github.scrud.{FieldDeclaration, UriPath, EntityName}
 import com.github.scrud.state.{DestroyStateListener, State}
 import com.github.scrud.platform.PlatformDriver
 import com.github.scrud.persistence.{PersistenceConnection, EntityTypeMap}
 import com.github.scrud.action.CrudOperationType.CrudOperationType
 import com.github.scrud.platform.PlatformTypes._
-import com.github.scrud.EntityName
 import com.github.scrud.action.Undoable
 import com.github.scrud.copy.{InstantiatingTargetType, SourceType}
+import com.github.scrud.platform.representation.Persistence
 
 /**
  * The context for a given interaction or request/response.
@@ -42,6 +42,13 @@ trait RequestContext {
     persistenceConnection
   }
 
+  /** Find using this RequestContext's URI. */
+  def find[V](entityName: EntityName, field: FieldDeclaration[V]): Option[V] =
+    persistenceConnection.persistenceFor(entityName).find(uri).flatMap { entity =>
+      field.toAdaptableField.sourceField(Persistence.Latest).findValue(entity, this)
+    }
+
+  /** Find using this RequestContext's URI. */
   def findAll(entityName: EntityName): Seq[AnyRef] = persistenceConnection.persistenceFor(entityName).findAll(uri)
 
   def findAll[T <: AnyRef](entityName: EntityName, targetType: InstantiatingTargetType[T]): Seq[T] =

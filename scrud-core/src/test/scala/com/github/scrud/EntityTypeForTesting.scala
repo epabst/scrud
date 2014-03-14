@@ -1,8 +1,8 @@
 package com.github.scrud
 
 import com.github.scrud.platform.TestingPlatformDriver
-import com.github.scrud.types.TitleQT
-import com.github.scrud.platform.representation.{Persistence}
+import com.github.scrud.types.{DateWithoutTimeQT, TitleQT}
+import com.github.scrud.platform.representation._
 import com.github.scrud.copy.types.MapStorage
 
 /**
@@ -12,7 +12,8 @@ import com.github.scrud.copy.types.MapStorage
  *         Time: 3:52 PM
  */
 class EntityTypeForTesting(entityName: EntityName = EntityName("MyEntity")) extends EntityType(entityName, TestingPlatformDriver) {
-  field("name", TitleQT, Seq(MapStorage, Persistence(1)))
+  val Name = field("name", TitleQT, Seq(MapStorage, Persistence(1), EditUI, SelectUI, Query))
+  val BirthDate = field("birthDate", DateWithoutTimeQT, Seq(MapStorage, Persistence(1), EditUI, SelectUI, Query))
 }
 
 object EntityTypeForTesting extends EntityTypeForTesting(EntityName("MyEntity"))

@@ -1,6 +1,6 @@
 package com.github.scrud.copy
 
-import com.github.scrud.FieldDeclaration
+import com.github.scrud.{BaseFieldDeclaration, FieldDeclaration}
 import com.github.scrud.context.RequestContext
 
 /**
@@ -9,11 +9,11 @@ import com.github.scrud.context.RequestContext
  *         Date: 2/25/14
  *         Time: 3:23 PM
  */
-abstract class Derived[V] extends ExtensibleAdaptableField[V] with Representation[V]
+abstract class Derived[V](fields: BaseFieldDeclaration*) extends ExtensibleAdaptableField[V] with Representation[V]
 
 object Derived {
   def apply[V,V1](field1: FieldDeclaration[V1])(derive: Option[V1] => Option[V]): Derived[V] = {
-    new Derived[V] {
+    new Derived[V](field1) {
       override def findSourceField(sourceType: SourceType) = {
         for {
           sourceField1 <- field1.toAdaptableField.findSourceField(sourceType)
@@ -25,7 +25,7 @@ object Derived {
   }
 
   def apply[V,V1,V2](field1: FieldDeclaration[V1], field2: FieldDeclaration[V2])(derive: (Option[V1],Option[V2]) => Option[V]): Derived[V] = {
-    new Derived[V] {
+    new Derived[V](field1, field2) {
       override def findSourceField(sourceType: SourceType) = {
         for {
           sourceField1 <- field1.toAdaptableField.findSourceField(sourceType)
@@ -39,7 +39,7 @@ object Derived {
 
   def apply[V,V1,V2,V3](field1: FieldDeclaration[V1], field2: FieldDeclaration[V2], field3: FieldDeclaration[V3])
                        (derive: (Option[V1],Option[V2],Option[V3]) => Option[V]): Derived[V] = {
-    new Derived[V] {
+    new Derived[V](field1, field2, field3) {
       override def findSourceField(sourceType: SourceType) = {
         for {
           sourceField1 <- field1.toAdaptableField.findSourceField(sourceType)

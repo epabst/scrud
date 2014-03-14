@@ -18,6 +18,10 @@ abstract class AdaptableField[V] extends BaseAdaptableField { self =>
 
   def findSourceField(sourceType: SourceType): Option[SourceField[V]]
 
+  /** Get the SourceField or fail. */
+  def sourceField(sourceType: SourceType): SourceField[V] =
+    findSourceField(sourceType).getOrElse(sys.error(this + " has no SourceField for " + sourceType))
+
   def findTargetField(targetType: TargetType): Option[TargetField[V]]
 }
 

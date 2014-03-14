@@ -11,4 +11,13 @@ import com.github.scrud.context.RequestContext
 trait SourceField[+V] {
   /** Get some value or None from the given source. */
   def findValue(source: AnyRef, context: RequestContext): Option[V]
+
+  /**
+   * Get some value or None from the given source.
+   * This should never be removed because it flags situations where an Option is passed in
+   * when one never should be.
+   */
+  @deprecated("use findValue(sourceOpt.get, context)")
+  final def findValue(sourceOpt: Option[AnyRef], context: RequestContext): Option[V] =
+    sourceOpt.flatMap { findValue(_, context) }
 }
