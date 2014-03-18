@@ -12,7 +12,8 @@ import com.github.scrud.context.RequestContext
 abstract class Derived[V](fields: BaseFieldDeclaration*) extends ExtensibleAdaptableField[V] with Representation[V]
 
 object Derived {
-  def apply[V,V1](field1: FieldDeclaration[V1])(derive: Option[V1] => Option[V]): Derived[V] = {
+  def apply[V,V1](field1: FieldDeclaration[V1])
+                 (derive: Option[V1] => Option[V]): Derived[V] = {
     new Derived[V](field1) {
       override def findSourceField(sourceType: SourceType) = {
         for {
@@ -24,7 +25,8 @@ object Derived {
     }
   }
 
-  def apply[V,V1,V2](field1: FieldDeclaration[V1], field2: FieldDeclaration[V2])(derive: (Option[V1],Option[V2]) => Option[V]): Derived[V] = {
+  def apply[V,V1,V2](field1: FieldDeclaration[V1], field2: FieldDeclaration[V2])
+                    (derive: (Option[V1],Option[V2]) => Option[V]): Derived[V] = {
     new Derived[V](field1, field2) {
       override def findSourceField(sourceType: SourceType) = {
         for {
@@ -52,7 +54,8 @@ object Derived {
     }
   }
 
-  private class DerivedSourceField1[V,V1](field1: SourceField[V1])(derive: Option[V1] => Option[V]) extends SourceField[V] {
+  private class DerivedSourceField1[V,V1](field1: SourceField[V1])
+                                         (derive: Option[V1] => Option[V]) extends SourceField[V] {
     /** Get some value or None from the given source. */
     override def findValue(source: AnyRef, context: RequestContext) = {
       val valueOpt1 = field1.findValue(source, context)

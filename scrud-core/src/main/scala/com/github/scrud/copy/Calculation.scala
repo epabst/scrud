@@ -3,7 +3,8 @@ package com.github.scrud.copy
 import com.github.scrud.context.RequestContext
 
 /**
- * An AdaptableField (and SourceField) whose value is calculated.  It has no target field.
+ * An AdaptableField (and SourceField) whose value is calculated.
+ * It has access to the RequestContext.  If the RequestContext isn't needed, use [[com.github.scrud.copy.Derived]] instead.
  * @author Eric Pabst (epabst@gmail.com)
  *         Date: 2/7/14
  *         Time: 3:00 PM
