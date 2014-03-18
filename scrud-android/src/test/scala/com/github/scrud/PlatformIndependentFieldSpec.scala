@@ -3,6 +3,8 @@ package com.github.scrud
 import com.github.triangle.PortableField._
 import org.scalatest.FunSpec
 import org.scalatest.matchers.MustMatchers
+import org.junit.runner.RunWith
+import org.scalatest.junit.JUnitRunner
 
 /**
  * A specification for [[com.github.scrud.PlatformIndependentField]].
@@ -10,6 +12,7 @@ import org.scalatest.matchers.MustMatchers
  * Date: 10/10/12
  * Time: 3:38 PM
  */
+@RunWith(classOf[JUnitRunner])
 class PlatformIndependentFieldSpec extends FunSpec with MustMatchers {
   describe("loadingIndicator") {
     it("must return a value") {
