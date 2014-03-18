@@ -76,7 +76,7 @@ abstract class EntityType(val entityName: EntityName, val platformDriver: Platfo
    * @return a Seq of Representation
    * @see [[com.github.scrud.EntityType.idField]]
    */
-  protected def idFieldRepresentations: Seq[Representation[ID]] = Seq(Persistence(Int.MinValue), Query, EntityModel, MapStorage, IdPkField)
+  protected def idFieldRepresentations: Seq[Representation[ID]] = Seq(Persistence(Int.MinValue), Query, EntityModelForPlatform, MapStorage, IdPkField)
 
   /**
    * The ID field declaration for this entity.

@@ -3,7 +3,7 @@ package com.github.scrud.model
 import com.github.scrud.copy._
 import com.github.scrud.platform.PlatformTypes._
 import com.github.scrud.context.RequestContext
-import com.github.scrud.platform.representation.EntityModel
+import com.github.scrud.platform.representation.EntityModelForPlatform
 
 /**
  * A TargetField and SourceField for an IdPk.
@@ -24,5 +24,5 @@ object IdPkField extends TypedTargetField[IdPk,ID] with TypedSourceField[IdPk,ID
    * Converts this [[com.github.scrud.copy.AdaptableField]].
    * @return the field
    */
-  val toAdaptableField = AdaptableField[ID](Map(EntityModel -> IdPkField), Map(EntityModel -> IdPkField))
+  val toAdaptableField = AdaptableField[ID](Map(EntityModelForPlatform -> IdPkField), Map(EntityModelForPlatform -> IdPkField))
 }

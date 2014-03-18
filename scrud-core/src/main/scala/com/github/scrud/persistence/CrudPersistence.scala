@@ -6,7 +6,7 @@ import com.github.scrud.util.{Common, ListenerSet}
 import com.github.scrud.{UriPath, EntityType}
 import com.github.annotations.quality.MicrotestCompatible
 import com.github.scrud.copy.{TargetType, SourceType, InstantiatingTargetType}
-import com.github.scrud.platform.representation.{EntityModel, Persistence}
+import com.github.scrud.platform.representation.{EntityModelForPlatform, Persistence}
 import com.github.scrud.context.{RequestContext, SharedContext}
 import scala.util.Try
 import com.github.scrud.model.IdPk
@@ -57,7 +57,7 @@ trait CrudPersistence extends EntityPersistence with ListenerSet[DataListener] w
 
   /** Saves the entity.  This assumes that the entityType's fields support copying from the given modelEntity. */
   def save(modelEntity: IdPk, requestContext: RequestContext): ID = {
-    val adaptedFieldSeq = entityType.adapt(EntityModel, Persistence.Latest)
+    val adaptedFieldSeq = entityType.adapt(EntityModelForPlatform, Persistence.Latest)
     val writable = adaptedFieldSeq.copyAndUpdate(modelEntity, newWritable(), requestContext)
     save(modelEntity.id, writable)
   }
