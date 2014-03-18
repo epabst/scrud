@@ -84,7 +84,7 @@ abstract class EntityType(val entityName: EntityName, val platformDriver: Platfo
    * Rather than overriding this, it is recommended to override
    * [[com.github.scrud.EntityType.idFieldName]] and/or [[com.github.scrud.EntityType.idFieldRepresentations]].
    */
-  lazy val id: FieldDeclaration[ID] = field(idFieldName, IdQualifiedType, idFieldRepresentations)
+  val id: FieldDeclaration[ID] = field(idFieldName, IdQualifiedType, idFieldRepresentations)
 
   /**
    * The ID field for this entity.
