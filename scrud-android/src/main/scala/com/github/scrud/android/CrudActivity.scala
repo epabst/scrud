@@ -24,7 +24,7 @@ import scrud.util.Common
 import scrud.android.view.AndroidResourceAnalyzer._
 import scrud.android.view._
 import scrud.{android=>_,_}
-import scrud.action.{Action,CrudOperation}
+import scrud.action.{OperationAction,CrudOperation}
 import scrud.android.view.OnClickOperationSetter
 import scala.collection.mutable
 import com.github.scrud.android.persistence.{EntityTypePersistedInfo, ContentQuery}
@@ -276,7 +276,7 @@ class CrudActivity extends FragmentActivity with OptionsMenuActivity with Loader
     adapterView
   }
 
-  protected lazy val contextMenuActions: Seq[Action] = {
+  protected lazy val contextMenuActions: Seq[OperationAction] = {
     val actions = crudApplication.actionsFromCrudOperation(CrudOperation(entityName, CrudOperationType.Read))
     // Include the first action based on Android Feel even though available by just tapping.
     actions.filter(_.command.title.isDefined)
@@ -391,7 +391,7 @@ class CrudActivity extends FragmentActivity with OptionsMenuActivity with Loader
   }
 
   // not a val because it is dynamic
-  protected def applicableActions: List[Action] = LastUndoable.get(crudContext.stateHolder).map(_.undoAction).toList ++ normalActions
+  protected def applicableActions: List[OperationAction] = LastUndoable.get(crudContext.stateHolder).map(_.undoAction).toList ++ normalActions
 
   protected lazy val normalOperationSetters: FieldList = {
     val setters = normalActions.map(action =>
@@ -409,7 +409,7 @@ class CrudActivity extends FragmentActivity with OptionsMenuActivity with Loader
   }
 
   // not a val because it is dynamic
-  protected def generateOptionsMenu: List[Action] =
+  protected def generateOptionsMenu: List[OperationAction] =
     applicableActions.filter(action => action.command.title.isDefined || action.command.icon.isDefined)
 
   // not a val because it is dynamic

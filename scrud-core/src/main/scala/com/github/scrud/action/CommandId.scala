@@ -9,6 +9,6 @@ import com.github.scrud.util.Name
  * @author Eric Pabst (epabst@gmail.com)
  * Date: 12/20/12
  * Time: 6:20 PM
- * @see [[com.github.scrud.action.Action]]
+ * @see [[com.github.scrud.action.OperationAction]]
  */
 case class CommandId(name: String) extends Name

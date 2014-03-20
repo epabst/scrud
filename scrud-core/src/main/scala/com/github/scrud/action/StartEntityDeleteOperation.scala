@@ -22,11 +22,12 @@ final case class StartEntityDeleteOperation(entityType: EntityType) extends Pers
       val writable = persistence.toWritable(Persistence.Latest, readable, requestContext)
       persistence.delete(uri)
       val undoDeleteOperation = new PersistenceOperation {
+        // make this stateless using a source and sourceType
         def invoke(uri: UriPath, persistenceConnection: PersistenceConnection, requestContext: RequestContext) {
           persistence.save(idOpt, writable)
         }
       }
-      requestContext.allowUndo(Undoable(Action(requestContext.platformDriver.commandToUndoDelete, undoDeleteOperation), None))
+      requestContext.allowUndo(Undoable(OperationAction(requestContext.platformDriver.commandToUndoDelete, undoDeleteOperation), None))
     }
   }
 }

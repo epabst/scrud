@@ -2,7 +2,7 @@ package com.github.scrud
 
 import _root_.android.R
 import action._
-import action.Action
+import action.OperationAction
 import action.Command
 import action.CommandId
 import action.CrudOperation
@@ -100,7 +100,7 @@ abstract class CrudApplication(val platformDriver: PlatformDriver) extends Persi
    * Gets the actions that a user can perform from a given CrudOperation.
    * May be overridden to modify the list of actions.
    */
-  def actionsFromCrudOperation(crudOperation: CrudOperation): Seq[Action] = (crudOperation match {
+  def actionsFromCrudOperation(crudOperation: CrudOperation): Seq[OperationAction] = (crudOperation match {
     case CrudOperation(entityName, CrudOperationType.Create) =>
       parentEntityNames(entityName).flatMap(actionsToManage(_)) ++ actionToDelete(entityName).toSeq
     case CrudOperation(entityName, CrudOperationType.Read) =>
@@ -112,7 +112,7 @@ abstract class CrudApplication(val platformDriver: PlatformDriver) extends Persi
       actionToDisplay(entityName).toSeq ++ parentEntityNames(entityName).flatMap(actionsToManage(_)) ++ actionToDelete(entityName).toSeq
   })
 
-  protected def actionsToUpdateAndListChildrenOfOnlyParentWithoutDisplayAction(entityName: EntityName): Seq[Action] = {
+  protected def actionsToUpdateAndListChildrenOfOnlyParentWithoutDisplayAction(entityName: EntityName): Seq[OperationAction] = {
     val thisEntity = entityType(entityName)
     (thisEntity.parentFields match {
       //exactly one parent w/o a display page
@@ -127,51 +127,51 @@ abstract class CrudApplication(val platformDriver: PlatformDriver) extends Persi
     })
   }
 
-  def actionsToManage(entityName: EntityName): Seq[Action] =
+  def actionsToManage(entityName: EntityName): Seq[OperationAction] =
     actionToCreate(entityName).toSeq.flatMap(_ +: actionToList(entityName).toSeq)
 
   /** Gets the action to display a UI for a user to fill in data for creating an entity.
     * The target Activity should copy Unit into the UI using entityType.copy to populate defaults.
     */
-  def actionToCreate(entityType: EntityType): Option[Action] = actionToCreate(entityType.entityName)
+  def actionToCreate(entityType: EntityType): Option[OperationAction] = actionToCreate(entityType.entityName)
 
   /** Gets the action to display a UI for a user to fill in data for creating an entity.
     * The target Activity should copy Unit into the UI using entityType.copy to populate defaults.
     */
-  def actionToCreate(entityName: EntityName): Option[Action] = {
+  def actionToCreate(entityName: EntityName): Option[OperationAction] = {
     if (isCreatable(entityName))
-      Some(Action(commandToAddItem(entityName), platformDriver.operationToShowCreateUI(entityName)))
+      Some(OperationAction(commandToAddItem(entityName), platformDriver.operationToShowCreateUI(entityName)))
     else
       None
   }
 
   /** Gets the action to display a UI for a user to edit data for an entity given its id in the UriPath. */
-  def actionToUpdate(entityType: EntityType): Option[Action] = actionToUpdate(entityType.entityName)
-  def actionToUpdate(entityName: EntityName): Option[Action] = {
-    if (isSavable(entityName)) Some(Action(commandToEditItem(entityName), platformDriver.operationToShowUpdateUI(entityName)))
+  def actionToUpdate(entityType: EntityType): Option[OperationAction] = actionToUpdate(entityType.entityName)
+  def actionToUpdate(entityName: EntityName): Option[OperationAction] = {
+    if (isSavable(entityName)) Some(OperationAction(commandToEditItem(entityName), platformDriver.operationToShowUpdateUI(entityName)))
     else None
   }
 
-  def actionToDelete(entityName: EntityName): Option[Action] = actionToDelete(entityType(entityName))
-  def actionToDelete(entityType: EntityType): Option[Action] = {
+  def actionToDelete(entityName: EntityName): Option[OperationAction] = actionToDelete(entityType(entityName))
+  def actionToDelete(entityType: EntityType): Option[OperationAction] = {
     if (isDeletable(entityType)) {
-      Some(Action(commandToDeleteItem(entityType.entityName), StartEntityDeleteOperation(entityType)))
+      Some(OperationAction(commandToDeleteItem(entityType.entityName), StartEntityDeleteOperation(entityType)))
     } else None
   }
 
   /** Gets the action to display the list that matches the criteria copied from criteriaSource using entityType.copy. */
-  def actionToList(entityType: EntityType): Option[Action] = actionToList(entityType.entityName)
+  def actionToList(entityType: EntityType): Option[OperationAction] = actionToList(entityType.entityName)
   /** Gets the action to display the list that matches the criteria copied from criteriaSource using entityType.copy. */
-  def actionToList(entityName: EntityName): Option[Action] =
-    Some(Action(commandToListItems(entityName), platformDriver.operationToShowListUI(entityName)))
+  def actionToList(entityName: EntityName): Option[OperationAction] =
+    Some(OperationAction(commandToListItems(entityName), platformDriver.operationToShowListUI(entityName)))
 
   /** Gets the action to display the entity given the id in the UriPath. */
-  def actionToDisplay(entityType: EntityType): Option[Action] = actionToDisplay(entityType.entityName)
+  def actionToDisplay(entityType: EntityType): Option[OperationAction] = actionToDisplay(entityType.entityName)
 
   /** Gets the action to display the entity given the id in the UriPath. */
-  def actionToDisplay(entityName: EntityName): Option[Action] = {
+  def actionToDisplay(entityName: EntityName): Option[OperationAction] = {
     if (hasDisplayPage(entityName)) {
-      Some(Action(commandToDisplayItem(entityName), platformDriver.operationToShowDisplayUI(entityName)))
+      Some(OperationAction(commandToDisplayItem(entityName), platformDriver.operationToShowDisplayUI(entityName)))
     } else None
   }
 

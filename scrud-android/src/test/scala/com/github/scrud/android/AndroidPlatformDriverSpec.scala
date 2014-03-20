@@ -11,7 +11,7 @@ import res.R
 import com.github.scrud.android.view.{EntityView, EnumerationView, ViewField}
 import com.github.scrud.types._
 import com.github.scrud.EntityName
-import com.github.scrud.action.Action
+import com.github.scrud.action.OperationAction
 import com.github.scrud.platform.PlatformDriverContractSpec
 
 /** A test for [[com.github.scrud.android.AndroidPlatformDriver]].
@@ -31,10 +31,10 @@ class AndroidPlatformDriverSpec extends PlatformDriverContractSpec with CrudMock
 
   protected def makePlatformDriver() = driver
 
-  val Action(_, createOperation: StartActivityOperation) = application.actionToCreate(EntityTypeForTesting).get
-  val Action(_, listOperation: StartActivityOperation) = application.actionToList(EntityTypeForTesting).get
-  val Action(_, displayOperation: StartActivityOperation) = application.actionToDisplay(EntityTypeForTesting).get
-  val Action(_, updateOperation: StartActivityOperation) = application.actionToUpdate(EntityTypeForTesting).get
+  val OperationAction(_, createOperation: StartActivityOperation) = application.actionToCreate(EntityTypeForTesting).get
+  val OperationAction(_, listOperation: StartActivityOperation) = application.actionToList(EntityTypeForTesting).get
+  val OperationAction(_, displayOperation: StartActivityOperation) = application.actionToDisplay(EntityTypeForTesting).get
+  val OperationAction(_, updateOperation: StartActivityOperation) = application.actionToUpdate(EntityTypeForTesting).get
 
   @Test
   def createActionShouldHaveTheRightUri() {

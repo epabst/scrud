@@ -5,6 +5,7 @@ import com.github.scrud.context.RequestContext
 
 /**
  * Represents an operation that a user can initiate.
+ * It should be totally stateless.
  * @author Eric Pabst (epabst@gmail.com)
  * Date: 10/29/12
  * Time: 3:32 PM

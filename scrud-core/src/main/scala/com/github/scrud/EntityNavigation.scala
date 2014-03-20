@@ -3,7 +3,7 @@ package com.github.scrud
 import com.github.scrud.platform.PlatformDriver
 import com.github.scrud.persistence.EntityTypeMap
 import com.github.scrud.context.ApplicationName
-import com.github.scrud.action.{CrudOperationType, CrudOperation, StartEntityDeleteOperation, Action}
+import com.github.scrud.action.{CrudOperationType, CrudOperation, StartEntityDeleteOperation, OperationAction}
 import CrudOperationType._
 
 /**
@@ -28,13 +28,13 @@ class EntityNavigation(val applicationName: ApplicationName, val entityTypeMap: 
    * May be overridden to adjust as needed.
    */
   //todo this should have a better default of which entities are useful to list as top-level entities.
-  def topLevelActions: Seq[Action] = actionsToList(primaryEntityType.entityName)
+  def topLevelActions: Seq[OperationAction] = actionsToList(primaryEntityType.entityName)
 
   /**
    * Gets the actions that a user can perform from a given CrudOperation.
    * May be overridden to adjust the list of actions.
    */
-  def actionsFromCrudOperation(crudOperation: CrudOperation): Seq[Action] = crudOperation match {
+  def actionsFromCrudOperation(crudOperation: CrudOperation): Seq[OperationAction] = crudOperation match {
     case CrudOperation(entityName, Create) =>
       entityTypeMap.upstreamEntityNames(entityName).flatMap(actionsToManageList(_)) ++ actionsToDelete(entityName)
     case CrudOperation(entityName, Read) =>
@@ -47,7 +47,7 @@ class EntityNavigation(val applicationName: ApplicationName, val entityTypeMap: 
           actionsToDelete(entityName)
   }
 
-  protected def actionsToUpdateAndListDownstreamsOfOnlyUpstreamWithoutDisplayAction(entityName: EntityName): Seq[Action] = {
+  protected def actionsToUpdateAndListDownstreamsOfOnlyUpstreamWithoutDisplayAction(entityName: EntityName): Seq[OperationAction] = {
 //    val thisEntity = entityTypeMap.entityType(entityName)
 //    thisEntity.upstreamFields match {
 //      //exactly one upstream w/o a display page
@@ -63,7 +63,7 @@ class EntityNavigation(val applicationName: ApplicationName, val entityTypeMap: 
 //    }
   }
 
-  def actionsToManageList(entityName: EntityName): Seq[Action] = {
+  def actionsToManageList(entityName: EntityName): Seq[OperationAction] = {
     val createActions = actionsToCreate(entityName)
     if (!createActions.isEmpty) {
       createActions ++ actionsToList(entityName)
@@ -73,16 +73,16 @@ class EntityNavigation(val applicationName: ApplicationName, val entityTypeMap: 
   }
 
   /** Gets the action(s) to display the list that matches the criteria copied from criteriaSource using entityType.copy. */
-  def actionsToList(entityName: EntityName): Seq[Action] =
-    Seq(Action(platformDriver.commandToListItems(entityName), platformDriver.operationToShowListUI(entityName)))
+  def actionsToList(entityName: EntityName): Seq[OperationAction] =
+    Seq(OperationAction(platformDriver.commandToListItems(entityName), platformDriver.operationToShowListUI(entityName)))
 
   /** Return true if the entity may be displayed in a mode that is distinct from editing. */
   protected def isDisplayableWithoutEditing(entityName: EntityName): Boolean = false
 
   /** Gets the actions to display the entity given the id in the UriPath. */
-  def actionsToDisplay(entityName: EntityName): Seq[Action] = {
+  def actionsToDisplay(entityName: EntityName): Seq[OperationAction] = {
     if (isDisplayableWithoutEditing(entityName)) {
-      Seq(Action(platformDriver.commandToDisplayItem(entityName), platformDriver.operationToShowDisplayUI(entityName)))
+      Seq(OperationAction(platformDriver.commandToDisplayItem(entityName), platformDriver.operationToShowDisplayUI(entityName)))
     } else {
       Nil
     }
@@ -91,26 +91,26 @@ class EntityNavigation(val applicationName: ApplicationName, val entityTypeMap: 
   /** Gets the action to display a UI for a user to fill in data for creating an entity.
     * The target Activity should copy Unit into the UI using entityType.copy to populate defaults.
     */
-  def actionsToCreate(entityName: EntityName): Seq[Action] = {
+  def actionsToCreate(entityName: EntityName): Seq[OperationAction] = {
     if (entityTypeMap.isCreatable(entityName)) {
-      Seq(Action(platformDriver.commandToAddItem(entityName), platformDriver.operationToShowCreateUI(entityName)))
+      Seq(OperationAction(platformDriver.commandToAddItem(entityName), platformDriver.operationToShowCreateUI(entityName)))
     } else {
       Nil
     }
   }
 
   /** Gets the action to display a UI for a user to edit data for an entity given its id in the UriPath. */
-  def actionsToUpdate(entityName: EntityName): Seq[Action] = {
+  def actionsToUpdate(entityName: EntityName): Seq[OperationAction] = {
     if (entityTypeMap.isSavable(entityName)) {
-      Seq(Action(platformDriver.commandToEditItem(entityName), platformDriver.operationToShowUpdateUI(entityName)))
+      Seq(OperationAction(platformDriver.commandToEditItem(entityName), platformDriver.operationToShowUpdateUI(entityName)))
     } else {
       Nil
     }
   }
 
-  def actionsToDelete(entityName: EntityName): Seq[Action] = {
+  def actionsToDelete(entityName: EntityName): Seq[OperationAction] = {
     if (entityTypeMap.isDeletable(entityName)) {
-      Seq(Action(platformDriver.commandToDeleteItem(entityName), StartEntityDeleteOperation(entityTypeMap.entityType(entityName))))
+      Seq(OperationAction(platformDriver.commandToDeleteItem(entityName), StartEntityDeleteOperation(entityTypeMap.entityType(entityName))))
     } else {
       Nil
     }
