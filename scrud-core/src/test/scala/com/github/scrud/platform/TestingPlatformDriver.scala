@@ -4,7 +4,7 @@ import com.github.scrud.persistence.ListBufferPersistenceFactoryForTesting
 import com.github.scrud.action.CrudOperationType._
 import com.github.scrud.types.QualifiedType
 import com.github.scrud.EntityName
-import com.github.scrud.action.CommandId
+import com.github.scrud.action.CommandKey
 import com.github.scrud.action.Command
 import com.github.scrud.util.Name
 import com.netaporter.uri.Uri
@@ -33,15 +33,15 @@ class TestingPlatformDriver extends PlatformDriver {
 
   def idFieldName(entityName: EntityName): String = "id"
 
-  def commandToAddItem(entityName: EntityName) = Command(CommandId("Add"), None, None)
+  def commandToAddItem(entityName: EntityName) = Command(CommandKey("Add"), None, None)
 
-  def commandToDeleteItem(entityName: EntityName) = Command(CommandId("Delete"), None, None)
+  def commandToDeleteItem(entityName: EntityName) = Command(CommandKey("Delete"), None, None)
 
-  def commandToDisplayItem(entityName: EntityName) = Command(CommandId("View"), None, None)
+  def commandToDisplayItem(entityName: EntityName) = Command(CommandKey("View"), None, None)
 
-  def commandToEditItem(entityName: EntityName) = Command(CommandId("Edit"), None, None)
+  def commandToEditItem(entityName: EntityName) = Command(CommandKey("Edit"), None, None)
 
-  def commandToListItems(entityName: EntityName) = Command(CommandId("List"), None, None)
+  def commandToListItems(entityName: EntityName) = Command(CommandKey("List"), None, None)
 
   /** An Operation that will show the UI to the user for creating an entity instance. */
   def operationToShowCreateUI(entityName: EntityName) =
@@ -60,7 +60,7 @@ class TestingPlatformDriver extends PlatformDriver {
     CrudOperationForTesting(entityName, Update)
 
   /** The command to undo the last delete. */
-  def commandToUndoDelete = Command(CommandId("command1"), None, None)
+  def commandToUndoDelete = Command(CommandKey("command1"), None, None)
 
   val platformSpecificFieldFactories = Seq(MapStorageAdaptableFieldFactory, PersistenceFieldFactory)
 }

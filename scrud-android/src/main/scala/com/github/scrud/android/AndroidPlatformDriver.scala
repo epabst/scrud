@@ -14,7 +14,7 @@ import com.github.scrud.copy._
 import com.github.scrud.EntityName
 import com.github.scrud.android.action.StartEntityActivityOperation
 import com.github.scrud.android.view.EnumerationView
-import com.github.scrud.action.CommandId
+import com.github.scrud.action.CommandKey
 import scala.Some
 import com.github.scrud.android.action.StartEntityIdActivityOperation
 import com.github.scrud.types.EnumerationValueQT
@@ -55,7 +55,7 @@ class AndroidPlatformDriver(rClass: Class[_], val activityClass: Class[_ <: Crud
     new StartEntityIdActivityOperation(entityName, UpdateActionName, activityClass)
 
   /** The command to undo the last delete. */
-  lazy val commandToUndoDelete = Command(CommandId("undo_delete"), None, Some(res.R.string.undo_delete))
+  lazy val commandToUndoDelete = Command(CommandKey("undo_delete"), None, Some(res.R.string.undo_delete))
 
   /** A PortableField for modifying a named portion of a View. */
   def namedViewField[T](fieldName: String, childViewField: PortableField[T], entityName: EntityName): PortableField[T] = {
