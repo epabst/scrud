@@ -1,6 +1,6 @@
 package com.github.scrud.copy
 
-import com.github.scrud.context.RequestContext
+import com.github.scrud.context.CommandContext
 
 /**
  * A field that can be get a value out of a source.
@@ -10,10 +10,10 @@ import com.github.scrud.context.RequestContext
  */
 trait TypedSourceField[D <: AnyRef,V] extends SourceField[V] {
   /** Get some value or None from the given source. */
-  def findFieldValue(sourceData: D, context: RequestContext): Option[V]
+  def findFieldValue(sourceData: D, context: CommandContext): Option[V]
 
   /** Get some value or None from the given source. */
-  final def findValue(sourceData: AnyRef, context: RequestContext) = findFieldValue(sourceData.asInstanceOf[D], context)
+  final def findValue(sourceData: AnyRef, context: CommandContext) = findFieldValue(sourceData.asInstanceOf[D], context)
 }
 
 object TypedSourceField {
@@ -21,7 +21,7 @@ object TypedSourceField {
     val _findValue = findValue
     new TypedSourceField[D,V] {
       /** Get some value or None from the given source. */
-      def findFieldValue(sourceData: D, context: RequestContext) = _findValue(sourceData)
+      def findFieldValue(sourceData: D, context: CommandContext) = _findValue(sourceData)
 
       override def toString = super.toString + "[" + manifest + "]"
     }

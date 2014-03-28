@@ -1,6 +1,6 @@
 package com.github.scrud.copy
 
-import com.github.scrud.context.RequestContext
+import com.github.scrud.context.CommandContext
 
 /**
  * A field that can copy into a target.
@@ -12,10 +12,10 @@ import com.github.scrud.context.RequestContext
  */
 abstract class TypedTargetField[D <: AnyRef,V] extends TargetField[V] {
   /** Updates the {{{target}}} subject using the {{{valueOpt}}} for this field and some context. */
-  def updateFieldValue(target: D, valueOpt: Option[V], context: RequestContext): D
+  def updateFieldValue(target: D, valueOpt: Option[V], context: CommandContext): D
 
   /** Updates the {{{target}}} subject using the {{{valueOpt}}} for this field and some context. */
-  final def updateValue[T](target: T, valueOpt: Option[V], context: RequestContext): T = {
+  final def updateValue[T](target: T, valueOpt: Option[V], context: CommandContext): T = {
     updateFieldValue(target.asInstanceOf[D], valueOpt, context).asInstanceOf[T]
   }
 }

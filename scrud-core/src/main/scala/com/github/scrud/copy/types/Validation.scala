@@ -1,7 +1,7 @@
 package com.github.scrud.copy.types
 
 import com.github.scrud.copy._
-import com.github.scrud.context.RequestContext
+import com.github.scrud.context.CommandContext
 
 /**
  * A field for validating data.  It updates a ValidationResult by checking a value.
@@ -9,7 +9,7 @@ import com.github.scrud.context.RequestContext
  */
 class Validation[V](f: Option[V] => Boolean) extends TypedTargetField[ValidationResult,V] with AdaptableFieldConvertible[V] with Representation[V] {
   /** Updates the {{{target}}} subject using the {{{valueOpt}}} for this field and some context. */
-  def updateFieldValue(target: ValidationResult, valueOpt: Option[V], context: RequestContext) = {
+  def updateFieldValue(target: ValidationResult, valueOpt: Option[V], context: CommandContext) = {
     target + isValid(valueOpt)
   }
 

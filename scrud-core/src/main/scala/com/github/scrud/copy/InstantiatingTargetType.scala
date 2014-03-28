@@ -1,6 +1,6 @@
 package com.github.scrud.copy
 
-import com.github.scrud.context.RequestContext
+import com.github.scrud.context.CommandContext
 
 /**
  * A TargetType that knows how to instantiate a target instance.
@@ -9,5 +9,5 @@ import com.github.scrud.context.RequestContext
  *         Time: 7:51 AM
  */
 trait InstantiatingTargetType[T <: AnyRef] extends TargetType {
-  def makeTarget(requestContext: RequestContext): T
+  def makeTarget(commandContext: CommandContext): T
 }

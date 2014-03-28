@@ -7,13 +7,13 @@ import com.github.scrud.platform.PlatformTypes
 import com.github.scrud.action.CrudOperationType.CrudOperationType
 
 /**
- * A simple implementation of a RequestContext.
+ * A simple implementation of a CommandContext.
  * @author Eric Pabst (epabst@gmail.com)
  *         Date: 1/28/14
  *         Time: 2:10 PM
  */
-case class SimpleRequestContext(operationType: CrudOperationType, uri: UriPath, sharedContext: SharedContext,
-                                entityNavigation: EntityNavigation) extends RequestContext {
+case class SimpleCommandContext(operationType: CrudOperationType, uri: UriPath, sharedContext: SharedContext,
+                                entityNavigation: EntityNavigation) extends CommandContext {
   override def withUri(uri: UriPath) = copy(uri = uri)
 
   val stateHolder = new SimpleStateHolder

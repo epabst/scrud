@@ -7,7 +7,7 @@ import com.github.scrud.persistence.{PersistenceConnection, EntityTypeMap, DataL
 import com.github.scrud.platform.PlatformDriver
 
 /**
- * The context that is shared among all [[com.github.scrud.context.RequestContext]]s.
+ * The context that is shared among all [[com.github.scrud.context.CommandContext]]s.
  * Some examples are:<ul>
  *   <li>A Servlet Context</li>
  *   <li>A running Android Application</li>
@@ -23,7 +23,7 @@ trait SharedContext extends StateHolder {
 
   val applicationState: State = new State
 
-  lazy val asStubRequestContext: StubRequestContext = new StubRequestContext(this)
+  lazy val asStubCommandContext: StubCommandContext = new StubCommandContext(this)
 
   def dataListenerHolder(entityName: EntityName): ListenerHolder[DataListener] =
     dataListenerHolder(entityTypeMap.entityType(entityName))

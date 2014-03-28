@@ -15,7 +15,7 @@ class AuthorEntityType(platformDriver: PlatformDriver) extends EntityType(Author
   val nameField = field("name", TitleQT, Seq(Persistence(1), EditUI, SelectUI, Validation.requiredString))
 
   val bookCount = field("bookCount", NaturalIntQT, Seq(SummaryUI,
-    Calculation { requestContext => Some(requestContext.findAll(Book).size) }))
+    Calculation { commandContext => Some(commandContext.findAll(Book).size) }))
 
   // This is here to demo deriving a field value from another field.
   field("bookCountNeededForPopularity", NaturalIntQT, Seq(DetailUI,

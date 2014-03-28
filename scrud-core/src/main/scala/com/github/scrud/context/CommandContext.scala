@@ -11,7 +11,7 @@ import com.github.scrud.copy.{InstantiatingTargetType, SourceType}
 import com.github.scrud.platform.representation.Persistence
 
 /**
- * The context for a given interaction or request/response.
+ * The context for a given interaction or command/response.
  * Some examples are:<ul>
  *   <li>An HTTP request/response</li>
  *   <li>An Android Fragment (or simple Activity)</li>
@@ -21,7 +21,7 @@ import com.github.scrud.platform.representation.Persistence
  *         Date: 12/10/13
  *         Time: 3:25 PM
  */
-trait RequestContext {
+trait CommandContext {
   @deprecated("this should be in the Command and passed to the Action", since = "2014-03-19")
   def operationType: CrudOperationType
 
@@ -31,7 +31,7 @@ trait RequestContext {
   def sharedContext: SharedContext
 
   @deprecated("this should be in the Command and passed to the Action", since = "2014-03-19")
-  def withUri(uri: UriPath): RequestContext
+  def withUri(uri: UriPath): CommandContext
 
   def entityTypeMap: EntityTypeMap = sharedContext.entityTypeMap
 
@@ -47,20 +47,20 @@ trait RequestContext {
     persistenceConnection
   }
 
-  /** Find using this RequestContext's URI. */
+  /** Find using this CommandContext's URI. */
   def find[V](entityName: EntityName, field: FieldDeclaration[V]): Option[V] =
     persistenceConnection.persistenceFor(entityName).find(uri).flatMap { entity =>
       field.toAdaptableField.sourceField(Persistence.Latest).findValue(entity, this)
     }
 
-  /** Find using this RequestContext's URI. */
+  /** Find using this CommandContext's URI. */
   def find[T <: AnyRef](entityName: EntityName, targetType: InstantiatingTargetType[T]): Option[T] =
     persistenceConnection.persistenceFor(entityName).find(uri, targetType, this)
 
-  /** Find using this RequestContext's URI. */
+  /** Find using this CommandContext's URI. */
   def findAll(entityName: EntityName): Seq[AnyRef] = persistenceConnection.persistenceFor(entityName).findAll(uri)
 
-  /** Find using this RequestContext's URI. */
+  /** Find using this CommandContext's URI. */
   def findAll[T <: AnyRef](entityName: EntityName, targetType: InstantiatingTargetType[T]): Seq[T] =
     persistenceConnection.persistenceFor(entityName).findAll[T](uri, targetType, this)
 

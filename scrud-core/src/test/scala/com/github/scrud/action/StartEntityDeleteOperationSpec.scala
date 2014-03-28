@@ -7,7 +7,7 @@ import com.github.scrud.{EntityNavigationForTesting, EntityTypeForTesting, UriPa
 import com.github.scrud.util.CrudMockitoSugar
 import com.github.scrud.platform.TestingPlatformDriver
 import org.scalatest.matchers.MustMatchers
-import com.github.scrud.context.RequestContextForTesting
+import com.github.scrud.context.CommandContextForTesting
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import com.github.scrud.copy.types.MapStorage
@@ -33,14 +33,14 @@ class StartEntityDeleteOperationSpec extends FunSpec with CrudMockitoSugar with 
     var allowUndoCalled = false
     val persistenceFactory = new PersistenceFactoryForTesting(entity, persistence)
     val entityTypeMap = EntityTypeMapForTesting(persistenceFactory)
-    val requestContext = new RequestContextForTesting(entityTypeMap) {
+    val commandContext = new CommandContextForTesting(entityTypeMap) {
       override def allowUndo(undoable: Undoable) {
         allowUndoCalled = true
         undoable.closeOperation.foreach(_.invoke(uri, this))
       }
     }
     val actionToDelete = new EntityNavigationForTesting(entityTypeMap).actionsToDelete(entityName).head
-    actionToDelete.invoke(uri, requestContext)
+    actionToDelete.invoke(uri, commandContext)
     verify(persistence).delete(uri)
     allowUndoCalled must be (true)
   }
@@ -55,13 +55,13 @@ class StartEntityDeleteOperationSpec extends FunSpec with CrudMockitoSugar with 
     stub(thinPersistence.newWritable()).toReturn(new MapStorage)
     val persistenceFactory = new PersistenceFactoryForTesting(entity, thinPersistence)
     val entityTypeMap = EntityTypeMapForTesting(persistenceFactory)
-    val requestContext = new RequestContextForTesting(entityTypeMap) {
+    val commandContext = new CommandContextForTesting(entityTypeMap) {
       override def allowUndo(undoable: Undoable) {
         undoable.undoAction.invoke(uri, this)
       }
     }
     val operation = new StartEntityDeleteOperation(entity)
-    operation.invoke(uri, new PersistenceConnection(entityTypeMap, requestContext.sharedContext), requestContext)
+    operation.invoke(uri, new PersistenceConnection(entityTypeMap, commandContext.sharedContext), commandContext)
     verify(thinPersistence).delete(uri)
     verify(thinPersistence).save(Some(345L), new MapStorage(entityName, entity.idFieldName -> Some(345L), "name" -> Some("George")))
   }

@@ -1,7 +1,7 @@
 package com.github.scrud.action
 
 import com.github.scrud.UriPath
-import com.github.scrud.context.RequestContext
+import com.github.scrud.context.CommandContext
 
 /**
  * Represents an operation that a user can initiate.
@@ -11,18 +11,18 @@ import com.github.scrud.context.RequestContext
  * Time: 3:32 PM
  */
 trait Operation { self =>
-  /** Runs the operation, given the uri and the current RequestContext. */
-  def invoke(uri: UriPath, requestContext: RequestContext)
+  /** Runs the operation, given the uri and the current CommandContext. */
+  def invoke(uri: UriPath, commandContext: CommandContext)
 
   /**
    * Creates a new Operation that wraps this Operation and does an additional operation.
    * It is patterned after [[scala.Function1.andThen]].
    */
   def andThen(nextOperation: Operation): Operation = new Operation {
-    /** Runs the operation, given the uri and the current RequestContext. */
-    def invoke(uri: UriPath, requestContext: RequestContext) {
-      self.invoke(uri, requestContext)
-      nextOperation.invoke(uri, requestContext)
+    /** Runs the operation, given the uri and the current CommandContext. */
+    def invoke(uri: UriPath, commandContext: CommandContext) {
+      self.invoke(uri, commandContext)
+      nextOperation.invoke(uri, commandContext)
     }
   }
 }

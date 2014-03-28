@@ -1,7 +1,7 @@
 package com.github.scrud.copy.types
 
 import com.github.scrud.copy._
-import com.github.scrud.context.RequestContext
+import com.github.scrud.context.CommandContext
 
 /**
  * A GeneratedField that specifies a value.
@@ -11,7 +11,7 @@ import com.github.scrud.context.RequestContext
  */
 case class Default[V](valueOpt: Option[V]) extends Calculation[V] {
   /** Get some value or None from the given source. */
-  def calculate(context: RequestContext) = valueOpt
+  def calculate(context: CommandContext) = valueOpt
 }
 
 object Default {

@@ -5,7 +5,7 @@ import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 import com.github.scrud.EntityTypeForTesting
 import com.github.scrud.copy.types.MapStorage
-import com.github.scrud.context.RequestContextForTesting
+import com.github.scrud.context.CommandContextForTesting
 
 /**
  * A behavior specification for [[com.github.scrud.platform.representation.ModelGetter]]. 
@@ -19,9 +19,9 @@ class ModelGetterSpec extends FunSpec with MustMatchers {
     val entityType = new EntityTypeForTesting {
       override protected def idFieldRepresentations = ModelGetter((person: Person) => person.myId) +: super.idFieldRepresentations
     }
-    val requestContext = new RequestContextForTesting(entityType)
+    val commandContext = new CommandContextForTesting(entityType)
     val adaptedFields = entityType.adapt(EntityModel[Person], MapStorage)
-    val copiedIdOpt = adaptedFields.copyAndUpdate(Person(Some(500L)), new MapStorage(), requestContext).get(entityType.id)
+    val copiedIdOpt = adaptedFields.copyAndUpdate(Person(Some(500L)), new MapStorage(), commandContext).get(entityType.id)
     copiedIdOpt must be (Some(500L))
   }
   
@@ -29,10 +29,10 @@ class ModelGetterSpec extends FunSpec with MustMatchers {
     val entityType = new EntityTypeForTesting {
       override protected def idFieldRepresentations = ModelGetter((person: Person) => person.myId) +: super.idFieldRepresentations
     }
-    val requestContext = new RequestContextForTesting(entityType)
+    val commandContext = new CommandContextForTesting(entityType)
     val adaptedFields = entityType.adapt(MapStorage, MapStorage)
     // must not throw an exception
-    adaptedFields.copyAndUpdate(new MapStorage(), new MapStorage(), requestContext).get(entityType.id)
+    adaptedFields.copyAndUpdate(new MapStorage(), new MapStorage(), commandContext).get(entityType.id)
   }
 
   case class Person(myId: Option[Long])

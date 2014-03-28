@@ -6,14 +6,14 @@ import com.github.scrud.platform.{TestingPlatformDriver, PlatformDriver}
 import com.github.scrud.action.CrudOperationType._
 
 /**
- * A RequestContext to use during testing.
+ * A CommandContext to use during testing.
  * @author Eric Pabst (epabst@gmail.com)
  *         Date: 1/28/14
  *         Time: 4:18 PM
  */
-class RequestContextForTesting(operationType: CrudOperationType, uri: UriPath, sharedContext: SharedContext,
+class CommandContextForTesting(operationType: CrudOperationType, uri: UriPath, sharedContext: SharedContext,
                                entityNavigation: EntityNavigation)
-    extends SimpleRequestContext(operationType, uri, sharedContext, entityNavigation) {
+    extends SimpleCommandContext(operationType, uri, sharedContext, entityNavigation) {
   def this(entityTypeMap: EntityTypeMap, platformDriver: PlatformDriver) {
     this(Read, UriPath.EMPTY, new SimpleSharedContext(entityTypeMap, platformDriver),
       new EntityNavigation(ApplicationNameForTesting, entityTypeMap, platformDriver))

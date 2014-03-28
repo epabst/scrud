@@ -12,7 +12,7 @@ import CrudOperationType._
  * However, when custom navigation is desired, override methods as needed.
  * Ideally each subclass won't assume the platform (e.g. android) so that it can be re-used for multiple platforms.
  * <p>No state should be stored in an instance.
- * Instead, put state into [[com.github.scrud.context.RequestContext]] and/or [[com.github.scrud.context.SharedContext]].
+ * Instead, put state into [[com.github.scrud.context.CommandContext]] and/or [[com.github.scrud.context.SharedContext]].
  * </p>
  * @author Eric Pabst (epabst@gmail.com)
  *         Date: 1/25/14

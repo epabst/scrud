@@ -1,6 +1,6 @@
 package com.github.scrud.copy
 
-import com.github.scrud.context.RequestContext
+import com.github.scrud.context.CommandContext
 
 /**
  * A base class for an AdaptedField which doesn't know which value type it contains.
@@ -13,5 +13,5 @@ abstract class BaseAdaptedField {
 
   def targetField: TargetField[Nothing]
 
-  def copyAndUpdate[T <: AnyRef](source: AnyRef, target: T, requestContext: RequestContext): T
+  def copyAndUpdate[T <: AnyRef](source: AnyRef, target: T, commandContext: CommandContext): T
 }

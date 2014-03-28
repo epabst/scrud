@@ -1,6 +1,6 @@
 package com.github.scrud.action
 
-import com.github.scrud.context.RequestContext
+import com.github.scrud.context.CommandContext
 
 /**
  * An action, usually invoked by a user.
@@ -10,5 +10,5 @@ import com.github.scrud.context.RequestContext
  *         Time: 7:30 PM
  */
 abstract class Action(commandKey: CommandKey) {
-  def invoke(requestedCommand: Command, requestContext: RequestContext): Response
+  def invoke(requestedCommand: Command, commandContext: CommandContext): Response
 }

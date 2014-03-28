@@ -2,7 +2,7 @@ package com.github.scrud.platform
 
 import com.github.scrud.{UriPath, EntityName}
 import com.github.scrud.action.Operation
-import com.github.scrud.context.RequestContext
+import com.github.scrud.context.CommandContext
 import com.github.scrud.action.CrudOperationType.CrudOperationType
 
 /**
@@ -12,8 +12,8 @@ import com.github.scrud.action.CrudOperationType.CrudOperationType
  *         Time: 11:47 PM
  */
 case class CrudOperationForTesting(entityName: EntityName, operationType: CrudOperationType) extends Operation {
-  /** Runs the operation, given the uri and the current RequestContext. */
-  def invoke(uri: UriPath, requestContext: RequestContext) {
+  /** Runs the operation, given the uri and the current CommandContext. */
+  def invoke(uri: UriPath, commandContext: CommandContext) {
     println("Running Crud Operation: entityName=" + entityName + " operation=" + operationType)
   }
 }

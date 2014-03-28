@@ -5,7 +5,7 @@ import com.github.scrud.{EntityType, EntityName, EntityTypeForTesting}
 import com.github.scrud.platform.representation.{SummaryUI, EditUI, Persistence}
 import com.github.scrud.types.TitleQT
 import com.github.scrud.persistence.{PersistenceFactory, ListBufferPersistenceFactoryForTesting, EntityTypeMapForTesting}
-import com.github.scrud.context.RequestContextForTesting
+import com.github.scrud.context.CommandContextForTesting
 import com.github.scrud.copy.types.MapStorage
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
@@ -26,11 +26,11 @@ class IndirectSpec extends FunSpec with MustMatchers {
       val authorName = field("author.name", TitleQT, Seq(SummaryUI, Indirect[AuthorType.type,String](author, _.Name)))
     }
     val entityTypeMap = EntityTypeMapForTesting(Map[EntityType,PersistenceFactory](AuthorType -> ListBufferPersistenceFactoryForTesting, BookType -> ListBufferPersistenceFactoryForTesting))
-    val requestContext = new RequestContextForTesting(entityTypeMap)
-    val authorId = requestContext.save(AuthorType.entityName, MapStorage, None, new MapStorage(AuthorType.Name -> Some("Fred")))
-    val bookId = requestContext.save(BookType.entityName, MapStorage, None, new MapStorage(BookType.author -> Some(authorId)))
+    val commandContext = new CommandContextForTesting(entityTypeMap)
+    val authorId = commandContext.save(AuthorType.entityName, MapStorage, None, new MapStorage(AuthorType.Name -> Some("Fred")))
+    val bookId = commandContext.save(BookType.entityName, MapStorage, None, new MapStorage(BookType.author -> Some(authorId)))
 
-    val book = requestContext.withUri(BookType.entityName.toUri(bookId)).find(BookType.entityName, MapStorage).get
+    val book = commandContext.withUri(BookType.entityName.toUri(bookId)).find(BookType.entityName, MapStorage).get
     book.get(BookType.authorName) must be (Some("Fred"))
   }
 }

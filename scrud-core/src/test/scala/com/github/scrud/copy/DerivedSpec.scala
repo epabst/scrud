@@ -6,7 +6,7 @@ import com.github.scrud.types.{TitleQT, NaturalIntQT}
 import com.github.scrud.copy.types.MapStorage
 import com.github.scrud.platform.representation.DetailUI
 import java.util.{Date, Calendar, GregorianCalendar}
-import com.github.scrud.context.RequestContextForTesting
+import com.github.scrud.context.CommandContextForTesting
 import com.github.scrud.persistence.{PersistenceFactory, ListBufferPersistenceFactoryForTesting, EntityTypeMapForTesting}
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
@@ -42,11 +42,11 @@ class DerivedSpec extends FunSpec with MustMatchers {
       }))
     }
     val entityName = entityType.entityName
-    val requestContext = new RequestContextForTesting(EntityTypeMapForTesting(Map[EntityType,PersistenceFactory](
+    val commandContext = new CommandContextForTesting(EntityTypeMapForTesting(Map[EntityType,PersistenceFactory](
       entityType -> ListBufferPersistenceFactoryForTesting)))
-    val id = requestContext.save(entityName, MapStorage, None, new MapStorage(
+    val id = commandContext.save(entityName, MapStorage, None, new MapStorage(
       entityType.Name -> Some("George"), entityType.BirthDate -> Some(new Date())))
-    val result = requestContext.withUri(entityName.toUri(id)).find(entityName, MapStorage).get
+    val result = commandContext.withUri(entityName.toUri(id)).find(entityName, MapStorage).get
     result.get(entityType.Nickname2) must be (Some("George0George0"))
   }
 }

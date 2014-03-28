@@ -8,7 +8,7 @@ import com.github.scrud.{UriPath, EntityNavigation}
 import com.github.scrud.action.{OperationAction, CrudOperationType, CrudOperation}
 import com.github.scrud.context._
 import com.github.scrud.action.OperationAction
-import com.github.scrud.context.SimpleRequestContext
+import com.github.scrud.context.SimpleCommandContext
 import com.github.scrud.platform.CrudOperationForTesting
 
 /**
@@ -30,8 +30,8 @@ class ScrudExamplesSpec extends FunSpec with MustMatchers {
       topLevelActions must be (Seq(CrudOperationForTesting(Author, CrudOperationType.List)))
 
       var action = topLevelActions.head
-      action.invoke(UriPath.EMPTY, new InitialRequestContext(sharedContext, entityNavigation))
-      new SimpleRequestContext(action.enhead)
+      action.invoke(UriPath.EMPTY, new InitialCommandContext(sharedContext, entityNavigation))
+      new SimpleCommandContext(action.enhead)
     }
   }
 }

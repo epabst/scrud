@@ -1,7 +1,7 @@
 package com.github.scrud.copy
 
 import com.github.scrud.{BaseFieldDeclaration, FieldDeclaration}
-import com.github.scrud.context.RequestContext
+import com.github.scrud.context.CommandContext
 
 /**
  * A [[Representation]] that is derived from other fields.
@@ -57,7 +57,7 @@ object Derived {
   private class DerivedSourceField1[V,V1](field1: SourceField[V1])
                                          (derive: Option[V1] => Option[V]) extends SourceField[V] {
     /** Get some value or None from the given source. */
-    override def findValue(source: AnyRef, context: RequestContext) = {
+    override def findValue(source: AnyRef, context: CommandContext) = {
       val valueOpt1 = field1.findValue(source, context)
       derive.apply(valueOpt1)
     }
@@ -66,7 +66,7 @@ object Derived {
   private class DerivedSourceField2[V,V1,V2](field1: SourceField[V1], field2: SourceField[V2])
                                             (derive: (Option[V1],Option[V2]) => Option[V]) extends SourceField[V] {
     /** Get some value or None from the given source. */
-    override def findValue(source: AnyRef, context: RequestContext) = {
+    override def findValue(source: AnyRef, context: CommandContext) = {
       val valueOpt1 = field1.findValue(source, context)
       val valueOpt2 = field2.findValue(source, context)
       derive.apply(valueOpt1,valueOpt2)
@@ -76,7 +76,7 @@ object Derived {
   private class DerivedSourceField3[V,V1,V2,V3](field1: SourceField[V1], field2: SourceField[V2], field3: SourceField[V3])
                                                (derive: (Option[V1],Option[V2],Option[V3]) => Option[V]) extends SourceField[V] {
     /** Get some value or None from the given source. */
-    override def findValue(source: AnyRef, context: RequestContext) = {
+    override def findValue(source: AnyRef, context: CommandContext) = {
       val valueOpt1 = field1.findValue(source, context)
       val valueOpt2 = field2.findValue(source, context)
       val valueOpt3 = field3.findValue(source, context)

@@ -15,10 +15,10 @@ import scala.util.Try
 /**
  * An API for an app to interact with the host platform such as Android.
  * It should be constructable without any kind of container.
- * Use subtypes of RequestContext for state that is available in a container.
+ * Use subtypes of CommandContext for state that is available in a container.
  * The model is that the custom platform is implemented for all applications by
  * delegating to the CrudApplication to make business logic decisions.
- * Then the CrudApplication can call into this PlatformDriver or RequestContext for any calls it needs to make.
+ * Then the CrudApplication can call into this PlatformDriver or CommandContext for any calls it needs to make.
  * If direct access to the specific host platform is needed by a specific app, cast this
  * to the appropriate subclass, ideally using a scala match expression.
  * @author Eric Pabst (epabst@gmail.com)

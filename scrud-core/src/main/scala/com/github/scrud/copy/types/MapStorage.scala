@@ -4,7 +4,7 @@ import com.github.scrud.copy._
 import scala.collection.parallel.mutable
 import com.github.scrud.{FieldDeclaration, BaseFieldDeclaration, EntityName}
 import scala.Some
-import com.github.scrud.context.RequestContext
+import com.github.scrud.context.CommandContext
 
 /**
  * A target and source for data (especially useful when testing).
@@ -59,5 +59,5 @@ class MapStorage extends AnyRef {
 
 /** This is a reference to the storage type that the class MapStorage represents. */
 case object MapStorage extends StorageType with RepresentationByType[Nothing] with InstantiatingTargetType[MapStorage] {
-  override def makeTarget(requestContext: RequestContext) = new MapStorage()
+  override def makeTarget(commandContext: CommandContext) = new MapStorage()
 }

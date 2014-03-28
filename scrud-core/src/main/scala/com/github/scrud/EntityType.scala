@@ -8,7 +8,7 @@ import com.github.scrud.util.{Logging, Common}
 import com.github.scrud.copy._
 import scala.collection.mutable
 import com.github.scrud.platform.representation._
-import com.github.scrud.context.RequestContext
+import com.github.scrud.context.CommandContext
 import scala.util.Try
 import com.github.scrud.model.{IdPk, IdPkField}
 import com.github.scrud.copy.types.MapStorage
@@ -109,9 +109,9 @@ abstract class EntityType(val entityName: EntityName, val platformDriver: Platfo
   def copyAndUpdate[T <: AnyRef](sourceType: SourceType, source: AnyRef, targetType: InstantiatingTargetType[T]): T =
     throw new UnsupportedOperationException("not implemented")
 
-  def copyAndUpdate[T <: AnyRef](sourceType: SourceType, source: AnyRef, targetType: TargetType, target: T, requestContext: RequestContext): T = {
+  def copyAndUpdate[T <: AnyRef](sourceType: SourceType, source: AnyRef, targetType: TargetType, target: T, commandContext: CommandContext): T = {
     val adaptedFieldSeq = adapt(sourceType, targetType)
-    adaptedFieldSeq.copyAndUpdate(source, target, requestContext)
+    adaptedFieldSeq.copyAndUpdate(source, target, commandContext)
   }
 
   def toUri(id: ID) = UriPath(entityName, id)

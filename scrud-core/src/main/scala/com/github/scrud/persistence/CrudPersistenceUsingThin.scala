@@ -23,12 +23,12 @@ class CrudPersistenceUsingThin(val entityType: EntityType, val thinPersistence: 
     val writableWithIdOpt: Option[AnyRef] = for {
       id <- idOption
       targetIdField <- targetIdFieldOpt
-    } yield targetIdField.updateValue(writable, Some(id), sharedContext.asStubRequestContext)
+    } yield targetIdField.updateValue(writable, Some(id), sharedContext.asStubCommandContext)
     val writableToSave = writableWithIdOpt.getOrElse(writable)
 
     val id = thinPersistence.save(idOption, writableToSave)
     if (idOption.isEmpty) {
-      targetIdFieldOpt.foreach(_.updateValue(writable, Some(id), sharedContext.asStubRequestContext))
+      targetIdFieldOpt.foreach(_.updateValue(writable, Some(id), sharedContext.asStubCommandContext))
     }
     id
   }

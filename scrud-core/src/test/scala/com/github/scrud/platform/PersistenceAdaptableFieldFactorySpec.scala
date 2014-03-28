@@ -8,7 +8,7 @@ import com.github.scrud.types.TitleQT
 import com.github.scrud.platform.representation.Persistence
 import com.github.scrud.copy.types.{MapStorage, Default}
 import com.github.scrud.copy.SourceType
-import com.github.scrud.context.RequestContextForTesting
+import com.github.scrud.context.CommandContextForTesting
 
 /**
  * A Behavior specification for [[com.github.scrud.platform.PersistenceAdaptableFieldFactory]].
@@ -30,7 +30,7 @@ class PersistenceAdaptableFieldFactorySpec extends FunSpec with MustMatchers {
         field("bar2-5", TitleQT, Seq(Persistence(2, 5), Default("bar2-5")))
       }
       val resultMapStorage = entityType.adapt(SourceType.none, Persistence(3)).copyAndUpdate(None, new MapStorage,
-        new RequestContextForTesting(entityType))
+        new CommandContextForTesting(entityType))
       resultMapStorage must be (new MapStorage(entityName,
         "bar1" -> Some("bar1"),
         "bar3" -> Some("bar3"),
