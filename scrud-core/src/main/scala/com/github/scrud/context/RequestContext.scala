@@ -22,15 +22,15 @@ import com.github.scrud.platform.representation.Persistence
  *         Time: 3:25 PM
  */
 trait RequestContext {
-  @deprecated("this should be in the Request and passed to the Action", since = "2014-03-19")
+  @deprecated("this should be in the Command and passed to the Action", since = "2014-03-19")
   def operationType: CrudOperationType
 
-  @deprecated("this should be in the Request and passed to the Action", since = "2014-03-19")
+  @deprecated("this should be in the Command and passed to the Action", since = "2014-03-19")
   def uri: UriPath
 
   def sharedContext: SharedContext
 
-  @deprecated("this should be in the Request and passed to the Action", since = "2014-03-19")
+  @deprecated("this should be in the Command and passed to the Action", since = "2014-03-19")
   def withUri(uri: UriPath): RequestContext
 
   def entityTypeMap: EntityTypeMap = sharedContext.entityTypeMap

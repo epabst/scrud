@@ -10,5 +10,5 @@ import com.github.scrud.context.RequestContext
  *         Time: 7:30 PM
  */
 abstract class Action(commandKey: CommandKey) {
-  def invoke(request: Request, requestContext: RequestContext): Response
+  def invoke(requestedCommand: Command, requestContext: RequestContext): Response
 }
