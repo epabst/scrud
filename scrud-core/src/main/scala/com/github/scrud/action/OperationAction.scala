@@ -12,7 +12,7 @@ import com.github.scrud.context.RequestContext
  * Date: 10/29/12
  * Time: 3:37 PM
  */
-case class OperationAction(command: Command, operation: Operation) {
+case class OperationAction(command: PlatformCommand, operation: Operation) {
   def commandId: CommandNumber = command.commandNumber
 
   def invoke(uri: UriPath, requestContext: RequestContext) {

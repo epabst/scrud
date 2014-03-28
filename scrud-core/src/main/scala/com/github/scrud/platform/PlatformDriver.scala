@@ -6,7 +6,7 @@ import com.github.scrud.EntityType
 import com.github.scrud.types.QualifiedType
 import com.github.scrud.copy._
 import com.github.scrud.EntityName
-import com.github.scrud.action.Command
+import com.github.scrud.action.PlatformCommand
 import com.github.scrud.util.{Name, Logging}
 import com.github.scrud.platform.representation.PersistenceRange
 import com.netaporter.uri.Uri
@@ -54,15 +54,15 @@ trait PlatformDriver extends Logging {
    */
   def idFieldName(entityName: EntityName): String
 
-  def commandToListItems(entityName: EntityName): Command
+  def commandToListItems(entityName: EntityName): PlatformCommand
 
-  def commandToDisplayItem(entityName: EntityName): Command
+  def commandToDisplayItem(entityName: EntityName): PlatformCommand
 
-  def commandToAddItem(entityName: EntityName): Command
+  def commandToAddItem(entityName: EntityName): PlatformCommand
 
-  def commandToEditItem(entityName: EntityName): Command
+  def commandToEditItem(entityName: EntityName): PlatformCommand
 
-  def commandToDeleteItem(entityName: EntityName): Command
+  def commandToDeleteItem(entityName: EntityName): PlatformCommand
 
   /** An Operation that will show the UI to the user for creating an entity instance. */
   def operationToShowCreateUI(entityName: EntityName): Operation
@@ -77,7 +77,7 @@ trait PlatformDriver extends Logging {
   def operationToShowUpdateUI(entityName: EntityName): Operation
 
   /** The command to undo the last delete. */
-  def commandToUndoDelete: Command
+  def commandToUndoDelete: PlatformCommand
 
   def platformSpecificFieldFactories: Seq[AdaptableFieldFactory]
 
