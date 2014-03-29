@@ -106,8 +106,8 @@ abstract class EntityType(val entityName: EntityName, val platformDriver: Platfo
 
   def clearId(source: AnyRef): AnyRef = new UnsupportedOperationException
 
-  def copyAndUpdate[T <: AnyRef](sourceType: SourceType, source: AnyRef, targetType: InstantiatingTargetType[T]): T =
-    throw new UnsupportedOperationException("not implemented")
+  def copyAndUpdate[T <: AnyRef](sourceType: SourceType, source: AnyRef, targetType: InstantiatingTargetType[T], commandContext: CommandContext): T =
+    copyAndUpdate(sourceType, source, targetType, targetType.makeTarget(commandContext), commandContext)
 
   def copyAndUpdate[T <: AnyRef](sourceType: SourceType, source: AnyRef, targetType: TargetType, target: T, commandContext: CommandContext): T = {
     val adaptedFieldSeq = adapt(sourceType, targetType)

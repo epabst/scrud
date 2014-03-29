@@ -8,6 +8,7 @@ import com.github.scrud.action.CrudOperationType._
 import com.github.scrud.platform.representation.{EditUI, Persistence}
 import com.github.scrud.persistence.EntityTypeMapForTesting
 import com.github.scrud.action.CrudOperation
+import com.github.scrud.context.CommandContextForTesting
 
 /**
  * A behavior specification for [[com.github.scrud.EntityNavigation]].
@@ -29,12 +30,13 @@ class EntityNavigationSpec extends FunSpec with MustMatchers {
   val entityTypeMap = EntityTypeMapForTesting(Set[EntityType](entityType, upstreamEntity1, upstreamEntity2))
   val navigation = new EntityNavigationForTesting(entityTypeMap)
 
-  describe("topLevelActions") {
-    it("must include listing the primary entity") {
-      val topLevelActions = navigation.topLevelActions
+  describe("initialViewRequest") {
+    it("must list the primary entity") {
+      val commandContext = new CommandContextForTesting(entityTypeMap)
+      val viewRequest = navigation.initialViewRequest(commandContext)
 
-      val expectedActions = navigation.actionsToList(entityType.entityName)
-      expectedActions.foreach(topLevelActions must contain(_))
+      viewRequest.entityNameOpt must be (Some(entityType.entityName))
+      viewRequest.entityIdOpt must be (None)
     }
   }
 

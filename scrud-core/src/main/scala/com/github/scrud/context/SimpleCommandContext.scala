@@ -1,10 +1,9 @@
 package com.github.scrud.context
 
-import com.github.scrud.action.{Undoable, CrudOperationType}
+import com.github.scrud.action.Undoable
 import com.github.scrud.{EntityNavigation, UriPath}
 import com.github.scrud.state.SimpleStateHolder
 import com.github.scrud.platform.PlatformTypes
-import com.github.scrud.action.CrudOperationType.CrudOperationType
 
 /**
  * A simple implementation of a CommandContext.
@@ -12,9 +11,8 @@ import com.github.scrud.action.CrudOperationType.CrudOperationType
  *         Date: 1/28/14
  *         Time: 2:10 PM
  */
-case class SimpleCommandContext(operationType: CrudOperationType, uri: UriPath, sharedContext: SharedContext,
-                                entityNavigation: EntityNavigation) extends CommandContext {
-  override def withUri(uri: UriPath) = copy(uri = uri)
+case class SimpleCommandContext(protected val uri: UriPath, sharedContext: SharedContext, entityNavigation: EntityNavigation)
+        extends CommandContext {
 
   val stateHolder = new SimpleStateHolder
 

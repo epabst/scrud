@@ -1,16 +1,16 @@
 package com.github.scrud.platform
 
 import com.github.scrud.persistence.PersistenceFactory
-import com.github.scrud.action.Operation
-import com.github.scrud.EntityType
+import com.github.scrud.action.{Operation, PlatformCommand}
+import com.github.scrud.{EntityType, EntityName}
 import com.github.scrud.types.QualifiedType
 import com.github.scrud.copy._
-import com.github.scrud.EntityName
-import com.github.scrud.action.PlatformCommand
 import com.github.scrud.util.{Name, Logging}
 import com.github.scrud.platform.representation.PersistenceRange
 import com.netaporter.uri.Uri
 import scala.util.Try
+import com.github.scrud.context.CommandContext
+import com.github.scrud.view.ViewRequest
 
 /**
  * An API for an app to interact with the host platform such as Android.
@@ -27,7 +27,7 @@ import scala.util.Try
  */
 trait PlatformDriver extends Logging {
   def tryResource(resourceName: Name): Try[Uri]
-  
+
   def localDatabasePersistenceFactory: PersistenceFactory
 
   def calculateDataVersion(entityTypes: Seq[EntityType]) = {
@@ -117,4 +117,6 @@ trait PlatformDriver extends Logging {
     }
     AdaptableFieldWithRepresentations.empty
   }
+
+  def render(viewRequestWithDataAndCommands: ViewRequest, commandContext: CommandContext)
 }

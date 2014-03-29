@@ -2,9 +2,14 @@ package com.github.scrud
 
 import com.github.scrud.platform.PlatformDriver
 import com.github.scrud.persistence.EntityTypeMap
-import com.github.scrud.context.ApplicationName
-import com.github.scrud.action.{CrudOperationType, CrudOperation, StartEntityDeleteOperation, OperationAction}
+import com.github.scrud.context.{CommandContext, ApplicationName}
+import com.github.scrud.action._
 import CrudOperationType._
+import com.github.scrud.action.OperationAction
+import com.github.scrud.action.StartEntityDeleteOperation
+import com.github.scrud.action.CrudOperation
+import com.github.scrud.view.{ViewDataRequest, ViewRequest, ViewSpecifier}
+import scala.util.Try
 
 /**
  * The stateless definition of what navigation is available with respect to EntityTypes.
@@ -27,9 +32,21 @@ class EntityNavigation(val applicationName: ApplicationName, val entityTypeMap: 
    * Gets the actions that a user can perform from the main application entry point.
    * May be overridden to adjust as needed.
    */
-  //todo this should have a better default of which entities are useful to list as top-level entities.
-  def topLevelActions: Seq[OperationAction] = actionsToList(primaryEntityType.entityName)
+  def initialViewRequest(commandContext: CommandContext): ViewRequest =
+    commandContext.toViewRequest(viewRequestToList(primaryEntityType.entityName, commandContext))
 
+  /**
+   * Invoke the Command and provide which View and data to render.
+   * @param command the Command to invoke
+   * @param commandContext some (platform-dependent) context for the command to run in.
+   * @return the view, data, and commands to provide to the user
+   */
+  def invoke(command: Command, commandContext: CommandContext): ViewRequest = {
+    resolveAction(command).get.invoke(command, commandContext)
+  }
+
+  def resolveAction(command: Command): Try[Action] = Try(notImplementedYet)
+  
   /**
    * Gets the actions that a user can perform from a given CrudOperation.
    * May be overridden to adjust the list of actions.
@@ -46,6 +63,12 @@ class EntityNavigation(val applicationName: ApplicationName, val entityTypeMap: 
       actionsToDisplay(entityName) ++ entityTypeMap.upstreamEntityNames(entityName).flatMap(actionsToManageList(_)) ++
           actionsToDelete(entityName)
   }
+
+  /**
+   * Gets the commands that a user can perform based on a ViewDataRequest.
+   * May be overridden to adjust the list of commands.
+   */
+  def usualAvailableCommandsForViewDataRequest(viewDataRequest: ViewDataRequest): Seq[Command] = notImplementedYet
 
   protected def actionsToUpdateAndListDownstreamsOfOnlyUpstreamWithoutDisplayAction(entityName: EntityName): Seq[OperationAction] = {
 //    val thisEntity = entityTypeMap.entityType(entityName)
@@ -75,6 +98,11 @@ class EntityNavigation(val applicationName: ApplicationName, val entityTypeMap: 
   /** Gets the action(s) to display the list that matches the criteria copied from criteriaSource using entityType.copy. */
   def actionsToList(entityName: EntityName): Seq[OperationAction] =
     Seq(OperationAction(platformDriver.commandToListItems(entityName), platformDriver.operationToShowListUI(entityName)))
+
+  private def notImplementedYet = throw new UnsupportedOperationException("todo implement")
+  
+  /** Gets the action(s) to display the list that matches the criteria copied from criteriaSource using entityType.copy. */
+  def viewRequestToList(entityName: EntityName, commandContext: CommandContext): ViewSpecifier = notImplementedYet
 
   /** Return true if the entity may be displayed in a mode that is distinct from editing. */
   protected def isDisplayableWithoutEditing(entityName: EntityName): Boolean = false

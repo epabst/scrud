@@ -9,6 +9,8 @@ import com.github.scrud.action.PlatformCommand
 import com.github.scrud.util.Name
 import com.netaporter.uri.Uri
 import scala.util.Success
+import com.github.scrud.context.CommandContext
+import com.github.scrud.view.ViewRequest
 
 /**
  * A simple PlatformDriver for testing.
@@ -63,6 +65,10 @@ class TestingPlatformDriver extends PlatformDriver {
   def commandToUndoDelete = PlatformCommand(ActionKey("command1"), None, None)
 
   val platformSpecificFieldFactories = Seq(MapStorageAdaptableFieldFactory, PersistenceFieldFactory)
+
+  def render(viewRequestWithDataAndCommands: ViewRequest, commandContext: CommandContext) = {
+    println("Rendering viewRequestWithDataAndCommands=" + viewRequestWithDataAndCommands + " commandContext=" + commandContext)
+  }
 }
 
 object TestingPlatformDriver extends TestingPlatformDriver

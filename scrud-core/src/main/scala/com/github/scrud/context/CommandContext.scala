@@ -1,14 +1,15 @@
 package com.github.scrud.context
 
-import com.github.scrud.{FieldDeclaration, UriPath, EntityName}
+import com.github.scrud.{EntityNavigation, FieldDeclaration, UriPath, EntityName}
 import com.github.scrud.state.{DestroyStateListener, State}
 import com.github.scrud.platform.PlatformDriver
 import com.github.scrud.persistence.{PersistenceConnection, EntityTypeMap}
-import com.github.scrud.action.CrudOperationType.CrudOperationType
 import com.github.scrud.platform.PlatformTypes._
 import com.github.scrud.action.Undoable
-import com.github.scrud.copy.{InstantiatingTargetType, SourceType}
+import com.github.scrud.copy.{SourceWithType, InstantiatingTargetType, SourceType}
 import com.github.scrud.platform.representation.Persistence
+import com.github.scrud.view.{ViewRequest, ViewDataRequest, ViewSpecifier}
+import scala.util.Try
 
 /**
  * The context for a given interaction or command/response.
@@ -23,19 +24,30 @@ import com.github.scrud.platform.representation.Persistence
  */
 trait CommandContext {
   @deprecated("this should be in the Command and passed to the Action", since = "2014-03-19")
-  def operationType: CrudOperationType
-
-  @deprecated("this should be in the Command and passed to the Action", since = "2014-03-19")
-  def uri: UriPath
+  protected def uri: UriPath
 
   def sharedContext: SharedContext
-
-  @deprecated("this should be in the Command and passed to the Action", since = "2014-03-19")
-  def withUri(uri: UriPath): CommandContext
 
   def entityTypeMap: EntityTypeMap = sharedContext.entityTypeMap
 
   def platformDriver: PlatformDriver = sharedContext.platformDriver
+
+  def entityNavigation: EntityNavigation
+
+  def toViewDataRequest(viewSpecifier: ViewSpecifier): ViewDataRequest = {
+    val entityName = viewSpecifier.entityNameOrFail
+    val persistence = persistenceConnection.persistenceFor(entityName)
+    val modelOpt = persistence.find(viewSpecifier.uri).map(SourceWithType(_, persistence.sourceType))
+    ViewDataRequest(viewSpecifier, Try(modelOpt.getOrElse(throw new NoSuchElementException("uri=" + viewSpecifier.uri))))
+  }
+
+  def toViewRequest(viewSpecifier: ViewSpecifier): ViewRequest = {
+    val viewDataRequest = toViewDataRequest(viewSpecifier)
+    toViewRequest(viewDataRequest)
+  }
+
+  def toViewRequest(viewDataRequest: ViewDataRequest): ViewRequest =
+    ViewRequest(viewDataRequest, entityNavigation.usualAvailableCommandsForViewDataRequest(viewDataRequest))
 
   lazy val persistenceConnection: PersistenceConnection = {
     val persistenceConnection = sharedContext.openPersistence()
