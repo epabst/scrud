@@ -9,6 +9,6 @@ import com.github.scrud.context.CommandContext
  *         Date: 3/19/14
  *         Time: 7:30 PM
  */
-abstract class Action(commandKey: CommandKey) {
+abstract class Action(actionKey: ActionKey) {
   def invoke(requestedCommand: Command, commandContext: CommandContext): Response
 }

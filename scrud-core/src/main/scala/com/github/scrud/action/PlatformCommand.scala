@@ -12,7 +12,7 @@ import com.github.scrud.platform.PlatformTypes
   *   If both title and icon are None,
   *   then it can't be displayed in the main options menu, but can still be triggered as a default.
   */
-case class PlatformCommand(commandId: CommandKey, icon: Option[ImgKey], title: Option[SKey]) {
+case class PlatformCommand(commandId: ActionKey, icon: Option[ImgKey], title: Option[SKey]) {
   /** A CommandNumber that can be used to identify if it's the same as another in a list.
     * It uses the title or else the icon or else the hash code.
     */

@@ -4,7 +4,7 @@ import com.github.scrud.persistence.ListBufferPersistenceFactoryForTesting
 import com.github.scrud.action.CrudOperationType._
 import com.github.scrud.types.QualifiedType
 import com.github.scrud.EntityName
-import com.github.scrud.action.CommandKey
+import com.github.scrud.action.ActionKey
 import com.github.scrud.action.PlatformCommand
 import com.github.scrud.util.Name
 import com.netaporter.uri.Uri
@@ -33,15 +33,15 @@ class TestingPlatformDriver extends PlatformDriver {
 
   def idFieldName(entityName: EntityName): String = "id"
 
-  def commandToAddItem(entityName: EntityName) = PlatformCommand(CommandKey("Add"), None, None)
+  def commandToAddItem(entityName: EntityName) = PlatformCommand(ActionKey("Add"), None, None)
 
-  def commandToDeleteItem(entityName: EntityName) = PlatformCommand(CommandKey("Delete"), None, None)
+  def commandToDeleteItem(entityName: EntityName) = PlatformCommand(ActionKey("Delete"), None, None)
 
-  def commandToDisplayItem(entityName: EntityName) = PlatformCommand(CommandKey("View"), None, None)
+  def commandToDisplayItem(entityName: EntityName) = PlatformCommand(ActionKey("View"), None, None)
 
-  def commandToEditItem(entityName: EntityName) = PlatformCommand(CommandKey("Edit"), None, None)
+  def commandToEditItem(entityName: EntityName) = PlatformCommand(ActionKey("Edit"), None, None)
 
-  def commandToListItems(entityName: EntityName) = PlatformCommand(CommandKey("List"), None, None)
+  def commandToListItems(entityName: EntityName) = PlatformCommand(ActionKey("List"), None, None)
 
   /** An Operation that will show the UI to the user for creating an entity instance. */
   def operationToShowCreateUI(entityName: EntityName) =
@@ -60,7 +60,7 @@ class TestingPlatformDriver extends PlatformDriver {
     CrudOperationForTesting(entityName, Update)
 
   /** The command to undo the last delete. */
-  def commandToUndoDelete = PlatformCommand(CommandKey("command1"), None, None)
+  def commandToUndoDelete = PlatformCommand(ActionKey("command1"), None, None)
 
   val platformSpecificFieldFactories = Seq(MapStorageAdaptableFieldFactory, PersistenceFieldFactory)
 }

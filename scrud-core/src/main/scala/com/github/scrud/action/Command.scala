@@ -9,4 +9,4 @@ import com.github.scrud.copy.SourceType
  *         Date: 3/19/14
  *         Time: 7:30 PM
  */
-case class Command(commandKey: CommandKey, uri: Uri, sourceType: SourceType, source: AnyRef, headers: Map[String,String])
+case class Command(actionKey: ActionKey, uri: Uri, sourceType: SourceType, source: AnyRef, headers: Map[String,String])

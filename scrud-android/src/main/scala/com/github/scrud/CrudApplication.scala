@@ -4,7 +4,7 @@ import _root_.android.R
 import action._
 import action.OperationAction
 import action.PlatformCommand
-import action.CommandKey
+import action.ActionKey
 import action.CrudOperation
 import action.StartEntityDeleteOperation
 import persistence.{PersistenceFactoryMapping, PersistenceFactory}
@@ -77,20 +77,20 @@ abstract class CrudApplication(val platformDriver: PlatformDriver) extends Persi
 
   def entityNameLayoutPrefixFor(entityName: EntityName) = NamingConventions.toLayoutPrefix(entityName)
 
-  def commandToListItems(entityName: EntityName): PlatformCommand = PlatformCommand(CommandKey(entityNameLayoutPrefixFor(entityName) + "_list"), None,
+  def commandToListItems(entityName: EntityName): PlatformCommand = PlatformCommand(ActionKey(entityNameLayoutPrefixFor(entityName) + "_list"), None,
     findResourceIdWithName(rStringClasses, entityNameLayoutPrefixFor(entityName) + "_list"))
 
-  def commandToDisplayItem(entityName: EntityName): PlatformCommand = PlatformCommand(CommandKey("display_" + entityNameLayoutPrefixFor(entityName)),
+  def commandToDisplayItem(entityName: EntityName): PlatformCommand = PlatformCommand(ActionKey("display_" + entityNameLayoutPrefixFor(entityName)),
     None, None)
 
-  def commandToAddItem(entityName: EntityName): PlatformCommand = PlatformCommand(CommandKey("add_" + entityNameLayoutPrefixFor(entityName)),
+  def commandToAddItem(entityName: EntityName): PlatformCommand = PlatformCommand(ActionKey("add_" + entityNameLayoutPrefixFor(entityName)),
     Some(R.drawable.ic_menu_add),
     Some(getStringKey("add_" + entityNameLayoutPrefixFor(entityName))))
 
-  def commandToEditItem(entityName: EntityName): PlatformCommand = PlatformCommand(CommandKey("edit_" + entityNameLayoutPrefixFor(entityName)),
+  def commandToEditItem(entityName: EntityName): PlatformCommand = PlatformCommand(ActionKey("edit_" + entityNameLayoutPrefixFor(entityName)),
     Some(R.drawable.ic_menu_edit), Some(getStringKey("edit_" + entityNameLayoutPrefixFor(entityName))))
 
-  def commandToDeleteItem(entityName: EntityName): PlatformCommand = PlatformCommand(CommandKey("delete_" + entityNameLayoutPrefixFor(entityName)),
+  def commandToDeleteItem(entityName: EntityName): PlatformCommand = PlatformCommand(ActionKey("delete_" + entityNameLayoutPrefixFor(entityName)),
     Some(R.drawable.ic_menu_delete), Some(res.R.string.delete_item))
 
   def displayLayoutFor(entityName: EntityName): Option[LayoutKey] = findResourceIdWithName(rLayoutClasses, entityNameLayoutPrefixFor(entityName) + "_display")
