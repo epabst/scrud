@@ -1,7 +1,7 @@
 package com.github.scrud.action
 
 import com.netaporter.uri.Uri
-import com.github.scrud.copy.SourceType
+import com.github.scrud.copy.{SourceWithType, SourceType}
 
 /**
  * The response to an [[com.github.scrud.action.Action]].
@@ -9,5 +9,4 @@ import com.github.scrud.copy.SourceType
  *         Date: 3/19/14
  *         Time: 7:30 PM
  */
-case class Response(uri: Uri, sourceType: SourceType, source: AnyRef, headers: Map[String,String],
-                    availableCommands: Seq[Command])
+case class Response(uri: Uri, sourceWithType: SourceWithType, headers: Map[String,String], availableCommands: Seq[Command])
