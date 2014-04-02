@@ -4,9 +4,9 @@ import com.github.scrud.platform.PlatformDriver
 import com.github.scrud.persistence.EntityTypeMap
 
 class SampleEntityTypeMap(platformDriver: PlatformDriver) extends EntityTypeMap(platformDriver) {
-  val authorEntityType = entityType(new AuthorEntityType(platformDriver), platformDriver.localDatabasePersistenceFactory)
+  val authorEntityType = addEntityType(new AuthorEntityType(platformDriver), platformDriver.localDatabasePersistenceFactory)
 
-  val bookEntityType = entityType(new BookEntityType(platformDriver), platformDriver.localDatabasePersistenceFactory)
+  val bookEntityType = addEntityType(new BookEntityType(platformDriver), platformDriver.localDatabasePersistenceFactory)
 
-  entityType(new PublisherEntityType(platformDriver), platformDriver.localDatabasePersistenceFactory)
+  addEntityType(new PublisherEntityType(platformDriver), platformDriver.localDatabasePersistenceFactory)
 }

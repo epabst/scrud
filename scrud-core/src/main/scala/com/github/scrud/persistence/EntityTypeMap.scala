@@ -18,7 +18,7 @@ abstract class EntityTypeMap(platformDriver: PlatformDriver) {
 
   lazy val entityTypesAndFactories: Seq[(EntityType, PersistenceFactory)] = entityTypesAndFactoriesBuffer.toList
 
-  protected def entityType[E <: EntityType](entityType: E, persistenceFactory: PersistenceFactory): E = {
+  protected def addEntityType[E <: EntityType](entityType: E, persistenceFactory: PersistenceFactory): E = {
     entityTypesAndFactoriesBuffer += entityType -> persistenceFactory
     entityType
   }
