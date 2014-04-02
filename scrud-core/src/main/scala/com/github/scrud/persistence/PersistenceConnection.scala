@@ -1,9 +1,10 @@
 package com.github.scrud.persistence
 
-import com.github.scrud.{EntityType, EntityName}
-import com.github.scrud.context.SharedContext
+import com.github.scrud.{FieldDeclaration, EntityType, EntityName}
+import com.github.scrud.context.{CommandContext, SharedContext}
 import com.github.scrud.state.{DestroyStateListener, State}
 import com.github.scrud.util.{Cache, DelegatingListenerHolder}
+import com.github.scrud.platform.PlatformTypes.ID
 
 /**
  * A pseudo-connection to any/all persistence mechanisms.
@@ -38,5 +39,13 @@ class PersistenceConnection(entityTypeMap: EntityTypeMap, val sharedContext: Sha
     // This will delegate to any listeners.
     state.onDestroyState()
     cache.clear()
+  }
+
+  /** Find using this CommandContext's URI. */
+  def find[V](entityName: EntityName, id: ID, field: FieldDeclaration[V], commandContext: CommandContext): Option[V] = {
+    val persistence = persistenceFor(entityName)
+    persistence.find(entityName.toUri(id)).flatMap { entity =>
+      field.toAdaptableField.sourceField(persistence.sourceType).findValue(entity, commandContext)
+    }
   }
 }
