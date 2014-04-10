@@ -1,7 +1,7 @@
 package com.github.scrud.action
 
 import com.github.scrud.context.CommandContext
-import com.github.scrud.view.ViewRequest
+import com.github.scrud.view.ViewSpecifier
 
 /**
  * An action, usually invoked by a user.
@@ -13,11 +13,9 @@ import com.github.scrud.view.ViewRequest
 abstract class Action(actionKey: ActionKey) {
   /**
    * Invoke this Action and specify the view to render.
-   * CommandContext has helpful methods for converting a simple [[com.github.scrud.view.ViewSpecifier]]
-   * into a [[com.github.scrud.view.ViewRequest]].
    * @param requestedCommand the command that resulted in this Action
    * @param commandContext the CommandContext, which includes platform-dependent support
-   * @return a ViewRequest
+   * @return a ViewSpecifier
    */
-  def invoke(requestedCommand: Command, commandContext: CommandContext): ViewRequest
+  def invoke(requestedCommand: Command, commandContext: CommandContext): ViewSpecifier
 }

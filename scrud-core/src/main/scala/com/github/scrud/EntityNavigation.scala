@@ -8,7 +8,7 @@ import CrudOperationType._
 import com.github.scrud.action.OperationAction
 import com.github.scrud.action.StartEntityDeleteOperation
 import com.github.scrud.action.CrudOperation
-import com.github.scrud.view.{ViewRequest, ViewSpecifier}
+import com.github.scrud.view.ViewSpecifier
 import scala.util.Try
 
 /**
@@ -32,8 +32,8 @@ class EntityNavigation(val applicationName: ApplicationName, val entityTypeMap: 
    * Gets the actions that a user can perform from the main application entry point.
    * May be overridden to adjust as needed.
    */
-  def initialViewRequest(commandContext: CommandContext): ViewRequest =
-    commandContext.toViewRequest(viewRequestToList(primaryEntityType.entityName, commandContext))
+  def initialViewSpecifier(commandContext: CommandContext): ViewSpecifier =
+    viewSpecifierToList(primaryEntityType.entityName, commandContext)
 
   /**
    * Invoke the Command and provide which View and data to render.
@@ -41,7 +41,7 @@ class EntityNavigation(val applicationName: ApplicationName, val entityTypeMap: 
    * @param commandContext some (platform-dependent) context for the command to run in.
    * @return the view, data, and commands to provide to the user
    */
-  def invoke(command: Command, commandDataOpt: Option[AnyRef], commandContext: CommandContext): ViewRequest = {
+  def invoke(command: Command, commandDataOpt: Option[AnyRef], commandContext: CommandContext): ViewSpecifier = {
     resolveAction(command).get.invoke(command, commandContext)
   }
 
@@ -102,7 +102,7 @@ class EntityNavigation(val applicationName: ApplicationName, val entityTypeMap: 
   private def notImplementedYet = throw new UnsupportedOperationException("todo implement")
   
   /** Gets the action(s) to display the list that matches the criteria copied from criteriaSource using entityType.copy. */
-  def viewRequestToList(entityName: EntityName, commandContext: CommandContext): ViewSpecifier = notImplementedYet
+  def viewSpecifierToList(entityName: EntityName, commandContext: CommandContext): ViewSpecifier = notImplementedYet
 
   /** Return true if the entity may be displayed in a mode that is distinct from editing. */
   protected def isDisplayableWithoutEditing(entityName: EntityName): Boolean = false

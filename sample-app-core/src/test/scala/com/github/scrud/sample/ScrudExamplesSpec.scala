@@ -27,31 +27,34 @@ class ScrudExamplesSpec extends FunSpec with MustMatchers {
       val sharedContext: SharedContext = new SimpleSharedContext(entityNavigation.entityTypeMap, platformDriver)
       val commandContext: CommandContext = sharedContext.asStubCommandContext
 
-      val initialViewRequest = entityNavigation.initialViewRequest(commandContext)
-      platformDriver.render(initialViewRequest, commandContext)
+      val initialViewSpecifier = entityNavigation.initialViewSpecifier(commandContext)
+      platformDriver.render(initialViewSpecifier, commandContext)
 
-      initialViewRequest.entityNameOpt must be (Some(Author))
-      initialViewRequest.entityIdOpt must be (None)
-      initialViewRequest.availableCommands.map(_.actionKeyAndEntityNameOrFail) must be (Seq(ActionKey.Add -> Author))
-      initialViewRequest.availableCommands.map(_.entityIdOpt) must be (Seq(None))
-      initialViewRequest.availableCommands.map(_.actionDataTypeOpt) must be (Seq(None))
+      initialViewSpecifier.entityNameOpt must be (Some(Author))
+      initialViewSpecifier.entityIdOpt must be (None)
+      val initialCommands = entityNavigation.usualAvailableCommandsForView(initialViewSpecifier)
+      initialCommands.map(_.actionKeyAndEntityNameOrFail) must be (Seq(ActionKey.Add -> Author))
+      initialCommands.map(_.entityIdOpt) must be (Seq(None))
+      initialCommands.map(_.actionDataTypeOpt) must be (Seq(None))
 
-      val addAuthorCommand = initialViewRequest.availableCommands.head
-      val createAuthorViewRequest = entityNavigation.invoke(addAuthorCommand, None, commandContext)
-      createAuthorViewRequest.entityNameOpt must be (Some(Author))
-      createAuthorViewRequest.entityIdOpt must be (None)
-      createAuthorViewRequest.availableCommands.map(_.actionKey) must be (Seq(ActionKey.Save))
-      val createAuthorCommand = initialViewRequest.availableCommands.head
+      val addAuthorCommand = initialCommands.head
+      val createAuthorViewSpecifier = entityNavigation.invoke(addAuthorCommand, None, commandContext)
+      createAuthorViewSpecifier.entityNameOpt must be (Some(Author))
+      createAuthorViewSpecifier.entityIdOpt must be (None)
+      val commandsAvailableFromCreate = entityNavigation.usualAvailableCommandsForView(createAuthorViewSpecifier)
+      commandsAvailableFromCreate.map(_.actionKey) must be (Seq(ActionKey.Create))
+      val createAuthorCommand = commandsAvailableFromCreate.head
       val defaultAuthorData = authorEntityType.copyAndUpdate(SourceType.none, SourceType.none, MapStorage, commandContext)
 
       // Simulate a user providing some data
       val userModifiedActionData = authorEntityType.copyAndUpdate(MapStorage, new MapStorage(
         authorEntityType.nameField -> Some("George")), MapStorage, defaultAuthorData, commandContext)
 
-      val newAuthorViewRequest = entityNavigation.invoke(createAuthorCommand, Some(userModifiedActionData), commandContext)
-      newAuthorViewRequest.entityNameOpt must be (Some(Author))
-      val Some(newAuthorId) = newAuthorViewRequest.entityIdOpt
-      newAuthorViewRequest.availableCommands.map(_.actionKeyAndEntityNameOrFail) must be (Seq(ActionKey.Edit -> Author))
+      val newAuthorViewSpecifier = entityNavigation.invoke(createAuthorCommand, Some(userModifiedActionData), commandContext)
+      newAuthorViewSpecifier.entityNameOpt must be (Some(Author))
+      val Some(newAuthorId) = newAuthorViewSpecifier.entityIdOpt
+      val commandsAvailableFromView = entityNavigation.usualAvailableCommandsForView(newAuthorViewSpecifier)
+      commandsAvailableFromView.map(_.actionKeyAndEntityNameOrFail) must be (Seq(ActionKey.Edit -> Author))
 
       sharedContext.withPersistence(_.find(Author, newAuthorId, authorEntityType.nameField, commandContext)) must be (Some("George"))
     }

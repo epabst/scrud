@@ -8,7 +8,6 @@ import com.github.scrud.platform.PlatformTypes._
 import com.github.scrud.action.Undoable
 import com.github.scrud.copy.{InstantiatingTargetType, SourceType}
 import com.github.scrud.platform.representation.Persistence
-import com.github.scrud.view.{ViewRequest, ViewSpecifier}
 
 /**
  * The context for a given interaction or command/response.
@@ -32,9 +31,6 @@ trait CommandContext {
   def platformDriver: PlatformDriver = sharedContext.platformDriver
 
   def entityNavigation: EntityNavigation
-
-  def toViewRequest(viewSpecifier: ViewSpecifier): ViewRequest =
-    ViewRequest(viewSpecifier, entityNavigation.usualAvailableCommandsForView(viewSpecifier))
 
   lazy val persistenceConnection: PersistenceConnection = {
     val persistenceConnection = sharedContext.openPersistence()
