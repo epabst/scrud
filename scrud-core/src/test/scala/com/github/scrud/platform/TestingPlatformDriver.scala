@@ -35,13 +35,13 @@ class TestingPlatformDriver extends PlatformDriver {
 
   def idFieldName(entityName: EntityName): String = "id"
 
-  def commandToAddItem(entityName: EntityName) = PlatformCommand(ActionKey.Add, None, None)
+  def commandToAddItem(entityName: EntityName) = PlatformCommand(ActionKey.Create, None, None)
 
   def commandToDeleteItem(entityName: EntityName) = PlatformCommand(ActionKey.Delete, None, None)
 
   def commandToDisplayItem(entityName: EntityName) = PlatformCommand(ActionKey.View, None, None)
 
-  def commandToEditItem(entityName: EntityName) = PlatformCommand(ActionKey.Edit, None, None)
+  def commandToEditItem(entityName: EntityName) = PlatformCommand(ActionKey.Update, None, None)
 
   def commandToListItems(entityName: EntityName) = PlatformCommand(ActionKey.View, None, None)
 
