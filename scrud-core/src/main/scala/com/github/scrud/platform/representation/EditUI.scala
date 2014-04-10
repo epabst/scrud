@@ -1,6 +1,7 @@
 package com.github.scrud.platform.representation
 
-import com.github.scrud.copy.{RepresentationByType, StorageType}
+import com.github.scrud.copy.RepresentationByType
+import com.github.scrud.action.ActionDataType
 
 /**
  *  A UI Representation that allows editing (as opposed to just displaying).
@@ -9,4 +10,4 @@ import com.github.scrud.copy.{RepresentationByType, StorageType}
  *          Date: 12/11/13
  *          Time: 9:16 AM
  */
-object EditUI extends StorageType with RepresentationByType[Nothing]
+object EditUI extends ActionDataType with RepresentationByType[Nothing]

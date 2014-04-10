@@ -2,18 +2,22 @@ package com.github.scrud.action
 
 import com.github.scrud.util.Name
 import com.github.scrud.action.RestMethod.RestMethod
+import com.github.scrud.platform.representation.EditUI
 
 /**
  * The unique identifier for an Action.
  * The intent may depend heavily on the Uri it is used with.
  * The string is not intended for display.  It should be localized to a display string.
- * @param name a name such as a Java identifier like PoliceOfficer (pascal case) or crescentWrench (camel case).
  * @author Eric Pabst (epabst@gmail.com)
  * Date: 12/20/12
  * Time: 6:20 PM
+ * @param name a name such as a Java identifier like PoliceOfficer (pascal case) or crescentWrench (camel case).
+ * @param restMethodOpt which REST method correlates to the action, if any.
+ * @param actionDataTypeOpt which [[com.github.scrud.action.ActionDataType]] is required for the action, if any.
  * @see [[com.github.scrud.action.Action]]
  */
-case class ActionKey(name: String, restMethodOpt: Option[RestMethod] = None) extends Name
+case class ActionKey(name: String, restMethodOpt: Option[RestMethod] = None,
+                     actionDataTypeOpt: Option[ActionDataType] = None) extends Name
 
 /**
  * This contains a set of common [[com.github.scrud.action.ActionKey]]s.
@@ -34,7 +38,7 @@ object ActionKey {
    * This represents part of the "C" in CRUD.
    * This corresponds to a POST in REST.
    */
-  object Create extends ActionKey("Create", Some(RestMethod.POST))
+  object Create extends ActionKey("Create", Some(RestMethod.POST), Some(EditUI))
 
   /**
    * The command to get data for a Uri, whether a single entity or a list of entities.
@@ -57,7 +61,7 @@ object ActionKey {
    * This represents part of the "U" in CRUD.
    * This corresponds to a PUT in REST.
    */
-  object Save extends ActionKey("Save", Some(RestMethod.PUT))
+  object Save extends ActionKey("Save", Some(RestMethod.PUT), Some(EditUI))
 
   /**
    * The command to delete an entity.

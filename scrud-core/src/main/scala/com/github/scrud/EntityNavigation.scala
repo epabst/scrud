@@ -41,7 +41,7 @@ class EntityNavigation(val applicationName: ApplicationName, val entityTypeMap: 
    * @param commandContext some (platform-dependent) context for the command to run in.
    * @return the view, data, and commands to provide to the user
    */
-  def invoke(command: Command, commandContext: CommandContext): ViewRequest = {
+  def invoke(command: Command, commandDataOpt: Option[AnyRef], commandContext: CommandContext): ViewRequest = {
     resolveAction(command).get.invoke(command, commandContext)
   }
 

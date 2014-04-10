@@ -35,15 +35,15 @@ class TestingPlatformDriver extends PlatformDriver {
 
   def idFieldName(entityName: EntityName): String = "id"
 
-  def commandToAddItem(entityName: EntityName) = PlatformCommand(ActionKey("Add"), None, None)
+  def commandToAddItem(entityName: EntityName) = PlatformCommand(ActionKey.Add, None, None)
 
-  def commandToDeleteItem(entityName: EntityName) = PlatformCommand(ActionKey("Delete"), None, None)
+  def commandToDeleteItem(entityName: EntityName) = PlatformCommand(ActionKey.Delete, None, None)
 
-  def commandToDisplayItem(entityName: EntityName) = PlatformCommand(ActionKey("View"), None, None)
+  def commandToDisplayItem(entityName: EntityName) = PlatformCommand(ActionKey.View, None, None)
 
-  def commandToEditItem(entityName: EntityName) = PlatformCommand(ActionKey("Edit"), None, None)
+  def commandToEditItem(entityName: EntityName) = PlatformCommand(ActionKey.Edit, None, None)
 
-  def commandToListItems(entityName: EntityName) = PlatformCommand(ActionKey("List"), None, None)
+  def commandToListItems(entityName: EntityName) = PlatformCommand(ActionKey.View, None, None)
 
   /** An Operation that will show the UI to the user for creating an entity instance. */
   def operationToShowCreateUI(entityName: EntityName) =

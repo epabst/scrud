@@ -28,11 +28,12 @@ trait CrudPersistence extends EntityPersistence with ListenerSet[DataListener] w
 
   override def toUri(id: ID) = entityType.toUri(id)
 
-  def find[T <: AnyRef](uri: UriPath, targetType: InstantiatingTargetType[T],
-                        commandContext: CommandContext): Option[T] = {
+  def find[T <: AnyRef](uri: UriPath, targetType: InstantiatingTargetType[T], commandContext: CommandContext): Option[T] =
+    find(uri, targetType, targetType.makeTarget(commandContext), commandContext)
+
+  def find[T <: AnyRef](uri: UriPath, targetType: TargetType, target: T, commandContext: CommandContext): Option[T] = {
     val adaptedFieldSeq = entityType.adapt(sourceType, targetType)
     find(uri).map { source =>
-      val target = targetType.makeTarget(commandContext)
       adaptedFieldSeq.copyAndUpdate(source, target, commandContext)
     }
   }

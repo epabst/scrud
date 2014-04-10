@@ -7,6 +7,7 @@ import com.github.scrud.platform.{PlatformDriver, TestingPlatformDriver}
 import com.github.scrud.action._
 import com.github.scrud.context._
 import com.github.scrud.copy.types.MapStorage
+import com.github.scrud.copy.SourceType
 
 /**
  * Examples of using scrud.
@@ -33,27 +34,26 @@ class ScrudExamplesSpec extends FunSpec with MustMatchers {
       initialViewRequest.entityIdOpt must be (None)
       initialViewRequest.availableCommands.map(_.actionKeyAndEntityNameOrFail) must be (Seq(ActionKey.Add -> Author))
       initialViewRequest.availableCommands.map(_.entityIdOpt) must be (Seq(None))
-      initialViewRequest.availableCommands.map(_.commandDataOpt) must be (Seq(None))
+      initialViewRequest.availableCommands.map(_.actionDataTypeOpt) must be (Seq(None))
 
       val addAuthorCommand = initialViewRequest.availableCommands.head
-      val createAuthorViewRequest = entityNavigation.invoke(addAuthorCommand, commandContext)
+      val createAuthorViewRequest = entityNavigation.invoke(addAuthorCommand, None, commandContext)
       createAuthorViewRequest.entityNameOpt must be (Some(Author))
       createAuthorViewRequest.entityIdOpt must be (None)
       createAuthorViewRequest.availableCommands.map(_.actionKey) must be (Seq(ActionKey.Save))
       val createAuthorCommand = initialViewRequest.availableCommands.head
+      val defaultAuthorData = authorEntityType.copyAndUpdate(SourceType.none, SourceType.none, MapStorage, commandContext)
 
       // Simulate a user providing some data
-      val userModifiedCreateAuthorCommand = createAuthorCommand.copyFrom(MapStorage, new MapStorage(
-        authorEntityType.nameField -> Some("George")), commandContext)
+      val userModifiedActionData = authorEntityType.copyAndUpdate(MapStorage, new MapStorage(
+        authorEntityType.nameField -> Some("George")), MapStorage, defaultAuthorData, commandContext)
 
-      val newAuthorViewRequest = entityNavigation.invoke(userModifiedCreateAuthorCommand, commandContext)
+      val newAuthorViewRequest = entityNavigation.invoke(createAuthorCommand, Some(userModifiedActionData), commandContext)
       newAuthorViewRequest.entityNameOpt must be (Some(Author))
       val Some(newAuthorId) = newAuthorViewRequest.entityIdOpt
-      newAuthorViewRequest.availableCommands.map(_.actionKey) must be (Seq(ActionKey.Edit))
+      newAuthorViewRequest.availableCommands.map(_.actionKeyAndEntityNameOrFail) must be (Seq(ActionKey.Edit -> Author))
 
       sharedContext.withPersistence(_.find(Author, newAuthorId, authorEntityType.nameField, commandContext)) must be (Some("George"))
-
-
     }
   }
 }
