@@ -6,10 +6,9 @@ import com.github.scrud.platform.PlatformDriver
 import com.github.scrud.persistence.{PersistenceConnection, EntityTypeMap}
 import com.github.scrud.platform.PlatformTypes._
 import com.github.scrud.action.Undoable
-import com.github.scrud.copy.{SourceWithType, InstantiatingTargetType, SourceType}
+import com.github.scrud.copy.{InstantiatingTargetType, SourceType}
 import com.github.scrud.platform.representation.Persistence
-import com.github.scrud.view.{ViewRequest, ViewDataRequest, ViewSpecifier}
-import scala.util.Try
+import com.github.scrud.view.{ViewRequest, ViewSpecifier}
 
 /**
  * The context for a given interaction or command/response.
@@ -34,20 +33,8 @@ trait CommandContext {
 
   def entityNavigation: EntityNavigation
 
-  def toViewDataRequest(viewSpecifier: ViewSpecifier): ViewDataRequest = {
-    val entityName = viewSpecifier.entityNameOrFail
-    val persistence = persistenceConnection.persistenceFor(entityName)
-    val modelOpt = persistence.find(viewSpecifier.uri).map(SourceWithType(_, persistence.sourceType))
-    ViewDataRequest(viewSpecifier, Try(modelOpt.getOrElse(throw new NoSuchElementException("uri=" + viewSpecifier.uri))))
-  }
-
-  def toViewRequest(viewSpecifier: ViewSpecifier): ViewRequest = {
-    val viewDataRequest = toViewDataRequest(viewSpecifier)
-    toViewRequest(viewDataRequest)
-  }
-
-  def toViewRequest(viewDataRequest: ViewDataRequest): ViewRequest =
-    ViewRequest(viewDataRequest, entityNavigation.usualAvailableCommandsForViewDataRequest(viewDataRequest))
+  def toViewRequest(viewSpecifier: ViewSpecifier): ViewRequest =
+    ViewRequest(viewSpecifier, entityNavigation.usualAvailableCommandsForView(viewSpecifier))
 
   lazy val persistenceConnection: PersistenceConnection = {
     val persistenceConnection = sharedContext.openPersistence()

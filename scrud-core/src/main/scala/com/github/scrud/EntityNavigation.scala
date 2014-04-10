@@ -8,7 +8,7 @@ import CrudOperationType._
 import com.github.scrud.action.OperationAction
 import com.github.scrud.action.StartEntityDeleteOperation
 import com.github.scrud.action.CrudOperation
-import com.github.scrud.view.{ViewDataRequest, ViewRequest, ViewSpecifier}
+import com.github.scrud.view.{ViewRequest, ViewSpecifier}
 import scala.util.Try
 
 /**
@@ -65,10 +65,10 @@ class EntityNavigation(val applicationName: ApplicationName, val entityTypeMap: 
   }
 
   /**
-   * Gets the commands that a user can perform based on a ViewDataRequest.
+   * Gets the commands that a user can perform based on a ViewSpecifier.
    * May be overridden to adjust the list of commands.
    */
-  def usualAvailableCommandsForViewDataRequest(viewDataRequest: ViewDataRequest): Seq[Command] = notImplementedYet
+  def usualAvailableCommandsForView(viewSpecifier: ViewSpecifier): Seq[Command] = notImplementedYet
 
   protected def actionsToUpdateAndListDownstreamsOfOnlyUpstreamWithoutDisplayAction(entityName: EntityName): Seq[OperationAction] = {
 //    val thisEntity = entityTypeMap.entityType(entityName)

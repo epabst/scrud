@@ -13,8 +13,8 @@ import com.github.scrud.view.ViewRequest
 abstract class Action(actionKey: ActionKey) {
   /**
    * Invoke this Action and specify the view to render.
-   * CommandContext has helpful methods for converting a simple [[com.github.scrud.view.ViewSpecifier]] or
-   * [[com.github.scrud.view.ViewDataRequest]] into a [[com.github.scrud.view.ViewRequest]].
+   * CommandContext has helpful methods for converting a simple [[com.github.scrud.view.ViewSpecifier]]
+   * into a [[com.github.scrud.view.ViewRequest]].
    * @param requestedCommand the command that resulted in this Action
    * @param commandContext the CommandContext, which includes platform-dependent support
    * @return a ViewRequest
