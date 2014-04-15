@@ -5,9 +5,9 @@ import com.github.scrud.action.RestMethod.RestMethod
 import com.github.scrud.platform.representation.EditUI
 
 /**
- * The unique identifier for an Action.
- * The intent may depend heavily on the Uri it is used with.
- * The string is not intended for display.  It should be localized to a display string.
+ * The unique identifier for an [[com.github.scrud.action.Action]].
+ * The intention may depend heavily on the Uri it is used with.
+ * The name is not intended for display.  It should be localized to a display string.
  * @author Eric Pabst (epabst@gmail.com)
  * Date: 12/20/12
  * Time: 6:20 PM

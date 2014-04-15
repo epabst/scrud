@@ -10,6 +10,7 @@ import com.github.scrud.context.CommandContext
  */
 trait SourceField[+V] {
   /** Get some value or None from the given source. */
+  //todo add sourceUri
   def findValue(source: AnyRef, context: CommandContext): Option[V]
 
   /**

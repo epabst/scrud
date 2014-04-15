@@ -21,7 +21,7 @@ import com.github.scrud.platform.representation.Persistence
  *         Time: 3:25 PM
  */
 trait CommandContext {
-  @deprecated("this should be in the Command and passed to the Action", since = "2014-03-19")
+  @deprecated("this should be passed to the Action", since = "2014-03-19")
   protected def uri: UriPath
 
   def sharedContext: SharedContext

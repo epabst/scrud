@@ -33,25 +33,21 @@ class ScrudExamplesSpec extends FunSpec with MustMatchers {
 
       initialViewSpecifier.entityNameOpt must be (Some(Author))
       initialViewSpecifier.entityIdOpt must be (None)
-      val initialCommands = entityNavigation.usualAvailableCommandsForView(initialViewSpecifier)
-      initialCommands.map(_.actionKeyAndEntityNameOrFail) must be (Seq(ActionKey.Create -> Author))
-      initialCommands.map(_.entityIdOpt) must be (Seq(None))
-      initialCommands.map(_.actionDataTypeOpt) must be (Seq(Some(EditUI)))
+      val initialActions = entityNavigation.usualAvailableActions(initialViewSpecifier)
+      initialActions must be (Seq(ActionKey.Create))
+      initialActions.map(_.actionDataTypeOpt) must be (Seq(Some(EditUI)))
 
-      val createAuthorCommand = initialCommands.head
-//todo what about being able to have various commands available while editing???
-//    val commandsAvailableFromCreate = entityNavigation.usualAvailableCommandsForView(createAuthorViewSpecifier)
-//      commandsAvailableFromCreate.map(_.actionKey) must be (Seq(ActionKey.Create))
+      val createAuthorAction = initialActions.head
       val defaultAuthorData = authorEntityType.copyAndUpdate(SourceType.none, SourceType.none, MapStorage, commandContext)
 
       // Simulate a user providing some data
       val userModifiedActionData = authorEntityType.copyAndUpdate(MapStorage, new MapStorage(
         authorEntityType.nameField -> Some("George")), MapStorage, defaultAuthorData, commandContext)
 
-      val newAuthorViewSpecifier = entityNavigation.invoke(createAuthorCommand, Some(userModifiedActionData), commandContext)
+      val newAuthorViewSpecifier = entityNavigation.invoke(createAuthorAction, Some(userModifiedActionData), commandContext)
       newAuthorViewSpecifier.entityNameOpt must be (Some(Author))
       val Some(newAuthorId) = newAuthorViewSpecifier.entityIdOpt
-      val commandsAvailableFromView = entityNavigation.usualAvailableCommandsForView(newAuthorViewSpecifier)
+      val commandsAvailableFromView = entityNavigation.usualAvailableActions(newAuthorViewSpecifier)
       commandsAvailableFromView.map(_.actionKeyAndEntityNameOrFail) must be (Seq(ActionKey.Update -> Author))
 
       sharedContext.withPersistence(_.find(Author, newAuthorId, authorEntityType.nameField, commandContext)) must be (Some("George"))

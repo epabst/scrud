@@ -10,6 +10,7 @@ import com.github.scrud.action.StartEntityDeleteOperation
 import com.github.scrud.action.CrudOperation
 import com.github.scrud.view.ViewSpecifier
 import scala.util.Try
+import com.netaporter.uri.Uri
 
 /**
  * The stateless definition of what navigation is available with respect to EntityTypes.
@@ -37,15 +38,15 @@ class EntityNavigation(val applicationName: ApplicationName, val entityTypeMap: 
 
   /**
    * Invoke the Command and provide which View and data to render.
-   * @param command the Command to invoke
+   * @param actionKey which Action to invoke
    * @param commandContext some (platform-dependent) context for the command to run in.
    * @return the view, data, and commands to provide to the user
    */
-  def invoke(command: Command, commandDataOpt: Option[AnyRef], commandContext: CommandContext): ViewSpecifier = {
-    resolveAction(command).get.invoke(command, commandContext)
+  def invoke(actionKey: ActionKey, uri: Uri, commandContext: CommandContext): ViewSpecifier = {
+    resolveAction(actionKey).get.invoke(actionKey, uri, Map.empty, commandContext = commandContext)
   }
 
-  def resolveAction(command: Command): Try[Action] = Try(notImplementedYet)
+  def resolveAction(actionKey: ActionKey): Try[Action] = Try(notImplementedYet)
   
   /**
    * Gets the actions that a user can perform from a given CrudOperation.
@@ -65,10 +66,11 @@ class EntityNavigation(val applicationName: ApplicationName, val entityTypeMap: 
   }
 
   /**
-   * Gets the commands that a user can perform based on a ViewSpecifier.
-   * May be overridden to adjust the list of commands.
+   * Gets the actions that a user can perform based on a ViewSpecifier.
+   * May be overridden to adjust the list of actions.
+   * This is similar to an HTTP OPTIONS request
    */
-  def usualAvailableCommandsForView(viewSpecifier: ViewSpecifier): Seq[Command] = notImplementedYet
+  def usualAvailableActions(viewSpecifier: ViewSpecifier): Seq[ActionKey] = notImplementedYet
 
   protected def actionsToUpdateAndListDownstreamsOfOnlyUpstreamWithoutDisplayAction(entityName: EntityName): Seq[OperationAction] = {
 //    val thisEntity = entityTypeMap.entityType(entityName)
