@@ -2,15 +2,12 @@ package com.github.scrud
 
 import com.github.scrud.platform.PlatformDriver
 import com.github.scrud.persistence.EntityTypeMap
-import com.github.scrud.context.{CommandContext, ApplicationName}
+import com.github.scrud.context.ApplicationName
 import com.github.scrud.action._
 import CrudOperationType._
 import com.github.scrud.action.OperationAction
 import com.github.scrud.action.StartEntityDeleteOperation
 import com.github.scrud.action.CrudOperation
-import com.github.scrud.view.ViewSpecifier
-import scala.util.Try
-import com.netaporter.uri.Uri
 
 /**
  * The stateless definition of what navigation is available with respect to EntityTypes.
@@ -30,25 +27,6 @@ class EntityNavigation(val applicationName: ApplicationName, val entityTypeMap: 
   val primaryEntityType: EntityType = entityTypeMap.allEntityTypes.head
 
   /**
-   * Gets the actions that a user can perform from the main application entry point.
-   * May be overridden to adjust as needed.
-   */
-  def initialViewSpecifier(commandContext: CommandContext): ViewSpecifier =
-    viewSpecifierToList(primaryEntityType.entityName, commandContext)
-
-  /**
-   * Invoke the Command and provide which View and data to render.
-   * @param actionKey which Action to invoke
-   * @param commandContext some (platform-dependent) context for the command to run in.
-   * @return the view, data, and commands to provide to the user
-   */
-  def invoke(actionKey: ActionKey, uri: Uri, commandContext: CommandContext): ViewSpecifier = {
-    resolveAction(actionKey).get.invoke(actionKey, uri, Map.empty, commandContext = commandContext)
-  }
-
-  def resolveAction(actionKey: ActionKey): Try[Action] = Try(notImplementedYet)
-  
-  /**
    * Gets the actions that a user can perform from a given CrudOperation.
    * May be overridden to adjust the list of actions.
    */
@@ -64,13 +42,6 @@ class EntityNavigation(val applicationName: ApplicationName, val entityTypeMap: 
       actionsToDisplay(entityName) ++ entityTypeMap.upstreamEntityNames(entityName).flatMap(actionsToManageList(_)) ++
           actionsToDelete(entityName)
   }
-
-  /**
-   * Gets the actions that a user can perform based on a ViewSpecifier.
-   * May be overridden to adjust the list of actions.
-   * This is similar to an HTTP OPTIONS request
-   */
-  def usualAvailableActions(viewSpecifier: ViewSpecifier): Seq[ActionKey] = notImplementedYet
 
   protected def actionsToUpdateAndListDownstreamsOfOnlyUpstreamWithoutDisplayAction(entityName: EntityName): Seq[OperationAction] = {
 //    val thisEntity = entityTypeMap.entityType(entityName)
@@ -100,11 +71,6 @@ class EntityNavigation(val applicationName: ApplicationName, val entityTypeMap: 
   /** Gets the action(s) to display the list that matches the criteria copied from criteriaSource using entityType.copy. */
   def actionsToList(entityName: EntityName): Seq[OperationAction] =
     Seq(OperationAction(platformDriver.commandToListItems(entityName), platformDriver.operationToShowListUI(entityName)))
-
-  private def notImplementedYet = throw new UnsupportedOperationException("todo implement")
-  
-  /** Gets the action(s) to display the list that matches the criteria copied from criteriaSource using entityType.copy. */
-  def viewSpecifierToList(entityName: EntityName, commandContext: CommandContext): ViewSpecifier = notImplementedYet
 
   /** Return true if the entity may be displayed in a mode that is distinct from editing. */
   protected def isDisplayableWithoutEditing(entityName: EntityName): Boolean = false

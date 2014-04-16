@@ -9,8 +9,6 @@ import com.github.scrud.action.PlatformCommand
 import com.github.scrud.util.Name
 import com.netaporter.uri.Uri
 import scala.util.Success
-import com.github.scrud.context.CommandContext
-import com.github.scrud.view.ViewSpecifier
 
 /**
  * A simple PlatformDriver for testing.
@@ -66,9 +64,6 @@ class TestingPlatformDriver extends PlatformDriver {
 
   val platformSpecificFieldFactories = Seq(MapStorageAdaptableFieldFactory, PersistenceFieldFactory)
 
-  def render(viewSpecifier: ViewSpecifier, commandContext: CommandContext) = {
-    println("Rendering viewSpecifier=" + viewSpecifier + " commandContext=" + commandContext)
-  }
 }
 
 object TestingPlatformDriver extends TestingPlatformDriver

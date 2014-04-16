@@ -9,8 +9,6 @@ import com.github.scrud.util.{Name, Logging}
 import com.github.scrud.platform.representation.PersistenceRange
 import com.netaporter.uri.Uri
 import scala.util.Try
-import com.github.scrud.context.CommandContext
-import com.github.scrud.view.ViewSpecifier
 
 /**
  * An API for an app to interact with the host platform such as Android.
@@ -117,6 +115,4 @@ trait PlatformDriver extends Logging {
     }
     AdaptableFieldWithRepresentations.empty
   }
-
-  def render(viewSpecifier: ViewSpecifier, commandContext: CommandContext)
 }

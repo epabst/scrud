@@ -5,7 +5,6 @@ import com.github.scrud.action.RestMethod.RestMethod
 import com.github.scrud.platform.representation.EditUI
 
 /**
- * The unique identifier for an [[com.github.scrud.action.Action]].
  * The intention may depend heavily on the Uri it is used with.
  * The name is not intended for display.  It should be localized to a display string.
  * @author Eric Pabst (epabst@gmail.com)
@@ -15,7 +14,6 @@ import com.github.scrud.platform.representation.EditUI
  * @param restMethodOpt which REST method correlates to the action, if any.
  * @param actionDataTypeOpt which [[com.github.scrud.action.ActionDataType]] is required for the action, if any.
  *                          If one is specified, the application should first gather data from the user for fields with the ActionDataType.
- * @see [[com.github.scrud.action.Action]]
  */
 case class ActionKey(name: String, restMethodOpt: Option[RestMethod] = None,
                      actionDataTypeOpt: Option[ActionDataType] = None) extends Name

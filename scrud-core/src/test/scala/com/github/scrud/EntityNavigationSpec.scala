@@ -30,16 +30,6 @@ class EntityNavigationSpec extends FunSpec with MustMatchers {
   val entityTypeMap = EntityTypeMapForTesting(Set[EntityType](entityType, upstreamEntity1, upstreamEntity2))
   val navigation = new EntityNavigationForTesting(entityTypeMap)
 
-  describe("initialViewSpecifier") {
-    it("must list the primary entity") {
-      val commandContext = new CommandContextForTesting(entityTypeMap)
-      val viewSpecifier = navigation.initialViewSpecifier(commandContext)
-
-      viewSpecifier.entityNameOpt must be (Some(entityType.entityName))
-      viewSpecifier.entityIdOpt must be (None)
-    }
-  }
-
   describe("actionsFromCrudOperation") {
     describe(Create.toString) {
       it("must allow managing upstreams' lists and deleting self") {
