@@ -4,7 +4,7 @@ import com.github.scrud.{BaseFieldDeclaration, FieldDeclaration}
 import com.github.scrud.context.CommandContext
 
 /**
- * A [[Representation]] that is derived from other fields.
+ * A [[com.github.scrud.copy.Representation]] that is derived from other fields.
  * @author Eric Pabst (epabst@gmail.com)
  *         Date: 2/25/14
  *         Time: 3:23 PM

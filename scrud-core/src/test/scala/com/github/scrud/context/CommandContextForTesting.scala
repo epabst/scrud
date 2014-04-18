@@ -13,7 +13,7 @@ import com.github.scrud.action.CrudOperationType._
  */
 class CommandContextForTesting(operationType: CrudOperationType, uri: UriPath, sharedContext: SharedContext,
                                entityNavigation: EntityNavigation)
-    extends SimpleCommandContext(operationType, uri, sharedContext, entityNavigation) {
+    extends SimpleCommandContext(uri, sharedContext, entityNavigation) {
   def this(entityTypeMap: EntityTypeMap, platformDriver: PlatformDriver) {
     this(Read, UriPath.EMPTY, new SimpleSharedContext(entityTypeMap, platformDriver),
       new EntityNavigation(ApplicationNameForTesting, entityTypeMap, platformDriver))

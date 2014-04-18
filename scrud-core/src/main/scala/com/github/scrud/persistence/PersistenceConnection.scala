@@ -5,7 +5,6 @@ import com.github.scrud.context.{CommandContext, SharedContext}
 import com.github.scrud.state.{DestroyStateListener, State}
 import com.github.scrud.util.{Cache, DelegatingListenerHolder}
 import com.github.scrud.platform.PlatformTypes.ID
-import com.github.scrud.platform.representation.Persistence
 import com.github.scrud.copy.{SourceType, InstantiatingTargetType}
 
 /**
@@ -15,7 +14,7 @@ import com.github.scrud.copy.{SourceType, InstantiatingTargetType}
  * and close themselves when notified.
  * @author Eric Pabst (epabst@gmail.com)
  */
-class PersistenceConnection(entityTypeMap: EntityTypeMap, val sharedContext: SharedContext)
+class PersistenceConnection(val entityTypeMap: EntityTypeMap, val sharedContext: SharedContext)
     extends DelegatingListenerHolder[DestroyStateListener] {
 
   private[persistence] val state: State = new State
@@ -64,17 +63,15 @@ class PersistenceConnection(entityTypeMap: EntityTypeMap, val sharedContext: Sha
     persistenceFor(uri).find(uri, targetType, commandContext)
   }
 
-  /** Find a certain entity by URI and copy it to the targetType. */
-  def find[T <: AnyRef](uri: UriPath, targetType: InstantiatingTargetType[T], commandContext: CommandContext): Option[T] =
-    persistenceFor(uri).find(uri, targetType, commandContext)
-
   /** Find all a certain entity by URI and copy them to the targetType. */
   def findAll[T <: AnyRef](uri: UriPath, targetType: InstantiatingTargetType[T], commandContext: CommandContext): Seq[T] =
     persistenceFor(uri).findAll[T](uri, targetType, commandContext)
 
   def save(entityName: EntityName, sourceType: SourceType, idOpt: Option[ID], source: AnyRef, commandContext: CommandContext): ID = {
+    val sourceUri = idOpt.map(entityName.toUri(_)).getOrElse(UriPath(entityName))
     val persistence = persistenceFor(entityName)
-    val dataToSave = entityTypeMap.entityType(entityName).copyAndUpdate(sourceType, source, persistence.targetType, persistence.newWritable(), commandContext)
+    val dataToSave = entityTypeMap.entityType(entityName).copyAndUpdate(sourceType, source, sourceUri,
+      persistence.targetType, persistence.newWritable(), commandContext)
     persistence.save(idOpt, dataToSave)
   }
 }

@@ -12,7 +12,7 @@ import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 
 /**
- * A behavior specification for [[Derived]].
+ * A behavior specification for [[com.github.scrud.copy.Derived]].
  * @author Eric Pabst (epabst@gmail.com)
  *         Date: 3/13/14
  *         Time: 10:06 AM
@@ -46,7 +46,7 @@ class DerivedSpec extends FunSpec with MustMatchers {
       entityType -> ListBufferPersistenceFactoryForTesting)))
     val id = commandContext.save(entityName, MapStorage, None, new MapStorage(
       entityType.Name -> Some("George"), entityType.BirthDate -> Some(new Date())))
-    val result = commandContext.withUri(entityName.toUri(id)).find(entityName, MapStorage).get
-    result.get(entityType.Nickname2) must be (Some("George0George0"))
+    val result = commandContext.find(entityName.toUri(id), entityType.Nickname2)
+    result must be (Some("George0George0"))
   }
 }

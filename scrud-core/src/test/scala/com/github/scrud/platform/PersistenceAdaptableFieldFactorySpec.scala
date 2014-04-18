@@ -3,7 +3,7 @@ package com.github.scrud.platform
 import org.scalatest.{MustMatchers, FunSpec}
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
-import com.github.scrud.{EntityName, EntityType}
+import com.github.scrud.{UriPath, EntityName, EntityType}
 import com.github.scrud.types.TitleQT
 import com.github.scrud.platform.representation.Persistence
 import com.github.scrud.copy.types.{MapStorage, Default}
@@ -29,8 +29,8 @@ class PersistenceAdaptableFieldFactorySpec extends FunSpec with MustMatchers {
         field("bar4", TitleQT, Seq(Persistence(4), Default("bar4")))
         field("bar2-5", TitleQT, Seq(Persistence(2, 5), Default("bar2-5")))
       }
-      val resultMapStorage = entityType.adapt(SourceType.none, Persistence(3)).copyAndUpdate(None, new MapStorage,
-        new CommandContextForTesting(entityType))
+      val resultMapStorage = entityType.adapt(SourceType.none, Persistence(3)).
+          copyAndUpdate(None, UriPath.EMPTY, new MapStorage, new CommandContextForTesting(entityType))
       resultMapStorage must be (new MapStorage(entityName,
         "bar1" -> Some("bar1"),
         "bar3" -> Some("bar3"),

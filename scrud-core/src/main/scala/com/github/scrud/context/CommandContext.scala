@@ -41,13 +41,11 @@ trait CommandContext {
     persistenceConnection
   }
 
-  /** Find using this CommandContext's URI. */
-  def find[V](entityName: EntityName, field: FieldDeclaration[V]): Option[V] =
-    UriPath.findId(uri, entityName).flatMap(persistenceConnection.find(entityName, _, field, this))
+  def findDefault[V](field: FieldDeclaration[V]): Option[V] = field.toAdaptableField.findDefault(this)
 
   /** Find using this CommandContext's URI. */
-  def find[T <: AnyRef](entityName: EntityName, targetType: InstantiatingTargetType[T]): Option[T] =
-    persistenceConnection.find(uri, targetType, this)
+  def find[V](uri: UriPath, field: FieldDeclaration[V]): Option[V] =
+    persistenceConnection.find(uri, field, this).orElse(findDefault(field))
 
   /** Find using this CommandContext's URI. */
   def findAll(entityName: EntityName): Seq[AnyRef] = persistenceConnection.persistenceFor(entityName).findAll(uri)

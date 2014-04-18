@@ -106,15 +106,18 @@ abstract class EntityType(val entityName: EntityName, val platformDriver: Platfo
 
   def clearId(source: AnyRef): AnyRef = new UnsupportedOperationException
 
-  def copyAndUpdate[T <: AnyRef](sourceType: SourceType, source: AnyRef, targetType: InstantiatingTargetType[T], commandContext: CommandContext): T =
-    copyAndUpdate(sourceType, source, targetType, targetType.makeTarget(commandContext), commandContext)
+  def copyAndUpdate[T <: AnyRef](sourceType: SourceType, source: AnyRef, sourceUri: UriPath, targetType: InstantiatingTargetType[T], commandContext: CommandContext): T =
+    copyAndUpdate(sourceType, source, sourceUri, targetType, targetType.makeTarget(commandContext), commandContext)
 
-  def copyAndUpdate[T <: AnyRef](sourceType: SourceType, source: AnyRef, targetType: TargetType, target: T, commandContext: CommandContext): T = {
+  def copyAndUpdate[T <: AnyRef](sourceType: SourceType, source: AnyRef, sourceUri: UriPath,
+                                 targetType: TargetType, target: T, commandContext: CommandContext): T = {
     val adaptedFieldSeq = adapt(sourceType, targetType)
-    adaptedFieldSeq.copyAndUpdate(source, target, commandContext)
+    adaptedFieldSeq.copyAndUpdate(source, sourceUri, target, commandContext)
   }
 
-  def toUri(id: ID) = UriPath(entityName, id)
+  def toUri(id: ID) = entityName.toUri(id)
+
+  def toUri(idOpt: Option[ID]) = entityName.toUri(idOpt)
 
   /**
    * Available to be overridden as needed by applications.

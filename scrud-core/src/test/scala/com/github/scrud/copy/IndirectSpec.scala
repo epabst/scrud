@@ -30,7 +30,7 @@ class IndirectSpec extends FunSpec with MustMatchers {
     val authorId = commandContext.save(AuthorType.entityName, MapStorage, None, new MapStorage(AuthorType.Name -> Some("Fred")))
     val bookId = commandContext.save(BookType.entityName, MapStorage, None, new MapStorage(BookType.author -> Some(authorId)))
 
-    val book = commandContext.withUri(BookType.entityName.toUri(bookId)).find(BookType.entityName, MapStorage).get
-    book.get(BookType.authorName) must be (Some("Fred"))
+    val authorNameOpt = commandContext.find(BookType.entityName.toUri(bookId), BookType.authorName)
+    authorNameOpt must be (Some("Fred"))
   }
 }
