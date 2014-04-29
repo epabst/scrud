@@ -55,10 +55,10 @@ class ValueFormatSpec extends FunSpec with MustMatchers {
       format.toValue("($1.00)").get must be(-1.0)
       format.toValue("($1)").get must be(-1.0)
       //do these later if desired
-      format.toValue("(1.00)") must be(None)
-      format.toValue("(1)") must be(None)
-      format.toValue("-$1.00") must be(None)
-      format.toValue("-$1") must be(None)
+      format.toValue("(1.00)").isSuccess must be (false)
+      format.toValue("(1)").isSuccess must be (false)
+      format.toValue("-$1.00").isSuccess must be (false)
+      format.toValue("-$1").isSuccess must be (false)
     }
 
     it("must format correctly (for editting)") {
@@ -81,9 +81,9 @@ class ValueFormatSpec extends FunSpec with MustMatchers {
       format.toValue("($1.00)").get must be(-1.0)
       format.toValue("($1)").get must be(-1.0)
       //do these later if desired
-      format.toValue("(1.00)") must be(None)
-      format.toValue("-$1.00") must be(None)
-      format.toValue("-$1") must be(None)
+      format.toValue("(1.00)").isSuccess must be (false)
+      format.toValue("-$1.00").isSuccess must be (false)
+      format.toValue("-$1").isSuccess must be (false)
     }
 
     it("must format correctly") {
@@ -104,7 +104,7 @@ class ValueFormatSpec extends FunSpec with MustMatchers {
       format.toString(MyEnum.B) must be ("B")
       itMustFormatAndParse(format, MyEnum.A)
       itMustFormatAndParse(format, MyEnum.B)
-      format.toValue("") must be (None)
+      format.toValue("").isSuccess must be (false)
     }
   }
 

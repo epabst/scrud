@@ -9,6 +9,7 @@ import GenericConverter._
 import java.util.{Calendar, GregorianCalendar, Date}
 import java.text.DateFormat
 import scala.concurrent.ops
+import scala.util.Success
 
 /** A behavior specification for [[com.github.scrud.converter.Converter]].
   * @author Eric Pabst (epabst@gmail.com)
@@ -27,38 +28,38 @@ class ConverterSpec extends FunSpec with MustMatchers {
   describe("anyToString") {
     it("must use the Object.toString method") {
       val from = new Object
-      anyToString.convert(from) must be (Some(from.toString))
+      anyToString.convert(from) must be (Success(from.toString))
     }
 
     it("must work for primitive types") {
-      anyToString.convert(1) must be (Some("1"))
-      anyToString.convert(1.5) must be (Some("1.5"))
-      anyToString.convert(true) must be (Some("true"))
-      anyToString.convert('a') must be (Some("a"))
+      anyToString.convert(1) must be (Success("1"))
+      anyToString.convert(1.5) must be (Success("1.5"))
+      anyToString.convert(true) must be (Success("true"))
+      anyToString.convert('a') must be (Success("a"))
     }
   }
 
   describe("stringToAnyVal") {
     it("must convert between primitive types") {
-      stringToAnyVal.convertTo[Int]("1") must be (Some(1))
-      stringToAnyVal.convertTo[Long]("123") must be (Some(123L))
-      stringToAnyVal.convertTo[Int]("123") must be (Some(123))
-      stringToAnyVal.convertTo[Short]("123") must be (Some(123))
-      stringToAnyVal.convertTo[Byte]("123") must be (Some(123))
-      stringToAnyVal.convertTo[Double]("3232.11") must be (Some(3232.11))
-      stringToAnyVal.convertTo[Float]("2.3") must be (Some(2.3f))
-      stringToAnyVal.convertTo[Boolean]("true") must be (Some(true))
+      stringToAnyVal.convertTo[Int]("1") must be (Success(1))
+      stringToAnyVal.convertTo[Long]("123") must be (Success(123L))
+      stringToAnyVal.convertTo[Int]("123") must be (Success(123))
+      stringToAnyVal.convertTo[Short]("123") must be (Success(123))
+      stringToAnyVal.convertTo[Byte]("123") must be (Success(123))
+      stringToAnyVal.convertTo[Double]("3232.11") must be (Success(3232.11))
+      stringToAnyVal.convertTo[Float]("2.3") must be (Success(2.3f))
+      stringToAnyVal.convertTo[Boolean]("true") must be (Success(true))
     }
 
-    it("must return None if unable to parse") {
-      stringToAnyVal.convertTo[Int]("foo") must be (None)
-      stringToAnyVal.convertTo[Long]("foo") must be (None)
-      stringToAnyVal.convertTo[Int]("foo") must be (None)
-      stringToAnyVal.convertTo[Short]("foo") must be (None)
-      stringToAnyVal.convertTo[Byte]("foo") must be (None)
-      stringToAnyVal.convertTo[Double]("foo") must be (None)
-      stringToAnyVal.convertTo[Float]("foo") must be (None)
-      stringToAnyVal.convertTo[Boolean]("foo") must be (None)
+    it("must return Failure if unable to parse") {
+      stringToAnyVal.convertTo[Int]("foo").isSuccess must be (false)
+      stringToAnyVal.convertTo[Long]("foo").isSuccess must be (false)
+      stringToAnyVal.convertTo[Int]("foo").isSuccess must be (false)
+      stringToAnyVal.convertTo[Short]("foo").isSuccess must be (false)
+      stringToAnyVal.convertTo[Byte]("foo").isSuccess must be (false)
+      stringToAnyVal.convertTo[Double]("foo").isSuccess must be (false)
+      stringToAnyVal.convertTo[Float]("foo").isSuccess must be (false)
+      stringToAnyVal.convertTo[Boolean]("foo").isSuccess must be (false)
     }
   }
 
@@ -99,7 +100,7 @@ class ConverterSpec extends FunSpec with MustMatchers {
 
   describe("dateToString") {
     it("must format a date") {
-      dateToString.convert(new Date()).isDefined must be (true)
+      dateToString.convert(new Date()).isSuccess must be (true)
     }
 
     it("must use the 'short' format for the current Locale") {
@@ -111,7 +112,7 @@ class ConverterSpec extends FunSpec with MustMatchers {
 
   describe("dateToDisplayString") {
     it("must format a date") {
-      dateToDisplayString.convert(new Date()).isDefined must be (true)
+      dateToDisplayString.convert(new Date()).isSuccess must be (true)
     }
 
     it("must use the default format for the current Locale") {
@@ -132,24 +133,24 @@ class ConverterSpec extends FunSpec with MustMatchers {
       stringToCurrency.convert("($1.00)").get must be(-1.0)
       stringToCurrency.convert("($1)").get must be(-1.0)
       //do these later if desired
-      stringToCurrency.convert("(1.00)") must be(None)
-      stringToCurrency.convert("(1)") must be(None)
-      stringToCurrency.convert("-$1.00") must be(None)
-      stringToCurrency.convert("-$1") must be(None)
+      stringToCurrency.convert("(1.00)").isSuccess must be (false)
+      stringToCurrency.convert("(1)").isSuccess must be (false)
+      stringToCurrency.convert("-$1.00").isSuccess must be (false)
+      stringToCurrency.convert("-$1").isSuccess must be (false)
     }
   }
 
   describe("currencyToString") {
     it("must format correctly") {
-      currencyToString.convert(1234.2) must be (Some("1,234.20"))
-      currencyToString.convert(1234.22324) must be (Some("1,234.22"))
+      currencyToString.convert(1234.2) must be (Success("1,234.20"))
+      currencyToString.convert(1234.22324) must be (Success("1,234.22"))
     }
   }
 
   describe("currencyToEditString") {
     it("must format correctly") {
-      currencyToEditString.convert(1234.2) must be (Some("1,234.20"))
-      currencyToEditString.convert(1234.22324) must be (Some("1,234.22"))
+      currencyToEditString.convert(1234.2) must be (Success("1,234.20"))
+      currencyToEditString.convert(1234.22324) must be (Success("1,234.22"))
     }
   }
 
@@ -167,15 +168,15 @@ class ConverterSpec extends FunSpec with MustMatchers {
 
   describe("percentageToString") {
     it("must format correctly") {
-      percentageToString.convert(0.1234f) must be (Some("12%"))
-      percentageToString.convert(0.20f) must be (Some("20%"))
+      percentageToString.convert(0.1234f) must be (Success("12%"))
+      percentageToString.convert(0.20f) must be (Success("20%"))
     }
   }
 
   describe("percentageToEditString") {
     it("must format correctly") {
-      percentageToEditString.convert(0.1234f) must be (Some("12"))
-      percentageToEditString.convert(0.20f) must be (Some("20"))
+      percentageToEditString.convert(0.1234f) must be (Success("12"))
+      percentageToEditString.convert(0.20f) must be (Success("20"))
     }
   }
 
@@ -187,13 +188,13 @@ class ConverterSpec extends FunSpec with MustMatchers {
     val converter = stringToEnum[MyEnum.Value](MyEnum)
 
     it("must convert") {
-      converter.convert("A") must be (Some(MyEnum.A))
-      converter.convert("B") must be (Some(MyEnum.B))
+      converter.convert("A") must be (Success(MyEnum.A))
+      converter.convert("B") must be (Success(MyEnum.B))
     }
 
     it("must return None if unable to convert") {
-      converter.convert("C") must be (None)
-      converter.convert("") must be (None)
+      converter.convert("C").isSuccess must be (false)
+      converter.convert("").isSuccess must be (false)
     }
   }
 }

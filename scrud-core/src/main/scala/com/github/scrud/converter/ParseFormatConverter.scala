@@ -1,6 +1,7 @@
 package com.github.scrud.converter
 
 import java.text.{ParsePosition, Format}
+import scala.util.{Try, Failure}
 
 /**
  * A Converter that uses a [[java.text.Format]] ThreadLocal instance.
@@ -13,7 +14,12 @@ import java.text.{ParsePosition, Format}
 class ParseFormatConverter[T](format: ThreadLocal[_ <: Format], obj2Value: (Object) => T = {(v: Object) => v.asInstanceOf[T]}) extends Converter[String,T] {
   def convert(string: String) = {
     val position = new ParsePosition(0)
-    val result = format.get().parseObject(string, position)
-    if (result == null) None else Some(obj2Value(result))
+    val formatInstance = format.get()
+    val result = formatInstance.parseObject(string, position)
+    if (result == null) {
+      Failure(new IllegalArgumentException("format=" + formatInstance + " cannot parse string=" + string))
+    } else {
+      Try(obj2Value(result))
+    }
   }
 }

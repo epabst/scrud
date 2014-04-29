@@ -5,19 +5,20 @@ import scala.Enumeration
 import Converter._
 import GenericConverter._
 import java.text.{SimpleDateFormat, Format}
+import scala.util.Try
 
 /** A value String format.
   * @author Eric Pabst (epabst@gmail.com)
   */
 trait ValueFormat[T] {
-  def toValue(s: String): Option[T]
+  def toValue(s: String): Try[T]
 
   /** May need to be overridden */
   def toString(value: T): String = value.toString
 }
 
 object ValueFormat {
-  def apply[T](toValue: String => Option[T], toString: T => String) = {
+  def apply[T](toValue: String => Try[T], toString: T => String) = {
     val _toValue = toValue
     val _toString = toString
     new ValueFormat[T] {

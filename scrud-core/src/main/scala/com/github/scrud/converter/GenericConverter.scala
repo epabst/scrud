@@ -1,11 +1,13 @@
 package com.github.scrud.converter
 
+import scala.util.Try
+
 /** A converter from one type to another based solely on the scala type desired.
   * @author Eric Pabst (epabst@gmail.com)
   */
 trait GenericConverter[-A,-B] {
   /** Converts from {{{from}}} to the new type if possible. */
-  def convertTo[T <: B](from: A)(implicit manifest: Manifest[T]): Option[T]
+  def convertTo[T <: B](from: A)(implicit manifest: Manifest[T]): Try[T]
 }
 
 object GenericConverter {

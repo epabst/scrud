@@ -2,6 +2,7 @@ package com.github.scrud.converter
 
 import java.text.{DateFormat, Format, NumberFormat}
 import java.util.{Calendar, Date}
+import scala.util.{Failure, Success, Try}
 
 /**
  * A converter from one type to another.
@@ -11,7 +12,7 @@ import java.util.{Calendar, Date}
  */
 trait Converter[-A,+B] {
   /** Converts from {{{from}}} to the new type if possible. */
-  def convert(from: A): Option[B]
+  def convert(from: A): Try[B]
 }
 
 object Converter {
@@ -22,19 +23,19 @@ object Converter {
   def identityConverter[A]: Converter[A,A] = _identityConverter.asInstanceOf[Converter[A,A]]
 
   private val _identityConverter = new Converter[Any,Any] {
-    def convert(from: Any) = Some(from)
+    def convert(from: Any) = Success(from)
   }
 
-  implicit def apply[A,B](f: A => Option[B]): Converter[A,B] = new Converter[A,B] {
+  implicit def apply[A,B](f: A => Try[B]): Converter[A,B] = new Converter[A,B] {
     def convert(from: A) = f(from)
   }
 
   val anyToString: Converter[Any,String] = new Converter[Any,String] {
-    def convert(from: Any) = Some(from.toString)
+    def convert(from: Any) = Success(from.toString)
   }
 
   val noConverter: Converter[Any,Nothing] = new Converter[Any,Nothing] {
-    def convert(from: Any) = None
+    def convert(from: Any) = Failure(new UnsupportedOperationException("Converter.noConverter can't convert anything"))
   }
 
   private lazy val defaultCurrencyFormatThreadLocal = toThreadLocal[NumberFormat](NumberFormat.getCurrencyInstance)
@@ -80,17 +81,17 @@ object Converter {
     def convert(from: Float) = formatToString[Float](percentagePercentFormat).convert(from)
   }
 
-  lazy val dateToLong = Converter[Date, Long](d => Some(d.getTime))
-  lazy val longToDate = Converter[Long, Date](l => Some(new Date(l)))
+  lazy val dateToLong = Converter[Date, Long](d => Success(d.getTime))
+  lazy val longToDate = Converter[Long, Date](l => Success(new Date(l)))
 
   lazy val dateToCalendar = Converter[Date, Calendar] { date =>
     val calendar = Calendar.getInstance
     calendar.setTime(date)
-    Some(calendar)
+    Success(calendar)
   }
-  lazy val calendarToDate = Converter[Calendar, Date](c => Some(c.getTime))
+  lazy val calendarToDate = Converter[Calendar, Date](c => Success(c.getTime))
 
-  def formatToString[T](format: ThreadLocal[_ <: Format]): Converter[T,String] = Converter[T,String](value => Some(format.get().format(value)))
+  def formatToString[T](format: ThreadLocal[_ <: Format]): Converter[T,String] = Converter[T,String](value => Success(format.get().format(value)))
 
   lazy val currencyToString: Converter[Double,String] = formatToString[Double](currencyFormat)
   lazy val currencyToEditString: Converter[Double,String] = formatToString[Double](currencyEditFormat)
@@ -110,6 +111,7 @@ object Converter {
   lazy val dateToDisplayString = formatToString[Date](toThreadLocal(DateFormat.getDateInstance(DateFormat.DEFAULT)))
 
   def stringToEnum[T <: Enumeration#Value](enumeration: Enumeration): Converter[String,T] = new Converter[String,T] {
-    def convert(from: String) = enumeration.values.find(_.toString == from).map(_.asInstanceOf[T])
+    def convert(from: String) = Try(enumeration.values.find(_.toString == from).map(_.asInstanceOf[T]).
+      getOrElse(sys.error("No value found in " + enumeration + " for value=" + from)))
   }
 }
