@@ -12,8 +12,8 @@ import org.apache.commons.codec.binary.Base64
  *         Date: 1/31/14
  *         Time: 3:16 PM
  */
-case class MultiSelectQT(entityName: EntityName) extends StringConvertibleQT[Set[ID]] {
-  import MultiSelectQT._
+case class EntityMultiSelectQT(entityName: EntityName) extends StringConvertibleQT[Set[ID]] {
+  import EntityMultiSelectQT._
 
   def convertIdToString(value: ID): String = Base64.encodeBase64URLSafeString(toByteBuffer(value).array())
 
@@ -26,6 +26,9 @@ case class MultiSelectQT(entityName: EntityName) extends StringConvertibleQT[Set
   }
 
   def convertToString(value: Set[ID]) = value.toSeq.sorted.map(convertIdToString(_)).mkString(delimiter, delimiter, delimiter)
+
+  /** Convert the value to a String for editing.  This may simply call convertToString(value). */
+  def convertToEditString(value: Set[ID]) = convertToString(value)
 
   def convertFromString(string: String) = Try(string.split(delimiter).filterNot(_.isEmpty).map(convertIdFromString(_).get).toSet)
 
@@ -47,7 +50,7 @@ case class MultiSelectQT(entityName: EntityName) extends StringConvertibleQT[Set
   }
 }
 
-object MultiSelectQT {
+object EntityMultiSelectQT {
   val delimiter = ":"
-  private[MultiSelectQT] val byteCountForLong = java.lang.Long.SIZE / java.lang.Byte.SIZE
+  private[EntityMultiSelectQT] val byteCountForLong = java.lang.Long.SIZE / java.lang.Byte.SIZE
 }

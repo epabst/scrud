@@ -7,14 +7,14 @@ import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 
 /**
- * A behavior specification for [[com.github.scrud.types.MultiSelectQT]].
+ * A behavior specification for [[com.github.scrud.types.EntityMultiSelectQT]].
  * @author Eric Pabst (epabst@gmail.com)
  *         Date: 1/31/14
  *         Time: 3:22 PM
  */
 @RunWith(classOf[JUnitRunner])
-class MultiSelectQTSpec extends FunSpec with MustMatchers {
-  val qualifiedType = MultiSelectQT(EntityName("Foo"))
+class EntityMultiSelectQTSpec extends FunSpec with MustMatchers {
+  val qualifiedType = EntityMultiSelectQT(EntityName("Foo"))
   
   it("must convert a single ID to/from a String") {
     val string = qualifiedType.convertToString(Set(45L))
@@ -35,9 +35,9 @@ class MultiSelectQTSpec extends FunSpec with MustMatchers {
     it("must format the String such that a search for :ID: works (where : is the delimiter)") {
       val idSet = Set(45L, 1000L, 23L, 99L, 3L)
       val string = qualifiedType.convertToString(idSet)
-      string must startWith(MultiSelectQT.delimiter)
-      string must endWith(MultiSelectQT.delimiter)
-      string.count(_.toString == MultiSelectQT.delimiter) must be (idSet.size + 1)
+      string must startWith(EntityMultiSelectQT.delimiter)
+      string must endWith(EntityMultiSelectQT.delimiter)
+      string.count(_.toString == EntityMultiSelectQT.delimiter) must be (idSet.size + 1)
     }
     
     it("must format the String such that the ID's are sorted by ID") {
