@@ -36,6 +36,15 @@ Here are some topics that will be added soon to the Wiki:
 
 Todo
 ---------------------------------
+-Get scrud-android compiling against scrud-core without losing useful code.
+-Get scrud-android to actually work against scrud-core.
+-RELEASE APPS ON MARKET
+-Optimization: Make TextViewField not have to construct a Success(string) to convert a String to a String.
+-Optimization: use CharSequence instead of String.
+
+
+
+
 Add a test to each application that verifies it meets contract:
   - For each Persistence: it's find must be able to correctly find each item returned by findAll.
 Make "Add Author" show up in the menu for the list of Books for an Author.
