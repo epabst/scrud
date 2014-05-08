@@ -15,8 +15,9 @@ trait SourceField[+V] {
 
   /**
    * Get some value or None from the given source.
-   * This should never be removed because it flags situations where an Option is passed in
+   * NEVER REMOVE THIS because it flags situations where an Option is passed in
    * when one never should be.
+   * It's signature should always match the normal findValue method except for accepting an Option.
    */
   @deprecated("use findValue(sourceOpt.get, context)")
   final def findValue(sourceOpt: Option[AnyRef], context: CommandContext): Option[V] =
