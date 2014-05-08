@@ -2,8 +2,7 @@ package com.github.scrud.context
 
 import com.github.scrud.{EntityNavigation, FieldDeclaration, UriPath, EntityName}
 import com.github.scrud.state.{DestroyStateListener, State}
-import com.github.scrud.platform.PlatformDriver
-import com.github.scrud.persistence.{PersistenceConnection, EntityTypeMap}
+import com.github.scrud.persistence.PersistenceConnection
 import com.github.scrud.platform.PlatformTypes._
 import com.github.scrud.action.Undoable
 import com.github.scrud.copy.{InstantiatingTargetType, SourceType}
@@ -19,15 +18,9 @@ import com.github.scrud.copy.{InstantiatingTargetType, SourceType}
  *         Date: 12/10/13
  *         Time: 3:25 PM
  */
-trait CommandContext {
+trait CommandContext extends SharedContextHolder {
   //todo this should probably be passed with each invocation rather than here.
   protected def uri: UriPath
-
-  def sharedContext: SharedContext
-
-  def entityTypeMap: EntityTypeMap = sharedContext.entityTypeMap
-
-  def platformDriver: PlatformDriver = sharedContext.platformDriver
 
   def entityNavigation: EntityNavigation
 
