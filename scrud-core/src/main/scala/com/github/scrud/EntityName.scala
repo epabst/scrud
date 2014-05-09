@@ -12,7 +12,7 @@ import com.github.scrud.util.Name
 case class EntityName(name: String) extends QualifiedTypeProvidingFieldName[ID] with Name {
   def toUri(id: ID) = UriPath(this, id)
 
-  def toUri(idOpt: Option[ID]) = idOpt.map(UriPath(this, _)).getOrElse(UriPath(this))
+  def toUri(idOpt: Option[ID]) = idOpt.fold(UriPath(this))(UriPath(this, _))
 
   /** The field name does not include "ID" to make it more intuitive when displaying and referencing. */
   override def toFieldName = toCamelCase
