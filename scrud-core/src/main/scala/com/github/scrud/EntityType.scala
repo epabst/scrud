@@ -100,7 +100,8 @@ abstract class EntityType(val entityName: EntityName, val platformDriver: Platfo
     case upstreamName: EntityName => upstreamName
   }
 
-  def findPersistedId(readable: AnyRef): Option[ID] = idField.findSourceField(Persistence.Latest).flatMap(_.findValue(readable, null))
+  def findPersistedId(source: AnyRef, sourceUri: UriPath): Option[ID] =
+    idField.findSourceField(Persistence.Latest).flatMap(_.findValue(source, new CopyContext(sourceUri, null)))
 
   def clearId(source: IdPk): IdPk = source.withId(None)
 

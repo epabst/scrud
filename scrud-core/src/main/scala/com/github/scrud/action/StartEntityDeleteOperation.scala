@@ -18,7 +18,7 @@ final case class StartEntityDeleteOperation(entityType: EntityType) extends Pers
   def invoke(uri: UriPath, persistenceConnection: PersistenceConnection, commandContext: CommandContext) {
     val persistence = persistenceConnection.persistenceFor(entityType)
     persistence.find(uri).foreach { readable =>
-      val idOpt: Option[ID] = entityType.findPersistedId(readable)
+      val idOpt: Option[ID] = entityType.findPersistedId(readable, uri)
       val writable = persistence.toWritable(Persistence.Latest, readable, uri, commandContext)
       persistence.delete(uri)
       val undoDeleteOperation = new PersistenceOperation {

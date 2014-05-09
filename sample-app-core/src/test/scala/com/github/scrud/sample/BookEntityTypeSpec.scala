@@ -8,6 +8,7 @@ import com.github.scrud.platform.representation.Persistence
 import org.scalatest.matchers.MustMatchers
 import com.github.scrud.copy.types.MapStorage
 import Genre._
+import com.github.scrud.copy.CopyContext
 
 /**
  * A behavior specification for [[com.github.scrud.sample.BookEntityType]].
@@ -21,6 +22,6 @@ class BookEntityTypeSpec extends FunSpec with MustMatchers {
 
   it("must have a default genre of Fantasy") {
     val sourceField = entityType.genre.toAdaptableField.findSourceField(Persistence.Latest)
-    sourceField.flatMap(_.findValue(new MapStorage, null)) must be (Some(Fantasy))
+    sourceField.flatMap(_.findValue(new MapStorage, new CopyContext(null, null))) must be (Some(Fantasy))
   }
 }

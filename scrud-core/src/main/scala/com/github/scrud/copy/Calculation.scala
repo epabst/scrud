@@ -1,7 +1,5 @@
 package com.github.scrud.copy
 
-import com.github.scrud.context.CommandContext
-
 /**
  * An AdaptableField (and SourceField) whose value is calculated.
  * It has access to the CommandContext.  If the CommandContext isn't needed, use [[com.github.scrud.copy.Derived]] instead.
@@ -13,10 +11,10 @@ abstract class Calculation[V] extends ExtensibleAdaptableField[V] with SourceFie
   private val sourceFieldOpt: Option[SourceField[V]] = Some(this)
 
   /** Get some value or None from the given source. */
-  def calculate(context: CommandContext): Option[V]
+  def calculate(context: CopyContext): Option[V]
 
   /** Get some value or None from the given source. */
-  final def findValue(source: AnyRef, context: CommandContext) = calculate(context)
+  final def findValue(source: AnyRef, context: CopyContext) = calculate(context)
 
   final def findSourceField(sourceType: SourceType) = sourceFieldOpt
 
@@ -25,10 +23,10 @@ abstract class Calculation[V] extends ExtensibleAdaptableField[V] with SourceFie
 
 object Calculation {
   /** A field Representation where the value is calculated (given a CommandContext). */
-  def apply[V](f: CommandContext => Option[V]): Calculation[V] = {
+  def apply[V](f: CopyContext => Option[V]): Calculation[V] = {
     new Calculation[V] {
       /** Get some value or None from the given source. */
-      override def calculate(context: CommandContext) = f(context)
+      override def calculate(context: CopyContext) = f(context)
     }
   }
 }

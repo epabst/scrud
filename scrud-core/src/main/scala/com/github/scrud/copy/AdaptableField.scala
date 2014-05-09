@@ -1,6 +1,7 @@
 package com.github.scrud.copy
 
 import com.github.scrud.context.CommandContext
+import com.github.scrud.UriPath
 
 /**
  * A set of [[com.github.scrud.copy.TargetField]]s by [[com.github.scrud.copy.TargetType]]
@@ -23,8 +24,8 @@ abstract class AdaptableField[V] extends BaseAdaptableField { self =>
   def sourceField(sourceType: SourceType): SourceField[V] =
     findSourceField(sourceType).getOrElse(sys.error(this + " has no SourceField for " + sourceType))
 
-  def findDefault(commandContext: CommandContext): Option[V] =
-    sourceField(SourceType.none).findValue(SourceType.none, commandContext)
+  def findDefault(sourceUri: UriPath, commandContext: CommandContext): Option[V] =
+    sourceField(SourceType.none).findValue(SourceType.none, new CopyContext(sourceUri, commandContext))
 
   def findTargetField(targetType: TargetType): Option[TargetField[V]]
 }

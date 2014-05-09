@@ -6,7 +6,7 @@ import com.github.scrud.platform.PlatformDriver
 /**
  * Something that has a SharedContext.
  */
-private[context] trait SharedContextHolder {
+private[scrud] trait SharedContextHolder {
   def sharedContext: SharedContext
 
   def entityTypeMap: EntityTypeMap = sharedContext.entityTypeMap

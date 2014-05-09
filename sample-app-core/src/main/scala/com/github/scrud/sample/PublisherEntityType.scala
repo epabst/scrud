@@ -14,5 +14,5 @@ class PublisherEntityType(platformDriver: PlatformDriver) extends EntityType(Pub
   field("name", TitleQT, Seq(Persistence(2), EditUI, SelectUI, Validation.requiredString))
 
   field("bookCount", NaturalIntQT, Seq(SummaryUI,
-    Calculation { copyContext => Some(copyContext.findAll(Book).size) }))
+    Calculation { context => Some(context.findAll(Book).size) }))
 }

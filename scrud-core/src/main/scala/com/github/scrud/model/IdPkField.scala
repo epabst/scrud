@@ -2,7 +2,6 @@ package com.github.scrud.model
 
 import com.github.scrud.copy._
 import com.github.scrud.platform.PlatformTypes._
-import com.github.scrud.context.CommandContext
 import com.github.scrud.platform.representation.EntityModelForPlatform
 
 /**
@@ -14,10 +13,10 @@ import com.github.scrud.platform.representation.EntityModelForPlatform
 
 object IdPkField extends TypedTargetField[IdPk,ID] with TypedSourceField[IdPk,ID] with AdaptableFieldConvertible[ID] with Representation[ID] {
   /** Get some value or None from the given source. */
-  def findFieldValue(sourceData: IdPk, context: CommandContext) = sourceData.id
+  def findFieldValue(sourceData: IdPk, context: CopyContext) = sourceData.id
 
   /** Updates the {{{target}}} subject using the {{{valueOpt}}} for this field and some context. */
-  def updateFieldValue(target: IdPk, valueOpt: Option[ID], context: CommandContext) =
+  def updateFieldValue(target: IdPk, valueOpt: Option[ID], context: CopyContext) =
     target.withId(valueOpt)
 
   /**

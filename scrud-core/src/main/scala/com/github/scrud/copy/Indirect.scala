@@ -1,7 +1,6 @@
 package com.github.scrud.copy
 
 import com.github.scrud.{EntityName, EntityType, FieldDeclaration}
-import com.github.scrud.context.CommandContext
 import com.github.scrud.platform.PlatformTypes.ID
 
 /**
@@ -29,7 +28,7 @@ case class Indirect[E <: EntityType,V](otherEntityIdField: FieldDeclaration[ID],
 private class IndirectSourceField[E <: EntityType,V](otherEntityName: EntityName, otherEntityIdField: SourceField[ID],
                                                      indirectFieldOptGetter: E => Option[SourceField[V]]) extends SourceField[V] {
   /** Get some value or None from the given source. */
-  override def findValue(source: AnyRef, context: CommandContext): Option[V] = {
+  override def findValue(source: AnyRef, context: CopyContext): Option[V] = {
     for {
       otherEntityId <- otherEntityIdField.findValue(source, context)
       uri = otherEntityName.toUri(otherEntityId)

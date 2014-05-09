@@ -3,7 +3,6 @@ package com.github.scrud.copy
 import org.scalatest.{MustMatchers, FunSpec}
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
-import com.github.scrud.context.CommandContext
 
 /**
  * A behavior specification for [[com.github.scrud.copy.CompositeSourceField]].
@@ -17,7 +16,7 @@ class CompositeSourceFieldSpec extends FunSpec with MustMatchers {
     it("must have a very shallow stack when delegating to an SourceField's findValue") {
       val sourceField = new SourceField[String] {
         /** Get some value or None from the given source. */
-        override def findValue(source: AnyRef, context: CommandContext) = {
+        override def findValue(source: AnyRef, context: CopyContext) = {
           val throwable = new Throwable()
           throwable.fillInStackTrace()
           throwable.printStackTrace()

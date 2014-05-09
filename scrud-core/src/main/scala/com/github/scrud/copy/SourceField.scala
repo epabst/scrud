@@ -1,7 +1,5 @@
 package com.github.scrud.copy
 
-import com.github.scrud.context.CommandContext
-
 /**
  * A field that can be get a value out of a source.
  * @author Eric Pabst (epabst@gmail.com)
@@ -10,8 +8,7 @@ import com.github.scrud.context.CommandContext
  */
 trait SourceField[+V] {
   /** Get some value or None from the given source. */
-  //todo add sourceUri
-  def findValue(source: AnyRef, context: CommandContext): Option[V]
+  def findValue(source: AnyRef, context: CopyContext): Option[V]
 
   /**
    * Get some value or None from the given source.
@@ -19,7 +16,7 @@ trait SourceField[+V] {
    * when one never should be.
    * It's signature should always match the normal findValue method except for accepting an Option.
    */
-  @deprecated("use findValue(sourceOpt.get, context)")
-  final def findValue(sourceOpt: Option[AnyRef], context: CommandContext): Option[V] =
+  @deprecated("use findValue(sourceOpt.get, context)", since = "2014-05-08")
+  final def findValue(sourceOpt: Option[AnyRef], context: CopyContext): Option[V] =
     sourceOpt.flatMap { findValue(_, context) }
 }

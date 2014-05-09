@@ -9,7 +9,6 @@ import scrud.types._
 import view.ViewField._
 import view.FieldLayout._
 import view.ViewRef
-import com.github.triangle.PortableField
 import com.github.scrud.copy._
 import com.github.scrud.EntityName
 import com.github.scrud.android.action.StartEntityActivityOperation
@@ -21,8 +20,8 @@ import com.github.scrud.types.EnumerationValueQT
 import com.github.scrud.android.view.EntityView
 import com.github.scrud.action.PlatformCommand
 import com.github.scrud.copy.FieldApplicability
-import com.github.scrud.context.RequestContext
-import com.github.scrud.platform.node.{MapTargetField, MapStorage}
+import com.github.scrud.copy.types.MapStorage
+import com.github.scrud.context.CommandContext
 
 /**
  * A PlatformDriver for the Android platform.
@@ -106,7 +105,7 @@ class AndroidPlatformDriver(rClass: Class[_], val activityClass: Class[_ <: Crud
         Map(sourceType -> field)
       case _ =>
         val field = new SourceField[V] {
-          def findValue(source: AnyRef, context: RequestContext) = None //todo
+          def findValue(source: AnyRef, context: CopyContext) = None //todo
         }
         Map(sourceType -> field)
     }
@@ -118,7 +117,7 @@ class AndroidPlatformDriver(rClass: Class[_], val activityClass: Class[_ <: Crud
         new MapTargetField[V](entityName, fieldName)
       case _ =>
         new TargetField[V] {
-          def putValue(target: AnyRef, valueOpt: Option[V], context: RequestContext) = {
+          override def updateValue[T <: AnyRef](target: T, valueOpt: Option[V], context: CopyContext): T = {
             //todo
           }
         }

@@ -11,7 +11,7 @@ import com.github.scrud.context.CommandContext
  */
 case class Default[V](valueOpt: Option[V]) extends Calculation[V] {
   /** Get some value or None from the given source. */
-  def calculate(context: CommandContext) = valueOpt
+  def calculate(context: CopyContext) = valueOpt
 }
 
 object Default {

@@ -5,7 +5,7 @@ import com.github.scrud.context.{CommandContext, SharedContext}
 import com.github.scrud.state.{DestroyStateListener, State}
 import com.github.scrud.util.{Cache, DelegatingListenerHolder}
 import com.github.scrud.platform.PlatformTypes.ID
-import com.github.scrud.copy.{SourceType, InstantiatingTargetType}
+import com.github.scrud.copy.{CopyContext, SourceType, InstantiatingTargetType}
 
 /**
  * A pseudo-connection to any/all persistence mechanisms.
@@ -47,8 +47,9 @@ class PersistenceConnection(val entityTypeMap: EntityTypeMap, val sharedContext:
   /** Find the field value for a certain entity by ID. */
   def find[V](entityName: EntityName, id: ID, field: FieldDeclaration[V], commandContext: CommandContext): Option[V] = {
     val persistence = persistenceFor(entityName)
-    persistence.find(entityName.toUri(id)).flatMap { entity =>
-      field.toAdaptableField.sourceField(persistence.sourceType).findValue(entity, commandContext)
+    val sourceUri = entityName.toUri(id)
+    persistence.find(sourceUri).flatMap { entity =>
+      field.toAdaptableField.sourceField(persistence.sourceType).findValue(entity, new CopyContext(sourceUri, commandContext))
     }
   }
 
@@ -68,7 +69,7 @@ class PersistenceConnection(val entityTypeMap: EntityTypeMap, val sharedContext:
     persistenceFor(uri).findAll[T](uri, targetType, commandContext)
 
   def save(entityName: EntityName, sourceType: SourceType, idOpt: Option[ID], source: AnyRef, commandContext: CommandContext): ID = {
-    val sourceUri = idOpt.map(entityName.toUri(_)).getOrElse(UriPath(entityName))
+    val sourceUri = entityName.toUri(idOpt)
     val persistence = persistenceFor(entityName)
     val dataToSave = entityTypeMap.entityType(entityName).copyAndUpdate(sourceType, source, sourceUri,
       persistence.targetType, persistence.newWritable(), commandContext)

@@ -39,7 +39,7 @@ trait CrudPersistence extends EntityPersistence with ListenerSet[DataListener] w
   }
 
   /** Find an entity with a given ID using a baseUri. */
-  def find(id: ID, baseUri: UriPath): Option[AnyRef] = find(baseUri.specify(entityType.entityName, id))
+  def find(id: ID, baseUri: UriPath): Option[AnyRef] = find(UriPath.specify(baseUri, entityType.entityName, id))
 
   override def find(uri: UriPath): Option[AnyRef] = {
     val result = super.find(uri)
@@ -52,7 +52,7 @@ trait CrudPersistence extends EntityPersistence with ListenerSet[DataListener] w
     val adaptedFieldSeq = entityType.adapt(sourceType, targetType)
     findAll(uri).map { source =>
       val target = targetType.makeTarget(commandContext)
-      val sourceUri = UriPath.specify(uri, entityType.findPersistedId(source))
+      val sourceUri = UriPath.specify(uri, entityType.findPersistedId(source, uri))
       adaptedFieldSeq.copyAndUpdate(source, sourceUri, target, commandContext)
     }
   }

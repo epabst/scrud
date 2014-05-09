@@ -12,9 +12,12 @@ import com.github.scrud.UriPath
 case class AdaptedFieldSeq(adaptedFields: Seq[BaseAdaptedField]) {
   def copyAndUpdate[T <: AnyRef](source: AnyRef, sourceUri: UriPath, target: T, commandContext: CommandContext): T = {
     var result: T = target
-    for {
-      adaptedField <- adaptedFields
-    } result = adaptedField.copyAndUpdate(source, result, commandContext)
+    if (!adaptedFields.isEmpty) {
+      val context = new CopyContext(sourceUri, commandContext)
+      for {
+        adaptedField <- adaptedFields
+      } result = adaptedField.copyAndUpdate(source, result, context)
+    }
     result
   }
 }

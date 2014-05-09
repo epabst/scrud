@@ -5,6 +5,7 @@ import com.github.scrud.util.Logging
 import com.github.scrud.{UriPath, EntityType}
 import com.github.scrud.util.{MutableListenerSet, DelegatingListenerSet}
 import com.github.scrud.context.SharedContext
+import com.github.scrud.copy.CopyContext
 
 /**
  * CrudPersistnece that uses [[com.github.scrud.persistence.ThinPersistence]].
@@ -20,15 +21,17 @@ class CrudPersistenceUsingThin(val entityType: EntityType, val thinPersistence: 
 
   protected[persistence] def doSave(idOption: Option[ID], writable: AnyRef): ID = {
     val targetIdFieldOpt = entityType.idField.findTargetField(targetType)
+    val sourceUri = entityType.toUri(idOption)
+    val copyContext = new CopyContext(sourceUri, sharedContext.asStubCommandContext)
     val writableWithIdOpt: Option[AnyRef] = for {
       id <- idOption
       targetIdField <- targetIdFieldOpt
-    } yield targetIdField.updateValue(writable, Some(id), sharedContext.asStubCommandContext)
+    } yield targetIdField.updateValue(writable, Some(id), copyContext)
     val writableToSave = writableWithIdOpt.getOrElse(writable)
 
     val id = thinPersistence.save(idOption, writableToSave)
     if (idOption.isEmpty) {
-      targetIdFieldOpt.foreach(_.updateValue(writable, Some(id), sharedContext.asStubCommandContext))
+      targetIdFieldOpt.foreach(_.updateValue(writable, Some(id), copyContext))
     }
     id
   }
