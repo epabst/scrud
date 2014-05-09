@@ -1,7 +1,6 @@
 package com.github.scrud.platform.representation
 
 import com.github.scrud.copy._
-import com.github.scrud.context.CommandContext
 
 /**
   * A StorageType for copying to and from a model entity.
@@ -17,7 +16,7 @@ case class ModelGetter[M <: AnyRef,V](getter: M => Option[V])(implicit manifest:
 
 class ModelGetterField[M <: AnyRef,V](getter: M => Option[V]) extends TypedSourceField[M,V] {
   /** Get some value or None from the given source. */
-  def findFieldValue(sourceData: M, context: CommandContext) = {
+  def findFieldValue(sourceData: M, context: CopyContext) = {
     getter(sourceData)
   }
 }
