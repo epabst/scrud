@@ -30,7 +30,7 @@ class ListBufferEntityPersistence[E <: AnyRef](entityName: EntityName, newWritab
   def findAll(uri: UriPath): List[E] = rawFindAll(uri).map(_.entity)
 
   private def rawFindAll(uri: UriPath): List[IDAndEntity] = {
-    uri.findId(entityName).map(id => buffer.toList.filter(item => item.id == id)).getOrElse(buffer.toList)
+    UriPath.findId(uri, entityName).fold(buffer.toList)(id => buffer.toList.filter(item => item.id == id))
   }
 
   def newWritable() = newWritableFunction
@@ -39,7 +39,7 @@ class ListBufferEntityPersistence[E <: AnyRef](entityName: EntityName, newWritab
     val newId = idOpt.getOrElse {
       nextId.incrementAndGet()
     }
-    val index = idOpt.map(id => buffer.indexWhere(_.id == id)).getOrElse(-1)
+    val index = idOpt.fold(-1)(id => buffer.indexWhere(_.id == id))
     index match {
       case -1 =>
         // Prepend so that the newest ones come out first in results
