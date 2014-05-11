@@ -11,4 +11,7 @@ case class AdaptedField[V](sourceField: SourceField[V], targetField: TargetField
     val valueOpt = sourceField.findValue(source, context)
     targetField.updateValue(target, valueOpt, context)
   }
+
+  override def copy(source: AnyRef, context: CopyContext): AdaptedValue[V] =
+    new AdaptedValue[V](targetField, sourceField.findValue(source, context), context)
 }

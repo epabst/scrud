@@ -6,7 +6,6 @@ import com.github.scrud.platform.PlatformTypes._
 import com.github.scrud.EntityName
 import com.github.scrud.android.CrudType
 import com.github.scrud.EntityName
-import com.github.triangle.PortableValue
 
 /** Helps prevent restoring entities that the user deleted when an onRestore operation happens.
   * It only contains the entityName and ID since it is not intended as a recycle bin,

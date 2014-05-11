@@ -16,6 +16,7 @@ import java.util.NoSuchElementException
 import com.github.scrud
 import scrud.android.{CrudType,NamingConventions}
 import scrud.android.view.AndroidResourceAnalyzer._
+import com.github.scrud.copy.AdaptedValueSeq
 
 /**
  * A stateless Application that uses Scrud.  It has all the configuration for how the application behaves,
@@ -176,7 +177,7 @@ abstract class CrudApplication(val platformDriver: PlatformDriver) extends Persi
   }
 
   private[scrud] object FuturePortableValueCache
-    extends ApplicationConcurrentMapVal[(EntityType, UriPath, CrudContext),Future[PortableValue]]
+    extends ApplicationConcurrentMapVal[(EntityType, UriPath, CrudContext),Future[AdaptedValueSeq]]
 
   /**
    * Save the data into the persistence for entityType.
@@ -202,7 +203,7 @@ abstract class CrudApplication(val platformDriver: PlatformDriver) extends Persi
 
   private lazy val executor = new UrgentFutureExecutor()
 
-  private def cachedFuturePortableValueOrCalculate(entityType: EntityType, uriPathWithId: UriPath, crudContext: CrudContext)(calculate: => PortableValue): Future[PortableValue] = {
+  private def cachedFuturePortableValueOrCalculate(entityType: EntityType, uriPathWithId: UriPath, crudContext: CrudContext)(calculate: => AdaptedValueSeq): Future[AdaptedValueSeq] = {
     val cache = FuturePortableValueCache.get(crudContext.stateHolder)
     val key = (entityType, uriPathWithId, crudContext)
     cache.get(key).getOrElse {
@@ -215,19 +216,19 @@ abstract class CrudApplication(val platformDriver: PlatformDriver) extends Persi
     }
   }
 
-  def futurePortableValue(entityType: EntityType, uriPathWithId: UriPath, crudContext: CrudContext): Future[PortableValue] = {
+  def futurePortableValue(entityType: EntityType, uriPathWithId: UriPath, crudContext: CrudContext): Future[AdaptedValueSeq] = {
     cachedFuturePortableValueOrCalculate(entityType, uriPathWithId, crudContext) {
       calculatePortableValue(entityType, uriPathWithId, crudContext)
     }
   }
 
-  def futurePortableValue(entityType: EntityType, uriPathWithId: UriPath, entityData: AnyRef, crudContext: CrudContext): Future[PortableValue] = {
+  def futurePortableValue(entityType: EntityType, uriPathWithId: UriPath, entityData: AnyRef, crudContext: CrudContext): Future[AdaptedValueSeq] = {
     cachedFuturePortableValueOrCalculate(entityType, uriPathWithId, crudContext) {
       calculatePortableValue(entityType, uriPathWithId, entityData, crudContext)
     }
   }
 
-  protected def calculatePortableValue(entityType: EntityType, uriPathWithId: UriPath, crudContext: CrudContext): PortableValue = {
+  protected def calculatePortableValue(entityType: EntityType, uriPathWithId: UriPath, crudContext: CrudContext): AdaptedValueSeq = {
     crudContext.withEntityPersistence(entityType) { persistence =>
       val entityOpt = persistence.find(uriPathWithId)
       entityOpt.map { entityData =>
@@ -236,7 +237,7 @@ abstract class CrudApplication(val platformDriver: PlatformDriver) extends Persi
     }.getOrElse(PortableValue.empty)
   }
 
-  protected def calculatePortableValue(entityType: EntityType, uriPathWithId: UriPath, entityData: AnyRef, crudContext: CrudContext): PortableValue = {
+  protected def calculatePortableValue(entityType: EntityType, uriPathWithId: UriPath, entityData: AnyRef, crudContext: CrudContext): AdaptedValueSeq = {
     val requestContext = GetterInput(uriPathWithId, crudContext, PortableField.UseDefaults)
     debug("Copying " + entityType.entityName + "#" + entityType.IdField.getRequired(entityData))
     entityType.copyFrom(entityData +: requestContext)

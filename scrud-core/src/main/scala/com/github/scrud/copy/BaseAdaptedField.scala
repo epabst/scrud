@@ -12,4 +12,6 @@ abstract class BaseAdaptedField {
   def targetField: TargetField[Nothing]
 
   def copyAndUpdate[T <: AnyRef](source: AnyRef, target: T, context: CopyContext): T
+
+  def copy(source: AnyRef, context: CopyContext): BaseAdaptedValue
 }
