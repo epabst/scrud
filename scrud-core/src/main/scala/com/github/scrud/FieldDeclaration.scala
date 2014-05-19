@@ -10,7 +10,7 @@ import com.github.scrud.platform.PlatformDriver
  *         Date: 2/17/14
  *         Time: 11:58 PM
  */
-case class FieldDeclaration[V](entityName: EntityName, fieldName: String, qualifiedType: QualifiedType[V], representations: Seq[Representation[V]], platformDriver: PlatformDriver)
+case class FieldDeclaration[V](entityName: EntityName, fieldName: FieldName, qualifiedType: QualifiedType[V], representations: Seq[Representation[V]], platformDriver: PlatformDriver)
   extends BaseFieldDeclaration with AdaptableFieldConvertible[V] {
 
   /**

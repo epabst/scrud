@@ -4,13 +4,12 @@ import com.github.scrud
 import persistence.EntityTypePersistedInfo
 import action.AndroidOperation._
 import com.github.scrud.platform.PlatformDriver
-import scrud.EntityType
+import com.github.scrud.{FieldName, EntityType, EntityName}
 import scrud.types._
 import view.ViewField._
 import view.FieldLayout._
 import view.ViewRef
 import com.github.scrud.copy._
-import com.github.scrud.EntityName
 import com.github.scrud.android.action.StartEntityActivityOperation
 import com.github.scrud.android.view.EnumerationView
 import com.github.scrud.action.ActionKey
@@ -85,7 +84,7 @@ class AndroidPlatformDriver(rClass: Class[_], val activityClass: Class[_ <: Crud
 
   def emptyListViewIdOpt(entityName: EntityName): Int = ViewRef(entityName + "_emptyList", rClass, "id").viewKeyOrError
 
-  def field[V](fieldName: String, qualifiedType: QualifiedType[V], applicability: FieldApplicability, entityName: EntityName): AdaptableField[V] = {
+  def field[V](fieldName: FieldName, qualifiedType: QualifiedType[V], applicability: FieldApplicability, entityName: EntityName): AdaptableField[V] = {
     val sourceFields: Map[SourceType,SourceField[V]] = (for {
       sourceType <- applicability.from
       tuple <- makeSourceFields(fieldName, qualifiedType, sourceType, entityName)
@@ -98,7 +97,7 @@ class AndroidPlatformDriver(rClass: Class[_], val activityClass: Class[_ <: Crud
     new AdaptableFieldByType[V](sourceFields, targetFields)
   }
 
-  protected def makeSourceFields[V](fieldName: String, qualifiedType: QualifiedType[V], sourceType: SourceType, entityName: EntityName): Map[SourceType,SourceField[V]] = {
+  protected def makeSourceFields[V](fieldName: FieldName, qualifiedType: QualifiedType[V], sourceType: SourceType, entityName: EntityName): Map[SourceType,SourceField[V]] = {
     sourceType match {
       case MapStorage =>
         val field = TypedSourceField[MapStorage, V](_.get(entityName, fieldName).map(_.asInstanceOf[V]))
@@ -111,7 +110,7 @@ class AndroidPlatformDriver(rClass: Class[_], val activityClass: Class[_ <: Crud
     }
   }
 
-  protected def makeTargetField[V](fieldName: String, qualifiedType: QualifiedType[V], targetType: TargetType, entityName: EntityName): TargetField[V] = {
+  protected def makeTargetField[V](fieldName: FieldName, qualifiedType: QualifiedType[V], targetType: TargetType, entityName: EntityName): TargetField[V] = {
     targetType match {
       case MapStorage =>
         new MapTargetField[V](entityName, fieldName)

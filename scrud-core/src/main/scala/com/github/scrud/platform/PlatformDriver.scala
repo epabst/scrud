@@ -2,7 +2,7 @@ package com.github.scrud.platform
 
 import com.github.scrud.persistence.PersistenceFactory
 import com.github.scrud.action.{Operation, PlatformCommand}
-import com.github.scrud.{EntityType, EntityName}
+import com.github.scrud.{FieldName, EntityType, EntityName}
 import com.github.scrud.types.QualifiedType
 import com.github.scrud.copy._
 import com.github.scrud.util.{Name, Logging}
@@ -80,7 +80,7 @@ trait PlatformDriver extends Logging {
   def platformSpecificFieldFactories: Seq[AdaptableFieldFactory]
 
   private object AdaptableFieldConvertibleFactory extends AdaptableFieldFactory {
-    def adapt[V](entityName: EntityName, fieldName: String, qualifiedType: QualifiedType[V], representations: Seq[Representation[V]]) = {
+    def adapt[V](entityName: EntityName, fieldName: FieldName, qualifiedType: QualifiedType[V], representations: Seq[Representation[V]]) = {
       val convertibles = representations.collect {
         case convertible: AdaptableFieldConvertible[V] => convertible
       }
@@ -91,12 +91,12 @@ trait PlatformDriver extends Logging {
 
   final lazy val fieldFactories = platformSpecificFieldFactories :+ AdaptableFieldConvertibleFactory
 
-  def field[V](entityName: EntityName, fieldName: String, qualifiedType: QualifiedType[V], representations: Seq[Representation[V]]): ExtensibleAdaptableField[V] = {
+  def field[V](entityName: EntityName, fieldName: FieldName, qualifiedType: QualifiedType[V], representations: Seq[Representation[V]]): ExtensibleAdaptableField[V] = {
     val fieldWithRepresentations = adapt(fieldFactories, entityName, fieldName, qualifiedType, representations)
     fieldWithRepresentations.field
   }
 
-  protected def adapt[V](fieldFactories: Seq[AdaptableFieldFactory], entityName: EntityName, fieldName: String,
+  protected def adapt[V](fieldFactories: Seq[AdaptableFieldFactory], entityName: EntityName, fieldName: FieldName,
                          qualifiedType: QualifiedType[V], representations: Seq[Representation[V]]): AdaptableFieldWithRepresentations[V] = {
     fieldFactories.headOption match {
       case Some(fieldFactory) =>
@@ -109,7 +109,7 @@ trait PlatformDriver extends Logging {
     }
   }
 
-  protected def adaptUnusedRepresentations[V](entityName: EntityName, fieldName: String, qualifiedType: QualifiedType[V], unusedRepresentations: Seq[Representation[V]]): AdaptableFieldWithRepresentations[V] = {
+  protected def adaptUnusedRepresentations[V](entityName: EntityName, fieldName: FieldName, qualifiedType: QualifiedType[V], unusedRepresentations: Seq[Representation[V]]): AdaptableFieldWithRepresentations[V] = {
     if (!unusedRepresentations.isEmpty) {
       info("Representations that were not used: " + unusedRepresentations.mkString(", "))
     }

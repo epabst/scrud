@@ -12,7 +12,7 @@ import com.github.scrud.types.BaseQualifiedType
 abstract class BaseFieldDeclaration {
   def entityName: EntityName
 
-  def fieldName: String
+  def fieldName: FieldName
 
   def qualifiedType: BaseQualifiedType
 

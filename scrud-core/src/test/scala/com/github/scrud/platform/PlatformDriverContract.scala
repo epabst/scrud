@@ -5,7 +5,7 @@ import com.github.scrud.copy.{Representation, TargetType, SourceType}
 import com.github.scrud.types.TitleQT
 import org.scalatest.matchers.MustMatchers
 import com.github.scrud.platform.representation._
-import com.github.scrud.{EntityType, EntityName}
+import com.github.scrud.{FieldName, EntityType, EntityName}
 import com.github.scrud.copy.types.{Default, MapStorage}
 
 /**
@@ -22,7 +22,7 @@ abstract class PlatformDriverContract extends FunSpec with MustMatchers {
       it("must support the basic SourceTypes") {
         val platformDriver = makePlatformDriver()
         val representations = Seq[Representation[Nothing]](MapStorage, Persistence(1), XmlFormat, JsonFormat, EditUI)
-        val field = platformDriver.field(EntityName("Foo"), "foo", TitleQT, representations)
+        val field = platformDriver.field(EntityName("Foo"), FieldName("foo"), TitleQT, representations)
         for (sourceType <- representations.collect { case s: SourceType => s }) {
           withClue(sourceType) {
             field.findSourceField(sourceType).isDefined must be (true)
@@ -33,7 +33,7 @@ abstract class PlatformDriverContract extends FunSpec with MustMatchers {
       it("must not return a field for a SourceType not provided in the FieldApplicability") {
         val platformDriver = makePlatformDriver()
         val representations = Seq[Representation[Nothing]](Persistence(1), XmlFormat)
-        val field = platformDriver.field(EntityName("Foo"), "foo", TitleQT, representations)
+        val field = platformDriver.field(EntityName("Foo"), FieldName("foo"), TitleQT, representations)
         field.findSourceField(EditUI) must be (None)
       }
 
@@ -41,7 +41,7 @@ abstract class PlatformDriverContract extends FunSpec with MustMatchers {
         object UnknownRepresentation extends Representation[Nothing]
         val platformDriver = makePlatformDriver()
         val representations = Seq[Representation[Nothing]](MapStorage, UnknownRepresentation, JsonFormat)
-        val field = platformDriver.field(EntityName("Foo"), "foo", TitleQT, representations)
+        val field = platformDriver.field(EntityName("Foo"), FieldName("foo"), TitleQT, representations)
         field.findSourceField(MapStorage).isDefined must be (true)
         field.findSourceField(JsonFormat).isDefined must be (true)
         //Shouldn't compile: field.findSourceField(UnknownRepresentation).isDefined must be (false)
@@ -52,7 +52,7 @@ abstract class PlatformDriverContract extends FunSpec with MustMatchers {
       it("must support the basic SourceTypes") {
         val platformDriver = makePlatformDriver()
         val representations = Seq[Representation[Nothing]](MapStorage, Persistence(1), XmlFormat, JsonFormat, EditUI, SelectUI, SummaryUI, DetailUI)
-        val field = platformDriver.field(EntityName("Foo"), "foo", TitleQT, representations)
+        val field = platformDriver.field(EntityName("Foo"), FieldName("foo"), TitleQT, representations)
         for (targetType <- representations.collect { case t: TargetType => t }) {
           withClue(targetType) {
             field.findTargetField(targetType).isDefined must be (true)
@@ -63,7 +63,7 @@ abstract class PlatformDriverContract extends FunSpec with MustMatchers {
       it("must not return a field for a SourceType not provided in the FieldApplicability") {
         val platformDriver = makePlatformDriver()
         val representations = Seq[Representation[Nothing]](Persistence(1), XmlFormat)
-        val field = platformDriver.field(EntityName("Foo"), "foo", TitleQT, representations)
+        val field = platformDriver.field(EntityName("Foo"), FieldName("foo"), TitleQT, representations)
         field.findTargetField(EditUI) must be (None)
       }
     }

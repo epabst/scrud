@@ -3,7 +3,7 @@ package com.github.scrud.platform
 import com.github.scrud.persistence.ListBufferPersistenceFactoryForTesting
 import com.github.scrud.action.CrudOperationType._
 import com.github.scrud.types.QualifiedType
-import com.github.scrud.EntityName
+import com.github.scrud.{FieldName, EntityName}
 import com.github.scrud.action.ActionKey
 import com.github.scrud.action.PlatformCommand
 import com.github.scrud.util.Name
@@ -24,10 +24,10 @@ class TestingPlatformDriver extends PlatformDriver {
   val localDatabasePersistenceFactory = ListBufferPersistenceFactoryForTesting
 
   private object PersistenceFieldFactory extends PersistenceAdaptableFieldFactory {
-    def sourceField[V](entityName: EntityName, fieldName: String, qualifiedType: QualifiedType[V]) =
+    def sourceField[V](entityName: EntityName, fieldName: FieldName, qualifiedType: QualifiedType[V]) =
       MapStorageAdaptableFieldFactory.createSourceField(entityName, fieldName, qualifiedType)
 
-    def targetField[V](entityName: EntityName, fieldName: String, qualifiedType: QualifiedType[V]) =
+    def targetField[V](entityName: EntityName, fieldName: FieldName, qualifiedType: QualifiedType[V]) =
       MapStorageAdaptableFieldFactory.createTargetField(entityName, fieldName, qualifiedType)
   }
 

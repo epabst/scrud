@@ -2,7 +2,7 @@ package com.github.scrud.copy.types
 
 import com.github.scrud.copy._
 import scala.collection.parallel.mutable
-import com.github.scrud.{FieldDeclaration, BaseFieldDeclaration, EntityName}
+import com.github.scrud.{FieldName, FieldDeclaration, BaseFieldDeclaration, EntityName}
 import scala.Some
 import com.github.scrud.context.CommandContext
 
@@ -23,25 +23,25 @@ class MapStorage extends AnyRef {
   def this(entityName: EntityName, tuples: (String,Option[Any])*) {
     this()
     for ((fieldName, valueOpt) <- tuples) {
-      put(entityName, fieldName, valueOpt)
+      put(entityName, FieldName(fieldName), valueOpt)
     }
   }
 
   private val map = new mutable.ParHashMap[String,Any]
 
-  def get(entityName: EntityName, fieldName: String): Option[Any] = map.get(toKey(entityName, fieldName))
+  def get(entityName: EntityName, fieldName: FieldName): Option[Any] = map.get(toKey(entityName, fieldName))
 
   def get[V](fieldDeclaration: FieldDeclaration[V]): Option[V] =
     get(fieldDeclaration.entityName, fieldDeclaration.fieldName).asInstanceOf[Option[V]]
 
-  def put(entityName: EntityName, fieldName: String, valueOpt: Option[_]) = {
+  def put(entityName: EntityName, fieldName: FieldName, valueOpt: Option[_]) = {
     valueOpt match {
       case Some(value) => map.put(toKey(entityName, fieldName), value)
       case None => map.remove(toKey(entityName, fieldName))
     }
   }
 
-  private def toKey(entityName: EntityName, fieldName: String): String = {
+  private def toKey(entityName: EntityName, fieldName: FieldName): String = {
     entityName.name + "." + fieldName
   }
 

@@ -3,7 +3,7 @@ package com.github.scrud.platform
 import com.github.scrud.copy._
 import com.github.scrud.types.QualifiedType
 import com.github.scrud.copy.AdaptableFieldWithRepresentations
-import com.github.scrud.EntityName
+import com.github.scrud.{FieldName, EntityName}
 import com.github.scrud.platform.representation.{Persistence, PersistenceRange}
 import scala.Some
 
@@ -15,7 +15,7 @@ import scala.Some
  *         Time: 8:21 AM
  */
 abstract class PersistenceAdaptableFieldFactory extends AdaptableFieldFactory {
-  def adapt[V](entityName: EntityName, fieldName: String, qualifiedType: QualifiedType[V], representations: Seq[Representation[V]]) = {
+  def adapt[V](entityName: EntityName, fieldName: FieldName, qualifiedType: QualifiedType[V], representations: Seq[Representation[V]]) = {
     val persistenceRanges = representations.collect {
       case persistenceRange: PersistenceRange => persistenceRange
     }
@@ -40,10 +40,10 @@ abstract class PersistenceAdaptableFieldFactory extends AdaptableFieldFactory {
         }
       }
     }
-    AdaptableFieldWithRepresentations(adaptableField, persistenceRanges.toSet)
+    AdaptableFieldWithRepresentations(adaptableField, persistenceRanges.toSet[Representation[V]])
   }
   
-  def sourceField[V](entityName: EntityName, fieldName: String, qualifiedType: QualifiedType[V]): SourceField[V]
+  def sourceField[V](entityName: EntityName, fieldName: FieldName, qualifiedType: QualifiedType[V]): SourceField[V]
   
-  def targetField[V](entityName: EntityName, fieldName: String, qualifiedType: QualifiedType[V]): TargetField[V]
+  def targetField[V](entityName: EntityName, fieldName: FieldName, qualifiedType: QualifiedType[V]): TargetField[V]
 }
