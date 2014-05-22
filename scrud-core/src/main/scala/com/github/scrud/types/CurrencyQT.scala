@@ -10,10 +10,10 @@ import com.github.scrud.converter.Converter
  */
 object CurrencyQT extends StringConvertibleQT[Double] {
   /** Convert the value to a String for display. */
-  def convertToString(value: Double) = Converter.currencyToString.convert(value).get
+  def convertToDisplayString(value: Double) = Converter.currencyToString.convert(value).get
 
   /** Convert the value to a String for editing. */
-  override def convertToEditString(value: Double) = Converter.currencyToEditString.convert(value).get
+  override def convertToString(value: Double) = Converter.currencyToEditString.convert(value).get
 
   /** Convert the value from a String (whether for editing or display. */
   def convertFromString(string: String) = Converter.stringToCurrency.convert(string)

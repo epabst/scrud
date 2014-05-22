@@ -10,10 +10,10 @@ import scala.util.Success
  */
 abstract class StringQualifiedType extends QualifiedType[String] with StringConvertibleQT[String] {
   /** Convert the value to a String for display. */
-  def convertToString(value: String) = value
+  def convertToDisplayString(value: String) = value
 
   /** Convert the value to a String for editing.  This may simply call convertToString(value). */
-  def convertToEditString(value: String) = value
+  def convertToString(value: String) = value
 
   /** Convert the value from a String (whether for editing or display. */
   def convertFromString(string: String) = Success(string)

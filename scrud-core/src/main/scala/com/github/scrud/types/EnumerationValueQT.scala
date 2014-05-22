@@ -13,10 +13,10 @@ case class EnumerationValueQT[E <: Enumeration#Value](enum: Enumeration)(implici
   override def toFieldName = enum.toString()
 
   /** Convert the value to a String for display. */
-  def convertToString(value: E) = value.toString
+  def convertToDisplayString(value: E) = convertToString(value)
 
-  /** Convert the value to a String for editing.  This may simply call convertToString(value). */
-  def convertToEditString(value: E) = convertToString(value)
+  /** Convert the value to a String for editing.  */
+  def convertToString(value: E) = value.toString
 
   /** Convert the value from a String (whether for editing or display. */
   def convertFromString(string: String) = Converter.stringToEnum(enum).convert(string)

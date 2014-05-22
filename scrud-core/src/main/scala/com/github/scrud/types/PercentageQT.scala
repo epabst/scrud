@@ -10,10 +10,10 @@ import com.github.scrud.converter.Converter
  */
 object PercentageQT extends StringConvertibleQT[Float] {
   /** Convert the value to a String for display. */
-  def convertToString(value: Float) = Converter.percentageToString.convert(value).get
+  def convertToDisplayString(value: Float) = Converter.percentageToString.convert(value).get
 
   /** Convert the value to a String for editing.  This may simply call convertToString(value). */
-  def convertToEditString(value: Float) = Converter.percentageToEditString.convert(value).get
+  def convertToString(value: Float) = Converter.percentageToEditString.convert(value).get
 
   /** Convert the value from a String (whether for editing or display. */
   def convertFromString(string: String) = Converter.stringToPercentage.convert(string)

@@ -25,10 +25,9 @@ case class EntityMultiSelectQT(entityName: EntityName) extends StringConvertible
     }
   }
 
-  def convertToString(value: Set[ID]) = value.toSeq.sorted.map(convertIdToString(_)).mkString(delimiter, delimiter, delimiter)
+  def convertToDisplayString(value: Set[ID]) = convertToString(value)
 
-  /** Convert the value to a String for editing.  This may simply call convertToString(value). */
-  def convertToEditString(value: Set[ID]) = convertToString(value)
+  def convertToString(value: Set[ID]) = value.toSeq.sorted.map(convertIdToString(_)).mkString(delimiter, delimiter, delimiter)
 
   def convertFromString(string: String) = Try(string.split(delimiter).filterNot(_.isEmpty).map(convertIdFromString(_).get).toSet)
 

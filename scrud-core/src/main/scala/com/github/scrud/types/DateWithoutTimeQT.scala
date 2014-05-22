@@ -11,10 +11,10 @@ import com.github.scrud.converter.Converter
  */
 object DateWithoutTimeQT extends StringConvertibleQT[Date] {
   /** Convert the value to a String for display. */
-  def convertToString(value: Date) = Converter.dateToDisplayString.convert(value).get
+  def convertToDisplayString(value: Date) = Converter.dateToDisplayString.convert(value).get
 
-  /** Convert the value to a String for editing.  This may simply call [[com.github.scrud.types.StringConvertibleQT.convertToString( )]] */
-  def convertToEditString(value: Date) = Converter.dateToString.convert(value).get
+  /** Convert the value to a String for editing.  This may simply call [[com.github.scrud.types.StringConvertibleQT.convertToDisplayString( )]] */
+  def convertToString(value: Date) = Converter.dateToString.convert(value).get
 
   /** Convert the value from a String (whether for editing or display. */
   def convertFromString(string: String) = Converter.stringToDate.convert(string)

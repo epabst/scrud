@@ -12,10 +12,10 @@ import scala.util.Try
 class UriQT extends StringConvertibleQT[Uri] {
   def convertFromString(string: String) = Try(Uri.parse(string))
 
-  /** Convert the value to a String for editing.  This may simply call convertToString(value). */
-  def convertToEditString(value: Uri) = convertToString(value)
-
+  /** Convert the value to a String for editing. */
   def convertToString(value: Uri) = value.toString()
+
+  def convertToDisplayString(value: Uri) = convertToString(value)
 }
 
 object UriQT extends UriQT
