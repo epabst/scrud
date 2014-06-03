@@ -1,17 +1,24 @@
 package com.github.scrud.android.view
 
-import com.github.triangle.{UpdaterInput, Logging}
-import com.github.scrud.{CrudContext, RequestContext, UriPath, EntityType}
 import android.view.View
 import android.os.Bundle
 import android.widget.BaseAdapter
 import com.github.scrud.platform.PlatformTypes._
-import scala.Some
 import com.github.scrud.android.state.CachedStateListener
-import com.github.scrud.util.Common
+import com.github.scrud.util.Logging
+import com.github.scrud.context.CommandContext
+import com.github.scrud.{UriPath, EntityType}
+import com.github.scrud.copy.{SourceType, TargetType, CopyContext}
+import com.github.scrud.android.AndroidCommandContext
 
 trait AdapterCaching extends Logging { self: BaseAdapter =>
   def entityType: EntityType
+
+  /** The type that this Adapter holds. */
+  def adapterSourceType: SourceType
+
+  /** The type that the View represents. */
+  def targetType: TargetType
 
   protected def logTag = entityType.logTag
 
@@ -20,49 +27,30 @@ trait AdapterCaching extends Logging { self: BaseAdapter =>
 
   protected lazy val baseUriPath: UriPath = uriPathWithoutEntityId.specify(entityType.entityName)
 
-  lazy val IdField = entityType.IdField
+  protected def commandContext: AndroidCommandContext
 
-  def getItemId(item: AnyRef, position: Int): ID = item match {
-    case IdField(Some(id)) => id
-    case _ => position
+  private lazy val context = new CopyContext(uriPathWithoutEntityId, commandContext)
+
+  private lazy val idSourceFieldOpt = entityType.idField.findSourceField(adapterSourceType)
+
+  def getItemId(item: AnyRef, position: Int): ID =
+    idSourceFieldOpt.flatMap(_.findValue(item, context)).getOrElse(position)
+
+  protected[scrud] def bindViewFromCacheOrItems(view: View, position: Int, commandContext: CommandContext) {
+    bindViewFromCacheOrSource(view, position, adapterSourceType, getItem(position), commandContext)
   }
 
-  protected[scrud] def bindViewFromCacheOrItems(view: View, position: Int, requestContext: RequestContext) {
-    bindViewFromCacheOrItems(view, position, getItem(position), requestContext)
+  protected[scrud] def bindViewFromCacheOrSource(view: View, position: Int, sourceType: SourceType, source: AnyRef, commandContext: CommandContext) {
+    val uri = baseUriPath / getItemId(source, position)
+    bindViewFromCacheOrSource(view, sourceType, source, new CopyContext(uri, commandContext))
   }
 
-  protected[scrud] def bindViewFromCacheOrItems(view: View, position: Int, entityData: AnyRef, requestContext: RequestContext) {
-    bindViewFromCacheOrItems(view, entityData, requestContext.copy(currentUriPath = baseUriPath / getItemId(entityData, position)))
-  }
-
-  protected[scrud] def bindViewFromCacheOrItems(view: View, entityData: AnyRef, requestContext: RequestContext) {
-    val uriPath = requestContext.currentUriPath
-    view.setTag(uriPath)
-    val application = requestContext.crudContext.application
-    val futurePortableValue = application.futurePortableValue(entityType, uriPath, entityData, requestContext.crudContext)
-    val updaterInput = UpdaterInput(view, requestContext)
-    if (futurePortableValue.isSet) {
-      val portableValue = futurePortableValue.apply()
-      debug("Copying " + portableValue + " into " + view + " immediately")
-      portableValue.update(updaterInput)
-    } else {
-      entityType.loadingValue.update(updaterInput)
-      futurePortableValue.foreach { portableValue =>
-        view.post(Common.toRunnable {
-          if (view.getTag == uriPath) {
-            debug("Copying " + portableValue + " into " + view + " after asynchronous calculation")
-            portableValue.update(updaterInput)
-            view.invalidate()
-          }
-        })
-      }
-    }
+  protected[scrud] def bindViewFromCacheOrSource(view: View, sourceType: SourceType, source: AnyRef, context: CopyContext) {
+    commandContext.populateFromSource(entityType, sourceType, source, context.sourceUri, targetType, view)
   }
 }
 
-class AdapterCachingStateListener(crudContext: CrudContext) extends CachedStateListener with Logging {
-  protected def logTag = crudContext.application.logTag
-
+class AdapterCachingStateListener(commandContext: AndroidCommandContext) extends CachedStateListener {
   def onSaveState(outState: Bundle) {
   }
 
@@ -70,6 +58,6 @@ class AdapterCachingStateListener(crudContext: CrudContext) extends CachedStateL
   }
 
   def onClearState(stayActive: Boolean) {
-    crudContext.application.FuturePortableValueCache.get(crudContext.stateHolder).clear()
+    commandContext.application.FuturePortableValueCache.get(commandContext.stateHolder).clear()
   }
 }

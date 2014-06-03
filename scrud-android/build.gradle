@@ -5,6 +5,9 @@ apply plugin: 'scala'
 
 repositories {
     mavenCentral()
+    maven {
+        url "file://$androidSdkDir/extras/android/m2repository/"
+    }
 }
 
 def scalaVersion = '2.10.3'
@@ -13,7 +16,7 @@ dependencies {
     compile "org.scala-lang:scala-library:$scalaVersion"
     // androidSdkDir must be set (e.g. in ~/.gradle/gradle.properties)
     compile files("$androidSdkDir/platforms/android-19/android.jar")
-//	compile 'com.android.support:appcompat-v7:+'
+	compile 'com.android.support:appcompat-v7:+'
 //	compile 'com.android.support:support-v4:18.0.0'
 //    compile project(":scrud:scrud-android-res"); // "com.github.epabst.scrud:scrud-android-res:scrud-android-res:0.3-alpha8-SNAPSHOT"
     compile project(":scrud:scrud-core");

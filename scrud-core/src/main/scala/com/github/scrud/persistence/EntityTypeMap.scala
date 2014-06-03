@@ -3,6 +3,8 @@ package com.github.scrud.persistence
 import com.github.scrud.{EntityType, UriPath, EntityName}
 import com.github.scrud.platform.PlatformDriver
 import scala.collection.mutable
+import com.github.scrud.context.ApplicationName
+import com.github.scrud.util.{DelegateLogging, ExternalLogging}
 
 /**
  * A stateless mapping between a set of EntityTypes and the PersistenceFactory for each one.
@@ -13,16 +15,21 @@ import scala.collection.mutable
  * Time: 4:50 PM
  */
 
-abstract class EntityTypeMap(platformDriver: PlatformDriver) {
+abstract class EntityTypeMap(val applicationName: ApplicationName, private[scrud] val platformDriver: PlatformDriver) extends DelegateLogging {
   private[this] val entityTypesAndFactoriesBuffer: mutable.Buffer[(EntityType, PersistenceFactory)] = mutable.Buffer[(EntityType, PersistenceFactory)]()
 
   lazy val entityTypesAndFactories: Seq[(EntityType, PersistenceFactory)] = entityTypesAndFactoriesBuffer.toList
+
+  override protected def loggingDelegate: ExternalLogging = applicationName
 
   protected def addEntityType[E <: EntityType](entityType: E, persistenceFactory: PersistenceFactory): E = {
     entityTypesAndFactoriesBuffer += entityType -> persistenceFactory
     entityType
   }
-  
+
+  @deprecated("this is not verify reliable, avoid using it", since = "2014-05-14")
+  lazy val packageName: String = getClass.getPackage.getName
+
   final lazy val allEntityTypes: Seq[EntityType] = entityTypesAndFactories.map(_._1)
 
   private[this] lazy val persistenceFactoryByEntityType: Map[EntityType, PersistenceFactory] = Map(entityTypesAndFactories: _*)
@@ -37,6 +44,10 @@ abstract class EntityTypeMap(platformDriver: PlatformDriver) {
     entityTypeByEntityName
   }
 
+  def validate() {
+    entityTypeByEntityName
+  }
+
   def persistenceFactory(entityType: EntityType): PersistenceFactory = persistenceFactoryByEntityType.apply(entityType)
 
   /** Marked final since only a convenience method for the other [[com.github.scrud.persistence.EntityTypeMap.persistenceFactory]] method. */
@@ -48,15 +59,18 @@ abstract class EntityTypeMap(platformDriver: PlatformDriver) {
 
   def findEntityType(entityName: EntityName): Option[EntityType] = entityTypeByEntityName.get(entityName)
 
-  def upstreamEntityNames(entityName: EntityName): Seq[EntityName] = entityType(entityName).upstreamEntityNames
+  def upstreamEntityNames(entityName: EntityName): Seq[EntityName] = entityType(entityName).referencedEntityNames
 
   def downstreamEntityNames(entityName: EntityName): Seq[EntityName] = downstreamEntityTypes(entityType(entityName)).map(_.entityName)
 
   def downstreamEntityTypes(entityType: EntityType): Seq[EntityType] = {
-    allEntityTypes.filter { nextEntity =>
-      val upstreamEntityNames = nextEntity.upstreamEntityNames
+    val downstreamEntityTypes = allEntityTypes.filter { nextEntity =>
+      val upstreamEntityNames = nextEntity.referencedEntityNames
+      applicationName.trace("downstreamEntities: upstreams of " + nextEntity + " are " + nextEntity.referencedEntityNames)
       upstreamEntityNames.contains(entityType.entityName)
     }
+    applicationName.trace("downstreamEntityTypes=" + downstreamEntityTypes + " allEntityTypes=" + allEntityTypes + " self=" + entityType)
+    downstreamEntityTypes
   }
 
   /** Returns true if the URI is worth calling EntityPersistence.find to try to get an entity instance. */
@@ -74,15 +88,4 @@ abstract class EntityTypeMap(platformDriver: PlatformDriver) {
 
   def isDeletable(entityType: EntityType): Boolean = persistenceFactory(entityType).canDelete
   def isDeletable(entityName: EntityName): Boolean = persistenceFactory(entityName).canDelete
-}
-
-object EntityTypeMap {
-  def apply(entityTypesAndFactories: (EntityType, PersistenceFactory)*): EntityTypeMap = {
-    val _entityTypesAndFactories = entityTypesAndFactories
-    val entityTypeMap = new EntityTypeMap(entityTypesAndFactories.head._1.platformDriver) {
-      override lazy val entityTypesAndFactories = _entityTypesAndFactories
-    }
-    entityTypeMap.entityTypeByEntityName
-    entityTypeMap
-  }
 }

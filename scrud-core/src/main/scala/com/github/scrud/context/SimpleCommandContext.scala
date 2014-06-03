@@ -1,7 +1,7 @@
 package com.github.scrud.context
 
 import com.github.scrud.action.Undoable
-import com.github.scrud.{EntityNavigation, UriPath}
+import com.github.scrud.EntityNavigation
 import com.github.scrud.state.SimpleStateHolder
 import com.github.scrud.platform.PlatformTypes
 
@@ -11,7 +11,7 @@ import com.github.scrud.platform.PlatformTypes
  *         Date: 1/28/14
  *         Time: 2:10 PM
  */
-case class SimpleCommandContext(protected val uri: UriPath, sharedContext: SharedContext, entityNavigation: EntityNavigation)
+case class SimpleCommandContext(sharedContext: SharedContext, entityNavigation: EntityNavigation)
         extends CommandContext {
 
   val stateHolder = new SimpleStateHolder

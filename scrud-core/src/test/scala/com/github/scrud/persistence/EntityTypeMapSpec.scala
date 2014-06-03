@@ -18,7 +18,7 @@ class EntityTypeMapSpec extends FunSpec with MustMatchers {
     val entityType1 = new EntityTypeForTesting(EntityName("Entity1"))
     val entityType2 = new EntityTypeForTesting(EntityName("Entity2"))
     val message = intercept[IllegalArgumentException] {
-      EntityTypeMap(
+      EntityTypeMapForTesting(
         entityType1 -> ListBufferPersistenceFactoryForTesting,
         entityType2 -> ListBufferPersistenceFactoryForTesting,
         entityType1 -> ListBufferPersistenceFactoryForTesting)

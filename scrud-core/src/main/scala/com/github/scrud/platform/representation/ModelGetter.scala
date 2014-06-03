@@ -9,7 +9,7 @@ import com.github.scrud.copy._
   *         Time: 9:16 AM
   */
 case class ModelGetter[M <: AnyRef,V](getter: M => Option[V])(implicit manifest: Manifest[M])
-    extends AdaptableFieldByType[V](Map(EntityModel[M] -> new ModelGetterField[M,V](getter)), Map.empty) with RepresentationByType[V] {
+    extends AdaptableFieldByType[V](Seq(EntityModel[M] -> new ModelGetterField[M,V](getter)), Seq.empty) with RepresentationByType[V] {
   /** Gets the FieldApplicability that is intrinsic to this Representation.  The PlatformDriver may replace this as needed. */
   override val toPlatformIndependentFieldApplicability = FieldApplicability(Set(EntityModel[M]), Set.empty)
 }

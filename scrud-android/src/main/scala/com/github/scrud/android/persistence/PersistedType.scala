@@ -3,13 +3,15 @@ package com.github.scrud.android.persistence
 import android.database.Cursor
 import android.content.ContentValues
 import android.os.Bundle
+import com.github.scrud.types._
+import com.github.scrud.util.Cache
+
+private[persistence] trait BasePersistedType {
+  def sqliteType: String
+}
 
 /** A persisted type.  It should be very simple and serializable, ideally a primitive. */
-trait PersistedType[T] {
-  def valueManifest: Manifest[T]
-
-  def sqliteType: String
-
+trait PersistedType[T] extends BasePersistedType {
   def getValue(cursor: Cursor, cursorIndex: Int): Option[T]
 
   def getValue(contentValues: ContentValues, name: String): Option[T]
@@ -25,8 +27,8 @@ trait PersistedType[T] {
   * @author Eric Pabst (epabst@gmail.com)
   */
 
-private class ConvertedPersistedType[T,P](toValue: P => Option[T], toPersisted: T => P)
-                                          (implicit persistedType: PersistedType[P], implicit val valueManifest: Manifest[T])
+private[persistence] class ConvertedPersistedType[T,P](toValue: P => Option[T], toPersisted: T => P)
+                                                      (implicit persistedType: PersistedType[P])
         extends PersistedType[T] {
   val sqliteType = persistedType.sqliteType
 
@@ -50,8 +52,7 @@ private class DirectPersistedType[T <: AnyRef](val sqliteType: String,
                                                cursorGetter: Cursor => Int => Option[T],
                                                contentValuesGetter: ContentValues => String => Option[T],
                                                contentValuesPutter: ContentValues => (String, T) => Unit,
-                                               bundleGetter: Bundle => String => Option[T], bundlePutter: Bundle => (String, T) => Unit)
-                                      (implicit val valueManifest: Manifest[T]) extends PersistedType[T] {
+                                               bundleGetter: Bundle => String => Option[T], bundlePutter: Bundle => (String, T) => Unit) extends PersistedType[T] {
   def putValue(contentValues: ContentValues, name: String, value: T) {
     contentValuesPutter(contentValues)(name, value)
   }
@@ -68,6 +69,33 @@ private class DirectPersistedType[T <: AnyRef](val sqliteType: String,
 }
 
 object PersistedType {
+  private val cache: Cache = new Cache
+
+  def apply(qualifiedType: BaseQualifiedType): BasePersistedType =
+    apply(qualifiedType.asInstanceOf[QualifiedType[_]])
+
+  def apply[T](qualifiedType: QualifiedType[T]): PersistedType[T] = {
+    qualifiedType match {
+      case q: LongQualifiedType => enforceTypeMatch[Long,T](q, PersistedType.longType)
+      case q: IntQualifiedType => enforceTypeMatch[Int,T](q, PersistedType.intType)
+      case q: StringQualifiedType => enforceTypeMatch[String,T](q, PersistedType.stringType)
+      case q: DoubleQualifiedType => enforceTypeMatch[Double,T](q, PersistedType.doubleType)
+      case q: FloatQualifiedType => enforceTypeMatch[Float,T](q, PersistedType.floatType)
+      case q: StringConvertibleQT[_] => toConvertedPersistedType(q).asInstanceOf[PersistedType[T]]
+    }
+  }
+
+  private def toConvertedPersistedType[T](stringConvertibleQT: StringConvertibleQT[T]): PersistedType[T] = {
+    cache.cacheBasedOn(stringConvertibleQT) {
+      new ConvertedPersistedType[T, String](
+        stringConvertibleQT.convertFromString(_).toOption,
+        stringConvertibleQT.convertToString(_))(PersistedType.stringType)
+    }
+  }
+
+  private def enforceTypeMatch[T,RT](qualifiedType: QualifiedType[T], persistedType: PersistedType[T]): PersistedType[RT] =
+    persistedType.asInstanceOf[PersistedType[RT]]
+
   private class RichBundle(bundle: Bundle) {
     implicit def getJLong(key: String): java.lang.Long = bundle.getLong(key)
     implicit def putJLong(key: String, value: java.lang.Long) { bundle.putLong(key, value.longValue) }
@@ -119,7 +147,7 @@ object PersistedType {
   /** P is the persisted type
     * T is the value type
     */
-  def castedPersistedType[T,P](implicit persistedType: PersistedType[P], valueManifest: Manifest[T]): PersistedType[T] =
+  def castedPersistedType[T,P](implicit persistedType: PersistedType[P]): PersistedType[T] =
     new ConvertedPersistedType[T,P](p => Option(p.asInstanceOf[T]), v => v.asInstanceOf[P])
 
   //doesn't require an Option.
@@ -127,8 +155,7 @@ object PersistedType {
                                                cursorGetter: Cursor => Int => T,
                                                contentValuesGetter: ContentValues => String => Option[T],
                                                contentValuesPutter: ContentValues => (String, T) => Unit,
-                                               bundleGetter: Bundle => String => T, bundlePutter: Bundle => (String, T) => Unit)
-                                              (implicit valueManifest: Manifest[T]) =
+                                               bundleGetter: Bundle => String => T, bundlePutter: Bundle => (String, T) => Unit) =
     new DirectPersistedType(sqliteType, c => index => Some(cursorGetter(c)(index)), contentValuesGetter,
       contentValuesPutter, b => k => Some(bundleGetter(b)(k)), bundlePutter)
 }

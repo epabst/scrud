@@ -27,7 +27,7 @@ object CapturedImageView extends ImageViewField(new FieldLayout {
 }, Getter[Uri] {
   case OperationResponseExtractor(Some(response)) && ViewExtractor(Some(view)) =>
     Option(response.intent).map(_.getData).orElse(tagToUri(view.getTag(DefaultValueTagKey)))
-} + OnClickOperationSetter(view => StartActivityForResultOperation(view, {
+} + OnClickSetterField(view => StartActivityForResultOperation(view, {
   val intent = new Intent("android.media.action.IMAGE_CAPTURE")
   val imageUri = Uri.fromFile(File.createTempFile("image", ".jpg", CapturedImageViewHelper.dcimDirectory))
   intent.putExtra(MediaStore.EXTRA_OUTPUT, imageUri)

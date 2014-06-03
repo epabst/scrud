@@ -10,7 +10,9 @@ import com.github.scrud.util.Name
  * Time: 4:42 PM
  */
 case class EntityName(name: String) extends QualifiedTypeProvidingFieldName[ID] with Name {
-  def toUri(id: ID) = UriPath(this, id)
+  val toUri: UriPath = UriPath(this)
+
+  def toUri(id: ID): UriPath = UriPath(this, id)
 
   def toUri(idOpt: Option[ID]) = idOpt.fold(UriPath(this))(UriPath(this, _))
 

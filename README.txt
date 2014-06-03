@@ -39,6 +39,7 @@ Todo
 -Get scrud-android compiling against scrud-core without losing useful code.
 -Get scrud-android to actually work against scrud-core.
 -RELEASE APPS ON MARKET
+-Optimization: Stop converting from URI to idOpt and back to URI more than once.
 -Optimization: Make TextViewField not have to construct a Success(string) to convert a String to a String.
 -Optimization: use CharSequence instead of String.
 

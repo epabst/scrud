@@ -19,8 +19,8 @@ class ImageViewField(fieldLayout: FieldLayout, imageViewLoader: ImageViewLoader 
                      delegate: PortableField[Uri] = PortableField.emptyField)
     extends ViewField[Uri](fieldLayout, delegate + Getter((v: ImageView) => ImageViewFieldHelper.imageUri(v)) +
         Setter[Uri] {
-          case UpdaterInput(ViewExtractor(Some(view: ImageView)), uriOpt, CrudContextField(Some(crudContext))) =>
-            imageViewLoader.setImageDrawable(view, uriOpt, crudContext.applicationState)
+          case UpdaterInput(ViewExtractor(Some(view: ImageView)), uriOpt, CommandContextField(Some(commandContext))) =>
+            imageViewLoader.setImageDrawable(view, uriOpt, commandContext.applicationState)
         })
 
 object ImageViewFieldHelper {

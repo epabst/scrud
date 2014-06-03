@@ -11,14 +11,14 @@ import collection.mutable
 import com.github.scrud.platform.PlatformTypes
 
 /**
- * An [[com.github.scrud.android.AndroidCrudContext]] for use when testing.
+ * An [[com.github.scrud.android.AndroidCommandContext]] for use when testing.
  * @author Eric Pabst (epabst@gmail.com)
  * Date: 4/9/13
  * Time: 10:34 PM
  */
-class AndroidCrudContextForTesting(application: CrudApplication,
+class AndroidCommandContextForTesting(application: CrudApplication,
                                    activity: Context with ActivityStateHolder = new ActivityStateHolderForTesting)
-    extends AndroidCrudContext(activity, application) {
+    extends AndroidCommandContext(activity, application) {
 
   val displayedMessageKeys: mutable.Buffer[PlatformTypes.SKey] = mutable.Buffer()
 

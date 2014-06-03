@@ -9,6 +9,9 @@ package com.github.scrud.copy
 abstract class BaseAdaptableField {
   def attemptToAdapt(sourceType: SourceType, targetType: TargetType): Option[BaseAdaptedField]
 
+  def sourceFieldOrFail(sourceType: SourceType): SourceField[Any] =
+    findSourceField(sourceType).getOrElse(sys.error(this + " has no SourceField for " + sourceType))
+
   def findSourceField(sourceType: SourceType): Option[SourceField[Any]]
 
   def findTargetField(targetType: TargetType): Option[TargetField[Nothing]]

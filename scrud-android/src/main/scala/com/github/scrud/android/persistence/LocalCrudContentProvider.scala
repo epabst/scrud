@@ -3,7 +3,7 @@ package com.github.scrud.android.persistence
 import com.github.scrud.android.CrudAndroidApplication
 
 /**
- * This is a CrudContextProvider that assumes that the application it's running in is a CrudAndroidApplication.
+ * This is a CommandContextProvider that assumes that the application it's running in is a CrudAndroidApplication.
  * @author Eric Pabst (epabst@gmail.com)
  * Date: 3/20/13
  * Time: 5:24 PM

@@ -1,10 +1,12 @@
 package com.github.scrud.copy
 
+import com.github.scrud.UriPath
+
 /**
  * A copy from a source using an [[com.github.scrud.copy.AdaptedFieldSeq]].
  * @author epabst@gmail.com on 5/10/14.
  */
-class AdaptedValueSeq(adaptedValues: Seq[BaseAdaptedValue]) {
+class AdaptedValueSeq(val sourceUri: UriPath, adaptedValues: Seq[BaseAdaptedValue]) {
   def update[T <: AnyRef](target: T): T = {
     var result: T = target
     for {
@@ -15,5 +17,5 @@ class AdaptedValueSeq(adaptedValues: Seq[BaseAdaptedValue]) {
 }
 
 object AdaptedValueSeq {
-  val empty = new AdaptedValueSeq(Seq.empty)
+  val empty: AdaptedValueSeq = new AdaptedValueSeq(UriPath.EMPTY, Seq.empty)
 }

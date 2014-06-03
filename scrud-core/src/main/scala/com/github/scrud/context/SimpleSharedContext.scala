@@ -13,4 +13,4 @@ import com.github.scrud.platform.PlatformDriver
  *         Date: 12/10/13
  *         Time: 3:25 PM
  */
-class SimpleSharedContext(val entityTypeMap: EntityTypeMap, val platformDriver: PlatformDriver) extends SharedContext
+class SimpleSharedContext(val entityTypeMap: EntityTypeMap) extends SharedContext

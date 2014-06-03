@@ -5,19 +5,19 @@ import com.github.scrud.platform.PlatformTypes._
 import _root_.android.content.{Context, Intent}
 import com.github.scrud.android.view.AndroidConversions._
 import _root_.android.view.View
-import com.github.triangle.Field
-import com.github.triangle.PortableField._
 import com.github.scrud._
 import action._
 import android.view.AndroidConversions
-import com.github.scrud.android.AndroidCrudContext
+import com.github.scrud.android.AndroidCommandContext
 import com.github.scrud.EntityName
+import com.github.scrud.copy.{SourceType, RepresentationByType}
+import com.github.scrud.context.CommandContext
 
 /** Represents an operation that a user can initiate. */
 trait AndroidOperation extends Operation {
-  /** Runs the operation, given the uri and the current CrudContext. */
-  def invoke(uri: UriPath, crudContext: CrudContext) {
-    invoke(uri, crudContext.asInstanceOf[AndroidCrudContext].activity)
+  /** Runs the operation, given the uri and the current CommandContext. */
+  def invoke(uri: UriPath, commandContext: CommandContext) {
+    invoke(uri, commandContext.asInstanceOf[AndroidCommandContext].activity)
   }
 
   /** Runs the operation, given the uri and the current state of the application. */
@@ -110,5 +110,4 @@ object StartActivityForResultOperation {
   */
 case class OperationResponse(viewIdRespondingTo: ViewKey, intent: Intent)
 
-/** An extractor to get the OperationResponse from the items being copied from. */
-object OperationResponseExtractor extends Field(identityField[OperationResponse])
+object OperationResponse extends SourceType with RepresentationByType[Nothing]

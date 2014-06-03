@@ -24,7 +24,7 @@ case class AdaptedFieldSeq(adaptedFields: Seq[BaseAdaptedField]) {
   def copy(source: AnyRef, sourceUri: UriPath, commandContext: CommandContext): AdaptedValueSeq = {
     if (!adaptedFields.isEmpty) {
       val context = new CopyContext(sourceUri, commandContext)
-      new AdaptedValueSeq(adaptedFields.map(_.copy(source, context)))
+      new AdaptedValueSeq(sourceUri, adaptedFields.map(_.copy(source, context)))
     } else {
       AdaptedValueSeq.empty
     }

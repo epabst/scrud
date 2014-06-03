@@ -30,6 +30,36 @@ abstract class EntityType(val entityName: EntityName, val platformDriver: Platfo
 
   final lazy val fieldDeclarations: Seq[BaseFieldDeclaration] = fieldDeclarationsBuffer.toSeq
 
+  lazy val currentPersistedFields: Seq[BaseFieldDeclaration] = persistedFields(Persistence.Latest.dataVersion)
+
+  def persistedFields(dataVersion: Int): Seq[BaseFieldDeclaration] = for {
+    fieldDeclaration <- fieldDeclarations
+    if fieldDeclaration.toAdaptableField.findSourceField(Persistence(dataVersion)).isDefined
+  } yield fieldDeclaration
+
+  lazy val dataVersion: Int = {
+    (for {
+      fieldDeclaration <- fieldDeclarations
+      persistenceRange <- fieldDeclaration.persistenceRangeOpt
+    } yield {
+      if (persistenceRange.maxDataVersion < Int.MaxValue) {
+        persistenceRange.maxDataVersion + 1
+      } else {
+        persistenceRange.minDataVersion
+      }
+    }).max
+  }
+
+  /** The data version when this entity was originally created. */
+  lazy val originalDataVersion: Int = {
+    (for {
+      fieldDeclaration <- fieldDeclarations
+      persistenceRange <- fieldDeclaration.representations.collect {
+        case persistenceRange: PersistenceRange => persistenceRange
+      }
+    } yield persistenceRange.minDataVersion).min
+  }
+
   final lazy val adaptableFields: Seq[BaseAdaptableField] = fieldDeclarations.map(_.toAdaptableField)
 
   /**
@@ -96,9 +126,13 @@ abstract class EntityType(val entityName: EntityName, val platformDriver: Platfo
 
   def sortOrder: Seq[(BaseFieldDeclaration,SortOrder)] = Seq.empty
 
-  lazy val upstreamEntityNames: Seq[EntityName] = fieldDeclarations.map(_.qualifiedType).collect {
-    case upstreamName: EntityName => upstreamName
-  }
+  lazy val entityReferenceFieldDeclarations: Seq[FieldDeclaration[ID]] = for {
+    fieldDeclaration <- fieldDeclarations
+    if fieldDeclaration.qualifiedType.isInstanceOf[EntityName]
+    entityReferenceFieldDeclaration = fieldDeclaration.asInstanceOf[FieldDeclaration[ID]]
+  } yield entityReferenceFieldDeclaration
+
+  lazy val referencedEntityNames: Seq[EntityName] = entityReferenceFieldDeclarations.map(_.entityName)
 
   def findPersistedId(source: AnyRef, sourceUri: UriPath): Option[ID] =
     idField.findSourceField(Persistence.Latest).flatMap(_.findValue(source, new CopyContext(sourceUri, null)))
@@ -116,9 +150,17 @@ abstract class EntityType(val entityName: EntityName, val platformDriver: Platfo
     adaptedFieldSeq.copyAndUpdate(source, sourceUri, target, commandContext)
   }
 
-  def toUri(id: ID) = entityName.toUri(id)
+  def copy(sourceType: SourceType, source: AnyRef, sourceUri: UriPath,
+           targetType: TargetType, commandContext: CommandContext): AdaptedValueSeq = {
+    val adaptedFieldSeq = adapt(sourceType, targetType)
+    adaptedFieldSeq.copy(source, sourceUri, commandContext)
+  }
 
-  def toUri(idOpt: Option[ID]) = entityName.toUri(idOpt)
+  def toUri: UriPath = entityName.toUri
+
+  def toUri(id: ID): UriPath = entityName.toUri(id)
+
+  def toUri(idOpt: Option[ID]): UriPath = entityName.toUri(idOpt)
 
   /**
    * Available to be overridden as needed by applications.

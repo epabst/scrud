@@ -8,13 +8,13 @@ import com.github.scrud.converter.Converter
  * Date: 2/22/13
  * Time: 4:47 PM
  */
-object CurrencyQT extends StringConvertibleQT[Double] {
+object CurrencyQT extends DoubleQualifiedType {
   /** Convert the value to a String for display. */
-  def convertToDisplayString(value: Double) = Converter.currencyToString.convert(value).get
+  override def convertToDisplayString(value: Double) = Converter.currencyToString.convert(value).get
 
   /** Convert the value to a String for editing. */
   override def convertToString(value: Double) = Converter.currencyToEditString.convert(value).get
 
   /** Convert the value from a String (whether for editing or display. */
-  def convertFromString(string: String) = Converter.stringToCurrency.convert(string)
+  override def convertFromString(string: String) = Converter.stringToCurrency.convert(string)
 }

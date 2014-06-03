@@ -4,12 +4,12 @@ import _root_.android.content.{ContentResolver, ContentProvider, ContentValues}
 import _root_.android.database.Cursor
 import _root_.android.net.Uri
 import com.github.scrud._
-import android.AndroidCrudContext
+import android.AndroidCommandContext
 import android.state.ActivityStateHolder
 import com.github.scrud.android.view.AndroidConversions._
 import state.{ApplicationConcurrentMapVal, State}
 import scala.Some
-import persistence.{PersistenceFactoryMapping, CrudPersistence}
+import persistence.{EntityTypeMap, CrudPersistence}
 
 /**
  * A ContentProvider that uses a PersistenceFactory.
@@ -23,10 +23,10 @@ abstract class CrudContentProvider extends ContentProvider with ActivityStateHol
   // The reason this isn't derived from getContext.getApplicationContext is so that this ContentProvider
   // may be instantiated within a foreign application for efficiency.
   protected[scrud] def application: CrudApplication
-  protected[scrud] def persistenceFactoryMapping: PersistenceFactoryMapping = application
+  protected[scrud] def entityTypeMap: EntityTypeMap = application
   lazy val activityState: State = new State
-  lazy val crudContext = new AndroidCrudContext(getContext, this, application)
-  lazy val contentResolver = crudContext.asInstanceOf[AndroidCrudContext].context.getContentResolver
+  lazy val commandContext = new AndroidCommandContext(getContext, this, application)
+  lazy val contentResolver = commandContext.asInstanceOf[AndroidCommandContext].context.getContentResolver
 
   def onCreate(): Boolean = true
 
@@ -34,9 +34,9 @@ abstract class CrudContentProvider extends ContentProvider with ActivityStateHol
     val uriPath = toUriPath(uri)
     uriPath.findId(uriPath.lastEntityNameOrFail) match {
       case Some(id) =>
-        ContentResolver.CURSOR_ITEM_BASE_TYPE + "/vnd." + authorityFor(persistenceFactoryMapping) + "." + uriPath.lastEntityNameOrFail
+        ContentResolver.CURSOR_ITEM_BASE_TYPE + "/vnd." + authorityFor(entityTypeMap) + "." + uriPath.lastEntityNameOrFail
       case None =>
-        ContentResolver.CURSOR_DIR_BASE_TYPE + "/vnd." + authorityFor(persistenceFactoryMapping) + "." + uriPath.lastEntityNameOrFail
+        ContentResolver.CURSOR_DIR_BASE_TYPE + "/vnd." + authorityFor(entityTypeMap) + "." + uriPath.lastEntityNameOrFail
     }
   }
 
@@ -45,7 +45,7 @@ abstract class CrudContentProvider extends ContentProvider with ActivityStateHol
 
   private def persistenceFor(uriPath: UriPath): CrudPersistence = {
     val entityName = uriPath.lastEntityNameOrFail
-    CrudPersistenceByEntityName.get(this).getOrElseUpdate(entityName, crudContext.openEntityPersistence(entityName))
+    CrudPersistenceByEntityName.get(this).getOrElseUpdate(entityName, commandContext.openEntityPersistence(entityName))
   }
 
   def query(uri: Uri, projection: Array[String], selection: String, selectionArgs: Array[String], sortOrder: String): Cursor = {
@@ -75,7 +75,7 @@ abstract class CrudContentProvider extends ContentProvider with ActivityStateHol
     val persistence = persistenceFor(uriPath)
     val writable = persistence.toWritable(values)
     persistence.save(Some(persistence.entityType.idPkField.getRequired(uriPath)), writable)
-    val fixedUri = toUri(uriPath, persistenceFactoryMapping)
+    val fixedUri = toUri(uriPath, entityTypeMap)
     if (uri.toString != fixedUri.toString) sys.error(uri + " != " + fixedUri)
     contentResolver.notifyChange(toNotificationUri(fixedUri), null)
     1

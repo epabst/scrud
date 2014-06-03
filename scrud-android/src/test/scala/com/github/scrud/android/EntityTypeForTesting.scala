@@ -1,13 +1,10 @@
 package com.github.scrud.android
 
-import com.github.scrud.{EntityName, UriPath, EntityType}
-import com.github.triangle._
-import view.ViewField._
-import persistence.CursorField._
-import res.R
-import com.github.scrud.Validation._
-import com.github.scrud.PlatformIndependentField._
+import com.github.scrud._
 import com.github.scrud.platform.{PlatformDriver, TestingPlatformDriver}
+import com.github.scrud.types.{UriQT, NaturalIntQT, TitleQT}
+import com.github.scrud.platform.representation.{EditUI, SummaryUI, SelectUI, Persistence}
+import com.github.scrud.copy.types.Validation
 
 object EntityForTesting extends EntityName("MyMap")
 
@@ -17,11 +14,11 @@ object EntityForTesting extends EntityName("MyMap")
 
 class EntityTypeForTesting(entityName: EntityName = EntityForTesting, platformDriver: PlatformDriver = TestingPlatformDriver)
     extends EntityType(entityName, platformDriver) {
-  def valueFields = List[BaseField](
-    persisted[String]("name") + viewId(R.id.name, textView) + requiredString + loadingIndicator("..."),
-    persisted[Int]("age") + viewId(R.id.age, intView),
-    //here to test a non-UI field
-    persisted[String]("uri") + Getter[UriPath,String](u => Some(u.toString)))
+  val name = field("name", TitleQT, Seq(Persistence(1), EditUI, SelectUI, Validation.requiredString, LoadingIndicator("...")))
+
+  val age = field("age", NaturalIntQT, Seq(Persistence(1), EditUI, SummaryUI))
+
+  val url = field("url", UriQT, Seq(Persistence(1)))
 }
 
 object EntityTypeForTesting extends EntityTypeForTesting(EntityForTesting, TestingPlatformDriver)

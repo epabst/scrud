@@ -17,8 +17,6 @@ import scala.util.Success
  *         Time: 1:27 PM
  */
 class TestingPlatformDriver extends PlatformDriver {
-  protected def logTag = getClass.getSimpleName
-
   override def tryResource(resourceName: Name) = Success(Uri.parse("image:" + resourceName.toCamelCase))
 
   val localDatabasePersistenceFactory = ListBufferPersistenceFactoryForTesting

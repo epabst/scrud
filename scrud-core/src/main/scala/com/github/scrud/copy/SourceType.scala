@@ -19,5 +19,9 @@ trait SourceType {
 }
 
 object SourceType {
+  /**
+   * A SourceType when there is no source data.  It can also be given as the source itself.
+   * Using [[com.github.scrud.copy.AdaptableField]].findFromContext will facilitate good performance through re-use.
+   */
   val none: SourceType = new SourceType {}
 }

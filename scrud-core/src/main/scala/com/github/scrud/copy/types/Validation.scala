@@ -18,7 +18,7 @@ class Validation[V](f: Option[V] => Boolean) extends TypedTargetField[Validation
    * Converts this [[com.github.scrud.copy.AdaptableField]].
    * @return the field
    */
-  val toAdaptableField: ExtensibleAdaptableField[V] = AdaptableField[V](Map.empty, Map(ValidationResult -> this))
+  val toAdaptableField: ExtensibleAdaptableField[V] = AdaptableField[V](Seq.empty, Seq(ValidationResult -> this))
 }
 
 object Validation {

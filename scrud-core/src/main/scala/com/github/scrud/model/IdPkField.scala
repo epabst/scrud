@@ -23,5 +23,5 @@ object IdPkField extends TypedTargetField[IdPk,ID] with TypedSourceField[IdPk,ID
    * Converts this [[com.github.scrud.copy.AdaptableField]].
    * @return the field
    */
-  val toAdaptableField = AdaptableField[ID](Map(EntityModelForPlatform -> IdPkField), Map(EntityModelForPlatform -> IdPkField))
+  val toAdaptableField = AdaptableField[ID](Seq(EntityModelForPlatform -> IdPkField), Seq(EntityModelForPlatform -> IdPkField))
 }

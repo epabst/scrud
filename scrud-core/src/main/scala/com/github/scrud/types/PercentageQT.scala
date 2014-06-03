@@ -8,7 +8,7 @@ import com.github.scrud.converter.Converter
  * Date: 2/22/13
  * Time: 4:47 PM
  */
-object PercentageQT extends StringConvertibleQT[Float] {
+object PercentageQT extends FloatQualifiedType {
   /** Convert the value to a String for display. */
   def convertToDisplayString(value: Float) = Converter.percentageToString.convert(value).get
 

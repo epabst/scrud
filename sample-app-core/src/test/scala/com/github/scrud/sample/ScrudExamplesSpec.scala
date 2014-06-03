@@ -27,41 +27,40 @@ class ScrudExamplesSpec extends FunSpec with MustMatchers {
 
   describe("Normal Application Flow") {
     it("is easy to move through a normal user experience") {
-      val sharedContext: SharedContext = new SimpleSharedContext(entityNavigation.entityTypeMap, platformDriver)
+      val sharedContext: SharedContext = new SimpleSharedContext(entityNavigation.entityTypeMap)
       // Normally this CommandContext would come from the platform.
       val commandContext: CommandContext = sharedContext.asStubCommandContext
 
       // Get the list of authors to show.
-      val authors = sharedContext.withPersistence(_.findAll(UriPath(Author), UIStorageType, commandContext))
+      val authors = commandContext.findAll(UriPath(Author), UIStorageType)
       println("Here is the list of authors: " + authors)
 
       // The user clicks on an "Add" button and is asked for the author data, populated with defaults.
-      val defaultAuthorData = authorEntityType.copyAndUpdate(SourceType.none, SourceType.none, UIStorageType, commandContext)
+      val defaultAuthorData = authorEntityType.copyAndUpdate(SourceType.none, SourceType.none, UriPath(Author), UIStorageType, commandContext)
       println("Please enter the author's information.  Here are the defaults: " + defaultAuthorData)
 
       // The user provides some data and clicks "Save".
       val userModifiedAuthorDataToAdd = new UIStorageType(authorEntityType.nameField -> Some("George"))
 
       // The user clicks "Save".
-      val newAuthorId = sharedContext.withPersistence(_.save(Author, UIStorageType, None, userModifiedAuthorDataToAdd, commandContext))
+      val newAuthorId = commandContext.save(Author, UIStorageType, None, userModifiedAuthorDataToAdd)
 
       // Refresh the list of authors showing.
-      val updatedAuthors = sharedContext.withPersistence(_.findAll(UriPath(Author), UIStorageType, commandContext))
+      val updatedAuthors = commandContext.findAll(UriPath(Author), UIStorageType)
       println("Here is the updated list of authors: " + updatedAuthors)
                                                 
       // The user clicks "Edit" on the author.
-      val authorDataToEdit = sharedContext.withPersistence(_.find(Author.toUri(newAuthorId), UIStorageType, commandContext))
+      val authorDataToEdit = commandContext.find(Author.toUri(newAuthorId), UIStorageType).get
       println("Please update the author's information.  Here is the current data: " + authorDataToEdit)
 
       // The user modifies the data
       val userModifiedAuthorDataToSave = authorDataToEdit
       
       // The user clicks "Save".
-      sharedContext.withPersistence(_.save(Author, UIStorageType, Some(newAuthorId),
-        userModifiedAuthorDataToSave, commandContext))
+      commandContext.save(Author, UIStorageType, Some(newAuthorId), userModifiedAuthorDataToSave)
 
       // The user clicks "Delete" for the author.
-      sharedContext.withPersistence(_.persistenceFor(Author).delete(Author.toUri(newAuthorId)))
+      commandContext.delete(Author.toUri(newAuthorId))
     }
   }
 }

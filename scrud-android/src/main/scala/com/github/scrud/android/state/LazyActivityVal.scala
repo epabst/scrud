@@ -1,16 +1,17 @@
 package com.github.scrud.android.state
 
-import com.github.scrud.CrudContext
+import com.github.scrud.context.CommandContext
+import com.github.scrud.android.AndroidCommandContext
 
 /** Similar to ActivityVar but allows specifying an initial value, evaluated when first accessed. */
 class LazyActivityVal[T](lazyExpression: => T) {
   private val activityVar = new ActivityVar[T]
 
   /** Gets the value, evaluating if needed.
-    * @param crudContext the CrudContext where the value is stored
+    * @param commandContext the CommandContext where the value is stored
     * @return the value
     */
-  def get(crudContext: CrudContext): T = {
-    activityVar.getOrSet(crudContext.stateHolder, lazyExpression)
+  def get(commandContext: CommandContext): T = {
+    activityVar.getOrSet(commandContext.asInstanceOf[AndroidCommandContext].stateHolder, lazyExpression)
   }
 }

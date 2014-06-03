@@ -3,10 +3,12 @@ package com.github.scrud.android
 import android.content.ContentValues
 import persistence.SQLiteUtil
 import android.database.sqlite.SQLiteDatabase
-import com.github.scrud.{CrudContext, EntityType, EntityName}
-import com.github.scrud.persistence.{AbstractPersistenceFactory, CrudPersistenceUsingThin, DataListenerSetValHolder}
+import com.github.scrud.{EntityType, EntityName}
+import com.github.scrud.persistence._
 import com.github.scrud.state.DestroyStateListener
 import com.github.scrud.android.state.ActivityVar
+import com.github.scrud.context.CommandContext
+import com.github.scrud.EntityName
 
 /** A PersistenceFactory for SQLite.
   * @author Eric Pabst (epabst@gmail.com)
@@ -16,15 +18,15 @@ class SQLitePersistenceFactory extends AbstractPersistenceFactory with DataListe
 
   def newWritable() = new ContentValues
 
-  private object WritableDatabaseActivityVar extends ActivityVar[SQLiteDatabase]
+  private object WritableDatabaseVar extends PersistenceConnectionVar[SQLiteDatabase]
 
-  def createEntityPersistence(entityType: EntityType, crudContext: CrudContext) = {
-    val androidCrudContext = crudContext.asInstanceOf[AndroidCrudContext]
+  override def createEntityPersistence(entityType: EntityType, persistenceConnection: PersistenceConnection): CrudPersistence = {
+    val androidCommandContext = persistenceConnection
 
-    val writableDatabase = WritableDatabaseActivityVar.getOrSet(crudContext.stateHolder, {
-      val databaseSetup = new GeneratedDatabaseSetup(androidCrudContext, this)
+    val writableDatabase = WritableDatabaseVar.getOrSet(persistenceConnection, {
+      val databaseSetup = new GeneratedDatabaseSetup(persistenceConnection, this)
       val writableDatabase = databaseSetup.getWritableDatabase
-      androidCrudContext.activityState.addListener(new DestroyStateListener {
+      persistenceConnection.addListener(new DestroyStateListener {
         def onDestroyState() {
           writableDatabase.close()
         }
@@ -32,12 +34,12 @@ class SQLitePersistenceFactory extends AbstractPersistenceFactory with DataListe
       writableDatabase
     })
 
-    createEntityPersistence(entityType, writableDatabase, androidCrudContext)
+    createEntityPersistence(entityType, writableDatabase, androidCommandContext)
   }
 
-  def createEntityPersistence(entityType: EntityType, writableDatabase: SQLiteDatabase, androidCrudContext: AndroidCrudContext): CrudPersistenceUsingThin = {
-    val thinPersistence = new SQLiteThinEntityPersistence(entityType, writableDatabase, androidCrudContext)
-    new CrudPersistenceUsingThin(entityType, thinPersistence, listenerSet(entityType, androidCrudContext))
+  def createEntityPersistence(entityType: EntityType, writableDatabase: SQLiteDatabase, androidCommandContext: AndroidCommandContext): CrudPersistenceUsingThin = {
+    val thinPersistence = new SQLiteThinEntityPersistence(entityType, writableDatabase, androidCommandContext)
+    new CrudPersistenceUsingThin(entityType, thinPersistence, androidCommandContext.sharedContext)
   }
 
   def toTableName(entityName: EntityName): String = SQLiteUtil.toNonReservedWord(entityName.name)

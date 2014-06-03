@@ -4,7 +4,6 @@ import _root_.android.database.Cursor
 import _root_.android.support.v4.app.{LoaderManager, FragmentActivity}
 import _root_.android.support.v4.content.{CursorLoader, Loader}
 import android.os.Bundle
-import com.github.triangle.{FieldList, UpdaterInput, GetterInput, PortableField}
 import android.content.Intent
 import android.app.Activity
 import _root_.android.widget.{Adapter, AdapterView, ListView}
@@ -24,12 +23,22 @@ import scrud.util.Common
 import scrud.android.view.AndroidResourceAnalyzer._
 import scrud.android.view._
 import scrud.{android=>_,_}
-import scrud.action.{OperationAction,CrudOperation}
-import scrud.android.view.OnClickOperationSetter
 import scala.collection.mutable
-import com.github.scrud.android.persistence.{EntityTypePersistedInfo, ContentQuery}
+import com.github.scrud.android.persistence.EntityTypePersistedInfo
 import java.util.concurrent.ConcurrentHashMap
-import scala.collection.JavaConversions.asScalaConcurrentMap
+import scala.collection.JavaConversions.mapAsScalaConcurrentMap
+import com.github.scrud.context.SharedContext
+import scala.collection.concurrent
+import com.github.scrud.platform.representation.{DetailUI, SummaryUI, EditUI}
+import com.github.scrud.copy._
+import scala.util.Try
+import com.github.scrud.EntityName
+import scala.Some
+import com.github.scrud.android.persistence.ContentQuery
+import com.github.scrud.action.CrudOperation
+import com.github.scrud.action.OperationAction
+import com.github.scrud.android.view.OnClickSetterField
+import scala.concurrent.ExecutionContext.Implicits.global
 
 /** A generic Activity for CRUD operations
   * @author Eric Pabst (epabst@gmail.com)
@@ -39,19 +48,19 @@ class CrudActivity extends FragmentActivity with OptionsMenuActivity with Loader
 
   lazy val platformDriver: AndroidPlatformDriver = crudApplication.platformDriver.asInstanceOf[AndroidPlatformDriver]
 
-  lazy val entityType: EntityType = crudApplication.allEntityTypes.find(entityType => Some(entityType.entityName) == currentUriPath.lastEntityNameOption).getOrElse {
+  lazy val entityType: EntityType = crudApplication.entityTypeMap.allEntityTypes.find(entityType => Some(entityType.entityName) == currentUriPath.lastEntityNameOption).getOrElse {
     throw new IllegalStateException("No valid entityName in " + currentUriPath)
   }
 
   def entityName = entityType.entityName
 
-  protected lazy val persistenceFactory: PersistenceFactory = crudContext.persistenceFactory(entityType)
+  protected lazy val persistenceFactory: PersistenceFactory = commandContext.entityTypeMap.persistenceFactory(entityType)
 
   protected[this] val createdId: AtomicReference[Option[ID]] = new AtomicReference(None)
 
   private[this] val cursorLoaderDataList = mutable.Buffer[CursorLoaderData]()
 
-  private[this] val cursorLoaderDataByLoader: mutable.ConcurrentMap[Loader[Cursor],CursorLoaderData] = new ConcurrentHashMap[Loader[Cursor],CursorLoaderData]()
+  private[this] val cursorLoaderDataByLoader: concurrent.Map[Loader[Cursor],CursorLoaderData] = new ConcurrentHashMap[Loader[Cursor],CursorLoaderData]()
 
   override def setIntent(newIntent: Intent) {
     info("Current Intent: " + newIntent)
@@ -60,14 +69,14 @@ class CrudActivity extends FragmentActivity with OptionsMenuActivity with Loader
 
   protected lazy val initialUriPath: UriPath = {
     // The primary EntityType is used as the default starting point.
-    val defaultContentUri = toUriPath(baseUriFor(crudApplication)) / crudApplication.primaryEntityType.entityName
+    val defaultContentUri = toUriPath(baseUriFor(crudApplication.entityTypeMap)) / crudApplication.primaryEntityType.entityName
     // If no data was given in the intent (e.g. because we were started as a MAIN activity),
     // then use our default content provider.
     Option(getIntent).flatMap(intent => Option(intent.getData).map(toUriPath(_))).getOrElse(defaultContentUri)
   }
 
   /** not a lazy val since dynamic in that CrudActivity.saveBasedOnUserAction sets the ID. */
-  def currentUriPath: UriPath = createdId.get().map(initialUriPath / _).getOrElse(initialUriPath)
+  def currentUriPath: UriPath = createdId.get().fold(initialUriPath)(initialUriPath / _)
 
   lazy val currentCrudOperation: CrudOperation = CrudOperation(entityName, currentCrudOperationType)
 
@@ -84,19 +93,25 @@ class CrudActivity extends FragmentActivity with OptionsMenuActivity with Loader
 
   lazy val currentAction: String = getIntent.getAction
 
+  lazy val currentUITargetType: TargetType = currentCrudOperationType match {
+    case CrudOperationType.Update | CrudOperationType.Create =>
+      EditUI
+    case CrudOperationType.List =>
+      SummaryUI
+    case CrudOperationType.Read | CrudOperationType.Delete =>
+      DetailUI
+  }
+
   def uriWithId(id: ID): UriPath = currentUriPath.specify(entityName, id)
 
-  lazy val crudContext = new AndroidCrudContext(this, crudApplication)
-
   //final since only here as a convenience method.
-  final def stateHolder = crudContext.stateHolder
+  final def stateHolder = commandContext.stateHolder
 
-  lazy val requestContext: RequestContext = new RequestContext(currentUriPath, crudContext, PortableField.UseDefaults)
+  lazy val commandContext: AndroidCommandContext = new AndroidCommandContext(this, crudApplication)
 
-  // not a val because not used enough to store
-  def contextItemsWithoutUseDefaults: RequestContext = new RequestContext(currentUriPath, crudContext)
+  def sharedContext: SharedContext = commandContext.sharedContext
 
-  protected lazy val logTag = Common.tryToEvaluate(crudApplication.name).getOrElse(Common.logTag)
+  protected lazy val logTag = Try(crudApplication.name).getOrElse(Common.logTag)
 
   protected lazy val normalActions = crudApplication.actionsFromCrudOperation(currentCrudOperation)
 
@@ -116,25 +131,25 @@ class CrudActivity extends FragmentActivity with OptionsMenuActivity with Loader
   override def onCreate(savedInstanceState: Bundle) {
     super.onCreate(savedInstanceState)
 
-    crudContext.withExceptionReporting {
+    commandContext.withExceptionReporting {
       setContentViewForOperation()
       populateDataInViews()
       bindActionsToViews()
-      if (crudApplication.maySpecifyEntityInstance(currentUriPath, entityType)) {
-        crudContext.addCachedActivityStateListener(new CachedStateListener {
+      if (crudApplication.entityTypeMap.maySpecifyEntityInstance(currentUriPath, entityType)) {
+        commandContext.addCachedActivityStateListener(new CachedStateListener {
           def onClearState(stayActive: Boolean) {
             if (stayActive) {
-              populateFromUri(entityType, currentUriPath)
+              populateFromUri(entityType, currentUriPath, currentUITargetType)
             }
           }
 
           def onSaveState(outState: Bundle) {
-            entityType.copy(this, outState)
+            entityType.copyAndUpdate(EditUI, this, currentUriPath, BundleStorage, outState, commandContext)
           }
 
           def onRestoreState(savedInstanceState: Bundle) {
-            val portableValue = entityType.copyFrom(savedInstanceState)
-            crudContext.runOnUiThread { portableValue.update(this, requestContext) }
+            val adaptedValueSeq = entityType.copy(BundleStorage, savedInstanceState, currentUriPath, currentUITargetType, commandContext)
+            populateFromValues(adaptedValueSeq)
           }
         })
       }
@@ -175,35 +190,36 @@ class CrudActivity extends FragmentActivity with OptionsMenuActivity with Loader
   protected def populateDataInViews() {
     currentCrudOperationType match {
       case CrudOperationType.List =>
-        setListAdapterUsingUri(crudContext, this)
-        crudContext.future {
-          populateFromParentEntities()
+        setListAdapterUsingUri(commandContext, this)
+        commandContext.future {
+          populateFromReferencedEntities()
           persistenceFactory.addListener(new DataListener {
             def onChanged() {
               //Some of the parent fields may be calculated from the children
-              populateFromParentEntities()
+              populateFromReferencedEntities()
             }
-          }, entityType, crudContext)
+          }, entityType, sharedContext)
         }
       case _ =>
-        val currentPath = currentUriPath
-        crudContext.future {
-          if (crudApplication.maySpecifyEntityInstance(currentPath, entityType)) {
-            populateFromUri(entityType, currentPath)
+        val uri = currentUriPath
+        commandContext.future {
+          if (crudApplication.entityTypeMap.maySpecifyEntityInstance(uri, entityType)) {
+            populateFromUri(entityType, uri, currentUITargetType)
           } else {
-            entityType.copy(PortableField.UseDefaults +: requestContext, this)
+            val defaultValues = commandContext.findDefault(entityType, uri, currentUITargetType)
+            populateFromValues(defaultValues)
           }
         }
     }
   }
 
-  private[scrud] def populateFromParentEntities() {
+  private[scrud] def populateFromReferencedEntities() {
     val uriPath = currentUriPath
-    //copy each parent Entity's data to the Activity if identified in the currentUriPath
-    entityType.parentEntityNames.foreach { parentEntityName =>
-      val parentType = crudApplication.entityType(parentEntityName)
-      if (crudApplication.maySpecifyEntityInstance(uriPath, parentType)) {
-        populateFromUri(parentType, uriPath)
+    //copy each referenced Entity's data to the Activity if identified in the currentUriPath
+    entityType.referencedEntityNames.foreach { referencedEntityName =>
+      val referencedEntityType = crudApplication.entityTypeMap.entityType(referencedEntityName)
+      if (crudApplication.entityTypeMap.maySpecifyEntityInstance(uriPath, referencedEntityType)) {
+        populateFromUri(referencedEntityType, uriPath, currentUITargetType)
       }
     }
   }
@@ -235,35 +251,35 @@ class CrudActivity extends FragmentActivity with OptionsMenuActivity with Loader
   }
 
   override def onRestoreInstanceState(savedInstanceState: Bundle) {
-    crudContext.withExceptionReporting {
+    commandContext.withExceptionReporting {
       if (currentCrudOperationType == CrudOperationType.List) {
         ensureAdapterView()
       }
       // This is before the super call to be the opposite order as onSaveInstanceState.
-      crudContext.onRestoreActivityState(savedInstanceState)
+      commandContext.onRestoreActivityState(savedInstanceState)
     }
     super.onRestoreInstanceState(savedInstanceState)
   }
 
   override def onSaveInstanceState(outState: Bundle) {
     super.onSaveInstanceState(outState)
-    crudContext.withExceptionReporting {
+    commandContext.withExceptionReporting {
       // This is after the super call so that outState can be overridden if needed.
-      crudContext.onSaveActivityState(outState)
+      commandContext.onSaveActivityState(outState)
     }
   }
 
   override def onResume() {
-    crudContext.withExceptionReporting {
+    commandContext.withExceptionReporting {
       trace("onResume")
-      crudContext.onClearActivityState(stayActive = true)
+      commandContext.onClearActivityState(stayActive = true)
     }
     super.onResume()
   }
 
   override def onDestroy() {
-    crudContext.withExceptionReporting {
-      crudContext.activityState.onDestroyState()
+    commandContext.withExceptionReporting {
+      commandContext.activityState.onDestroyState()
     }
     super.onDestroy()
   }
@@ -284,7 +300,7 @@ class CrudActivity extends FragmentActivity with OptionsMenuActivity with Loader
 
   override def onCreateContextMenu(menu: ContextMenu, v: View, menuInfo: ContextMenuInfo) {
     super.onCreateContextMenu(menu, v, menuInfo)
-    crudContext.withExceptionReporting {
+    commandContext.withExceptionReporting {
       val commands = contextMenuActions.map(_.command)
       for ((command, index) <- commands.zip(Stream.from(0)))
         menu.add(0, command.commandNumber, index, command.title.get)
@@ -292,20 +308,20 @@ class CrudActivity extends FragmentActivity with OptionsMenuActivity with Loader
   }
 
   override def onContextItemSelected(item: MenuItem) = {
-    crudContext.withExceptionReportingHavingDefaultReturnValue(exceptionalReturnValue = true) {
+    commandContext.withExceptionReportingHavingDefaultReturnValue(exceptionalReturnValue = true) {
       val actions = contextMenuActions
       val info = item.getMenuInfo.asInstanceOf[AdapterContextMenuInfo]
       actions.find(_.commandId == item.getItemId) match {
-        case Some(action) => crudContext.future { action.invoke(uriWithId(info.id), crudContext) }; true
+        case Some(action) => commandContext.future { action.invoke(uriWithId(info.id), commandContext) }; true
         case None => super.onContextItemSelected(item)
       }
     }
   }
 
   def onListItemClick(l: AdapterView[_ <: Adapter], v: View, position: Int, id: ID) {
-    crudContext.withExceptionReporting {
+    commandContext.withExceptionReporting {
       if (id >= 0) {
-        crudApplication.actionsFromCrudOperation(CrudOperation(entityName, CrudOperationType.Read)).headOption.map(_.invoke(uriWithId(id), crudContext)).getOrElse {
+        crudApplication.actionsFromCrudOperation(CrudOperation(entityName, CrudOperationType.Read)).headOption.map(_.invoke(uriWithId(id), commandContext)).getOrElse {
           warn("There are no entity actions defined for " + entityType)
         }
       } else {
@@ -315,11 +331,11 @@ class CrudActivity extends FragmentActivity with OptionsMenuActivity with Loader
   }
 
   override def onBackPressed() {
-    crudContext.withExceptionReporting {
+    commandContext.withExceptionReporting {
       if (currentCrudOperationType == CrudOperationType.Create || currentCrudOperationType == CrudOperationType.Update) {
-        crudContext.future {
-          val createId = crudApplication.saveIfValid(this, entityType, contextItemsWithoutUseDefaults)
-          val idOpt = entityType.IdField(currentUriPath)
+        commandContext.future {
+          val createId = crudApplication.saveIfValid(currentUriPath, EditUI, this, entityType, commandContext)
+          val idOpt = entityType.idField.findFromContext(entityType.toUri(createId), commandContext)
           if (idOpt.isEmpty) {
             createId.foreach(id => createdId.set(Some(id)))
           }
@@ -331,34 +347,22 @@ class CrudActivity extends FragmentActivity with OptionsMenuActivity with Loader
 
   override def onActivityResult(requestCode: Int, resultCode: Int, data: Intent) {
     super.onActivityResult(requestCode, resultCode, data)
-    crudContext.withExceptionReporting {
+    commandContext.withExceptionReporting {
       if (resultCode == Activity.RESULT_OK) {
         //"this" is included in the list so that existing data isn't cleared.
-        entityType.copy(GetterInput(OperationResponse(requestCode, data), crudContext, this), this)
+        entityType.copyAndUpdate(OperationResponse, OperationResponse(requestCode, data), currentUriPath, currentUITargetType, this, commandContext)
       } else {
         debug("onActivityResult received resultCode of " + resultCode + " and data " + data + " for request " + requestCode)
       }
     }
   }
-  def populateFromUri(entityType: EntityType, uri: UriPath) {
-    populateFromUri(entityType, uri, UpdaterInput(this, requestContext))
+
+  def populateFromUri(entityType: EntityType, uri: UriPath, targetType: TargetType) {
+    commandContext.populateFromUri(entityType, uri, targetType, this)
   }
 
-  def populateFromUri(entityType: EntityType, uri: UriPath, updaterInput: UpdaterInput[AnyRef,Nothing]) {
-    val futurePortableValue = crudApplication.futurePortableValue(entityType, uri, crudContext)
-    if (futurePortableValue.isSet) {
-      val portableValue = futurePortableValue.apply()
-      debug("Copying " + portableValue + " into " + updaterInput.subject + " uri=" + uri)
-      portableValue.update(updaterInput)
-    } else {
-      entityType.loadingValue.update(updaterInput)
-      futurePortableValue.foreach { portableValue =>
-        crudContext.runOnUiThread {
-          debug("Copying " + portableValue + " into " + updaterInput.subject + " uri=" + uri)
-          portableValue.update(updaterInput)
-        }
-      }
-    }
+  def populateFromValues(adaptedValueSeq: AdaptedValueSeq) {
+    commandContext.populateFromValueSeq(adaptedValueSeq, this)
   }
 
   lazy val entityNameLayoutPrefix = crudApplication.entityNameLayoutPrefixFor(entityName)
@@ -391,17 +395,19 @@ class CrudActivity extends FragmentActivity with OptionsMenuActivity with Loader
   }
 
   // not a val because it is dynamic
-  protected def applicableActions: List[OperationAction] = LastUndoable.get(crudContext.stateHolder).map(_.undoAction).toList ++ normalActions
+  protected def applicableActions: List[OperationAction] = LastUndoable.get(commandContext.stateHolder).map(_.undoAction).toList ++ normalActions
 
-  protected lazy val normalOperationSetters: FieldList = {
-    val setters = normalActions.map(action =>
-      ViewField.viewId[Nothing](ViewRef(action.command.commandId.idString + "_command", crudApplication.rIdClasses),
-        OnClickOperationSetter(_ => action.operation)))
-    FieldList.toFieldList(setters)
+  protected lazy val nestedNormalOperationSetters: Seq[NestedTargetField[Nothing]] = {
+    val setters = normalActions.map { action =>
+      val viewRef = ViewRef(action.command.commandId.toCamelCase + "_command", crudApplication.rIdClasses)
+      new OnClickSetterField(_ => action.operation).forTargetView(ViewSpecifier(viewRef))
+    }
+    setters
   }
 
   protected def bindNormalActionsToViews() {
-    normalOperationSetters.defaultValue.update(this, requestContext)
+    val context = new CopyContext(currentUriPath, commandContext)
+    nestedNormalOperationSetters.foreach(_.updateValue(this, None, context))
   }
 
   private[android] def onCommandsChanged() {
@@ -416,13 +422,13 @@ class CrudActivity extends FragmentActivity with OptionsMenuActivity with Loader
   def defaultOptionsMenuCommands = generateOptionsMenu.map(_.command)
 
   override def onOptionsItemSelected(item: MenuItem): Boolean = {
-    crudContext.withExceptionReportingHavingDefaultReturnValue(exceptionalReturnValue = true) {
+    commandContext.withExceptionReportingHavingDefaultReturnValue(exceptionalReturnValue = true) {
       val actions = generateOptionsMenu
       actions.find(_.commandId == item.getItemId) match {
         case Some(action) =>
-          action.invoke(currentUriPath, crudContext)
-          if (LastUndoable.get(crudContext.stateHolder).exists(_.undoAction.commandId == item.getItemId)) {
-            LastUndoable.clear(crudContext.stateHolder)
+          action.invoke(currentUriPath, commandContext)
+          if (LastUndoable.get(commandContext.stateHolder).exists(_.undoAction.commandId == item.getItemId)) {
+            LastUndoable.clear(commandContext.stateHolder)
             onCommandsChanged()
           }
           true
@@ -431,15 +437,15 @@ class CrudActivity extends FragmentActivity with OptionsMenuActivity with Loader
     }
   }
 
-  final def setListAdapterUsingUri(crudContext: AndroidCrudContext, activity: CrudActivity) {
-    setListAdapter(activity.getAdapterView, entityType, crudContext, activity.requestContext, activity, rowLayout)
+  final def setListAdapterUsingUri(commandContext: AndroidCommandContext, activity: CrudActivity) {
+    setListAdapter(activity.getAdapterView, entityType, activity.currentUriPath, activity, rowLayout)
   }
 
-  def setListAdapter[A <: Adapter](adapterView: AdapterView[A], entityType: EntityType, crudContext: AndroidCrudContext, requestContext: RequestContext, activity: Activity, itemLayout: LayoutKey) {
-    val entityTypePersistedInfo = EntityTypePersistedInfo(entityType)
-    val uri = toUri(requestContext.currentUriPath, crudContext.persistenceFactoryMapping)
-    val adapter = new EntityCursorAdapter(entityType, requestContext, new ViewInflater(itemLayout, activity.getLayoutInflater), null)
-    val cursorLoaderData = CursorLoaderData(ContentQuery(uri, entityTypePersistedInfo.queryFieldNames), adapter)
+  def setListAdapter[A <: Adapter](adapterView: AdapterView[A], entityType: EntityType, uri: UriPath, activity: Activity, itemLayout: LayoutKey) {
+    val entityTypePersistedInfo = new EntityTypePersistedInfo(entityType)
+    val androidUri = toUri(uri, commandContext.entityTypeMap)
+    val adapter = new EntityCursorAdapter(entityType, uri, commandContext, new ViewInflater(itemLayout, activity.getLayoutInflater), null)
+    val cursorLoaderData = CursorLoaderData(ContentQuery(androidUri, entityTypePersistedInfo.queryFieldNames), adapter)
     runOnUiThread {
       adapterView.setAdapter(adapter.asInstanceOf[A])
       cursorLoaderDataList.append(cursorLoaderData)
@@ -448,7 +454,7 @@ class CrudActivity extends FragmentActivity with OptionsMenuActivity with Loader
   }
 
   def onCreateLoader(id: Int, args: Bundle) = {
-    crudContext.propagateWithExceptionReporting {
+    commandContext.propagateWithExceptionReporting {
       debug("onCreateLoader(" + id + ")")
       val cursorLoaderData = cursorLoaderDataList(id)
       val contentQuery: ContentQuery = cursorLoaderData.query
@@ -464,24 +470,20 @@ class CrudActivity extends FragmentActivity with OptionsMenuActivity with Loader
   }
 
   def onLoaderReset(loader: Loader[Cursor]) {
-    crudContext.withExceptionReporting {
+    commandContext.withExceptionReporting {
       debug("onLoaderReset(" + loader + ")")
       crudApplication.FuturePortableValueCache.get(stateHolder).clear()
     }
   }
 
   def onLoadFinished(loader: Loader[Cursor], data: Cursor) {
-    crudContext.withExceptionReporting {
+    commandContext.withExceptionReporting {
       debug("onLoadFinished(" + loader + ", cursor with count=" + data.getCount + ")")
       crudApplication.FuturePortableValueCache.get(stateHolder).clear()
       cursorLoaderDataByLoader.get(loader).foreach { cursorLoaderData =>
         cursorLoaderData.adapter.swapCursor(data)
       }
     }
-  }
-
-  def waitForWorkInProgress() {
-    crudContext.waitForWorkInProgress()
   }
 
   override val toString = getClass.getSimpleName + "@" + System.identityHashCode(this)

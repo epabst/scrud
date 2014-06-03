@@ -1,73 +1,96 @@
 package com.github.scrud.android.generate
 
-import com.github.scrud.android.view.AndroidResourceAnalyzer._
-import com.github.triangle.{PortableField, FieldList, BaseField}
-import com.github.scrud.android.persistence.CursorField
 import com.github.scrud.android.view._
-import xml.NodeSeq
-import com.github.scrud.android.{AndroidPlatformDriver, NamingConventions}
-import com.github.scrud.{EntityName, CrudApplication, EntityType}
+import scala.xml.{Elem, MetaData, Node, NodeSeq}
+import com.github.scrud.android.AndroidPlatformDriver
+import com.github.scrud.{BaseFieldDeclaration, EntityName}
+import com.github.scrud.platform.representation.{PersistenceRange, DetailUI, EditUI}
+import com.github.scrud.persistence.EntityTypeMap
+import com.github.scrud.copy.TargetField
 
-case class EntityFieldInfo(field: BaseField, rIdClasses: Seq[Class[_]], entityName: EntityName, application: CrudApplication) {
-  private lazy val updateablePersistedFields = CursorField.updateablePersistedFields(field, rIdClasses)
+case class EntityFieldInfo(field: BaseFieldDeclaration, rIdClasses: Seq[Class[_]], entityTypeMap: EntityTypeMap) {
+  val entityName = field.entityName
+  private val platformDriver = entityTypeMap.platformDriver.asInstanceOf[AndroidPlatformDriver]
   private val fieldPrefix = AndroidPlatformDriver.fieldPrefix(entityName)
 
-  private def viewFields(field: BaseField): Seq[ViewField[_]] = field.deepCollect {
-    case matchingField: ViewField[_] => matchingField
+  lazy val displayViewIdFieldInfos: Seq[ViewIdFieldInfo] = {
+    field.toAdaptableField.findTargetField(DetailUI).toSeq.map { targetField =>
+      val viewRef = platformDriver.toViewRef(entityName, "", field.fieldName)
+      val idString = viewRef.fieldName(rIdClasses)
+      val displayName = FieldLayout.toDisplayName(idString.stripPrefix(fieldPrefix))
+      ViewIdFieldInfo(idString, displayName, field, targetField, entityTypeMap)
+    }
   }
 
-  lazy val viewIdFieldInfos: Seq[ViewIdFieldInfo] = field.deepCollect {
-    case viewIdField: ViewIdField[_] =>
-      val idString = viewIdField.viewRef.fieldName(rIdClasses)
-      val displayName = FieldLayout.toDisplayName(idString.stripPrefix(fieldPrefix))
-      ViewIdFieldInfo(idString, displayName, viewIdField)
-  }
+  lazy val editViewIdFieldInfos: Seq[ViewIdFieldInfo] = updateableViewIdFieldInfos
 
   lazy val isDisplayable: Boolean = !displayableViewIdFieldInfos.isEmpty
-  lazy val isPersisted: Boolean = !updateablePersistedFields.isEmpty
+  lazy val isPersisted: Boolean = field.representations.exists(_.isInstanceOf[PersistenceRange])
   lazy val isUpdateable: Boolean = isDisplayable && isPersisted
 
-  lazy val nestedEntityTypeViewInfos: Seq[EntityTypeViewInfo] = field.deepCollect {
-    case entityView: EntityView => EntityTypeViewInfo(application.entityType(entityView.entityName), application)
+  lazy val nestedEntityTypeViewInfoOpt: Option[EntityTypeViewInfo] = field.qualifiedType match {
+    case referencedEntityName: EntityName => Some(EntityTypeViewInfo(entityTypeMap.entityType(referencedEntityName), entityTypeMap))
+    case _ => None
   }
 
-  private[generate] lazy val shallowDisplayableViewIdFieldInfos: Seq[ViewIdFieldInfo] = viewIdFieldInfos.filter(_.layout.displayXml != NodeSeq.Empty)
+  private[generate] lazy val shallowDisplayableViewIdFieldInfos: Seq[ViewIdFieldInfo] = displayViewIdFieldInfos
 
   lazy val displayableViewIdFieldInfos: Seq[ViewIdFieldInfo] =
-    shallowDisplayableViewIdFieldInfos ++ nestedEntityTypeViewInfos.flatMap(_.shallowDisplayableViewIdFieldInfos)
+    shallowDisplayableViewIdFieldInfos ++ nestedEntityTypeViewInfoOpt.toSeq.flatMap(_.shallowDisplayableViewIdFieldInfos)
 
-  lazy val updateableViewIdFieldInfos: Seq[ViewIdFieldInfo] =
-    if (isPersisted) viewIdFieldInfos.filter(_.layout.editXml != NodeSeq.Empty) else Nil
-
-  lazy val otherViewFields = {
-    val viewFieldsWithinViewIdFields = viewFields(FieldList(viewIdFieldInfos.map(_.field):_*))
-    viewFields(field).filterNot(viewFieldsWithinViewIdFields.contains)
+  lazy val updateableViewIdFieldInfos: Seq[ViewIdFieldInfo] = {
+    field.toAdaptableField.findTargetField(EditUI).toSeq.map { targetField =>
+      val viewRef = platformDriver.toViewRef(entityName, "edit_", field.fieldName)
+      val idString = viewRef.fieldName(rIdClasses)
+      val displayName = FieldLayout.toDisplayName(idString.stripPrefix(fieldPrefix))
+      ViewIdFieldInfo(idString, displayName, field, targetField, entityTypeMap)
+    }
   }
 }
 
-case class ViewIdFieldInfo(id: String, displayName: String, field: PortableField[_]) {
-  lazy val viewFields: Seq[ViewField[_]] = field.deepCollect {
-    case matchingField: ViewField[_] => matchingField
+case class ViewIdFieldInfo(id: String, displayName: String, field: BaseFieldDeclaration, targetField: TargetField[Nothing], entityTypeMap: EntityTypeMap) {
+  private val defaultLayoutOpt: Option[NodeSeq] = targetField match {
+    case viewTargetField: ViewTargetField[_,_] => Some(viewTargetField.defaultLayout)
+    case _ => None
   }
 
-  lazy val layout: FieldLayout = viewFields.headOption.map(_.defaultLayout).getOrElse(FieldLayout.noLayout)
+  val defaultLayoutOrEmpty = defaultLayoutOpt.fold(NodeSeq.Empty)
+
+  lazy val nestedEntityTypeViewInfoOpt: Option[EntityTypeViewInfo] = field.qualifiedType match {
+    case referencedEntityName: EntityName => Some(EntityTypeViewInfo(entityTypeMap.entityType(referencedEntityName), entityTypeMap))
+    case _ => None
+  }
+
+  def layoutForDisplayUI(position: Int): NodeSeq = {
+    val textAppearance = if (position < 2) "?android:attr/textAppearanceLarge" else "?android:attr/textAppearanceSmall"
+    val gravity = if (position % 2 == 0) "left" else "right"
+    val layoutWidth = if (position % 2 == 0) "wrap_content" else "fill_parent"
+    val attributes = <TextView android:id={"@+id/" + id} android:gravity={gravity}
+                               android:layout_width={layoutWidth}
+                               android:layout_height="wrap_content"
+                               android:paddingRight="3sp"
+                               android:textAppearance={textAppearance} style="@android:style/TextAppearance.Widget.TextView"/>.attributes
+    defaultLayoutOpt.fold(NodeSeq.Empty)(adjustHeadNode(_, applyAttributes(_, attributes)))
+  }
+
+  def layoutForEditUI(position: Int): NodeSeq = {
+    val textAppearance = "?android:attr/textAppearanceLarge"
+    val attributes = <EditText android:id={"@+id/" + id} android:layout_width="fill_parent" android:layout_height="wrap_content"/>.attributes
+    <result>
+      <TextView android:text={displayName + ":"} android:textAppearance={textAppearance} style="@android:style/TextAppearance.Widget.TextView" android:layout_width="wrap_content" android:layout_height="wrap_content"/>
+      {defaultLayoutOpt.fold(NodeSeq.Empty)(adjustHeadNode(_, applyAttributes(_, attributes)))}
+    </result>.child
+  }
+
+  private def applyAttributes(xml: Node, attributes: MetaData): Node = xml match {
+    case e: Elem => e % attributes
+    case x => x
+  }
+
+  private def adjustHeadNode(xml: NodeSeq, f: Node => Node): NodeSeq = xml.headOption.map(f(_) +: xml.tail).getOrElse(xml)
 }
 
 object ViewIdFieldInfo {
-  def apply(id: String, viewField: PortableField[_]): ViewIdFieldInfo =
-    ViewIdFieldInfo(id, FieldLayout.toDisplayName(id), viewField)
-}
-
-case class EntityTypeViewInfo(entityType: EntityType, application: CrudApplication) {
-  val entityName = entityType.entityName
-  lazy val layoutPrefix = NamingConventions.toLayoutPrefix(entityType.entityName)
-  lazy val rIdClasses: Seq[Class[_]] = detectRIdClasses(entityType.getClass)
-  lazy val entityFieldInfos: List[EntityFieldInfo] = entityType.fields.map(EntityFieldInfo(_, rIdClasses, entityName, application))
-  private[generate] lazy val shallowDisplayableViewIdFieldInfos: List[ViewIdFieldInfo] = entityFieldInfos.flatMap(_.shallowDisplayableViewIdFieldInfos)
-  lazy val displayableViewIdFieldInfos: List[ViewIdFieldInfo] = entityFieldInfos.flatMap(_.displayableViewIdFieldInfos)
-  lazy val shortDisplayableViewIdFieldInfos: List[ViewIdFieldInfo] =
-    shallowDisplayableViewIdFieldInfos.filter(!_.layout.editXml.toString().contains("textMultiLine"))
-  lazy val identifyingDisplayableViewIdFieldInfos: List[ViewIdFieldInfo] = shortDisplayableViewIdFieldInfos.take(1)
-  lazy val updateableViewIdFieldInfos: List[ViewIdFieldInfo] = entityFieldInfos.flatMap(_.updateableViewIdFieldInfos)
-  lazy val isUpdateable: Boolean = !updateableViewIdFieldInfos.isEmpty
+  def apply(id: String, field: BaseFieldDeclaration, targetField: TargetField[Nothing], entityTypeMap: EntityTypeMap): ViewIdFieldInfo =
+    ViewIdFieldInfo(id, FieldLayout.toDisplayName(id), field, targetField, entityTypeMap)
 }

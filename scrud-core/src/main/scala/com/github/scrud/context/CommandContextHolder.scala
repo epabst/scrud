@@ -1,10 +1,15 @@
 package com.github.scrud.context
 
-import com.github.scrud.{EntityNavigation, FieldDeclaration, UriPath, EntityName}
-import com.github.scrud.persistence.PersistenceConnection
+import com.github.scrud._
+import com.github.scrud.persistence.{CrudPersistence, PersistenceConnection}
 import com.github.scrud.platform.PlatformTypes._
+import com.github.scrud.copy._
+import com.github.scrud.platform.Notification
+import scala.concurrent.Future
+import scala.concurrent.ExecutionContext.Implicits.global
+import com.github.scrud.EntityName
 import com.github.scrud.action.Undoable
-import com.github.scrud.copy.SourceType
+import com.github.scrud.FieldDeclaration
 
 /**
  * The context for a given interaction or command/response.
@@ -16,22 +21,80 @@ import com.github.scrud.copy.SourceType
  *         Date: 12/10/13
  *         Time: 3:25 PM
  */
-private[context] trait CommandContextHolder extends SharedContextHolder {
+//This is private so that subclasses CommandContext or CommandContextDelegator will be used instead.
+private[context] trait CommandContextHolder extends SharedContextHolder with Notification {
+  protected def logTag: String = entityNavigation.applicationName.logTag
+
   protected def commandContext: CommandContext
 
   def entityNavigation: EntityNavigation
 
+  def future[T](body: => T): Future[T] = Future(body)
+
   def persistenceConnection: PersistenceConnection
 
+  def persistenceFor(entityName: EntityName): CrudPersistence = persistenceConnection.persistenceFor(entityName)
+
+  def persistenceFor(uri: UriPath): CrudPersistence = persistenceConnection.persistenceFor(uri)
+
+  def findDefault(entityType: EntityType, uri: UriPath, targetType: TargetType): AdaptedValueSeq = {
+    entityType.copy(SourceType.none, SourceType.none, uri, targetType, commandContext)
+  }
+
   def findDefault[V](field: FieldDeclaration[V], sourceUri: UriPath): Option[V] =
-    field.toAdaptableField.findDefault(sourceUri, commandContext)
+    field.toAdaptableField.findFromContext(sourceUri, commandContext)
+
+  /** Find the field value for a certain entity by ID. */
+  def find[V](entityName: EntityName, id: ID, field: FieldDeclaration[V]): Option[V] = {
+    val persistence = persistenceFor(entityName)
+    val sourceUri = entityName.toUri(id)
+    persistence.find(sourceUri).flatMap { entity =>
+      field.toAdaptableField.sourceFieldOrFail(persistence.sourceType).findValue(entity, new CopyContext(sourceUri, commandContext))
+    }
+  }
 
   /** Find using this CommandContext's URI. */
-  def find[V](uri: UriPath, field: FieldDeclaration[V]): Option[V] =
-    persistenceConnection.find(uri, field, commandContext).orElse(findDefault(field, uri))
+  def findOrElseDefault[V](uri: UriPath, field: FieldDeclaration[V]): Option[V] =
+    find(uri, field).orElse(findDefault(field, uri))
 
-  def save(entityName: EntityName, sourceType: SourceType, idOpt: Option[ID], source: AnyRef): ID =
-    persistenceConnection.save(entityName, sourceType, idOpt, source, commandContext)
+  /** Find the non-empty field values for all entities matching a URI. */
+  def findAll[V](uri: UriPath, field: FieldDeclaration[V]): Seq[V] = {
+    val persistence = persistenceFor(uri)
+    val sourceField = field.toAdaptableField.sourceFieldOrFail(persistence.sourceType)
+    val copyContext = new CopyContext(uri, commandContext)
+    persistence.findAll(uri).flatMap { entity =>
+      sourceField.findValue(entity, copyContext)
+    }
+  }
+
+  /** Find the field value for a certain entity by URI. */
+  def find[V](uri: UriPath, field: FieldDeclaration[V]): Option[V] = {
+    val entityName = UriPath.lastEntityNameOrFail(uri)
+    UriPath.findId(uri, entityName).flatMap(find(entityName, _, field))
+  }
+
+  /** Find a certain entity by URI and copy it to the targetType. */
+  def find[T <: AnyRef](uri: UriPath, targetType: InstantiatingTargetType[T]): Option[T] = {
+    persistenceFor(uri).find(uri, targetType, commandContext)
+  }
+
+  /** Find all a certain entity by URI and copy them to the targetType. */
+  def findAll[T <: AnyRef](uri: UriPath, targetType: InstantiatingTargetType[T]): Seq[T] =
+    persistenceFor(uri).findAll[T](uri, targetType, commandContext)
+
+  /** Find all a certain entity by EntityName and copy them to the targetType. */
+  def findAll[T <: AnyRef](entityName: EntityName, targetType: InstantiatingTargetType[T]): Seq[T] =
+    findAll(entityName.toUri, targetType)
+
+  def delete(uri: UriPath): Int = persistenceFor(uri).delete(uri)
+
+  def save(entityName: EntityName, sourceType: SourceType, idOpt: Option[ID], source: AnyRef): ID = {
+    val sourceUri = entityName.toUri(idOpt)
+    val persistence = persistenceFor(entityName)
+    val dataToSave = entityTypeMap.entityType(entityName).copyAndUpdate(sourceType, source, sourceUri,
+      persistence.targetType, persistence.newWritable(), commandContext)
+    persistence.save(idOpt, dataToSave)
+  }
 
   /** The ISO 2 country such as "US". */
   def isoCountry: String

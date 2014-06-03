@@ -2,12 +2,13 @@ package com.github.scrud.context
 
 import com.github.scrud.{EntityType, EntityName}
 import com.github.scrud.state.{StateHolder, State}
-import com.github.scrud.util.ListenerHolder
+import com.github.scrud.util.{DelegateLogging, ListenerHolder}
 import com.github.scrud.persistence.{PersistenceConnection, EntityTypeMap, DataListener}
 import com.github.scrud.platform.PlatformDriver
 
 /**
- * The context that is shared among all [[com.github.scrud.context.CommandContext]]s.
+ * The context that is shared among all [[com.github.scrud.context.CommandContext]]s
+ * for a single application (as identified by an [[com.github.scrud.context.ApplicationName]]).
  * Some examples are:<ul>
  *   <li>A Servlet Context</li>
  *   <li>A running Android Application</li>
@@ -16,14 +17,18 @@ import com.github.scrud.platform.PlatformDriver
  *         Date: 12/10/13
  *         Time: 3:25 PM
  */
-trait SharedContext extends StateHolder {
+trait SharedContext extends StateHolder with DelegateLogging {
   def entityTypeMap: EntityTypeMap
 
-  def platformDriver: PlatformDriver
+  def applicationName: ApplicationName = entityTypeMap.applicationName
+
+  def platformDriver: PlatformDriver = entityTypeMap.platformDriver
 
   val applicationState: State = new State
 
   lazy val asStubCommandContext: StubCommandContext = new StubCommandContext(this)
+
+  protected def loggingDelegate = applicationName
 
   def dataListenerHolder(entityName: EntityName): ListenerHolder[DataListener] =
     dataListenerHolder(entityTypeMap.entityType(entityName))

@@ -1,26 +1,34 @@
 package com.github.scrud.android.view
 
-import com.github.triangle.PortableField._
-import com.github.triangle.converter.ValueFormat._
 import android.widget.{AdapterView, ArrayAdapter, BaseAdapter}
 import scala.collection.JavaConversions._
+import com.github.scrud.android.AndroidCommandContext
 
-/** A ViewField for an [[scala.Enumeration]].
-  * @author Eric Pabst (epabst@gmail.com)
-  */
+/**
+ * A ViewStorageField for an [[scala.Enumeration]].
+ * @author Eric Pabst (epabst@gmail.com)
+ */
 case class EnumerationView[E <: Enumeration#Value](enum: Enumeration)
-  extends ViewField[E](FieldLayout(displayXml = <TextView style="@android:style/TextAppearance.Widget.TextView"/>, editXml = <Spinner android:drawSelectorOnTop = "true"/>), {
-    val itemViewResourceId = _root_.android.R.layout.simple_spinner_dropdown_item
-    val valueArray: java.util.List[E] = enum.values.toSeq.map(_.asInstanceOf[E])
-    ViewGetter[AdapterView[BaseAdapter],E](v => Option(v.getSelectedItem.asInstanceOf[E])).
-        withSetter { adapterView => valueOpt =>
-          //don't do it again if already done from a previous time
-          if (adapterView.getAdapter == null) {
-            val adapter = new ArrayAdapter[E](adapterView.getContext, itemViewResourceId, valueArray)
-            adapterView.setAdapter(adapter)
-          }
-          adapterView.setSelection(valueOpt.map(valueArray.indexOf(_)).getOrElse(AdapterView.INVALID_POSITION))
-        } + formatted[E](enumFormat(enum), ViewField.textView)
-  }) {
+  extends ViewStorageField[AdapterView[BaseAdapter],E](<Spinner android:drawSelectorOnTop = "true"/>) {
+
+  private val valueArray: java.util.List[E] = enum.values.toSeq.map(_.asInstanceOf[E])
+  private val itemViewResourceId = _root_.android.R.layout.simple_spinner_dropdown_item
+
+  /** Get some value or None from the given source. */
+  override def findFieldValue(adapterView: AdapterView[BaseAdapter], context: AndroidCommandContext): Option[E] = {
+    Option(adapterView.getSelectedItem.asInstanceOf[E])
+  }
+
+  /** Updates the {{{target}}} subject using the {{{valueOpt}}} for this field and some context. */
+  override def updateFieldValue(adapterView: AdapterView[BaseAdapter], valueOpt: Option[E], context: AndroidCommandContext): AdapterView[BaseAdapter] = {
+    //don't do it again if already done from a previous time
+    if (adapterView.getAdapter == null) {
+      val adapter = new ArrayAdapter[E](adapterView.getContext, itemViewResourceId, valueArray)
+      adapterView.setAdapter(adapter)
+    }
+    adapterView.setSelection(valueOpt.fold(AdapterView.INVALID_POSITION)(valueArray.indexOf(_)))
+    adapterView
+  }
+
   override lazy val toString = "EnumerationView(" + enum.getClass.getSimpleName + ")"
 }

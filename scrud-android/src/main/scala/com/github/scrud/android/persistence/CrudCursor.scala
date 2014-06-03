@@ -1,6 +1,8 @@
 package com.github.scrud.android.persistence
 
 import android.database.AbstractCursor
+import com.github.scrud.platform.representation.Persistence
+import com.github.scrud.copy.SourceField
 
 /**
  * A Cursor that wraps the result of a [[com.github.scrud.persistence.CrudPersistence.findAll]].
@@ -10,9 +12,12 @@ import android.database.AbstractCursor
  */
 class CrudCursor(findAllResult: Seq[AnyRef], entityTypePersistedInfo: EntityTypePersistedInfo) extends AbstractCursor2 {
   //todo cache this in the applicationContext
-  private lazy val cursorFields: IndexedSeq[CursorField[_]] = entityTypePersistedInfo.persistedFields.toIndexedSeq
+  private lazy val persistedSourceFields: Seq[SourceField[Any]] =
+    entityTypePersistedInfo.currentPersistedFields.map(_.toAdaptableField.sourceFieldOrFail(Persistence.Latest))
 
-  lazy val getColumnNames = cursorFields.map(_.columnName).toArray
+  lazy val getColumnNames = entityTypePersistedInfo.currentPersistedFieldNames.toArray
+
+  private val unusedCopyContext = null
 
   def getCount = findAllResult.size
 
@@ -23,9 +28,8 @@ class CrudCursor(findAllResult: Seq[AnyRef], entityTypePersistedInfo: EntityType
       case x => fromString(x.toString)
     }
 
-
   private def getValueOpt(columnIndex: Int): Option[Any] = {
-    cursorFields(columnIndex).getValue(findAllResult(getPosition))
+    persistedSourceFields(columnIndex).findValue(findAllResult(getPosition), unusedCopyContext)
   }
 
   def getDouble(columnIndex: Int) = getValue(columnIndex, java.lang.Double.parseDouble(_))

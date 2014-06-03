@@ -1,7 +1,7 @@
 package com.github.scrud.context
 
 import com.github.scrud.persistence.EntityTypeMap
-import com.github.scrud.platform.{TestingPlatformDriver, PlatformDriver}
+import com.github.scrud.platform.PlatformDriver
 
 /**
   * A SharedContext to use during testing.
@@ -9,5 +9,5 @@ import com.github.scrud.platform.{TestingPlatformDriver, PlatformDriver}
   *         Date: 1/28/14
   *         Time: 4:18 PM
   */
-class SharedContextForTesting(entityTypeMap: EntityTypeMap, platformDriver: PlatformDriver = TestingPlatformDriver)
-    extends SimpleSharedContext(entityTypeMap, platformDriver)
+class SharedContextForTesting(entityTypeMap: EntityTypeMap)
+    extends SimpleSharedContext(entityTypeMap)

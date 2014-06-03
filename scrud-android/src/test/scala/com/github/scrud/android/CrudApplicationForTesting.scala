@@ -2,7 +2,7 @@ package com.github.scrud.android
 
 import com.github.scrud.platform.{PlatformDriver, TestingPlatformDriver}
 import com.github.scrud.{EntityType, EntityName, CrudApplication}
-import com.github.scrud.persistence.PersistenceFactory
+import com.github.scrud.persistence.{EntityTypeMapForTesting, EntityTypeMap, PersistenceFactory}
 
 /**
  * A test application.
@@ -10,22 +10,20 @@ import com.github.scrud.persistence.PersistenceFactory
  * Date: 3/23/13
  * Time: 10:53 AM
  */
-class CrudApplicationForTesting(platformDriver: PlatformDriver, persistenceFactoryByEntityType: (EntityType, PersistenceFactory)*) extends CrudApplication(platformDriver) {
+class CrudApplicationForTesting(platformDriver: PlatformDriver, entityTypeMap: EntityTypeMap) extends CrudApplication(platformDriver, entityTypeMap) {
   def this(persistenceFactoryByEntityType: (EntityType, PersistenceFactory)*) {
-    this(TestingPlatformDriver, persistenceFactoryByEntityType: _*)
+    this(TestingPlatformDriver, EntityTypeMapForTesting(persistenceFactoryByEntityType.toMap))
   }
 
-  def this(platformDriver: PlatformDriver, crudType1: CrudType, otherCrudTypes: CrudType*) {
-    this(platformDriver, (CrudType.unapply(crudType1).get +: otherCrudTypes.map(CrudType.unapply(_).get)): _*)
+  def this(entityTypeMap: EntityTypeMap) {
+    this(TestingPlatformDriver, entityTypeMap)
   }
 
-  def this(crudType1: CrudType, otherCrudTypes: CrudType*) {
-    this(TestingPlatformDriver, crudType1, otherCrudTypes: _*)
+  def this(entityType1: EntityType, otherEntityTypes: EntityType*) {
+    this(EntityTypeMapForTesting((entityType1 +: otherEntityTypes).toSet))
   }
 
   val name = "test app"
-
-  val allCrudTypes = persistenceFactoryByEntityType.map(tuple => CrudType(tuple._1, tuple._2))
 
   override def entityNameLayoutPrefixFor(entityName: EntityName) = "test"
 }

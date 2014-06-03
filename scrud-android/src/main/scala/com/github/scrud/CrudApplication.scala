@@ -2,84 +2,78 @@ package com.github.scrud
 
 import _root_.android.R
 import action._
-import action.OperationAction
-import action.PlatformCommand
 import action.ActionKey
-import action.CrudOperation
-import action.StartEntityDeleteOperation
-import persistence.{PersistenceFactoryMapping, PersistenceFactory}
+import persistence.EntityTypeMap
 import platform.PlatformDriver
 import platform.PlatformTypes._
 import state.ApplicationConcurrentMapVal
 import com.github.scrud.util.{Logging, Common, UrgentFutureExecutor}
-import java.util.NoSuchElementException
 import com.github.scrud
-import scrud.android.{CrudType,NamingConventions}
+import com.github.scrud.android.{AndroidPlatformDriver, NamingConventions}
 import scrud.android.view.AndroidResourceAnalyzer._
-import com.github.scrud.copy.AdaptedValueSeq
+import com.github.scrud.context.CommandContext
+import com.github.scrud.copy.types.ValidationResult
+import com.github.scrud.copy._
+import scala.concurrent.Future
+import scala.Some
+import com.github.scrud.action.PlatformCommand
+import com.github.scrud.action.CrudOperation
+import com.github.scrud.action.StartEntityDeleteOperation
+import com.github.scrud.action.OperationAction
+import scala.util.Try
 
 /**
  * A stateless Application that uses Scrud.  It has all the configuration for how the application behaves,
  * but none of its actual state.
  * It that works with pairings of an [[com.github.scrud.EntityType]] and
  * a [[com.github.scrud.persistence.PersistenceFactory]].
- * Internally it uses [[com.github.scrud.android.CrudType]]s.
  * @author Eric Pabst (epabst@gmail.com)
  * Date: 3/31/11
  * Time: 4:50 PM
  */
-@deprecated("use EntityNavigation or EntityTypeMap")
-abstract class CrudApplication(val platformDriver: PlatformDriver) extends PersistenceFactoryMapping with Logging {
-  lazy val logTag = Common.tryToEvaluate(nameId).getOrElse(Common.logTag)
+@deprecated("use EntityNavigation or EntityTypeMap", since = "2014-05-12")
+abstract class CrudApplication(val platformDriver: PlatformDriver, val entityTypeMap: EntityTypeMap) extends Logging {
+  lazy val logTag = Try(nameId).getOrElse(Common.logTag)
 
-  def name: String
+  final def name: String = entityTypeMap.applicationName.name
+
+  lazy val entityNavigation: EntityNavigation = new EntityNavigation(entityTypeMap)
 
   //this will be used for programmatic uses such as a database name
   lazy val nameId: String = name.replace(" ", "_").toLowerCase
 
   val packageName: String = getClass.getPackage.getName
 
-  /** All entities in the application, in order as shown to users. */
-  protected def allCrudTypes: Seq[CrudType]
-  def allEntityTypes: Seq[EntityType] = allCrudTypes.map(_.entityType)
+  private lazy val deleteItemStringKey = getStringKey("delete_item")
+  private lazy val dataSavedNotificationStringKey = getStringKey("data_saved_notification")
+  private lazy val dataNotSavedSinceInvalidNotificationStringKey = getStringKey("data_not_saved_since_invalid_notification")
 
   /** The EntityType for the first page of the App. */
-  lazy val primaryEntityType: EntityType = allEntityTypes.head
+  @deprecated("use entityNavigation.primaryEntityType", since = "2014-05-28")
+  lazy val primaryEntityType: EntityType = entityNavigation.primaryEntityType
 
-  def parentEntityNames(entityName: EntityName): Seq[EntityName] = entityType(entityName).parentEntityNames
+  @deprecated("use entityTypeMap.upstreamEntityNames(entityName)", since = "2014-05-28")
+  def parentEntityNames(entityName: EntityName): Seq[EntityName] = entityTypeMap.upstreamEntityNames(entityName)
 
-  def childEntityNames(entityName: EntityName): Seq[EntityName] = childEntityTypes(entityType(entityName)).map(_.entityName)
+  @deprecated("use entityTypeMap.downstreamEntityNames(entityType)", since = "2014-05-28")
+  def childEntityNames(entityName: EntityName): Seq[EntityName] =
+    entityTypeMap.downstreamEntityNames(entityName)
 
-  def childEntityTypes(entityType: EntityType): Seq[EntityType] = {
-    trace("childEntities: allCrudTypes=" + allEntityTypes + " self=" + entityType)
-    allEntityTypes.filter { nextEntity =>
-      val parentEntityNames = nextEntity.parentEntityNames
-      trace("childEntities: parents of " + nextEntity + " are " + parentEntityNames)
-      parentEntityNames.contains(entityType.entityName)
-    }
-  }
+  @deprecated("use entityTypeMap.downstreamEntityTypes(entityType)", since = "2014-05-28")
+  def childEntityTypes(entityType: EntityType): Seq[EntityType] =
+    entityTypeMap.downstreamEntityTypes(entityType)
 
-  private def crudType(entityName: EntityName): CrudType =
-    allCrudTypes.find(_.entityType.entityName == entityName).getOrElse(throw new NoSuchElementException(entityName + " not found"))
-
-  def persistenceFactory(entityType: EntityType): PersistenceFactory = crudType(entityType.entityName).persistenceFactory
-
-  private lazy val classInApplicationPackage: Class[_] = allEntityTypes.head.getClass
-  lazy val rStringClasses: Seq[Class[_]] = detectRStringClasses(classInApplicationPackage)
+  private lazy val classInApplicationPackage: Class[_] = entityTypeMap.allEntityTypes.head.getClass
   lazy val rIdClasses: Seq[Class[_]] = detectRIdClasses(classInApplicationPackage)
   lazy val rLayoutClasses: Seq[Class[_]] = detectRLayoutClasses(classInApplicationPackage)
 
   protected def getStringKey(stringName: String): SKey =
-    findResourceIdWithName(rStringClasses, stringName).getOrElse {
-      rStringClasses.foreach(rStringClass => logError("Contents of " + rStringClass + " are " + rStringClass.getFields.mkString(", ")))
-      throw new IllegalStateException("R.string." + stringName + " not found.  You may want to run the CrudUIGenerator.generateLayouts." +
-              rStringClasses.mkString("(string classes: ", ",", ")"))
-    }
+    platformDriver.asInstanceOf[AndroidPlatformDriver].getStringKey(stringName)
 
   def entityNameLayoutPrefixFor(entityName: EntityName) = NamingConventions.toLayoutPrefix(entityName)
 
   def commandToListItems(entityName: EntityName): PlatformCommand = PlatformCommand(ActionKey(entityNameLayoutPrefixFor(entityName) + "_list"), None,
-    findResourceIdWithName(rStringClasses, entityNameLayoutPrefixFor(entityName) + "_list"))
+    platformDriver.asInstanceOf[AndroidPlatformDriver].findStringKey(entityNameLayoutPrefixFor(entityName) + "_list"))
 
   def commandToDisplayItem(entityName: EntityName): PlatformCommand = PlatformCommand(ActionKey("display_" + entityNameLayoutPrefixFor(entityName)),
     None, None)
@@ -91,8 +85,10 @@ abstract class CrudApplication(val platformDriver: PlatformDriver) extends Persi
   def commandToEditItem(entityName: EntityName): PlatformCommand = PlatformCommand(ActionKey("edit_" + entityNameLayoutPrefixFor(entityName)),
     Some(R.drawable.ic_menu_edit), Some(getStringKey("edit_" + entityNameLayoutPrefixFor(entityName))))
 
-  def commandToDeleteItem(entityName: EntityName): PlatformCommand = PlatformCommand(ActionKey("delete_" + entityNameLayoutPrefixFor(entityName)),
-    Some(R.drawable.ic_menu_delete), Some(res.R.string.delete_item))
+  def commandToDeleteItem(entityName: EntityName): PlatformCommand = {
+    PlatformCommand(ActionKey("delete_" + entityNameLayoutPrefixFor(entityName)),
+      Some(R.drawable.ic_menu_delete), Some(deleteItemStringKey))
+  }
 
   def displayLayoutFor(entityName: EntityName): Option[LayoutKey] = findResourceIdWithName(rLayoutClasses, entityNameLayoutPrefixFor(entityName) + "_display")
   def hasDisplayPage(entityName: EntityName) = displayLayoutFor(entityName).isDefined
@@ -101,31 +97,31 @@ abstract class CrudApplication(val platformDriver: PlatformDriver) extends Persi
    * Gets the actions that a user can perform from a given CrudOperation.
    * May be overridden to modify the list of actions.
    */
-  def actionsFromCrudOperation(crudOperation: CrudOperation): Seq[OperationAction] = (crudOperation match {
+  def actionsFromCrudOperation(crudOperation: CrudOperation): Seq[OperationAction] = crudOperation match {
     case CrudOperation(entityName, CrudOperationType.Create) =>
       parentEntityNames(entityName).flatMap(actionsToManage(_)) ++ actionToDelete(entityName).toSeq
     case CrudOperation(entityName, CrudOperationType.Read) =>
       childEntityNames(entityName).flatMap(actionToList(_)) ++
-          actionToUpdate(entityName).toSeq ++ actionToDelete(entityName).toSeq
+        actionToUpdate(entityName).toSeq ++ actionToDelete(entityName).toSeq
     case CrudOperation(entityName, CrudOperationType.List) =>
       actionToCreate(entityName).toSeq ++ actionsToUpdateAndListChildrenOfOnlyParentWithoutDisplayAction(entityName)
     case CrudOperation(entityName, CrudOperationType.Update) =>
       actionToDisplay(entityName).toSeq ++ parentEntityNames(entityName).flatMap(actionsToManage(_)) ++ actionToDelete(entityName).toSeq
-  })
+  }
 
   protected def actionsToUpdateAndListChildrenOfOnlyParentWithoutDisplayAction(entityName: EntityName): Seq[OperationAction] = {
-    val thisEntity = entityType(entityName)
-    (thisEntity.parentFields match {
+    val thisEntity = entityTypeMap.entityType(entityName)
+    thisEntity.entityReferenceFieldDeclarations match {
       //exactly one parent w/o a display page
-      case parentField :: Nil if !actionToDisplay(parentField.entityName).isDefined => {
-        val parentEntityType = entityType(parentField.entityName)
+      case entityReferenceField :: Nil if !actionToDisplay(entityReferenceField.entityName).isDefined => {
+        val referencedEntityType = entityTypeMap.entityType(entityReferenceField.entityName)
         //the parent's actionToUpdate should be shown since clicking on the parent entity brought the user
         //to the list of child entities instead of to a display page for the parent entity.
-        actionToUpdate(parentEntityType).toSeq ++
-          childEntityTypes(parentEntityType).filter(_ != thisEntity).flatMap(actionToList(_))
+        actionToUpdate(referencedEntityType).toSeq ++
+          childEntityTypes(referencedEntityType).filter(_ != thisEntity).flatMap(actionToList(_))
       }
       case _ => Nil
-    })
+    }
   }
 
   def actionsToManage(entityName: EntityName): Seq[OperationAction] =
@@ -140,7 +136,7 @@ abstract class CrudApplication(val platformDriver: PlatformDriver) extends Persi
     * The target Activity should copy Unit into the UI using entityType.copy to populate defaults.
     */
   def actionToCreate(entityName: EntityName): Option[OperationAction] = {
-    if (isCreatable(entityName))
+    if (entityTypeMap.isCreatable(entityName))
       Some(OperationAction(commandToAddItem(entityName), platformDriver.operationToShowCreateUI(entityName)))
     else
       None
@@ -149,13 +145,13 @@ abstract class CrudApplication(val platformDriver: PlatformDriver) extends Persi
   /** Gets the action to display a UI for a user to edit data for an entity given its id in the UriPath. */
   def actionToUpdate(entityType: EntityType): Option[OperationAction] = actionToUpdate(entityType.entityName)
   def actionToUpdate(entityName: EntityName): Option[OperationAction] = {
-    if (isSavable(entityName)) Some(OperationAction(commandToEditItem(entityName), platformDriver.operationToShowUpdateUI(entityName)))
+    if (entityTypeMap.isSavable(entityName)) Some(OperationAction(commandToEditItem(entityName), platformDriver.operationToShowUpdateUI(entityName)))
     else None
   }
 
-  def actionToDelete(entityName: EntityName): Option[OperationAction] = actionToDelete(entityType(entityName))
+  def actionToDelete(entityName: EntityName): Option[OperationAction] = actionToDelete(entityTypeMap.entityType(entityName))
   def actionToDelete(entityType: EntityType): Option[OperationAction] = {
-    if (isDeletable(entityType)) {
+    if (entityTypeMap.isDeletable(entityType)) {
       Some(OperationAction(commandToDeleteItem(entityType.entityName), StartEntityDeleteOperation(entityType)))
     } else None
   }
@@ -177,69 +173,65 @@ abstract class CrudApplication(val platformDriver: PlatformDriver) extends Persi
   }
 
   private[scrud] object FuturePortableValueCache
-    extends ApplicationConcurrentMapVal[(EntityType, UriPath, CrudContext),Future[AdaptedValueSeq]]
+    extends ApplicationConcurrentMapVal[(EntityType, UriPath, CommandContext),Future[Option[AdaptedValueSeq]]]
 
   /**
    * Save the data into the persistence for entityType.
    * If data is invalid (based on updating a ValidationResult), returns None, otherwise returns the created or updated ID.
    */
-  def saveIfValid(data: AnyRef, entityType: EntityType, requestContext: RequestContext): Option[ID] = {
-    val crudContext = requestContext.crudContext
-    val updaterInput = UpdaterInput(crudContext.newWritable(entityType), requestContext)
-    val relevantFields = entityType.copyableTo(updaterInput)
-    val portableValue = relevantFields.copyFrom(data +: requestContext)
-    if (portableValue.update(ValidationResult.Valid).isValid) {
-      val updatedWritable = portableValue.update(updaterInput)
-      val idOpt = entityType.IdField(requestContext.currentUriPath)
-      val newId = crudContext.withEntityPersistence(entityType)(_.save(idOpt, updatedWritable))
-      debug("Saved " + portableValue + " into id=" + newId + " entityType=" + entityType)
-      crudContext.displayMessageToUserBriefly(res.R.string.data_saved_notification)
+  def saveIfValid(sourceUri: UriPath, sourceType: SourceType, source: AnyRef, entityType: EntityType, commandContext: CommandContext): Option[ID] = {
+    val idOpt = entityType.idField.sourceFieldOrFail(sourceType).findValue(source, new CopyContext(sourceUri, commandContext))
+    if (entityType.copyAndUpdate(sourceType, source, sourceUri, ValidationResult, commandContext).isValid) {
+      val newId = commandContext.save(entityType.entityName, sourceType, idOpt, source)
+      commandContext.displayMessageToUserBriefly(dataSavedNotificationStringKey)
       Some(newId)
     } else {
-      crudContext.displayMessageToUserBriefly(res.R.string.data_not_saved_since_invalid_notification)
+      commandContext.displayMessageToUserBriefly(dataNotSavedSinceInvalidNotificationStringKey)
       None
     }
   }
 
   private lazy val executor = new UrgentFutureExecutor()
 
-  private def cachedFuturePortableValueOrCalculate(entityType: EntityType, uriPathWithId: UriPath, crudContext: CrudContext)(calculate: => AdaptedValueSeq): Future[AdaptedValueSeq] = {
-    val cache = FuturePortableValueCache.get(crudContext.stateHolder)
-    val key = (entityType, uriPathWithId, crudContext)
+  private def cachedFuturePortableValueOptOrCalculate(entityType: EntityType, uriPathWithId: UriPath, commandContext: CommandContext)(calculate: => Option[AdaptedValueSeq]): Future[Option[AdaptedValueSeq]] = {
+    val cache = FuturePortableValueCache.get(commandContext.sharedContext)
+    val key = (entityType, uriPathWithId, commandContext)
     cache.get(key).getOrElse {
-      val futurePortableValue = executor.urgentFuture {
-        crudContext.withExceptionReportingHavingDefaultReturnValue(PortableValue.nothing) {
+      val futurePortableValueOpt = executor.urgentFuture {
+        commandContext.withExceptionReportingHavingDefaultReturnValue[Option[AdaptedValueSeq]](None) {
           calculate
         }
       }
-      cache.putIfAbsent(key, futurePortableValue).getOrElse(futurePortableValue)
+      cache.putIfAbsent(key, futurePortableValueOpt).getOrElse(futurePortableValueOpt)
     }
   }
 
-  def futurePortableValue(entityType: EntityType, uriPathWithId: UriPath, crudContext: CrudContext): Future[AdaptedValueSeq] = {
-    cachedFuturePortableValueOrCalculate(entityType, uriPathWithId, crudContext) {
-      calculatePortableValue(entityType, uriPathWithId, crudContext)
+  def futurePortableValueOpt(entityType: EntityType, sourceUriWithId: UriPath, targetType: TargetType, commandContext: CommandContext): Future[Option[AdaptedValueSeq]] = {
+    cachedFuturePortableValueOptOrCalculate(entityType, sourceUriWithId, commandContext) {
+      calculatePortableValueOpt(entityType, sourceUriWithId, targetType, commandContext)
     }
   }
 
-  def futurePortableValue(entityType: EntityType, uriPathWithId: UriPath, entityData: AnyRef, crudContext: CrudContext): Future[AdaptedValueSeq] = {
-    cachedFuturePortableValueOrCalculate(entityType, uriPathWithId, crudContext) {
-      calculatePortableValue(entityType, uriPathWithId, entityData, crudContext)
+  def futurePortableValueOpt(entityType: EntityType, sourceType: SourceType, source: AnyRef,
+                             sourceUriWithId: UriPath, targetType: TargetType, commandContext: CommandContext): Future[Option[AdaptedValueSeq]] = {
+    cachedFuturePortableValueOptOrCalculate(entityType, sourceUriWithId, commandContext) {
+      Some(calculatePortableValue(entityType, sourceType, source, sourceUriWithId, targetType, commandContext))
     }
   }
 
-  protected def calculatePortableValue(entityType: EntityType, uriPathWithId: UriPath, crudContext: CrudContext): AdaptedValueSeq = {
-    crudContext.withEntityPersistence(entityType) { persistence =>
-      val entityOpt = persistence.find(uriPathWithId)
-      entityOpt.map { entityData =>
-        calculatePortableValue(entityType, uriPathWithId, entityData, crudContext)
-      }
-    }.getOrElse(PortableValue.empty)
+  protected def calculatePortableValueOpt(entityType: EntityType, sourceUriWithId: UriPath,
+                                          targetType: TargetType, commandContext: CommandContext): Option[AdaptedValueSeq] = {
+    val persistence = commandContext.persistenceFor(entityType.entityName)
+    val sourceOpt = persistence.find(sourceUriWithId)
+    sourceOpt.map { source =>
+      calculatePortableValue(entityType, persistence.sourceType, source, sourceUriWithId, targetType, commandContext)
+    }
   }
 
-  protected def calculatePortableValue(entityType: EntityType, uriPathWithId: UriPath, entityData: AnyRef, crudContext: CrudContext): AdaptedValueSeq = {
-    val requestContext = GetterInput(uriPathWithId, crudContext, PortableField.UseDefaults)
-    debug("Copying " + entityType.entityName + "#" + entityType.IdField.getRequired(entityData))
-    entityType.copyFrom(entityData +: requestContext)
+  protected def calculatePortableValue(entityType: EntityType, sourceType: SourceType, source: AnyRef,
+                                       sourceUriWithId: UriPath, targetType: TargetType, commandContext: CommandContext): AdaptedValueSeq = {
+    debug("Copying entityType=" + entityType + " from sourceUri=" + sourceUriWithId + 
+      " from sourceType=" + sourceType + " to targetType=" + targetType)
+    entityType.copy(sourceType, source, sourceUriWithId, targetType, commandContext)
   }
 }

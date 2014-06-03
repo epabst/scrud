@@ -1,7 +1,6 @@
 package com.github.scrud.converter
 
 import java.util.{Calendar, Date}
-import scala.Enumeration
 import Converter._
 import GenericConverter._
 import java.text.{SimpleDateFormat, Format}
@@ -39,8 +38,6 @@ object ValueFormat {
 
   def textValueFormat[T](formatThreadLocal: ThreadLocal[_ <: Format], obj2Value: (Object) => T = {(v: Object) => v.asInstanceOf[T]}): ValueFormat[T] =
     convertingFormat[T](new ParseFormatConverter[T](formatThreadLocal, obj2Value), formatToString[T](formatThreadLocal))
-
-  def enumFormat[T <: Enumeration#Value](enum: Enumeration): ValueFormat[T] = convertingFormat[T](stringToEnum(enum))
 
   def basicFormat[T <: AnyVal](implicit manifest: Manifest[T]): ValueFormat[T] =
     new GenericConvertingValueFormat[T](stringToAnyVal, anyToString)

@@ -3,6 +3,7 @@ package com.github.scrud.context
 import com.github.scrud.EntityNavigation
 import com.github.scrud.persistence.PersistenceConnection
 import com.github.scrud.action.Undoable
+import com.github.scrud.platform.PlatformTypes.SKey
 
 /**
  * A CommandContextHolder that delegates.
@@ -22,5 +23,21 @@ private[scrud] trait CommandContextDelegator extends CommandContextHolder {
   /** Provides a way for the user to undo an operation. */
   def allowUndo(undoable: Undoable) {
     commandContext.allowUndo(undoable)
+  }
+
+  /**
+   * Display a message to the user temporarily.
+   * @param message the message to display
+   */
+  override def displayMessageToUser(message: String) {
+    commandContext.displayMessageToUser(message)
+  }
+
+  /**
+   * Display a message to the user temporarily.
+   * @param messageKey the key of the message to display
+   */
+  override def displayMessageToUserBriefly(messageKey: SKey) {
+    commandContext.displayMessageToUserBriefly(messageKey)
   }
 }

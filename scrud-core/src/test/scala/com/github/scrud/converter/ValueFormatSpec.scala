@@ -92,22 +92,6 @@ class ValueFormatSpec extends FunSpec with MustMatchers {
     }
   }
 
-  describe("enumFormat") {
-    object MyEnum extends Enumeration {
-      val A = Value("A")
-      val B = Value("B")
-    }
-    val format = enumFormat[MyEnum.Value](MyEnum)
-
-    it("must handle formatting/parsing") {
-      format.toString(MyEnum.A) must be ("A")
-      format.toString(MyEnum.B) must be ("B")
-      itMustFormatAndParse(format, MyEnum.A)
-      itMustFormatAndParse(format, MyEnum.B)
-      format.toValue("").isSuccess must be (false)
-    }
-  }
-
   def itMustFormatAndParse[T](format: ValueFormat[T], value: T) {
     val string = format.toString(value)
     format.toValue(string).get must be (value)

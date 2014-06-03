@@ -7,7 +7,7 @@ import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import org.scalatest.matchers.MustMatchers
 import org.scalatest.FunSpec
-import com.github.scrud.persistence.{CrudPersistenceUsingThin, ThinPersistence}
+import com.github.scrud.persistence.{EntityTypeMapForTesting, CrudPersistenceUsingThin, ThinPersistence}
 import platform.TestingPlatformDriver
 import org.scalatest.mock.MockitoSugar
 import org.mockito.Mockito._
@@ -19,9 +19,8 @@ import org.mockito.Mockito._
 class CrudApplicationSpec extends FunSpec with MustMatchers with MockitoSugar {
 
   it("must provide a valid nameId") {
-    val application = new CrudApplication(TestingPlatformDriver) {
+    val application = new CrudApplication(TestingPlatformDriver, EntityTypeMapForTesting(Seq.empty)) {
       val name = "A diFFicult name to use as an ID"
-      val allCrudTypes = List()
     }
     application.nameId must be ("a_difficult_name_to_use_as_an_id")
   }
@@ -108,7 +107,7 @@ class CrudApplicationSpec extends FunSpec with MustMatchers with MockitoSugar {
       val application = new CrudApplicationForTesting(entityType -> new PersistenceFactoryForTesting(crudPersistence))
       val entity = Map[String,Option[Any]]("name" -> Some("Bob"), "age" -> Some(25))
       val uri = UriPath(entityType.entityName)
-      application.saveIfValid(entity, entityType, new RequestContext(uri, new SimpleCrudContext(application)))
+      application.saveIfValid(entity, entityType, new CommandContext(uri, new SimpleCommandContext(application)))
       verify(persistence).save(None, Map[String,Option[Any]](CursorField.idFieldName -> None, "name" -> Some("Bob"), "age" -> Some(25), "uri" -> Some(uri.toString)))
       verify(persistence, never()).findAll(uri)
     }
@@ -119,7 +118,7 @@ class CrudApplicationSpec extends FunSpec with MustMatchers with MockitoSugar {
       val application = new CrudApplicationForTesting(entityType -> new PersistenceFactoryForTesting(crudPersistence))
       val entity = Map[String,Option[Any]]("name" -> Some("Bob"), "age" -> Some(25))
       val uri = UriPath(entityType.entityName) / 200
-      application.saveIfValid(entity, entityType, new RequestContext(uri, new SimpleCrudContext(application)))
+      application.saveIfValid(entity, entityType, new CommandContext(uri, new SimpleCommandContext(application)))
       verify(persistence).save(Some(200), Map[String,Option[Any]](CursorField.idFieldName -> Some(200), "name" -> Some("Bob"), "age" -> Some(25), "uri" -> Some(uri.toString)))
     }
   }

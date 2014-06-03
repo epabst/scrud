@@ -21,7 +21,10 @@ import com.github.scrud.action.CrudOperation
  *         Date: 1/25/14
  *         Time: 9:01 AM
  */
-class EntityNavigation(val applicationName: ApplicationName, val entityTypeMap: EntityTypeMap, val platformDriver: PlatformDriver) {
+class EntityNavigation(val entityTypeMap: EntityTypeMap) {
+  def applicationName: ApplicationName = entityTypeMap.applicationName
+
+  def platformDriver: PlatformDriver = entityTypeMap.platformDriver
 
   /** The EntityType for the first page of the App. */
   val primaryEntityType: EntityType = entityTypeMap.allEntityTypes.head

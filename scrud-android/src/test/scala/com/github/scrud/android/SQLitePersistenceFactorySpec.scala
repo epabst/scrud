@@ -4,24 +4,25 @@ import _root_.android.provider.BaseColumns
 import _root_.android.app.Activity
 import _root_.android.database.{Cursor, DataSetObserver}
 import _root_.android.widget.ListView
-import com.github.scrud
 import com.github.scrud.state._
 import com.github.scrud.persistence._
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.scalatest.matchers.MustMatchers
-import com.github.triangle._
-import com.github.scrud.android.persistence.CursorField._
 import persistence.{EntityTypePersistedInfo, CursorStream}
-import PortableField._
-import res.R
 import scala.collection._
 import org.mockito.Mockito
 import Mockito._
-import scrud.util.CrudMockitoSugar
+import com.github.scrud.util.{Logging, CrudMockitoSugar}
 import com.github.scrud._
 import com.github.scrud.EntityName
 import state.ActivityStateHolder
+import com.github.scrud.android.testres.R
+import com.github.scrud.types.NaturalIntQT
+import com.github.scrud.copy.types.{MapStorage, Default}
+import com.github.scrud.platform.representation.Persistence
+import com.github.scrud.context.SharedContextForTesting
+import com.github.scrud.copy.SourceType
 
 /** A test for [[com.github.scrud.android.SQLitePersistenceFactorySpec]].
   * @author Eric Pabst (epabst@gmail.com)
@@ -47,23 +48,21 @@ class SQLitePersistenceFactorySpec extends MustMatchers with CrudMockitoSugar wi
   object TestEntity extends EntityName("Test")
 
   object TestEntityType extends EntityType(TestEntity, androidPlatformDriver) {
-    val valueFields = List(persisted[Int]("age") + default(21))
+    val age = field("age", NaturalIntQT, Seq(Persistence(1), Default(21)))
   }
 
-  object TestCrudType extends CrudType(TestEntityType, SQLitePersistenceFactory)
+  val entityTypeMap = EntityTypeMapForTesting(Seq(TestEntityType -> SQLitePersistenceFactory))
 
-  object TestApplication extends CrudApplication(androidPlatformDriver) {
+  object TestApplication extends CrudApplication(androidPlatformDriver, entityTypeMap) {
     val name = "Test Application"
-
-    val allCrudTypes = List(TestCrudType)
   }
   val application = TestApplication
 
   @Test
   def shouldUseCorrectColumnNamesForFindAll() {
-    val crudContext = mock[AndroidCrudContext]
-    stub(crudContext.application).toReturn(application)
-    stub(crudContext.persistenceFactoryMapping).toReturn(application)
+    val commandContext = mock[AndroidCommandContext]
+    stub(commandContext.application).toReturn(application)
+    stub(commandContext.entityTypeMap).toReturn(entityTypeMap)
 
     val entityTypePersistedInfo = EntityTypePersistedInfo(TestEntityType)
     entityTypePersistedInfo.queryFieldNames must contain(BaseColumns._ID)
@@ -72,25 +71,27 @@ class SQLitePersistenceFactorySpec extends MustMatchers with CrudMockitoSugar wi
 
   @Test
   def shouldCloseCursorsWhenClosing() {
-    val crudContext = mock[AndroidCrudContext]
-    stub(crudContext.stateHolder).toReturn(new ActivityStateHolderForTesting)
-    stub(crudContext.application).toReturn(application)
-    stub(crudContext.persistenceFactoryMapping).toReturn(application)
     val persistenceFactory = SQLitePersistenceFactory
+    val entityTypeMap = EntityTypeMapForTesting(Seq(TestEntityType -> persistenceFactory))
+    val commandContext = mock[AndroidCommandContext]
+    stub(commandContext.stateHolder).toReturn(new ActivityStateHolderForTesting)
+    stub(commandContext.application).toReturn(application)
+    stub(commandContext.entityTypeMap).toReturn(entityTypeMap)
 
     val cursors = mutable.Buffer[Cursor]()
-    val database = new GeneratedDatabaseSetup(crudContext, persistenceFactory).getWritableDatabase
-    val thinPersistence = new SQLiteThinEntityPersistence(TestEntityType, database, crudContext)
-    val persistence = new CrudPersistenceUsingThin(TestEntityType, thinPersistence) {
+    val database = new GeneratedDatabaseSetup(commandContext, persistenceFactory).getWritableDatabase
+    val thinPersistence = new SQLiteThinEntityPersistence(TestEntityType, database, commandContext)
+    val sharedContext = new SharedContextForTesting(entityTypeMap)
+    val persistence = new CrudPersistenceUsingThin(TestEntityType, thinPersistence, sharedContext) {
       override def findAll(uri: UriPath) = {
         val result = super.findAll(uri)
-        val CursorStream(cursor, _) = result
+        val CursorStream(cursor, _, _) = result
         cursors += cursor
         result
       }
     }
     //UseDefaults is provided here in the item list for the sake of PortableField.adjustment[SQLiteCriteria] fields
-    val id = persistence.saveCopy(None, PortableField.UseDefaults)
+    val id = commandContext.save(TestEntity, SourceType.none, None, SourceType.none)
     val uri = persistence.toUri(id)
     persistence.find(uri)
     persistence.findAll(UriPath.EMPTY)
@@ -108,22 +109,22 @@ class SQLitePersistenceFactorySpec extends MustMatchers with CrudMockitoSugar wi
     }
     val observer = mock[DataSetObserver]
 
-    val crudContext = new AndroidCrudContextForTesting(application, activity)
-    activity.setListAdapterUsingUri(crudContext, activity)
+    val commandContext = new AndroidCommandContextForTesting(application, activity)
+    activity.setListAdapterUsingUri(commandContext, activity)
     val listAdapter = activity.getAdapterView.getAdapter
     listAdapter.getCount must be (0)
 
-    val id = crudContext.withEntityPersistence(TestEntityType) { _.saveCopy(None, PortableField.UseDefaults) }
+    val id = commandContext.save(TestEntity, SourceType.none, None, SourceType.none)
     //it must have refreshed the listAdapter
     listAdapter.getCount must be (if (runningOnRealAndroid) 1 else 0)
 
     listAdapter.registerDataSetObserver(observer)
-    crudContext.withEntityPersistence(TestEntityType) { _.saveCopy(Some(id), Map("age" -> Some(50))) }
+    commandContext.save(TestEntity, MapStorage, Some(id), new MapStorage(TestEntityType.age -> Some(50)))
     //it must have refreshed the listAdapter (notified the observer)
     listAdapter.unregisterDataSetObserver(observer)
     listAdapter.getCount must be (if (runningOnRealAndroid) 1 else 0)
 
-    crudContext.withEntityPersistence(TestEntityType) { _.delete(TestEntityType.toUri(id)) }
+    commandContext.delete(TestEntity.toUri(id)) must be (1)
     //it must have refreshed the listAdapter
     listAdapter.getCount must be (0)
   }

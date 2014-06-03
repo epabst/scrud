@@ -17,13 +17,13 @@ import android.net.Uri
  * Time: 3:57 PM
  */
 class ContentResolverCrudPersistence(val entityType: EntityType, contentResolver: ContentResolver,
-                                     persistenceFactoryMapping: PersistenceFactoryMapping,
+                                     entityTypeMap: EntityTypeMap,
                                      protected val listenerSet: ListenerHolder[DataListener])
     extends CrudPersistence with DelegatingListenerSet[DataListener] {
   private lazy val entityTypePersistedInfo = EntityTypePersistedInfo(entityType)
   private lazy val queryFieldNames = entityTypePersistedInfo.queryFieldNames.toArray
   private lazy val uriPathWithEntityName = UriPath(entityType.entityName)
-  private lazy val applicationUri = AndroidConversions.baseUriFor(persistenceFactoryMapping)
+  private lazy val applicationUri = AndroidConversions.baseUriFor(entityTypeMap)
 
   private def toUri(uriPath: UriPath): Uri = {
     AndroidConversions.withAppendedPath(applicationUri, uriPath)
@@ -34,7 +34,7 @@ class ContentResolverCrudPersistence(val entityType: EntityType, contentResolver
     val cursor = Option(contentResolver.query(uri, queryFieldNames, null, Array.empty, null)).getOrElse {
       sys.error("Error resolving content: " + uri)
     }
-    CursorStream(cursor, entityTypePersistedInfo)
+    CursorStream(cursor, entityTypePersistedInfo, sharedContext.asStubCommandContext)
   }
 
   def newWritable() = ContentResolverPersistenceFactory.newWritable()

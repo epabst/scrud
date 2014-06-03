@@ -4,8 +4,7 @@ import android.content.Context
 import android.app.Activity
 import android.widget.Toast
 import com.github.scrud.util.Common
-import com.github.scrud.Notification
-import com.github.scrud.platform.PlatformTypes
+import com.github.scrud.platform.{Notification, PlatformTypes}
 
 trait AndroidNotification extends Notification {
   def context: Context

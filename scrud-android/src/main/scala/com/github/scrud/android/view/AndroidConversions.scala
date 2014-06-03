@@ -5,7 +5,7 @@ import android.view.View.OnClickListener
 import android.net.Uri
 import com.github.scrud.UriPath
 import android.content.Context
-import com.github.scrud.persistence.PersistenceFactoryMapping
+import com.github.scrud.persistence.EntityTypeMap
 
 /** Useful conversions for Android development. */
 object AndroidConversions {
@@ -14,15 +14,15 @@ object AndroidConversions {
 
   def authorityFor(applicationPackageName: String): String = applicationPackageName + ".provider"
 
-  def authorityFor(persistenceFactoryMapping: PersistenceFactoryMapping): String = authorityFor(persistenceFactoryMapping.packageName)
+  def authorityFor(entityTypeMap: EntityTypeMap): String = authorityFor(entityTypeMap.packageName)
 
-  def baseUriFor(persistenceFactoryMapping: PersistenceFactoryMapping): Uri = baseUriFor(persistenceFactoryMapping.packageName)
+  def baseUriFor(entityTypeMap: EntityTypeMap): Uri = baseUriFor(entityTypeMap.packageName)
 
   def baseUriFor(packageName: String): Uri = (new Uri.Builder).scheme("content").authority(authorityFor(packageName)).build()
 
   def toUri(uriPath: UriPath, context: Context): Uri = toUri(uriPath, context.getApplicationInfo.packageName)
 
-  def toUri(uriPath: UriPath, persistenceFactoryMapping: PersistenceFactoryMapping): Uri = toUri(uriPath, persistenceFactoryMapping.packageName)
+  def toUri(uriPath: UriPath, entityTypeMap: EntityTypeMap): Uri = toUri(uriPath, entityTypeMap.packageName)
 
   def toUri(uriPath: UriPath, packageName: String): Uri = withAppendedPath(baseUriFor(packageName), uriPath)
 

@@ -7,19 +7,19 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import com.github.scrud.android.action.AndroidOperation.toRichItent
 import com.github.scrud.util.CrudMockitoSugar
-import res.R
-import com.github.scrud.android.view.{EntityView, EnumerationView, ViewField}
 import com.github.scrud.types._
 import com.github.scrud.EntityName
 import com.github.scrud.action.OperationAction
-import com.github.scrud.platform.PlatformDriverContractSpec
+import com.github.scrud.platform.representation.DetailUI
+import org.scalatest.MustMatchers
+import com.github.scrud.android.testres.R
 
 /** A test for [[com.github.scrud.android.AndroidPlatformDriver]].
   * @author Eric Pabst (epabst@gmail.com)
   */
 //todo make contract tests run as well as JUnit tests.
 @RunWith(classOf[CustomRobolectricTestRunner])
-class AndroidPlatformDriverSpec extends PlatformDriverContractSpec with CrudMockitoSugar {
+class AndroidPlatformDriverSpec extends CrudMockitoSugar with MustMatchers {
   //todo determine if shadowing, and run tests on real Android device as well.
   val isShadowing = true
   val driver = new AndroidPlatformDriver(classOf[R])
@@ -101,38 +101,38 @@ class AndroidPlatformDriverSpec extends PlatformDriverContractSpec with CrudMock
 
   @Test
   def shouldRecognizeQualifiedType_DateWithoutTimeQT() {
-    assertQualifiedTypeRecognized(DateWithoutTimeQT, ViewField.dateView)
+    assertQualifiedTypeRecognized(DateWithoutTimeQT)
   }
 
   @Test
   def shouldRecognizeQualifiedType_TitleQT() {
-    assertQualifiedTypeRecognized(TitleQT, ViewField.textView)
-    assertQualifiedTypeRecognized(DescriptionQT, ViewField.textView)
+    assertQualifiedTypeRecognized(TitleQT)
+    assertQualifiedTypeRecognized(DescriptionQT)
   }
 
   @Test
   def shouldRecognizeQualifiedType_NaturalIntQT() {
-    assertQualifiedTypeRecognized(NaturalIntQT, ViewField.intView)
+    assertQualifiedTypeRecognized(NaturalIntQT)
   }
 
   @Test
   def shouldRecognizeQualifiedType_PositiveIntQT() {
-    assertQualifiedTypeRecognized(PositiveIntQT, ViewField.intView)
+    assertQualifiedTypeRecognized(PositiveIntQT)
   }
 
   @Test
   def shouldRecognizeQualifiedType_PercentageQT() {
-    assertQualifiedTypeRecognized(PercentageQT, ViewField.percentageView)
+    assertQualifiedTypeRecognized(PercentageQT)
   }
 
   @Test
   def shouldRecognizeQualifiedType_CurrencyQT() {
-    assertQualifiedTypeRecognized(CurrencyQT, ViewField.currencyView)
+    assertQualifiedTypeRecognized(CurrencyQT)
   }
 
   @Test
   def shouldRecognizeQualifiedType_EntityName() {
-    assertQualifiedTypeRecognized(EntityName("Foo"), EntityView(EntityName("Foo")))
+    assertQualifiedTypeRecognized(EntityName("Foo"))
   }
 
   @Test
@@ -141,12 +141,10 @@ class AndroidPlatformDriverSpec extends PlatformDriverContractSpec with CrudMock
       val Fantasy = Value("Fantasy")
       val SciFi = Value("Sci-Fi")
     }
-    assertQualifiedTypeRecognized(EnumerationValueQT(Genre), EnumerationView(Genre))
+    assertQualifiedTypeRecognized(EnumerationValueQT(Genre))
   }
 
-  def assertQualifiedTypeRecognized(qualifiedType: QualifiedType[_], expectedField: ViewField[_]) {
-    driver.namedViewField("foo", qualifiedType, EntityName("Bar")).deepCollect {
-      case view if view == expectedField => view
-    }.size must be(1)
+  def assertQualifiedTypeRecognized(qualifiedType: QualifiedType[_]) {
+    driver.field(EntityName("Bar"), "foo", qualifiedType, Seq.empty).toAdaptableField.findTargetField(DetailUI) must be ('isDefined)
   }
 }

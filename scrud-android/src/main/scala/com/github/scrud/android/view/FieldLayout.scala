@@ -8,6 +8,7 @@ import xml.NodeSeq
   * Standards attributes are separately added such as android:id and those needed by the parent View.
   * @author Eric Pabst (epabst@gmail.com)
   */
+@deprecated("just use the xml directly in a ViewTargetField or ViewStorageField", since = "2014-04-30")
 abstract class FieldLayout { self =>
   def displayXml: NodeSeq
   def editXml: NodeSeq

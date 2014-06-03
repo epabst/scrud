@@ -21,6 +21,8 @@ import _root_.android.util.SparseArray
 import com.github.scrud.EntityName
 import scala.Some
 import com.github.scrud.action.CrudOperation
+import com.github.scrud.platform.representation.{EditUI, Persistence}
+import com.github.scrud.copy.types.MapStorage
 
 /** A test for [[com.github.scrud.android.CrudActivity]].
   * @author Eric Pabst (epabst@gmail.com)
@@ -32,52 +34,46 @@ class CrudActivitySpec extends CrudMockitoSugar with MustMatchers {
 
   @Test
   def shouldSaveOnBackPressed() {
-    val _crudType = new CrudTypeForTesting(persistenceFactory)
-    val application = new CrudApplicationForTesting(_crudType)
+    val _entityType = EntityTypeForTesting
+    val application = new CrudApplicationForTesting(_entityType -> persistenceFactory)
     val entity = Map[String,Option[Any]]("name" -> Some("Bob"), "age" -> Some(25))
-    val _entityType = _crudType.entityType
     val uri = UriPath(_entityType.entityName)
     val activity = new CrudActivityForTesting(application) {
       override lazy val entityType = _entityType
       override protected lazy val initialUriPath = uri
-      override lazy val crudContext = new AndroidCrudContextForTesting(crudApplication, this)
+      override lazy val commandContext = new AndroidCommandContextForTesting(crudApplication, this)
     }
     activity.onCreate(null)
-    _entityType.copy(entity, activity)
+    _entityType.copyAndUpdate(Persistence.Latest, entity, uri, EditUI, activity, activity.commandContext)
     activity.onBackPressed()
-    activity.crudContext.withEntityPersistence(_entityType) { persistence =>
-      val results = persistence.findAll(UriPath(_entityType.entityName))
-      val idOpt = activity.currentUriPath.findId(_entityType.entityName)
-      idOpt must be ('defined)
-      results must be (Seq(Map[String,Option[Any]](CursorField.idFieldName -> idOpt, "name" -> Some("Bob"), "age" -> Some(25), "uri" -> Some(uri.toString))))
-    }
+    val results = activity.commandContext.persistenceConnection.findAll(_entityType.toUri, MapStorage, activity.commandContext)
+    val idOpt = activity.currentUriPath.findId(_entityType.entityName)
+    idOpt must be ('defined)
+    results must be (Seq(Map[String,Option[Any]](CursorField.idFieldName -> idOpt, "name" -> Some("Bob"), "age" -> Some(25), "uri" -> Some(uri.toString))))
   }
 
   @Test
   def onPauseShouldNotCreateANewIdEveryTime() {
-    val _crudType = new CrudTypeForTesting(persistenceFactory)
-    val application = new CrudApplicationForTesting(_crudType)
+    val _entityType = EntityTypeForTesting
+    val application = new CrudApplicationForTesting(_entityType -> persistenceFactory)
     val entity = Map[String,Option[Any]]("name" -> Some("Bob"), "age" -> Some(25))
-    val _entityType = _crudType.entityType
     val uri = UriPath(_entityType.entityName)
     val activity = new CrudActivityForTesting(application) {
       override lazy val entityType = _entityType
       override protected lazy val initialUriPath = uri
-      override lazy val crudContext = new AndroidCrudContextForTesting(crudApplication, this)
+      override lazy val commandContext = new AndroidCommandContextForTesting(crudApplication, this)
     }
     activity.setIntent(constructIntent(AndroidOperation.CreateActionName, uri, activity, null))
     activity.onCreate(null)
     //simulate a user entering data
-    _entityType.copy(entity, activity)
+    _entityType.copyAndUpdate(Persistence.Latest, entity, uri, EditUI, activity, activity.commandContext)
     activity.onBackPressed()
     val uriPathAfterFirstSave = activity.currentUriPath
     //simulate saving again
     activity.onBackPressed()
     activity.currentUriPath must be (uriPathAfterFirstSave)
-    activity.crudContext.withEntityPersistence(_entityType) { persistence =>
-      val results = persistence.findAll(UriPath(_entityType.entityName))
-      results.size must be (1)
-    }
+    val results = activity.commandContext.persistenceConnection.findAll(_entityType.toUri, MapStorage, activity.commandContext)
+    results.size must be (1)
   }
 
   @Test
@@ -86,34 +82,32 @@ class CrudActivitySpec extends CrudMockitoSugar with MustMatchers {
   }
 
   @Test
-  def mustNotCopyFromParentEntityIfUriPathIsInsufficient() {
+  def mustNotCopyFromUpstreamEntityIfUriPathIsInsufficient() {
     val persistenceForParent = mock[ThinPersistence]
     val parentEntityName = EntityName("Parent")
     val entityType1 = new EntityTypeForTesting {
-      override lazy val parentEntityNames = Seq(parentEntityName)
+      override lazy val referencedEntityNames: Seq[EntityName] = Seq(parentEntityName)
     }
-    val crudType = new CrudTypeForTesting(entityType1)
     val parentEntityType = new EntityTypeForTesting(parentEntityName)
-    val parentCrudType = new CrudTypeForTesting(parentEntityType, persistenceForParent)
-    val application = new CrudApplicationForTesting(crudType, parentCrudType)
+    val application = new CrudApplicationForTesting(entityType1 -> new PersistenceFactoryForTesting(entityType1),
+      parentEntityType -> new PersistenceFactoryForTesting(parentEntityType, persistenceForParent))
 
     val activity = new CrudActivityForTesting(application) {
       override def currentUriPath = UriPath(entityType1.entityName)
     }
-    activity.populateFromParentEntities()
+    activity.populateFromReferencedEntities()
     verify(persistenceForParent, never()).findAll(any())
   }
 
   @Test
   def shouldHaveCorrectOptionsMenu() {
     val persistence = mock[ThinPersistence]
-    val entityType = new EntityTypeForTesting
-    val crudType = new CrudTypeForTesting(entityType, persistence)
-    val application = new CrudApplicationForTesting(crudType)
+    val _entityType = EntityTypeForTesting
+    val application = new CrudApplicationForTesting(_entityType -> new PersistenceFactoryForTesting(_entityType, persistence))
     when(persistence.findAll(any())).thenReturn(Seq(Map[String,Any](CursorField.idFieldName -> Some(400L), "name" -> Some("Bob"), "age" -> Some(25), "uri" -> None)))
     val activity = new CrudActivityForTesting(application) {
       override lazy val currentAction = UpdateActionName
-      override lazy val crudContext = new AndroidCrudContextForTesting(application, this)
+      override lazy val commandContext = new AndroidCommandContextForTesting(application, this)
       override lazy val applicationState = new State
     }
     activity.setIntent(new Intent(Intent.ACTION_MAIN))
@@ -132,10 +126,10 @@ class CrudActivitySpec extends CrudMockitoSugar with MustMatchers {
     val contextMenu = mock[ContextMenu]
     val ignoredView: View = null
     val ignoredMenuInfo: ContextMenu.ContextMenuInfo = null
-    val _crudType = CrudTypeForTesting
-    val application = new CrudApplicationForTesting(_crudType)
+    val _entityType = EntityTypeForTesting
+    val application = new CrudApplicationForTesting(_entityType)
     val activity = new CrudActivityForTesting(application) {
-      override lazy val entityType = _crudType.entityType
+      override lazy val entityType = _entityType
       override lazy val currentAction = ListActionName
     }
     activity.onCreateContextMenu(contextMenu, ignoredView, ignoredMenuInfo)
@@ -149,12 +143,12 @@ class CrudActivitySpec extends CrudMockitoSugar with MustMatchers {
     val ignoredView: View = null
     val ignoredMenuInfo: ContextMenu.ContextMenuInfo = null
 
-    val _crudType = new CrudTypeForTesting(new EntityTypeForTesting)
-    val application = new CrudApplicationForTesting(_crudType) {
+    val _entityType = new EntityTypeForTesting
+    val application = new CrudApplicationForTesting(_entityType) {
       override def actionsFromCrudOperation(crudOperation: CrudOperation) = Nil
     }
     val activity = new CrudActivityForTesting(application) {
-      override lazy val entityType = _crudType.entityType
+      override lazy val entityType = _entityType
     }
     //shouldn't do anything
     activity.onCreateContextMenu(contextMenu, ignoredView, ignoredMenuInfo)
@@ -172,11 +166,10 @@ class CrudActivitySpec extends CrudMockitoSugar with MustMatchers {
   def shouldRefreshOnResume() {
     val persistence = mock[ThinPersistence]
     when(persistence.findAll(any())).thenReturn(Seq(Map[String,Any]("name" -> "Bob", "age" -> 25)))
-    val entityType = new EntityTypeForTesting
-    val _crudType = new CrudTypeForTesting(entityType, persistence)
-    val application = new CrudApplicationForTesting(_crudType)
+    val _entityType = new EntityTypeForTesting
+    val application = new CrudApplicationForTesting(_entityType -> new PersistenceFactoryForTesting(_entityType, persistence))
     class SomeCrudListActivity extends CrudActivityForTesting(application) {
-      override lazy val entityType = _crudType.entityType
+      override lazy val entityType = _entityType
 
       //make it public for testing
       override def onPause() {
@@ -201,9 +194,9 @@ class CrudActivitySpec extends CrudMockitoSugar with MustMatchers {
   @Test
   def shouldIgnoreClicksOnHeader() {
     val application = mock[CrudApplication]
-    val _crudType = CrudTypeForTesting
+    val _entityType = EntityTypeForTesting
     val activity = new CrudActivityForTesting(application) {
-      override lazy val entityType = _crudType.entityType
+      override lazy val entityType = _entityType
     }
     // should do nothing
     activity.onListItemClick(null, null, -1, -1)

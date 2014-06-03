@@ -92,11 +92,11 @@ class ContentResolverCrudPersistenceSpec extends CrudMockitoSugar with MustMatch
   @Test
   def listenerMustReceiveNotificationsWhenSaveHappensForDesiredEntityType() {
     val persistenceFactory = ContentResolverPersistenceFactoryForTesting(ListBufferPersistenceFactoryForTesting, testApplication)
-    val crudContext = new AndroidCrudContextForTesting(testApplication)
+    val commandContext = new AndroidCommandContextForTesting(testApplication)
 
     val listener = mock[DataListener]
-    persistenceFactory.listenerSet(fooEntityType, crudContext).addListener(listener)
-    val persistence = persistenceFactory.createEntityPersistence(fooEntityType, crudContext)
+    persistenceFactory.listenerSet(fooEntityType, commandContext).addListener(listener)
+    val persistence = persistenceFactory.createEntityPersistence(fooEntityType, commandContext)
 
     // save one that should cause a notification
     persistence.save(None, fooEntityType.copyAndUpdate(data1, persistence.newWritable()))
@@ -110,13 +110,13 @@ class ContentResolverCrudPersistenceSpec extends CrudMockitoSugar with MustMatch
   @Test
   def listenerMustNotReceiveNotificationsWhenSaveHappensForDifferentEntityType() {
     val persistenceFactory = ContentResolverPersistenceFactoryForTesting(ListBufferPersistenceFactoryForTesting, testApplication)
-    val crudContext = new AndroidCrudContextForTesting(testApplication)
+    val commandContext = new AndroidCommandContextForTesting(testApplication)
 
     val listener = mock[DataListener]
-    persistenceFactory.listenerSet(fooEntityType, crudContext).addListener(listener)
+    persistenceFactory.listenerSet(fooEntityType, commandContext).addListener(listener)
 
     // save a different EntityType that should not cause a notification
-    val persistence = persistenceFactory.createEntityPersistence(barEntityType, crudContext)
+    val persistence = persistenceFactory.createEntityPersistence(barEntityType, commandContext)
     persistence.saveCopy(None, data1)
     verify(listener, never()).onChanged()
   }

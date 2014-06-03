@@ -5,18 +5,20 @@ import com.github.scrud.action.{Operation, PlatformCommand}
 import com.github.scrud.{FieldName, EntityType, EntityName}
 import com.github.scrud.types.QualifiedType
 import com.github.scrud.copy._
-import com.github.scrud.util.{Name, Logging}
-import com.github.scrud.platform.representation.PersistenceRange
+import com.github.scrud.util.{Logging, Name}
 import com.netaporter.uri.Uri
 import scala.util.Try
 
 /**
  * An API for an app to interact with the host platform such as Android.
  * It should be constructable without any kind of container.
- * Use subtypes of CommandContext for state that is available in a container.
+ * It should not contain any application-specific information.
+ * In fact, whether useful or not, the same instance should be shareable between two applications.
+ * Use subtypes of CommandContext and SharedContext for state that is available in a container.
  * The model is that the custom platform is implemented for all applications by
- * delegating to the CrudApplication to make business logic decisions.
- * Then the CrudApplication can call into this PlatformDriver or CommandContext for any calls it needs to make.
+ * delegating to the EntityNavigation and EntityTypes to make business logic decisions.
+ * Then the EntityNavigation and EntityTyeps can call into this PlatformDriver or CommandContext
+ * for any calls they need to make.
  * If direct access to the specific host platform is needed by a specific app, cast this
  * to the appropriate subclass, ideally using a scala match expression.
  * @author Eric Pabst (epabst@gmail.com)
@@ -24,25 +26,15 @@ import scala.util.Try
  *         Time: 9:57 PM
  */
 trait PlatformDriver extends Logging {
+  /** This should only be used as a last resort.  Most logging should use ApplicationName's logging. */
+  override protected val logTag: String = "scrud." + getClass.getSimpleName
+
   def tryResource(resourceName: Name): Try[Uri]
 
   def localDatabasePersistenceFactory: PersistenceFactory
 
-  def calculateDataVersion(entityTypes: Seq[EntityType]) = {
-    (for {
-      entityType <- entityTypes
-      fieldDeclaration <- entityType.fieldDeclarations
-      persistenceRange <- fieldDeclaration.representations.collect {
-        case persistenceRange: PersistenceRange => persistenceRange
-      }
-    } yield {
-      if (persistenceRange.maxDataVersion < Int.MaxValue) {
-        persistenceRange.maxDataVersion + 1
-      } else {
-        persistenceRange.minDataVersion
-      }
-    }).max
-  }
+  def calculateDataVersion(entityTypes: Seq[EntityType]) =
+    entityTypes.map(_.dataVersion).max
 
   /**
    * Gets the name of a field that contains the entity's ID.
@@ -62,6 +54,9 @@ trait PlatformDriver extends Logging {
 
   def commandToDeleteItem(entityName: EntityName): PlatformCommand
 
+  /** The command to undo the last delete. */
+  def commandToUndoDelete: PlatformCommand
+
   /** An Operation that will show the UI to the user for creating an entity instance. */
   def operationToShowCreateUI(entityName: EntityName): Operation
 
@@ -73,9 +68,6 @@ trait PlatformDriver extends Logging {
 
   /** An Operation that will show the UI to the user for updating an entity instance. */
   def operationToShowUpdateUI(entityName: EntityName): Operation
-
-  /** The command to undo the last delete. */
-  def commandToUndoDelete: PlatformCommand
 
   def platformSpecificFieldFactories: Seq[AdaptableFieldFactory]
 

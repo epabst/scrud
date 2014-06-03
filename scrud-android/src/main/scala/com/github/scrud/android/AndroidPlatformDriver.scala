@@ -1,26 +1,19 @@
 package com.github.scrud.android
 
-import com.github.scrud
-import persistence.EntityTypePersistedInfo
 import action.AndroidOperation._
 import com.github.scrud.platform.PlatformDriver
-import com.github.scrud.{FieldName, EntityType, EntityName}
-import scrud.types._
-import view.ViewField._
-import view.FieldLayout._
-import view.ViewRef
-import com.github.scrud.copy._
-import com.github.scrud.android.action.StartEntityActivityOperation
-import com.github.scrud.android.view.EnumerationView
+import com.github.scrud.android.view.{AndroidEditUIFieldFactory, AndroidDisplayUIFieldFactory, ViewRef}
 import com.github.scrud.action.ActionKey
+import com.github.scrud.android.persistence.{QueryAdaptableFieldFactory, SQLiteAdaptableFieldFactory}
+import com.github.scrud.platform.PlatformTypes._
+import com.github.scrud.android.view.AndroidResourceAnalyzer._
+import com.github.scrud.FieldName
+import com.github.scrud.EntityName
+import com.github.scrud.android.action.StartEntityActivityOperation
+import com.github.scrud.android.view.ViewSpecifier
 import scala.Some
-import com.github.scrud.android.action.StartEntityIdActivityOperation
-import com.github.scrud.types.EnumerationValueQT
-import com.github.scrud.android.view.EntityView
 import com.github.scrud.action.PlatformCommand
-import com.github.scrud.copy.FieldApplicability
-import com.github.scrud.copy.types.MapStorage
-import com.github.scrud.context.CommandContext
+import com.github.scrud.android.action.StartEntityIdActivityOperation
 
 /**
  * A PlatformDriver for the Android platform.
@@ -34,7 +27,9 @@ class AndroidPlatformDriver(rClass: Class[_], val activityClass: Class[_ <: Crud
     extends PlatformDriver {
   lazy val localDatabasePersistenceFactory = new SQLitePersistenceFactory
 
-  def calculateDataVersion(entityTypes: Seq[EntityType]) = entityTypes.map(EntityTypePersistedInfo(_).maxDataVersion).max
+  lazy val undoDeleteStringKey = getStringKey("undo_delete")
+  /** The command to undo the last delete. */
+  lazy val commandToUndoDelete = PlatformCommand(ActionKey("undo_delete"), None, Some(undoDeleteStringKey))
 
   /** An Operation that will show the UI to the user for creating an entity instance. */
   def operationToShowCreateUI(entityName: EntityName) =
@@ -52,76 +47,37 @@ class AndroidPlatformDriver(rClass: Class[_], val activityClass: Class[_ <: Crud
   def operationToShowUpdateUI(entityName: EntityName) =
     new StartEntityIdActivityOperation(entityName, UpdateActionName, activityClass)
 
-  /** The command to undo the last delete. */
-  lazy val commandToUndoDelete = PlatformCommand(ActionKey("undo_delete"), None, Some(res.R.string.undo_delete))
+  val platformSpecificFieldFactories = Seq(
+    new AndroidDisplayUIFieldFactory(this),
+    new AndroidEditUIFieldFactory(this),
+    SQLiteAdaptableFieldFactory,
+    BundleStorageAdaptableFieldFactory,
+    QueryAdaptableFieldFactory
+  )
 
-  /** A PortableField for modifying a named portion of a View. */
-  def namedViewField[T](fieldName: String, childViewField: PortableField[T], entityName: EntityName): PortableField[T] = {
-    viewId(rClass, AndroidPlatformDriver.fieldPrefix(entityName) + fieldName, childViewField)
-  }
+  def toViewSpecifier(entityName: EntityName, fieldPrefix: String, fieldName: FieldName): ViewSpecifier =
+    new ViewSpecifier(toViewRef(entityName, fieldPrefix, fieldName))
 
-  /**
-   * A PortableField for modifying a named portion of a View.
-   * The platform is expected to recognize the qualifiedType and be able to return a PortableField.
-   * @throws IllegalArgumentException if the qualifiedType is not recognized.
-   */
-  def namedViewField[T](fieldName: String, qualifiedType: QualifiedType[T], entityName: EntityName) = {
-    val childViewField = (qualifiedType match {
-      case TitleQT => textView.withDefaultLayout(textLayout("text|textCapWords|textAutoCorrect"))
-      case DescriptionQT => textView.withDefaultLayout(textLayout("text|textCapSentences|textMultiLine|textAutoCorrect"))
-      case CurrencyQT => currencyView
-      case PercentageQT => percentageView
-      case DateWithoutTimeQT => dateView
-      case EnumerationValueQT(enumeration) => EnumerationView(enumeration)
-      case e @ EntityName(_) => EntityView(e)
-      case _: StringQualifiedType => textView
-      case _: IntQualifiedType => intView.withDefaultLayout(textLayout("number"))
-    }).asInstanceOf[PortableField[T]]
-    namedViewField(fieldName, childViewField, entityName)
+  def toViewRef(entityName: EntityName, fieldPrefix: String, fieldName: FieldName): ViewRef = {
+    val viewKey = AndroidPlatformDriver.fieldPrefix(entityName) + fieldPrefix + fieldName
+    ViewRef(viewKey, rClass, "id")
   }
 
   def listViewId(entityName: EntityName): Int = ViewRef(entityName + "_list", rClass, "id").viewKeyOrError
 
   def emptyListViewIdOpt(entityName: EntityName): Int = ViewRef(entityName + "_emptyList", rClass, "id").viewKeyOrError
 
-  def field[V](fieldName: FieldName, qualifiedType: QualifiedType[V], applicability: FieldApplicability, entityName: EntityName): AdaptableField[V] = {
-    val sourceFields: Map[SourceType,SourceField[V]] = (for {
-      sourceType <- applicability.from
-      tuple <- makeSourceFields(fieldName, qualifiedType, sourceType, entityName)
-    } yield tuple).toMap
+  private lazy val classInApplicationPackage: Class[_] = rClass
+  lazy val rStringClasses: Seq[Class[_]] = detectRStringClasses(classInApplicationPackage)
 
-    val targetFields: Map[TargetType,TargetField[V]] = (for {
-      targetType <- applicability.to
-    } yield (targetType, makeTargetField(fieldName, qualifiedType, targetType, entityName))).toMap
-
-    new AdaptableFieldByType[V](sourceFields, targetFields)
-  }
-
-  protected def makeSourceFields[V](fieldName: FieldName, qualifiedType: QualifiedType[V], sourceType: SourceType, entityName: EntityName): Map[SourceType,SourceField[V]] = {
-    sourceType match {
-      case MapStorage =>
-        val field = TypedSourceField[MapStorage, V](_.get(entityName, fieldName).map(_.asInstanceOf[V]))
-        Map(sourceType -> field)
-      case _ =>
-        val field = new SourceField[V] {
-          def findValue(source: AnyRef, context: CopyContext) = None //todo
-        }
-        Map(sourceType -> field)
+  def getStringKey(stringName: String): SKey =
+    findStringKey(stringName).getOrElse {
+      rStringClasses.foreach(rStringClass => logError("Contents of " + rStringClass + " are " + rStringClass.getFields.mkString(", ")))
+      throw new IllegalStateException("R.string." + stringName + " not found.  You may want to run the CrudUIGenerator.generateLayouts." +
+        rStringClasses.mkString("(string classes: ", ",", ")"))
     }
-  }
 
-  protected def makeTargetField[V](fieldName: FieldName, qualifiedType: QualifiedType[V], targetType: TargetType, entityName: EntityName): TargetField[V] = {
-    targetType match {
-      case MapStorage =>
-        new MapTargetField[V](entityName, fieldName)
-      case _ =>
-        new TargetField[V] {
-          override def updateValue[T <: AnyRef](target: T, valueOpt: Option[V], context: CopyContext): T = {
-            //todo
-          }
-        }
-    }
-  }
+  def findStringKey(stringName: String): Option[SKey] = findResourceIdWithName(rStringClasses, stringName)
 }
 
 object AndroidPlatformDriver {

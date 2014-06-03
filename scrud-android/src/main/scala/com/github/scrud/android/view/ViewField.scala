@@ -11,11 +11,14 @@ import android.widget._
 import com.github.scrud.android.view.AndroidResourceAnalyzer._
 import android.view.View
 import android.widget.LinearLayout
-import com.github.scrud.android.AndroidCrudContext
+import com.github.scrud.android.AndroidCommandContext
+import com.github.scrud.copy.{TypedTargetField, TypedSourceField, SourceField, AdaptedField}
+import com.github.scrud.context.CommandContext
 
 /** A Map of ViewKey with values.
   * Wraps a map so that it is distinguished from persisted fields.
   */
+@deprecated("use MapStorage", since = "2014-05-15")
 case class ViewKeyMap(map: Map[ViewKey,Option[Any]]) {
   def contains(key: ViewKey) = map.contains(key)
   def apply(key: ViewKey) = map.apply(key)
@@ -25,18 +28,18 @@ case class ViewKeyMap(map: Map[ViewKey,Option[Any]]) {
   def +[B1 >: Any](kv: (ViewKey, Option[B1])) = ViewKeyMap(map + kv)
 }
 
+@deprecated("use MapStorage", since = "2014-05-15")
 object ViewKeyMap {
   val empty = ViewKeyMap()
   def apply(elems: (ViewKey,Option[Any])*): ViewKeyMap = new ViewKeyMap(Map(elems: _*))
 }
 
-/** An extractor to get the View from the items being copied from. */
-object ViewExtractor extends Field(identityField[View])
 
 /** PortableField for Views.
   * @param defaultLayout the default layout used as an example and by [[com.github.scrud.android.generate.CrudUIGenerator]].
   * @author Eric Pabst (epabst@gmail.com)
   */
+@deprecated("use ViewTargetField", since = "2014-04-28")
 class ViewField[T](val defaultLayout: FieldLayout, delegate: PortableField[T]) extends Field[T](delegate) { self =>
   lazy val suppressEdit: ViewField[T] = ViewField[T](defaultLayout.suppressEdit, this)
   lazy val suppressDisplay: ViewField[T] = ViewField[T](defaultLayout.suppressDisplay, this)
@@ -72,15 +75,15 @@ object ViewField {
                            fromString: Converter[String,T], defaultLayout: FieldLayout = nameLayout): ViewField[T] =
     new ViewField[T](defaultLayout, Getter[TextView,T](view => toOption(view.getText.toString.trim).flatMap(fromString.convert(_))) +
         Setter[T] {
-          case UpdaterInput(view: EditText, valueOpt, CrudContextField(crudContext: AndroidCrudContext)) => {
+          case UpdaterInput(view: EditText, valueOpt, CommandContextField(commandContext: AndroidCommandContext)) => {
             val text = valueOpt.flatMap(toEditString.convert(_)).getOrElse("")
-            crudContext.runOnUiThread {
+            commandContext.runOnUiThread {
               view.setText(text)
             }
           }
-          case UpdaterInput(view: TextView, valueOpt, CrudContextField(crudContext: AndroidCrudContext)) => {
+          case UpdaterInput(view: TextView, valueOpt, CommandContextField(commandContext: AndroidCommandContext)) => {
             val text = valueOpt.flatMap(toDisplayString.convert(_)).getOrElse("")
-            crudContext.runOnUiThread {
+            commandContext.runOnUiThread {
               view.setText(text)
             }
           }

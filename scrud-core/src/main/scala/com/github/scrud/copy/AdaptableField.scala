@@ -21,16 +21,19 @@ abstract class AdaptableField[V] extends BaseAdaptableField { self =>
   def findSourceField(sourceType: SourceType): Option[SourceField[V]]
 
   /** Get the SourceField or fail. */
-  def sourceField(sourceType: SourceType): SourceField[V] =
+  override def sourceFieldOrFail(sourceType: SourceType): SourceField[V] =
     findSourceField(sourceType).getOrElse(sys.error(this + " has no SourceField for " + sourceType))
 
-  def findDefault(sourceUri: UriPath, commandContext: CommandContext): Option[V] =
-    sourceField(SourceType.none).findValue(SourceType.none, new CopyContext(sourceUri, commandContext))
+  def findFromContext(sourceUri: UriPath, commandContext: CommandContext): Option[V] =
+    sourceFieldOrFail(SourceType.none).findValue(SourceType.none, new CopyContext(sourceUri, commandContext))
 
   def findTargetField(targetType: TargetType): Option[TargetField[V]]
 }
 
 object AdaptableField {
+  def apply[V](sourceFields: Seq[(SourceType,SourceField[V])], targetFields: Seq[(TargetType,TargetField[V])]) =
+    new AdaptableFieldByType[V](sourceFields, targetFields)
+
   def apply[V](sourceFields: Map[SourceType,SourceField[V]], targetFields: Map[TargetType,TargetField[V]]) =
     new AdaptableFieldByType[V](sourceFields, targetFields)
 

@@ -27,6 +27,13 @@ class MapStorage extends AnyRef {
     }
   }
 
+  def this(entityName: EntityName, map: Map[String,Any]) {
+    this()
+    for ((fieldName, value) <- map) {
+      put(entityName, FieldName(fieldName), Some(value))
+    }
+  }
+
   private val map = new mutable.ParHashMap[String,Any]
 
   def get(entityName: EntityName, fieldName: FieldName): Option[Any] = map.get(toKey(entityName, fieldName))
@@ -53,6 +60,8 @@ class MapStorage extends AnyRef {
   }
 
   override def hashCode() = map.hashCode() + 13
+
+  lazy val toMap: Map[String,Any] = map.toIndexedSeq.toMap
 
   override def toString = map.mkString("MapStorage(", ", ", ")")
 }

@@ -4,111 +4,67 @@ import org.scalatest.FunSpec
 import org.scalatest.matchers.MustMatchers
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
-import com.github.triangle.converter.ValueFormat
-import com.github.triangle.PortableField
-import PortableField._
-import com.github.scrud.android.view.ViewField._
 import com.github.scrud.android.testres.R
 import com.github.scrud.android._
 import org.scalatest.mock.MockitoSugar
-import testres.R.id
-import view.EntityView
-import com.github.scrud.EntityField
+import com.github.scrud.platform.representation.DetailUI
+import com.github.scrud.types.TitleQT
+import com.github.scrud.persistence.EntityTypeMapForTesting
 
 /** A behavior specification for [[com.github.scrud.android.generate.EntityFieldInfo]].
   * @author Eric Pabst (epabst@gmail.com)
   */
 @RunWith(classOf[JUnitRunner])
 class EntityFieldInfoSpec extends FunSpec with MustMatchers with MockitoSugar {
-  val application = new CrudApplicationForTesting(CrudType(EntityTypeForTesting, null))
-
-  describe("viewFields") {
-    it("must find all ViewFields") {
-      val dummyFormat = ValueFormat[String](s => Some(s + "."), _.stripSuffix("."))
-      val fieldList = mapField[String]("foo") + textView + formatted[String](dummyFormat, textView) + viewId(45, textView)
-      val info = ViewIdFieldInfo("foo", fieldList)
-      info.viewFields must be(List(textView, textView, textView))
-    }
+  object EntityTypeWithBogusField extends EntityTypeForTesting {
+    val bogus = field("bogus", TitleQT, Seq(DetailUI))
   }
+  val entityType = EntityTypeWithBogusField
+  private val entityTypeMap = EntityTypeMapForTesting(entityType)
+  val application = new CrudApplicationForTesting(entityTypeMap)
+
+  val fieldInfo_name = EntityFieldInfo(entityType.name, Seq(classOf[R.id]), entityTypeMap)
 
   it("must handle a viewId name that does not exist") {
-    val fieldInfo = EntityFieldInfo(viewId(classOf[R.id], "bogus", textView), List(classOf[R]), EntityForTesting, application).viewIdFieldInfos.head
+    val fieldInfo = EntityFieldInfo(entityType.bogus, Seq(classOf[R.id]), entityTypeMap).displayViewIdFieldInfos.head
     fieldInfo.id must be ("bogus")
   }
 
-  it("must consider a EntityField displayable if it has a viewId field") {
-    val fieldInfo = EntityFieldInfo(EntityField[EntityTypeForTesting](EntityForTesting) + viewId(classOf[R], "foo", longView), Seq(classOf[R]), EntityForTesting, application)
-    fieldInfo.isDisplayable must be (true)
+  it("must consider a field displayable when it has a DisplayUI representation") {
+    fieldInfo_name.isDisplayable must be (true)
   }
 
-  it("must not include a EntityField if it has no viewId field") {
-    val fieldInfos = EntityFieldInfo(EntityField[EntityTypeForTesting](EntityForTesting), Seq(classOf[R]), EntityForTesting, application).viewIdFieldInfos
-    fieldInfos must be (Nil)
+  it("must consider a field as non-displayable when it has no DisplayUI representation") {
+    val fieldInfo = EntityFieldInfo(entityType.url, Seq(classOf[R]), entityTypeMap)
+    fieldInfo.isDisplayable must be (false)
   }
 
-  it("must not include adjustment fields") {
-    val fieldInfos = EntityFieldInfo(adjustment[String](_ + "foo"), Seq(classOf[R]), EntityForTesting, application).viewIdFieldInfos
-    fieldInfos must be (Nil)
+  describe("displayViewIdFieldInfos") {
+    it("must not include the default primary key field") {
+      val fieldInfos = EntityFieldInfo(entityType.id, Seq(classOf[R]), entityTypeMap).displayViewIdFieldInfos
+      fieldInfos must be(Nil)
+    }
   }
 
-  it("must not include adjustmentInPlace fields") {
-    val fieldInfos = EntityFieldInfo(adjustmentInPlace[StringBuffer] { s => s.append("foo"); Unit }, Seq(classOf[R]), EntityForTesting, application).viewIdFieldInfos
-    fieldInfos must be (Nil)
+  describe("editViewIdFieldInfos") {
+    it("must not include the default primary key field") {
+      val fieldInfos = EntityFieldInfo(entityType.id, Seq(classOf[R]), entityTypeMap).editViewIdFieldInfos
+      fieldInfos must be(Nil)
+    }
   }
-
-  it("must not include the default primary key field") {
-    val fieldInfos = EntityFieldInfo(CrudTypeForTesting.entityType.IdField, Seq(classOf[R]), EntityForTesting, application).viewIdFieldInfos
-    fieldInfos must be (Nil)
-  }
-
-  it("must not include a ForeignKey if it has no viewId field") {
-    val fieldInfo = EntityFieldInfo(ForeignKey[EntityTypeForTesting](EntityForTesting), Seq(classOf[R]), EntityForTesting, application)
-    fieldInfo.isUpdateable must be (false)
-  }
-
-  it("must detect multiple ViewFields in the same field") {
-    val fieldInfos = EntityFieldInfo(viewId(R.id.foo, textView) + viewId(R.id.bar, textView), Seq(classOf[R.id]), EntityForTesting, application).viewIdFieldInfos
-    fieldInfos.map(_.id) must be (List("foo", "bar"))
-  }
-
-  val entityFieldInfo = EntityFieldInfo(viewId(R.id.foo, ForeignKey[EntityTypeForTesting](EntityForTesting, EntityView(EntityForTesting))), Seq(classOf[id]), EntityForTesting, application)
 
   describe("updateableViewIdFieldInfos") {
-    it("must not include fields whose editXml is Empty") {
-      val info = EntityFieldInfo(viewId(R.id.foo, textView.suppressEdit), Seq(classOf[id]), EntityForTesting, application)
-      val fieldInfos = info.updateableViewIdFieldInfos
-      fieldInfos must be ('empty)
-    }
-
     it("must provide a single field for an EntityView field to allow choosing Entity instance") {
-      val fieldInfos = entityFieldInfo.updateableViewIdFieldInfos
+      val fieldInfos = fieldInfo_name.updateableViewIdFieldInfos
       fieldInfos.map(_.id) must be (List("foo"))
-      fieldInfos.map(_.layout).head.editXml.head.label must be ("Spinner")
-    }
-
-    it("must not include fields whose childView field isn't a ViewField") {
-      val info = EntityFieldInfo(viewId(R.id.foo, mapField[String]("foo")), Seq(classOf[id]), EntityForTesting, application)
-      val fieldInfos = info.updateableViewIdFieldInfos
-      fieldInfos must be ('empty)
+      fieldInfos.map(_.layout).head.head.label must be ("Spinner")
     }
   }
 
   describe("displayableViewIdFieldInfos") {
-    it("must not include fields whose displayXml is Empty") {
-      val info = EntityFieldInfo(viewId(R.id.foo, textView.suppressDisplay), Seq(classOf[id]), EntityForTesting, application)
-      val fieldInfos = info.displayableViewIdFieldInfos
-      fieldInfos must be ('empty)
-    }
-
     it("must provide each displayable field in the referenced EntityType for an EntityView field") {
-      val fieldInfos = entityFieldInfo.displayableViewIdFieldInfos
+      val fieldInfos = fieldInfo_name.displayableViewIdFieldInfos
       fieldInfos must be (EntityTypeViewInfo(EntityTypeForTesting, null).displayableViewIdFieldInfos)
-    }
-
-    it("must not include fields whose childView field isn't a ViewField") {
-      val info = EntityFieldInfo(viewId(R.id.foo, mapField[String]("foo")), Seq(classOf[id]), EntityForTesting, application)
-      val fieldInfos = info.displayableViewIdFieldInfos
-      fieldInfos must be ('empty)
     }
   }
 }

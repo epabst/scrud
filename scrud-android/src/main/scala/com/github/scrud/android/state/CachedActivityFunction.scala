@@ -2,8 +2,8 @@ package com.github.scrud.android.state
 
 import android.os.Bundle
 import com.github.scrud.util.CachedFunction
-import com.github.scrud.CrudContext
-import com.github.scrud.android.AndroidCrudContext
+import com.github.scrud.CommandContext
+import com.github.scrud.android.AndroidCommandContext
 
 /** A Function whose results are cached in each Activity. */
 trait CachedActivityFunction[A, B] {
@@ -12,9 +12,9 @@ trait CachedActivityFunction[A, B] {
   /** Specify the actual function to use when the result has not been cached for a given Activity. */
   protected def evaluate(input: A): B
 
-  private def cachedFunction(crudContext: AndroidCrudContext) = cachedFunctionVar.getOrSet(crudContext.stateHolder, {
+  private def cachedFunction(commandContext: AndroidCommandContext) = cachedFunctionVar.getOrSet(commandContext.stateHolder, {
     val cachedFunction = CachedFunction[A, B](evaluate)
-    crudContext.addCachedActivityStateListener(new CachedStateListener {
+    commandContext.addCachedActivityStateListener(new CachedStateListener {
       /** Save any cached state into the given bundle before switching context. */
       def onSaveState(outState: Bundle) {}
 
@@ -29,16 +29,16 @@ trait CachedActivityFunction[A, B] {
     cachedFunction
   })
 
-  def apply(crudContext: AndroidCrudContext, input: A): B = {
-    val function = cachedFunction(crudContext)
+  def apply(commandContext: AndroidCommandContext, input: A): B = {
+    val function = cachedFunction(commandContext)
     function.apply(input)
   }
 
-  def setResult(crudContext: AndroidCrudContext, input: A, result: B) {
-    cachedFunction(crudContext).setResult(input, result)
+  def setResult(commandContext: AndroidCommandContext, input: A, result: B) {
+    cachedFunction(commandContext).setResult(input, result)
   }
 
-  def clear(crudContext: CrudContext) {
-    cachedFunctionVar.clear(crudContext.stateHolder)
+  def clear(commandContext: CommandContext) {
+    cachedFunctionVar.clear(commandContext.stateHolder)
   }
 }

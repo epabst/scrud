@@ -1,8 +1,8 @@
 package com.github.scrud.platform
 
-import com.github.scrud.util.Logging
+import com.github.scrud.util.DelegateLogging
 
-trait Notification extends Logging {
+trait Notification extends DelegateLogging {
   /**
    * Display a message to the user temporarily.
    * @param message the message to display

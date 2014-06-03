@@ -5,7 +5,6 @@ import org.mockito.Mockito._
 import com.github.scrud.persistence.{EntityTypeMapForTesting, PersistenceFactoryForTesting, ThinPersistence}
 import org.scalatest.mock.MockitoSugar
 import com.github.scrud.{UriPath, EntityTypeForTesting}
-import com.github.scrud.platform.TestingPlatformDriver
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 
@@ -21,7 +20,7 @@ class SharedContextSpec extends FunSpec with MockitoSugar {
     it("must close persistence") {
       val entityType = EntityTypeForTesting
       val persistenceFactory = new PersistenceFactoryForTesting(entityType, mock[ThinPersistence])
-      val sharedContext = new SimpleSharedContext(EntityTypeMapForTesting(persistenceFactory), TestingPlatformDriver)
+      val sharedContext = new SimpleSharedContext(EntityTypeMapForTesting(persistenceFactory))
       sharedContext.withPersistence { p => p.persistenceFor(entityType).findAll(UriPath.EMPTY) }
       verify(persistenceFactory.thinPersistence).close()
     }
@@ -29,7 +28,7 @@ class SharedContextSpec extends FunSpec with MockitoSugar {
     it("must close persistence on failure") {
       val entityType = EntityTypeForTesting
       val persistenceFactory = new PersistenceFactoryForTesting(entityType, mock[ThinPersistence])
-      val sharedContext = new SimpleSharedContext(EntityTypeMapForTesting(persistenceFactory), TestingPlatformDriver)
+      val sharedContext = new SimpleSharedContext(EntityTypeMapForTesting(persistenceFactory))
       try {
         sharedContext.withPersistence { persistenceConnection =>
           persistenceConnection.persistenceFor(entityType)

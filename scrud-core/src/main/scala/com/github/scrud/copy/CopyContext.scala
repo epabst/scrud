@@ -11,8 +11,4 @@ import com.github.scrud.{EntityName, UriPath}
 class CopyContext(val sourceUri: UriPath, val commandContext: CommandContext) extends CommandContextDelegator {
   /** Find using this CommandContext's URI. */
   def findAll(entityName: EntityName): Seq[AnyRef] = persistenceConnection.persistenceFor(entityName).findAll(sourceUri)
-
-  /** Find using this CommandContext's URI. */
-  def findAll[T <: AnyRef](entityName: EntityName, targetType: InstantiatingTargetType[T]): Seq[T] =
-    persistenceConnection.findAll(sourceUri, targetType, commandContext)
 }
