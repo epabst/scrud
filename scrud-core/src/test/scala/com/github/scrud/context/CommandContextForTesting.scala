@@ -18,6 +18,6 @@ class CommandContextForTesting(operationType: CrudOperationType, sharedContext: 
   }
 
   def this(entityType: EntityType) {
-    this(EntityTypeMapForTesting(new PersistenceFactoryForTesting(entityType)))
+    this(EntityTypeMapForTesting(entityType -> PersistenceFactoryForTesting))
   }
 }

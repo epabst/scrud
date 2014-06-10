@@ -1,8 +1,7 @@
 package com.github.scrud.persistence
 
-import com.github.scrud.EntityType
 import com.github.scrud.copy.types.MapStorage
-import org.scalatest.mock.MockitoSugar
+import com.github.scrud.EntityType
 
 /**
  * A PersistenceFactory to use during tests.
@@ -10,14 +9,14 @@ import org.scalatest.mock.MockitoSugar
  *         Date: 1/28/14
  *         Time: 9:47 AM
  */
-class PersistenceFactoryForTesting(entityType: EntityType, val thinPersistence: ThinPersistence = MockitoSugar.mock[ThinPersistence])
-    extends AbstractPersistenceFactory with DataListenerSetValHolder {
-  val canSave = true
+class PersistenceFactoryForTesting(thinPersistenceOpt: Option[ThinPersistence] = None) extends ListBufferPersistenceFactory[MapStorage](new MapStorage) {
+  def this(thinPersistence: ThinPersistence) {
+    this(Some(thinPersistence))
+  }
 
-  override def newWritable() = new MapStorage
-
-  def createEntityPersistence(entityType: EntityType, persistenceConnection: PersistenceConnection) =
-    new CrudPersistenceUsingThin(entityType, thinPersistence, persistenceConnection.sharedContext)
-
-  def toTuple: (EntityType,PersistenceFactory) = entityType -> this
+  override def createEntityPersistence(entityType: EntityType, persistenceConnection: PersistenceConnection): CrudPersistence = {
+    thinPersistenceOpt.fold(super.createEntityPersistence(entityType, persistenceConnection))(new CrudPersistenceUsingThin(entityType, _, persistenceConnection.sharedContext))
+  }
 }
+
+object PersistenceFactoryForTesting extends PersistenceFactoryForTesting(None)

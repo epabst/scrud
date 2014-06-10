@@ -19,16 +19,18 @@ class SharedContextSpec extends FunSpec with MockitoSugar {
   describe("withPersistence") {
     it("must close persistence") {
       val entityType = EntityTypeForTesting
-      val persistenceFactory = new PersistenceFactoryForTesting(entityType, mock[ThinPersistence])
-      val sharedContext = new SimpleSharedContext(EntityTypeMapForTesting(persistenceFactory))
+      val thinPersistence = mock[ThinPersistence]
+      val persistenceFactory = new PersistenceFactoryForTesting(thinPersistence)
+      val sharedContext = new SimpleSharedContext(EntityTypeMapForTesting(entityType -> persistenceFactory))
       sharedContext.withPersistence { p => p.persistenceFor(entityType).findAll(UriPath.EMPTY) }
-      verify(persistenceFactory.thinPersistence).close()
+      verify(thinPersistence).close()
     }
 
     it("must close persistence on failure") {
       val entityType = EntityTypeForTesting
-      val persistenceFactory = new PersistenceFactoryForTesting(entityType, mock[ThinPersistence])
-      val sharedContext = new SimpleSharedContext(EntityTypeMapForTesting(persistenceFactory))
+      val thinPersistence = mock[ThinPersistence]
+      val persistenceFactory = new PersistenceFactoryForTesting(thinPersistence)
+      val sharedContext = new SimpleSharedContext(EntityTypeMapForTesting(entityType -> persistenceFactory))
       try {
         sharedContext.withPersistence { persistenceConnection =>
           persistenceConnection.persistenceFor(entityType)
@@ -38,7 +40,7 @@ class SharedContextSpec extends FunSpec with MockitoSugar {
       } catch {
         case e: IllegalArgumentException => "expected"
       }
-      verify(persistenceFactory.thinPersistence).close()
+      verify(thinPersistence).close()
     }
   }
 }

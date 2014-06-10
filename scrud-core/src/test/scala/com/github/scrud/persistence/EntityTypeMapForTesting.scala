@@ -15,12 +15,8 @@ case class EntityTypeMapForTesting(persistenceFactoryByEntityType: (EntityType, 
     this(persistenceFactoryByEntityType.toSeq: _*)
   }
 
-  def this(persistenceFactoryForTesting: PersistenceFactoryForTesting, otherPersistenceFactoriesForTesting: PersistenceFactoryForTesting*) {
-    this((persistenceFactoryForTesting +: otherPersistenceFactoriesForTesting).map(_.toTuple): _*)
-  }
-
   def this(entityTypes: Set[EntityType]) {
-    this(new PersistenceFactoryForTesting(entityTypes.toSeq.head), entityTypes.toSeq.tail.map(new PersistenceFactoryForTesting(_)): _*)
+    this(entityTypes.toSeq.map(_ -> PersistenceFactoryForTesting): _*)
   }
 
   def this(entityType1: EntityType, otherEntityTypes: EntityType*) {
@@ -31,9 +27,6 @@ case class EntityTypeMapForTesting(persistenceFactoryByEntityType: (EntityType, 
 object EntityTypeMapForTesting {
   def apply(persistenceFactoryByEntityType: Map[EntityType, PersistenceFactory]): EntityTypeMapForTesting =
     new EntityTypeMapForTesting(persistenceFactoryByEntityType)
-
-  def apply(persistenceFactoryForTesting: PersistenceFactoryForTesting, otherPersistenceFactoriesForTesting: PersistenceFactoryForTesting*): EntityTypeMapForTesting =
-    new EntityTypeMapForTesting(persistenceFactoryForTesting)
 
   def apply(entityTypes: Set[EntityType]): EntityTypeMapForTesting =
     new EntityTypeMapForTesting(entityTypes)

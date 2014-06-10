@@ -9,7 +9,7 @@ import com.github.scrud.context.SharedContext
   * It shouldn't define code for any of its overridable methods to avoid bugs in [[com.github.scrud.persistence.DelegatingPersistenceFactory]].
   * @author Eric Pabst (epabst@gmail.com)
   */
-@MicrotestCompatible(use = "ListBufferPersistenceFactoryForTesting")
+@MicrotestCompatible(use = "PersistenceFactoryForTesting")
 abstract class PersistenceFactory {
   /** Indicates if an entity can be saved. */
   def canSave: Boolean
