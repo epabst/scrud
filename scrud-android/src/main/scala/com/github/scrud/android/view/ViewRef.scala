@@ -5,6 +5,7 @@ import com.github.scrud.android.view.AndroidResourceAnalyzer._
 
 /**
  * A reference to an element in the UI.  It wraps a [[com.github.scrud.platform.PlatformTypes.ViewKey]].
+ * It is used best with a [[com.github.scrud.android.view.ViewSpecifier]].
  * @author Eric Pabst (epabst@gmail.com)
  * Date: 3/26/12
  * Time: 6:39 AM

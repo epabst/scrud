@@ -2,24 +2,28 @@ package com.github.scrud.android.view
 
 import org.junit.runner.RunWith
 import org.scalatest.matchers.MustMatchers
-import com.github.triangle.PortableField._
-import com.github.scrud.android.persistence.CursorField._
 import ViewField._
 import android.view.View
 import org.junit.Test
 import org.scalatest.mock.MockitoSugar
 import org.mockito.Mockito._
-import com.github.scrud.UriPath
-import UriPath.uriIdField
+import com.github.scrud.{FieldName, EntityType, UriPath, EntityName}
 import android.widget._
-import java.util.{Locale, GregorianCalendar, Calendar}
-import com.github.triangle.Getter
-import com.github.triangle.converter.Converter._
-import com.github.scrud.android.view.FieldLayout._
+import java.util.Locale
 import android.content.Context
-import xml.NodeSeq
-import com.github.scrud.EntityName
-import com.github.scrud.android.CustomRobolectricTestRunner
+import com.github.scrud.android._
+import org.mockito.Matchers
+import org.mockito.stubbing.Answer
+import org.mockito.invocation.InvocationOnMock
+import scala.xml.NodeSeq
+import scala.reflect.Manifest
+import com.github.scrud.copy.CopyContext
+import scala.Some
+import com.github.scrud.android.testres.R
+import com.github.scrud.persistence.{PersistenceFactory, EntityTypeMapForTesting}
+import com.github.scrud.types.StringConvertibleQT
+import scala.util.{Success, Try}
+import com.github.scrud.platform.representation.{EditUI, SummaryUI}
 
 /** A behavior specification for [[com.github.scrud.android.view.ViewField]].
   * @author Eric Pabst (epabst@gmail.com)
@@ -31,148 +35,83 @@ class ViewFieldSpec extends MustMatchers with MockitoSugar {
   val context = mock[Context]
   val itemLayoutId = android.R.layout.simple_spinner_dropdown_item
   Locale.setDefault(Locale.US)
+  private val platformDriver = new AndroidPlatformDriver(classOf[R])
+  val application = new CrudApplicationForTesting(platformDriver, EntityTypeMapForTesting(Map.empty[EntityType,PersistenceFactory]))
 
-  @Test
-  def itMustBeEasilyInstantiableForAView() {
-    class MyView(context: Context, var status: String) extends View(context)
+  val stringConvertibleType = new StringConvertibleQT[String] {
+    /** Convert the value to a String for display. */
+    override def convertToString(value: String): String = value + " on display"
 
-    val stringField =
-      persisted[String]("name") +
-      viewId(101, textView) +
-      viewId(102, Getter[MyView,String](v => v.status).withSetter(v => v.status = _, noSetterForEmpty))
-    stringField must not be (null)
+    /** Convert the value to a String for editing.  This may simply call convertToString(value). */
+    override def convertToEditString(value: String): String = value + " to edit"
+
+    /** Convert the value from a String (whether for editing or display. */
+    override def convertFromString(string: String): Try[String] = Success("parsed " + string)
   }
 
-  @Test
-  def itMustPopulateAViewKeyMap() {
-    val stringField = persisted[String]("name") + viewId(101, textView)
-    val map = stringField.copyAndUpdate(Map("name" -> Some("George")), ViewKeyMap())
-    map must be (ViewKeyMap(101 -> Some("George")))
-  }
+  class ViewForTesting(context: Context, var status: String) extends View(context)
 
   @Test
   def itMustClearTheViewIfEmpty() {
     val viewGroup = mock[View]
-    val view1 = mock[TextView]
-    val view2 = mock[TextView]
-    val view3 = mock[TextView]
+    val view1 = mockView[TextView]
+    val view2 = mockView[TextView]
+    val view3 = mockView[TextView]
     stub(viewGroup.findViewById(101)).toReturn(view1)
     stub(viewGroup.findViewById(102)).toReturn(view2)
     stub(viewGroup.findViewById(103)).toReturn(view3)
-    val stringField =
-      viewId(101, textView) +
-      viewId(102, Getter[TextView,String](v => Option(v.getText.toString)).withSetter(v => v.setText(_), _.setText("Please Fill")))
-    stringField.updateWithValue(viewGroup, None)
+    val viewField = platformDriver.field(EntityName("foo"), FieldName("bar"), stringConvertibleType, Seq(SummaryUI, EditUI))
+    viewField.toAdaptableField.findTargetField(EditUI).get.updateValue(viewGroup, None, new CopyContext(UriPath.EMPTY, null))
     verify(view1).setText("")
-    verify(view2).setText("Please Fill")
-
-    val intField = viewId(103, intView)
-    intField.updateWithValue(viewGroup, None)
-    verify(view3).setText("")
   }
 
-  @Test
-  def itMustOnlyCopyToAndFromViewByIdIfTheRightType() {
-    val group = mock[View]
-    val view = mock[TextView]
-    stub(group.findViewById(56)).toReturn(view)
-    val stringField = Getter[MyEntity,String](e => e.string).withSetter(e => e.string = _, noSetterForEmpty) +
-      viewId(56, Getter[Spinner,String](_ => throw new IllegalStateException("must not be called")).
-        withSetter(_ => throw new IllegalStateException("must not be called")))
-    val myEntity1 = new MyEntity("my1", 1)
-    stringField.copy(myEntity1, group) //does nothing
-    stringField.copy(group, myEntity1) //does nothing
+  private def mockView[T <: View](implicit manifest: Manifest[T]): T = {
+    val view = mock[T]
+    when(view.post(Matchers.any())).thenAnswer(new Answer[Boolean] {
+      def answer(p1: InvocationOnMock) = {
+        val runnable = p1.getArguments.apply(0).asInstanceOf[Runnable]
+        runnable.run()
+        true
+      }
+    })
+    view
   }
 
   @Test
   def itMustOnlyCopyToAndFromViewByIdIfIdIsFound() {
-    val stringField = Getter[MyEntity,String](e => e.string).withSetter(e => e.string = _, noSetterForEmpty) +
-      viewId(56, Getter[Spinner,String](_ => throw new IllegalStateException("must not be called")).
-        withSetter(_ => throw new IllegalStateException("must not be called")))
-    val myEntity1 = new MyEntity("my1", 1)
-    val group = new LinearLayout(context)
-    val view = new Spinner(context)
-    view.setId(100)
-    group.addView(view)
-    stringField.copy(myEntity1, group) //does nothing
-    stringField.copy(group, myEntity1) //does nothing
-  }
-
-  @Test
-  def itMustUseDefaultOfNoneIfNoValueGivenAndUseDefaultsIsProvided() {
-    val stringField = viewId(56, textView)
-    val result = stringField.copyAndUpdate(UseDefaults, ViewKeyMap.empty)
-    result.apply(56) must be (None)
-  }
-
-  @Test
-  def itMustHandleUnparseableValues() {
-    val intField = intView + Getter[MyEntity,Int](e => e.number).withSetter(e => e.number = _, noSetterForEmpty)
-    val view = new TextView(context)
-    view.setText("twenty")
-    intField.getValue(view) must be (None)
-
-    val entity = new MyEntity("my1", 30)
-    intField.copy(view, entity)
-    entity.number must be (30)
-  }
-
-  @Test
-  def itMustGetTheIdForAnEntityNameFromTheUriPath() {
-    val field = uriIdField(EntityName("foo"))
-    val uripath = UriPath("hello", "1", "foo", "4", "bar", "3")
-    field.singleGetter(uripath) must be (Some(4))
-
-    val uripath2 = UriPath("hello", "1", "foo")
-    field.singleGetter(uripath2) must be (None)
-
-    val uripath3 = UriPath("hello")
-    field.singleGetter(uripath3) must be (None)
-
-    val uripath4 = UriPath()
-    field.singleGetter(uripath4) must be (None)
-
-    val uripath5 = UriPath("4")
-    field.singleGetter(uripath5) must be (None)
+    val viewGroup = mock[View]
+    stub(viewGroup.findViewById(Matchers.anyInt())).toReturn(null)
+    val viewField = platformDriver.field(EntityName("foo"), FieldName("bar"), stringConvertibleType, Seq(SummaryUI, EditUI))
+    val targetField = viewField.toAdaptableField.findTargetField(EditUI)
+    val copyContext = new CopyContext(UriPath.EMPTY, null)
+    targetField.get.updateValue(viewGroup, None, copyContext)
   }
 
   @Test
   def itMustConvertNullToNone() {
-    val field = textView
+    val viewField = platformDriver.field(EntityName("foo"), FieldName("bar"), stringConvertibleType, Seq(SummaryUI, EditUI))
     val view = new TextView(context)
     view.setText(null)
-    field.getValue(view) must be (None)
+    viewField.findSourceField(EditUI).get.findValue(view, new CopyContext(UriPath.EMPTY, null)) must be (None)
+  }
 
+  @Test
+  def itMustConvertEmptyStringToNone() {
+    val viewField = platformDriver.field(EntityName("foo"), FieldName("bar"), stringConvertibleType, Seq(SummaryUI, EditUI))
+    val view = new TextView(context)
     view.setText("")
-    field.getValue(view) must be (None)
+    viewField.findSourceField(EditUI).get.findValue(view, new CopyContext(UriPath.EMPTY, null)) must be (None)
   }
 
   @Test
   def itMustTrimStrings() {
-    val field = textView
+    val viewField = platformDriver.field(EntityName("foo"), FieldName("bar"), stringConvertibleType, Seq(SummaryUI, EditUI))
     val view = new TextView(context)
-    view.setText("  ")
-    field.getValue(view) must be (None)
-
     view.setText(" hello world ")
-    field.getValue(view) must be (Some("hello world"))
-  }
+    viewField.findSourceField(EditUI).get.findValue(view, new CopyContext(UriPath.EMPTY, null)) must be (Some("hello world"))
 
-  @Test
-  def itMustFormatDatesForEditInShortFormat() {
-    val field = dateView
-    val view = new EditText(context)
-    field.updateWithValue(view, Some(new GregorianCalendar(2020, Calendar.JANUARY, 20).getTime))
-    view.getText.toString must not(include ("Jan"))
-    view.getText.toString must include ("1")
-  }
-
-  @Test
-  def itMustFormatDatesForDisplayInDefaultFormat() {
-    val field = dateView
-    val view = new TextView(context)
-    field.updateWithValue(view, Some(new GregorianCalendar(2020, Calendar.JANUARY, 20).getTime))
-    view.getText.toString must include ("Jan")
+    view.setText(" ")
+    viewField.findSourceField(EditUI).get.findValue(view, new CopyContext(UriPath.EMPTY, null)) must be (None)
   }
 
   @Test
@@ -191,28 +130,25 @@ class ViewFieldSpec extends MustMatchers with MockitoSugar {
 
   @Test
   def formattedTextViewMustUseToEditStringConverterForEditTextView() {
-    val viewField = formattedTextView((s: String) => Some(s + " on display"), (s: String) => Some(s + " to edit"),
-      (s: String) => Some(s), nameLayout)
-    val editView = mock[EditText]
-    viewField.updateWithValue(editView, Some("marbles"))
+    val viewField = platformDriver.field(EntityName("foo"), FieldName("bar"), stringConvertibleType, Seq(SummaryUI, EditUI))
+    val editView = mockView[EditText]
+    viewField.toAdaptableField.findTargetField(EditUI).get.updateValue(editView, Some("marbles"), new CopyContext(UriPath.EMPTY, null))
     verify(editView).setText("marbles to edit")
   }
 
   @Test
   def formattedTextViewMustUseToDisplayStringConverterForTextView() {
-    val viewField = formattedTextView((s: String) => Some(s + " on display"), (s: String) => Some(s + " to edit"),
-      (s: String) => Some(s), nameLayout)
-    val textView = mock[TextView]
-    viewField.updateWithValue(textView, Some("marbles"))
+    val viewField = platformDriver.field(EntityName("foo"), FieldName("bar"), stringConvertibleType, Seq(SummaryUI, EditUI))
+    val textView = mockView[TextView]
+    viewField.toAdaptableField.findTargetField(SummaryUI).get.updateValue(textView, Some("marbles"), new CopyContext(UriPath.EMPTY, null))
     verify(textView).setText("marbles on display")
   }
 
   @Test
   def formattedTextViewMustTrimAndUseFromStringConverterWhenGetting() {
-    val viewField = formattedTextView((s: String) => Some(s + " on display"), (s: String) => Some(s + " to edit"),
-      (s: String) => Some("parsed " + s), nameLayout)
-    val textView = mock[TextView]
+    val viewField = platformDriver.field(EntityName("foo"), FieldName("bar"), stringConvertibleType, Seq(SummaryUI, EditUI))
+    val textView = mockView[TextView]
     stub(textView.getText).toReturn("  given text   ")
-    viewField.getValue(textView) must be (Some("parsed given text"))
+    viewField.toAdaptableField.findSourceField(EditUI).get.findValue(textView, new CopyContext(UriPath.EMPTY, null)) must be (Some("parsed given text"))
   }
 }

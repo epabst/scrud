@@ -4,7 +4,8 @@ import android.view.Menu
 import java.lang.reflect.Method
 import java.util.concurrent.atomic.AtomicBoolean
 import com.github.scrud.state.StateVar
-import com.github.scrud.action.Command
+import com.github.scrud.action.PlatformCommand
+import com.github.scrud.android.state.ActivityWithState
 
 /** An Activity that has an options menu.
   * This is intended to handle both Android 2 and 3.
@@ -13,18 +14,18 @@ import com.github.scrud.action.Command
   * @author Eric Pabst (epabst@gmail.com)
   */
 trait OptionsMenuActivity extends ActivityWithState with AndroidNotification {
-  def activityContext = this
+  def context = this
 
   /** The Commands to be used if they haven't been set yet. */
-  protected def defaultOptionsMenuCommands: List[Command]
+  protected def defaultOptionsMenuCommands: List[PlatformCommand]
 
   // Use a StateVar to make it thread-safe
-  private object OptionsMenuCommandsVar extends StateVar[List[Command]]
+  private object OptionsMenuCommandsVar extends StateVar[List[PlatformCommand]]
 
-  final def optionsMenuCommands: List[Command] = OptionsMenuCommandsVar.get(this).getOrElse(defaultOptionsMenuCommands)
+  final def optionsMenuCommands: List[PlatformCommand] = OptionsMenuCommandsVar.get(activityState).getOrElse(defaultOptionsMenuCommands)
 
-  def optionsMenuCommands_=(newValue: List[Command]) {
-    OptionsMenuCommandsVar.set(this, newValue)
+  def optionsMenuCommands_=(newValue: List[PlatformCommand]) {
+    OptionsMenuCommandsVar.set(activityState, newValue)
     invalidateOptionsMenuMethod.map(_.invoke(this)).getOrElse(recreateInPrepare.set(true))
   }
 
@@ -33,9 +34,9 @@ trait OptionsMenuActivity extends ActivityWithState with AndroidNotification {
     try { Option(getClass.getMethod("invalidateOptionsMenu"))}
     catch { case _: Exception => None }
 
-  private[action] def populateMenu(menu: Menu, commands: List[Command]) {
+  private[action] def populateMenu(menu: Menu, commands: List[PlatformCommand]) {
     for ((command, index) <- commands.zip(Stream.from(0))) {
-      val menuItem = command.title.map(menu.add(0, command.commandNumber, index, _)).getOrElse(menu.add(0, command.commandNumber, index, ""))
+      val menuItem = command.title.fold(menu.add(0, command.commandNumber, index, ""))(menu.add(0, command.commandNumber, index, _))
       command.icon.map(icon => menuItem.setIcon(icon))
     }
   }

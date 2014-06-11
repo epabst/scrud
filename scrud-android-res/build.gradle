@@ -1,0 +1,33 @@
+group = 'com.github.epabst.scrud'
+version = '0.3-alpha8-SNAPSHOT'
+
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:0.6.3'
+    }
+}
+apply plugin: 'android-library'
+
+android {
+    compileSdkVersion 19
+    buildToolsVersion "19.0.0"
+
+    sourceSets {
+        main {
+            java {
+                srcDir 'src/main/java'
+            }
+        }
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+task jar(type: Jar, dependsOn: 'compileDebug') {
+    from android.sourceSets.main.java
+}

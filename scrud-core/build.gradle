@@ -1,0 +1,42 @@
+group = 'com.github.epabst.scrud'
+version = '0.3-alpha8-SNAPSHOT'
+
+apply plugin: 'scala'
+
+repositories {
+    mavenCentral()
+}
+
+def scalaMajorVersion = '2.10'
+def scalaVersion = '2.10.3'
+
+dependencies {
+    compile "org.scala-lang:scala-library:$scalaVersion"
+    compile "org.slf4j:slf4j-api:1.6.1"
+    compile 'commons-codec:commons-codec:1.9'
+    compile "com.netaporter:scala-uri_$scalaMajorVersion:0.4.1"
+    compile project(":annotations-for-quality"); //"com.github.epabst.quality:annotations-for-quality:1.0-SNAPSHOT"
+    testRuntime "org.slf4j:slf4j-jdk14:1.6.1"
+    testCompile "org.mockito:mockito-core:1.8.5"
+//    testCompile "org.scalatest:scalatest_$scalaVersion:1.8"
+    testCompile "org.scalatest:scalatest_2.10.0-RC5:2.0.M5-B1"
+    testCompile "junit:junit:4.9"
+}
+
+tasks.withType(Test) {
+    scanForTestClasses = false
+    include "**/*Spec.class"
+}
+
+task testJar(type: Jar, dependsOn: testClasses) {
+  baseName = "test-${project.archivesBaseName}"
+  from sourceSets.test.output
+}
+
+configurations {
+  tests
+}
+
+artifacts {
+  tests testJar
+}

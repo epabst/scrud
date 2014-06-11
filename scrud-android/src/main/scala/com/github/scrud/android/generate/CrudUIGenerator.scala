@@ -1,14 +1,13 @@
 package com.github.scrud.android.generate
 
-import com.github.triangle._
 import collection.immutable.List
 import xml._
-import com.github.scrud.android.view.EntityView
-import com.github.scrud.{CrudApplication, EntityType}
-import com.github.scrud.util.FileConversions._
-import java.io.File
-import com.github.scrud.util.{Path, Common}
+import com.github.scrud.android.view.AndroidConversions
+import com.github.scrud.{EntityName, CrudApplication, EntityType}
+import com.github.scrud.util.{Logging, Common}
 import com.github.scrud.android.{AndroidPlatformDriver, CrudAndroidApplication}
+import com.github.scrud.android.backup.CrudBackupAgent
+import scala.reflect.io.Path
 
 /** A UI Generator for a CrudTypes.
   * @author Eric Pabst (epabst@gmail.com)
@@ -30,26 +29,25 @@ class CrudUIGenerator extends Logging {
     }
   }
 
-  private def writeXmlToFile(file: File, xml: Elem) {
-    Option(file.getParentFile).foreach(_.mkdirs())
+  private def writeXmlToFile(file: scala.reflect.io.File, xml: Elem) {
+    file.parent.createDirectory()
     file.writeAll("""<?xml version="1.0" encoding="utf-8"?>""", lineSeparator, prettyPrinter.format(xml))
     println("Wrote " + file)
   }
 
-  def generateAndroidManifest(application: CrudApplication, androidApplicationClass: Class[_]): Elem = {
+  def generateAndroidManifest(application: CrudApplication, androidApplicationClass: Class[_],
+                              backupAgentClass: Class[_ <: CrudBackupAgent]): Elem = {
     if (!classOf[CrudAndroidApplication].isAssignableFrom(androidApplicationClass)) {
       throw new IllegalArgumentException(androidApplicationClass + " does not extend CrudAndroidApplication")
     }
     val activityNames = Seq(androidPlatformDriverFor(application).activityClass.getName)
     <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-              package={application.packageName}
-              android:versionName="${project.version}"
-              android:versionCode="${versionCode}">
+              package={application.packageName}>
       <application android:label="@string/app_name" android:icon="@drawable/icon"
                    android:name={androidApplicationClass.getName}
                    android:theme="@android:style/Theme.NoTitleBar"
                    android:debuggable="true"
-                   android:backupAgent={application.classNamePrefix + "BackupAgent"} android:restoreAnyVersion="true">
+                   android:backupAgent={backupAgentClass.getName} android:restoreAnyVersion="true">
         <meta-data android:name="com.google.android.backup.api_key"
                    android:value="TODO: get a backup key from http://code.google.com/android/backup/signup.html and put it here."/>
         <activity android:name={activityNames.head} android:label="@string/app_name">
@@ -59,6 +57,12 @@ class CrudUIGenerator extends Logging {
           </intent-filter>
         </activity>
         {activityNames.tail.map { name => <activity android:name={name} android:label="@string/app_name"/>}}
+        <provider android:authorities={AndroidConversions.authorityFor(application.entityTypeMap.applicationName)}
+                  android:name="com.github.scrud.android.persistence.LocalCrudContentProvider"
+                  android:exported="false"
+                  android:grantUriPermissions="false"
+                  android:multiprocess="true"
+                  android:syncable="false"/>
       </application>
       <uses-sdk android:minSdkVersion="8"/>
     </manifest>
@@ -70,9 +74,9 @@ class CrudUIGenerator extends Logging {
 
   def generateValueStrings(entityInfo: EntityTypeViewInfo): NodeSeq = {
     import entityInfo._
-    val addSeq = if (application.isCreatable(entityType)) <string name={"add_" + layoutPrefix}>Add {entityName}</string> else NodeSeq.Empty
-    val editSeq = if (application.isSavable(entityType)) <string name={"edit_" + layoutPrefix}>Edit {entityName}</string> else NodeSeq.Empty
-    val listSeq = if (application.isListable(entityType)) <string name={layoutPrefix + "_list"}>{entityName} List</string> else NodeSeq.Empty
+    val addSeq = if (entityTypeMap.isCreatable(entityType)) <string name={"add_" + layoutPrefix}>Add {entityName.toDisplayableString}</string> else NodeSeq.Empty
+    val editSeq = if (entityTypeMap.isSavable(entityType)) <string name={"edit_" + layoutPrefix}>Edit {entityName.toDisplayableString}</string> else NodeSeq.Empty
+    val listSeq = if (entityTypeMap.isListable(entityType)) <string name={layoutPrefix + "_list"}>{entityName.toDisplayableString} List</string> else NodeSeq.Empty
     listSeq ++ addSeq ++ editSeq
   }
 
@@ -86,21 +90,27 @@ class CrudUIGenerator extends Logging {
   def generateValueStrings(application: CrudApplication): Elem = {
     <resources>
       <string name="app_name">{application.name}</string>
-      {application.allEntityTypes.flatMap(entityType => generateValueStrings(EntityTypeViewInfo(entityType, application)))}
+      {application.entityTypeMap.allEntityTypes.flatMap(entityType => generateValueStrings(EntityTypeViewInfo(entityType, application.entityTypeMap)))}
     </resources>
   }
 
-  def generateLayouts(application: CrudApplication, androidApplicationClass: Class[_]) {
-    val entityTypeInfos = application.allEntityTypes.map(EntityTypeViewInfo(_, application))
-    val pickedEntityTypes: Seq[EntityType] = application.allEntityTypes.flatMap(_.deepCollect {
-      case EntityView(pickedEntityName) => application.entityType(pickedEntityName)
-    })
+  def generateLayouts(application: CrudApplication, androidApplicationClass: Class[_], backupAgentClass: Class[_ <: CrudBackupAgent]) {
+    val entityTypeInfos = application.entityTypeMap.allEntityTypes.map(EntityTypeViewInfo(_, application.entityTypeMap))
+    val pickedEntityTypes: Seq[EntityType] = for {
+      entityType <- application.entityTypeMap.allEntityTypes
+      fieldDeclaration <- entityType.fieldDeclarations
+      referencedEntityName <- fieldDeclaration.qualifiedType match {
+        case entityName: EntityName => Some(entityName)
+        case _ => None
+      }
+      referencedEntityType = application.entityTypeMap.entityType(referencedEntityName)
+    } yield referencedEntityType
     entityTypeInfos.foreach(entityInfo => {
-      val childViewInfos = application.childEntityTypes(entityInfo.entityType).map(EntityTypeViewInfo(_, application))
+      val childViewInfos = application.childEntityTypes(entityInfo.entityType).map(EntityTypeViewInfo(_, application.entityTypeMap))
       generateLayouts(entityInfo, childViewInfos, application, pickedEntityTypes)
     })
-    writeXmlToFile(Path("AndroidManifest.xml"), generateAndroidManifest(application, androidApplicationClass))
-    writeXmlToFile(Path("res") / "values" / "strings.xml", generateValueStrings(application))
+    writeXmlToFile(Path("AndroidManifest.xml").toFile, generateAndroidManifest(application, androidApplicationClass, backupAgentClass))
+    writeXmlToFile((Path("res") / "values" / "strings.xml").toFile, generateValueStrings(application))
   }
 
   protected[generate] def fieldLayoutForHeader(field: ViewIdFieldInfo, position: Int): Elem = {
@@ -114,22 +124,13 @@ class CrudUIGenerator extends Logging {
               android:textAppearance={textAppearance} style="@android:style/TextAppearance.Widget.TextView"/>
   }
 
-  protected[generate] def fieldLayoutForRow(field: ViewIdFieldInfo, position: Int): NodeSeq = {
-    val textAppearance = if (position < 2) "?android:attr/textAppearanceLarge" else "?android:attr/textAppearanceSmall"
-    val gravity = if (position % 2 == 0) "left" else "right"
-    val layoutWidth = if (position % 2 == 0) "wrap_content" else "fill_parent"
-    val attributes = <TextView android:id={"@+id/" + field.id} android:gravity={gravity}
-                               android:layout_width={layoutWidth}
-                               android:layout_height="wrap_content"
-                               android:paddingRight="3sp"
-                               android:textAppearance={textAppearance} style="@android:style/TextAppearance.Widget.TextView"/>.attributes
-    adjustHeadNode(field.layout.displayXml, applyAttributes(_, attributes))
-  }
+  protected[generate] def fieldLayoutForRow(field: ViewIdFieldInfo, position: Int): NodeSeq =
+    field.layoutForDisplayUI(position)
 
   protected def emptyListRenderedDifferently: Boolean = false
 
   protected def listLayout(entityInfo: EntityTypeViewInfo, childEntityInfos: Seq[EntityTypeViewInfo], application: CrudApplication) = {
-    val addableEntityTypeInfos = if (application.isCreatable(entityInfo.entityType)) List(entityInfo) else childEntityInfos.filter(childInfo => application.isCreatable(childInfo.entityType))
+    val addableEntityTypeInfos = if (application.entityTypeMap.isCreatable(entityInfo.entityType)) List(entityInfo) else childEntityInfos.filter(childInfo => application.entityTypeMap.isCreatable(childInfo.entityType))
     <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
                   android:orientation="vertical"
                   android:layout_width="fill_parent"
@@ -142,7 +143,7 @@ class CrudUIGenerator extends Logging {
         <TextView android:id={"@+id/" + entityInfo.entityName + "_emptyList"}
                   android:layout_width="wrap_content"
                   android:layout_height="wrap_content" android:layout_weight="1"
-                  android:text={"Empty " + entityInfo.entityName + " List"}
+                  android:text={"Empty " + entityInfo.entityName.toDisplayableString + " List"}
                   android:textAppearance="?android:attr/textAppearanceLarge" style="@android:style/TextAppearance.Widget.TextView"/>
       }
       { addableEntityTypeInfos.map(addableEntityTypeInfo =>
@@ -155,7 +156,7 @@ class CrudUIGenerator extends Logging {
     </LinearLayout>
   }
 
-  protected def headerLayout(fields: List[ViewIdFieldInfo]) =
+  protected def headerLayout(entityInfo: EntityTypeViewInfo) =
     <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
                   android:paddingTop="2dip"
                   android:paddingBottom="2dip"
@@ -163,16 +164,10 @@ class CrudUIGenerator extends Logging {
                   android:paddingRight="6dip"
                   android:layout_width="match_parent"
                   android:layout_height="wrap_content"
-                  android:minHeight="?android:attr/listPreferredItemHeight"
-                  android:orientation="vertical">{
-      fields.grouped(2).map { rowFields =>
-        <LinearLayout android:layout_width="match_parent"
-                      android:layout_height="wrap_content"
-                      android:orientation="horizontal">
-          {rowFields.map(field => fieldLayoutForHeader(field, fields.indexOf(field)))}
-        </LinearLayout>
-      }
-    }
+                  android:orientation="vertical">
+      <TextView android:layout_height="wrap_content" android:paddingRight="3sp" android:text={entityInfo.entityName.toDisplayableString + " List"}
+                android:textAppearance="?android:attr/textAppearanceLarge" style="@android:style/TextAppearance.Widget.TextView"
+                android:gravity="center" android:layout_width="match_parent"/>
     </LinearLayout>
 
   protected def rowLayout(fields: List[ViewIdFieldInfo]) =
@@ -196,14 +191,14 @@ class CrudUIGenerator extends Logging {
     </LinearLayout>
 
   protected def pickLayout(fields: Seq[ViewIdFieldInfo]): NodeSeq = {
-    fields.headOption.map { field =>
+    fields.headOption.fold(NodeSeq.Empty) { field =>
       val layout = fieldLayoutForRow(field, 0)
-      val adjusted = adjustHeadNode(layout, _ match {
+      val adjusted = adjustHeadNode(layout, {
         case elem: Elem => elem.copy(scope = androidScope)
         case node => node
       })
       adjusted
-    }.getOrElse(NodeSeq.Empty)
+    }
   }
 
   private def applyAttributes(xml: Node, attributes: MetaData): Node = xml match {
@@ -213,26 +208,17 @@ class CrudUIGenerator extends Logging {
 
   private def adjustHeadNode(xml: NodeSeq, f: Node => Node): NodeSeq = xml.headOption.map(f(_) +: xml.tail).getOrElse(xml)
 
-  protected def fieldLayoutForEntry(field: ViewIdFieldInfo, position: Int): NodeSeq = {
-    val textAppearance = "?android:attr/textAppearanceLarge"
-    val attributes = <EditText android:id={"@+id/" + field.id} android:layout_width="fill_parent" android:layout_height="wrap_content"/>.attributes
-    <result>
-      <TextView android:text={field.displayName + ":"} android:textAppearance={textAppearance} style="@android:style/TextAppearance.Widget.TextView" android:layout_width="wrap_content" android:layout_height="wrap_content"/>
-      {adjustHeadNode(field.layout.editXml, applyAttributes(_, attributes))}
-    </result>.child
-  }
-
   def entryLayout(fields: List[ViewIdFieldInfo]): Elem = {
     <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
                  android:orientation="vertical"
                  android:layout_width="fill_parent"
                  android:layout_height="wrap_content">
-      {fields.flatMap(field => fieldLayoutForEntry(field, fields.indexOf(field)))}
+      {fields.flatMap(field => field.layoutForEditUI(fields.indexOf(field)))}
     </LinearLayout>
   }
 
   private def writeLayoutFile(name: String, xml: Elem) {
-    writeXmlToFile(Path("res") / "layout" / (name + ".xml"), xml)
+    writeXmlToFile((Path("res") / "layout" / (name + ".xml")).toFile, xml)
   }
 
   private def writeLayoutFileIfNotEmpty(name: String, xml: NodeSeq) {
@@ -247,15 +233,15 @@ class CrudUIGenerator extends Logging {
   def generateLayouts(entityTypeInfo: EntityTypeViewInfo, childTypeInfos: Seq[EntityTypeViewInfo],
                       application: CrudApplication, pickedEntityTypes: Seq[EntityType]) {
     println("Generating layout for " + entityTypeInfo.entityType)
-    lazy val info = EntityTypeViewInfo(entityTypeInfo.entityType, application)
+    lazy val info = EntityTypeViewInfo(entityTypeInfo.entityType, application.entityTypeMap)
     val layoutPrefix = info.layoutPrefix
-    if (application.isListable(entityTypeInfo.entityType)) {
+    if (application.entityTypeMap.isListable(entityTypeInfo.entityType)) {
       writeLayoutFile(layoutPrefix + "_list", listLayout(entityTypeInfo, childTypeInfos, application))
-      writeLayoutFile(layoutPrefix + "_header", headerLayout(info.displayableViewIdFieldInfos))
-      writeLayoutFile(layoutPrefix + "_row", rowLayout(info.displayableViewIdFieldInfos))
+      writeLayoutFile(layoutPrefix + "_header", headerLayout(entityTypeInfo))
+      writeLayoutFile(layoutPrefix + "_row", rowLayout(info.shortDisplayableViewIdFieldInfos))
     }
     if (pickedEntityTypes.contains(entityTypeInfo.entityType)) {
-      writeLayoutFileIfNotEmpty(layoutPrefix + "_pick", pickLayout(info.displayableViewIdFieldInfos))
+      writeLayoutFileIfNotEmpty(layoutPrefix + "_pick", pickLayout(info.identifyingDisplayableViewIdFieldInfos))
     }
     if (info.isUpdateable) writeLayoutFile(layoutPrefix + "_entry", entryLayout(info.updateableViewIdFieldInfos))
   }

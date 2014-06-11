@@ -32,34 +32,35 @@ class CapturedImageViewSpec extends MustMatchers with MockitoSugar {
     stub(outerView.findViewById(TheViewId)).toReturn(view)
     stub(intent.getData).toReturn(uri)
     field.getter(GetterInput(OperationResponse(TheViewId, intent), outerView)) must be (Some(uri))
-    verify(view, never()).getTag(CapturedImageView.DefaultValueTagKey)
+    verify(view, never()).getTag(ImageViewFieldHelper.DefaultValueTagKey)
   }
 
   @Test
   def capturedImageViewMustGetImageUriFromOperationResponseEvenIfImageIsAlreadySet() {
     val uri = Uri.parse("file://foo/bar.jpg")
     val uri2 = Uri.parse("file://foo/cookie.jpg")
-    val TheViewId = 101
-    val field = viewId(TheViewId, CapturedImageView)
+    val theViewId = 101
+    val field = viewId(theViewId, CapturedImageView)
     val outerView = mock[View]
     val view = mock[ImageView]
     val intent = mock[Intent]
-    stub(outerView.getId).toReturn(TheViewId)
-    stub(outerView.findViewById(TheViewId)).toReturn(view)
+    stub(outerView.getId).toReturn(theViewId)
+    stub(outerView.findViewById(theViewId)).toReturn(view)
     stub(intent.getData).toReturn(uri2)
     stub(view.getTag).toReturn(uri.toString)
-    field.getter(GetterInput(OperationResponse(TheViewId, intent), outerView)) must be (Some(uri2))
+    field.getter(GetterInput(OperationResponse(theViewId, intent), outerView)) must be (Some(uri2))
   }
 
   @Test
-  def capturedImageViewMustGetImageUriFromViewTagOperationResponseDoesNotHaveIt() {
-    val TheViewId = 101
-    val field = viewId(TheViewId, CapturedImageView)
+  def capturedImageViewMustGetImageUriFromViewTagWhenOperationResponseDoesNotHaveIt() {
+    val theViewId = 101
+    val field = viewId(theViewId, CapturedImageView)
     val outerView = mock[View]
     val view = mock[ImageView]
-    stub(outerView.getId).toReturn(TheViewId)
-    stub(outerView.findViewById(TheViewId)).toReturn(view)
-    stub(view.getTag(CapturedImageView.DefaultValueTagKey)).toReturn("file://foo/bar.jpg")
-    field.getter(GetterInput(OperationResponse(TheViewId, null), outerView)) must be (Some(Uri.parse("file://foo/bar.jpg")))
+    stub(outerView.getId).toReturn(theViewId)
+    stub(outerView.findViewById(theViewId)).toReturn(view)
+    stub(view.getTag(ImageViewFieldHelper.DefaultValueTagKey)).toReturn("file://foo/bar.jpg")
+    val input = GetterInput(OperationResponse(theViewId, null), outerView)
+    field.getter(input) must be (Some(Uri.parse("file://foo/bar.jpg")))
   }
 }

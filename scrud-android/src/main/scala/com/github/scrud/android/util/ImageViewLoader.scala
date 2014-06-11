@@ -5,9 +5,10 @@ import android.net.Uri
 import com.github.scrud.state.{LazyStateVal, State}
 import ref.WeakReference
 import android.graphics.drawable.Drawable
-import collection.mutable
 import java.util.concurrent.ConcurrentHashMap
-import scala.collection.JavaConversions.asScalaConcurrentMap
+import com.github.scrud.android.util.ViewUtil.withViewOnUIThread
+import scala.collection.JavaConverters._
+import scala.Some
 
 /**
  * Loads Images into ImageViews.
@@ -37,7 +38,9 @@ class ImageViewLoader(imageLoader: ImageLoader = new ImageLoader) {
     displayDefault(imageView)
     uriOpt.foreach { uri =>
       val uriString = uri.toString
-      imageView.setTag(uriString)
+      withViewOnUIThread(imageView) {
+        _.setTag(uriString)
+      }
       val imageViewWidth = imageView.getWidth
       val imageViewHeight = imageView.getHeight
       val imageViewSizeIsProvided = imageViewWidth > 0 && imageViewHeight > 0
@@ -46,19 +49,23 @@ class ImageViewLoader(imageLoader: ImageLoader = new ImageLoader) {
       val imageDisplayHeight: Int = displayMetricsToUseOpt.map(_.heightPixels).getOrElse(imageViewHeight)
       val contentResolver = new RichContentResolver(context)
       val drawable = getDrawable(uri, imageDisplayWidth, imageDisplayHeight, contentResolver, stateForCaching)
-      imageView.setImageDrawable(drawable)
+      withViewOnUIThread(imageView) {
+        _.setImageDrawable(drawable)
+      }
     }
   }
 
   /** This can be overridden to show something if desired. */
   protected def displayDefault(imageView: ImageView) {
     // Clear the ImageView by default
-    imageView.setImageURI(null)
+    withViewOnUIThread(imageView) {
+      _.setImageURI(null)
+    }
   }
 }
 
 // The WeakReference must directly contain the Drawable or else it might be released due to no references
 // existing to the intermediate container.
-private object DrawableByUriCache extends LazyStateVal[mutable.ConcurrentMap[Uri,WeakReference[Drawable]]](
-  new ConcurrentHashMap[Uri,WeakReference[Drawable]]()
+private object DrawableByUriCache extends LazyStateVal[collection.concurrent.Map[Uri,WeakReference[Drawable]]](
+  new ConcurrentHashMap[Uri, WeakReference[Drawable]]().asScala
 )

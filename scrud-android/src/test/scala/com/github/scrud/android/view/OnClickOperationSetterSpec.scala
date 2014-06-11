@@ -6,13 +6,14 @@ import org.scalatest.mock.MockitoSugar
 import org.mockito.Mockito._
 import org.mockito.Matchers._
 import android.view.View
-import com.github.scrud.android.action.{ActivityWithState, AndroidOperation}
+import com.github.scrud.android.state.ActivityWithState
+import com.github.scrud.android.action.AndroidOperation
 import com.github.scrud.CrudApplication
-import com.github.scrud.android.{CustomRobolectricTestRunner, AndroidCrudContext}
+import com.github.scrud.android.{CustomRobolectricTestRunner, AndroidCommandContext}
 import com.github.triangle.{GetterInput, PortableField}
 import com.github.scrud.UriPath
 
-/** A specification of [[com.github.scrud.android.view.OnClickOperationSetter]].
+/** A specification of [[com.github.scrud.android.view.OnClickSetterField]].
   * @author Eric Pabst (epabst@gmail.com)
   */
 @RunWith(classOf[CustomRobolectricTestRunner])
@@ -22,8 +23,9 @@ class OnClickOperationSetterSpec extends MockitoSugar {
     val operation = mock[AndroidOperation]
     val view = mock[View]
     stub(view.isClickable).toReturn(true)
-    val setter = OnClickOperationSetter[Unit](_ => operation)
-    setter.updateWithValue(view, None, GetterInput(UriPath.EMPTY, AndroidCrudContext(mock[MyActivityWithState], mock[CrudApplication]), PortableField.UseDefaults))
+    val setter = OnClickSetterField[Unit](_ => operation)
+    val commandContext = new AndroidCommandContext(mock[ActivityWithStateForTesting], mock[CrudApplication])
+    setter.updateWithValue(view, None, GetterInput(UriPath.EMPTY, commandContext, PortableField.UseDefaults))
     verify(view).setOnClickListener(any())
   }
 
@@ -32,10 +34,11 @@ class OnClickOperationSetterSpec extends MockitoSugar {
     val operation = mock[AndroidOperation]
     val view = mock[View]
     stub(view.isClickable).toReturn(false)
-    val setter = OnClickOperationSetter[Unit](_ => operation)
-    setter.updateWithValue(view, None, GetterInput(UriPath.EMPTY, AndroidCrudContext(mock[MyActivityWithState], mock[CrudApplication]), PortableField.UseDefaults))
+    val setter = OnClickSetterField[Unit](_ => operation)
+    val commandContext = new AndroidCommandContext(mock[ActivityWithStateForTesting], mock[CrudApplication])
+    setter.updateWithValue(view, None, GetterInput(UriPath.EMPTY, commandContext, PortableField.UseDefaults))
     verify(view, never()).setOnClickListener(any())
   }
 }
 
-class MyActivityWithState extends ActivityWithState
+class ActivityWithStateForTesting extends ActivityWithState

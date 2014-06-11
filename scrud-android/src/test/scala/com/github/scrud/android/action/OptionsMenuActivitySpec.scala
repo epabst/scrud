@@ -8,7 +8,7 @@ import org.scalatest.mock.MockitoSugar
 import org.mockito.Mockito._
 import org.mockito.Matchers.{eq => eql, _}
 import android.view.{MenuItem, Menu}
-import com.github.scrud.action.{CommandId, Command}
+import com.github.scrud.action.{ActionKey, PlatformCommand}
 import com.github.scrud.android.CustomRobolectricTestRunner
 
 /** A behavior specification for [[com.github.scrud.android.action.OptionsMenuActivity]].
@@ -25,7 +25,7 @@ class OptionsMenuActivitySpec extends MustMatchers with MockitoSugar {
   @Test
   def mustUseLatestOptionsMenuForCreate() {
     val activity = new StubOptionsMenuActivity
-    activity.optionsMenuCommands = List(Command(CommandId("command1"), None, Some(10)))
+    activity.optionsMenuCommands = List(PlatformCommand(ActionKey("command1"), None, Some(10)))
 
     val menu = mock[Menu]
     val menuItem = mock[MenuItem]
@@ -37,7 +37,7 @@ class OptionsMenuActivitySpec extends MustMatchers with MockitoSugar {
   @Test
   def mustUseLatestOptionsMenuForPrepare_Android2() {
     val activity = new StubOptionsMenuActivity
-    activity.optionsMenuCommands = List(Command(CommandId("command1"), None, Some(10)))
+    activity.optionsMenuCommands = List(PlatformCommand(ActionKey("command1"), None, Some(10)))
 
     val menu = mock[Menu]
     activity.onPrepareOptionsMenu(menu)
@@ -54,11 +54,11 @@ class OptionsMenuActivitySpec extends MustMatchers with MockitoSugar {
         invalidated = true
       }
 
-      override private[action] def populateMenu(menu: Menu, actions: List[Command]) {
+      override private[action] def populateMenu(menu: Menu, actions: List[PlatformCommand]) {
         populated = true
       }
     }
-    activity.optionsMenuCommands = List(mock[Command])
+    activity.optionsMenuCommands = List(mock[PlatformCommand])
     activity.invalidated must be (true)
     activity.populated must be (false)
 
@@ -75,7 +75,7 @@ class OptionsMenuActivitySpec extends MustMatchers with MockitoSugar {
 
       def invalidateOptionsMenu() {}
 
-      override private[action] def populateMenu(menu: Menu, actions: List[Command]) {
+      override private[action] def populateMenu(menu: Menu, actions: List[PlatformCommand]) {
         populated = true
       }
     }
@@ -90,7 +90,7 @@ class OptionsMenuActivitySpec extends MustMatchers with MockitoSugar {
     val activity = new StubOptionsMenuActivity {
       var populated = false
 
-      override private[action] def populateMenu(menu: Menu, actions: List[Command]) {
+      override private[action] def populateMenu(menu: Menu, actions: List[PlatformCommand]) {
         populated = true
       }
     }
@@ -105,11 +105,11 @@ class OptionsMenuActivitySpec extends MustMatchers with MockitoSugar {
     val activity = new StubOptionsMenuActivity {
       var populated = false
 
-      override private[action] def populateMenu(menu: Menu, actions: List[Command]) {
+      override private[action] def populateMenu(menu: Menu, actions: List[PlatformCommand]) {
         populated = true
       }
     }
-    activity.optionsMenuCommands = List(mock[Command])
+    activity.optionsMenuCommands = List(mock[PlatformCommand])
     activity.populated must be (false)
 
     val menu = mock[Menu]
@@ -123,11 +123,11 @@ class OptionsMenuActivitySpec extends MustMatchers with MockitoSugar {
     val activity = new StubOptionsMenuActivity {
       var populated = 0
 
-      override private[action] def populateMenu(menu: Menu, actions: List[Command]) {
+      override private[action] def populateMenu(menu: Menu, actions: List[PlatformCommand]) {
         populated += 1
       }
     }
-    activity.optionsMenuCommands = List(mock[Command])
+    activity.optionsMenuCommands = List(mock[PlatformCommand])
     activity.populated must be (0)
 
     val menu = mock[Menu]

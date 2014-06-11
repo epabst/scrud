@@ -10,6 +10,7 @@ import android.provider.MediaStore
 import com.github.triangle._
 import com.github.scrud.android.action._
 import com.github.scrud.android.util.ImageViewLoader
+import ImageViewFieldHelper._
 
 /** A ViewField for an image that can be captured using the camera.
   * It currently puts the image into external storage, which requires the following in the AndroidManifest.xml:
@@ -23,21 +24,21 @@ object CapturedImageView extends ImageViewField(new FieldLayout {
   override protected def displayDefault(imageView: ImageView) {
     imageView.setImageResource(R.drawable.android_camera_256)
   }
-}) {
+}, Getter[Uri] {
+  case OperationResponseExtractor(Some(response)) && ViewExtractor(Some(view)) =>
+    Option(response.intent).map(_.getData).orElse(tagToUri(view.getTag(DefaultValueTagKey)))
+} + OnClickSetterField(view => StartActivityForResultOperation(view, {
+  val intent = new Intent("android.media.action.IMAGE_CAPTURE")
+  val imageUri = Uri.fromFile(File.createTempFile("image", ".jpg", CapturedImageViewHelper.dcimDirectory))
+  intent.putExtra(MediaStore.EXTRA_OUTPUT, imageUri)
+  view.setTag(DefaultValueTagKey, imageUri.toString)
+  intent
+})))
+
+object CapturedImageViewHelper {
   lazy val dcimDirectory: File = {
     val dir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM)
     dir.mkdirs()
     dir
   }
-
-  override protected def createDelegate = Getter[Uri] {
-      case OperationResponseExtractor(Some(response)) && ViewExtractor(Some(view)) =>
-        Option(response.intent).map(_.getData).orElse(tagToUri(view.getTag(DefaultValueTagKey)))
-    } + super.createDelegate + OnClickOperationSetter(view => StartActivityForResultOperation(view, {
-    val intent = new Intent("android.media.action.IMAGE_CAPTURE")
-    val imageUri = Uri.fromFile(File.createTempFile("image", ".jpg", dcimDirectory))
-    intent.putExtra(MediaStore.EXTRA_OUTPUT, imageUri)
-    view.setTag(DefaultValueTagKey, imageUri.toString)
-    intent
-  }))
 }

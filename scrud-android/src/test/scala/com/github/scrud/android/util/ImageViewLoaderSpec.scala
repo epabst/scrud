@@ -39,7 +39,7 @@ class ImageViewLoaderSpec extends MustMatchers with MockitoSugar {
     when(imageView.getContext).thenReturn(context)
 
     val imageViewLoader = new ImageViewLoader(imageLoader)
-    val state = new State() {}
+    val state = new State
     val uri1 = mock[Uri]
     imageViewLoader.setImageDrawable(imageView, Some(uri1), state)
     verify(imageLoader).loadDrawable(Matchers.eq(uri1), Matchers.eq(imageDisplayWidth), Matchers.eq(imageDisplayHeight), Matchers.any())
@@ -55,7 +55,7 @@ class ImageViewLoaderSpec extends MustMatchers with MockitoSugar {
     when(imageView.getContext).thenReturn(context)
 
     val imageViewLoader = new ImageViewLoader(imageLoader)
-    val state = new State() {}
+    val state = new State
     val uri1 = mock[Uri]
     imageViewLoader.setImageDrawable(imageView, Some(uri1), state)
     verify(imageLoader).loadDrawable(Matchers.eq(uri1), Matchers.eq(screenWidth), Matchers.eq(screenHeight), Matchers.any())
@@ -84,7 +84,7 @@ class ImageViewLoaderSpec extends MustMatchers with MockitoSugar {
     }
     val imageViewLoader = new ImageViewLoader(imageLoader)
 
-    val state = new State() {}
+    val state = new State
     val uri1 = mock[Uri]
     val uri2 = mock[Uri]
     val drawable1 = imageViewLoader.getDrawable(uri1, 100, 100, null, state)
@@ -106,7 +106,7 @@ class ImageViewLoaderSpec extends MustMatchers with MockitoSugar {
     }
     val imageViewLoader = new ImageViewLoader(imageLoader)
 
-    val state = new State() {}
+    val state = new State
     val uri1 = mock[Uri]
     val drawable = imageViewLoader.getDrawable(uri1, 100, 100, null, state)
     drawable must be(loadedDrawables.head)
@@ -128,7 +128,7 @@ class ImageViewLoaderSpec extends MustMatchers with MockitoSugar {
     }
     val imageViewLoader = new ImageViewLoader(imageLoader)
 
-    val state = new State() {}
+    val state = new State
     val uri1 = mock[Uri]
     imageViewLoader.getDrawable(uri1, 100, 100, null, state)
     loadCount must be (1)
@@ -150,7 +150,7 @@ class ImageViewLoaderSpec extends MustMatchers with MockitoSugar {
     }
     val imageViewLoader = new ImageViewLoader(imageLoader)
 
-    val state = new State() {}
+    val state = new State
     val uri1 = mock[Uri]
     val drawable1 = imageViewLoader.getDrawable(uri1, 100, 100, null, state)
     loadCount must be (1)

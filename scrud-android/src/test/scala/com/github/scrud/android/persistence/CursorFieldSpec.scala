@@ -46,6 +46,14 @@ class CursorFieldSpec extends MustMatchers with MockitoSugar {
   }
 
   @Test
+  def persistedFieldShouldNotBeDefinedIfColumnNotInContentValues() {
+    val contentValues = mock[ContentValues]
+    when(contentValues.containsKey("name")).thenReturn(false)
+    val field = persisted[String]("name")
+    field.getterVal.isDefinedAt(GetterInput.single(contentValues)) must be (false)
+  }
+
+  @Test
   def persistedShouldPutNullIntoContentValuesForNoValue() {
     val contentValues = mock[ContentValues]
     val field = persisted[String]("name")

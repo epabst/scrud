@@ -1,0 +1,11 @@
+package com.github.scrud.android.backup
+
+/**
+ * todo A ... 
+ * @author Eric Pabst (epabst@gmail.com)
+ *         Date: 4/24/13
+ *         Time: 3:11 PM
+ */
+trait BackupTarget {
+  def writeEntity(key: String, map: Option[Map[String,Any]])
+}
