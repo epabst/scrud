@@ -10,6 +10,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import com.github.scrud.EntityName
 import com.github.scrud.action.Undoable
 import com.github.scrud.FieldDeclaration
+import com.github.scrud.copy.types.ValidationResult
 
 /**
  * The context for a given interaction or command/response.
@@ -23,7 +24,8 @@ import com.github.scrud.FieldDeclaration
  */
 //This is private so that subclasses CommandContext or CommandContextDelegator will be used instead.
 private[context] trait CommandContextHolder extends SharedContextHolder with Notification {
-  protected def logTag: String = entityNavigation.applicationName.logTag
+  private lazy val dataSavedNotificationStringKey = platformDriver.getStringKey("data_saved_notification")
+  private lazy val dataNotSavedSinceInvalidNotificationStringKey = platformDriver.getStringKey("data_not_saved_since_invalid_notification")
 
   protected def commandContext: CommandContext
 
@@ -33,9 +35,11 @@ private[context] trait CommandContextHolder extends SharedContextHolder with Not
 
   def persistenceConnection: PersistenceConnection
 
-  def persistenceFor(entityName: EntityName): CrudPersistence = persistenceConnection.persistenceFor(entityName)
+  def persistenceFor(entityType: EntityType): CrudPersistence = persistenceConnection.persistenceFor(entityType)
 
-  def persistenceFor(uri: UriPath): CrudPersistence = persistenceConnection.persistenceFor(uri)
+  def persistenceFor(entityName: EntityName): CrudPersistence = persistenceFor(entityTypeMap.entityType(entityName))
+
+  def persistenceFor(uri: UriPath): CrudPersistence = persistenceFor(UriPath.lastEntityNameOrFail(uri))
 
   def findDefault(entityType: EntityType, uri: UriPath, targetType: TargetType): AdaptedValueSeq = {
     entityType.copy(SourceType.none, SourceType.none, uri, targetType, commandContext)
@@ -94,6 +98,24 @@ private[context] trait CommandContextHolder extends SharedContextHolder with Not
     val dataToSave = entityTypeMap.entityType(entityName).copyAndUpdate(sourceType, source, sourceUri,
       persistence.targetType, persistence.newWritable(), commandContext)
     persistence.save(idOpt, dataToSave)
+  }
+
+  /**
+   * Save the data into the persistence for entityType.
+   * If data is invalid (based on updating a ValidationResult), returns None, otherwise returns the created or updated ID.
+   */
+  def saveIfValid(sourceUri: UriPath, sourceType: SourceType, source: AnyRef, entityType: EntityType): Option[ID] = {
+    val idSourceField = entityType.idField.sourceFieldOrFail(sourceType)
+    val copyContext = new CopyContext(sourceUri, commandContext)
+    val idOpt = idSourceField.findValue(source, copyContext)
+    if (entityType.copyAndUpdate(sourceType, source, sourceUri, ValidationResult, commandContext).isValid) {
+      val newId = commandContext.save(entityType.entityName, sourceType, idOpt, source)
+      commandContext.displayMessageToUserBriefly(dataSavedNotificationStringKey)
+      Some(newId)
+    } else {
+      commandContext.displayMessageToUserBriefly(dataNotSavedSinceInvalidNotificationStringKey)
+      None
+    }
   }
 
   /** The ISO 2 country such as "US". */

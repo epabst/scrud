@@ -2,17 +2,17 @@ package com.github.scrud.android
 
 import _root_.android.content.Intent
 import action.StartActivityOperation
-import com.github.scrud.UriPath
+import com.github.scrud.{EntityNavigationForTesting, UriPath, EntityName}
 import org.junit.Test
 import org.junit.runner.RunWith
 import com.github.scrud.android.action.AndroidOperation.toRichItent
 import com.github.scrud.util.CrudMockitoSugar
 import com.github.scrud.types._
-import com.github.scrud.EntityName
 import com.github.scrud.action.OperationAction
 import com.github.scrud.platform.representation.DetailUI
 import org.scalatest.MustMatchers
 import com.github.scrud.android.testres.R
+import com.github.scrud.persistence.EntityTypeMapForTesting
 
 /** A test for [[com.github.scrud.android.AndroidPlatformDriver]].
   * @author Eric Pabst (epabst@gmail.com)
@@ -24,21 +24,24 @@ class AndroidPlatformDriverSpec extends CrudMockitoSugar with MustMatchers {
   val isShadowing = true
   val driver = new AndroidPlatformDriver(classOf[R])
   val application = new CrudApplicationForTesting(driver, CrudTypeForTesting) {
-    override def hasDisplayPage(entityName: EntityName) = true
+  }
+  val entityNavigation = new EntityNavigationForTesting(new EntityTypeMapForTesting(EntityTypeForTesting)) {
+    /** Return true if the entity may be displayed in a mode that is distinct from editing. */
+    override protected def isDisplayableWithoutEditing(entityName: EntityName): Boolean = true
   }
 
   import EntityTypeForTesting.entityName
 
   protected def makePlatformDriver() = driver
 
-  val OperationAction(_, createOperation: StartActivityOperation) = application.actionToCreate(EntityTypeForTesting).get
-  val OperationAction(_, listOperation: StartActivityOperation) = application.actionToList(EntityTypeForTesting).get
-  val OperationAction(_, displayOperation: StartActivityOperation) = application.actionToDisplay(EntityTypeForTesting).get
-  val OperationAction(_, updateOperation: StartActivityOperation) = application.actionToUpdate(EntityTypeForTesting).get
+  val OperationAction(_, createOperation: StartActivityOperation) = entityNavigation.actionsToCreate(EntityTypeForTesting.entityName).head
+  val OperationAction(_, listOperation: StartActivityOperation) = entityNavigation.actionsToList(EntityTypeForTesting.entityName).head
+  val OperationAction(_, displayOperation: StartActivityOperation) = entityNavigation.actionsToDisplay(EntityTypeForTesting.entityName).head
+  val OperationAction(_, updateOperation: StartActivityOperation) = entityNavigation.actionsToUpdate(EntityTypeForTesting.entityName).head
 
   @Test
   def createActionShouldHaveTheRightUri() {
-    val activity = new CrudActivityForTesting(application)
+    val activity = new CrudActivityForTesting
     createOperation.determineIntent(UriPath("foo"), activity).uriPath must
       be (UriPath("foo") / entityName)
     createOperation.determineIntent(UriPath("foo") / entityName, activity).uriPath must
@@ -53,7 +56,7 @@ class AndroidPlatformDriverSpec extends CrudMockitoSugar with MustMatchers {
 
   @Test
   def listActionShouldHaveTheRightUri() {
-    val activity = new CrudActivityForTesting(application)
+    val activity = new CrudActivityForTesting
     listOperation.determineIntent(UriPath("foo"), activity).uriPath must
       be (UriPath("foo") / entityName)
     listOperation.determineIntent(UriPath("foo", entityName.name), activity).uriPath must
@@ -68,7 +71,7 @@ class AndroidPlatformDriverSpec extends CrudMockitoSugar with MustMatchers {
 
   @Test
   def displayActionShouldHaveTheRightUri() {
-    val activity = new CrudActivityForTesting(application)
+    val activity = new CrudActivityForTesting
     displayOperation.determineIntent(UriPath("foo", entityName.name, "35"), activity).uriPath must
       be (UriPath("foo", entityName.name, "35"))
     displayOperation.determineIntent(UriPath("foo", entityName.name, "34", "bar"), activity).uriPath must
@@ -79,7 +82,7 @@ class AndroidPlatformDriverSpec extends CrudMockitoSugar with MustMatchers {
 
   @Test
   def updateActionShouldHaveTheRightUri() {
-    val activity = new CrudActivityForTesting(application)
+    val activity = new CrudActivityForTesting
     updateOperation.determineIntent(UriPath("foo", entityName.name, "35"), activity).uriPath must
       be (UriPath("foo", entityName.name, "35"))
     updateOperation.determineIntent(UriPath("foo", entityName.name, "34", "bar"), activity).uriPath must

@@ -16,7 +16,7 @@ import com.github.scrud.util.DelegatingListenerHolder
  * Date: 3/23/13
  * Time: 12:05 AM
  */
-class ContentResolverPersistenceFactory(delegate: PersistenceFactory, commandContext: AndroidCommandContext)
+class ContentResolverPersistenceFactory(delegate: PersistenceFactory)
     extends DelegatingPersistenceFactory(delegate) with DataListenerSetValHolder { factory =>
   /** Instantiates a data buffer which can be saved by EntityPersistence.
     * The EntityType must support copying into this object.
@@ -24,6 +24,7 @@ class ContentResolverPersistenceFactory(delegate: PersistenceFactory, commandCon
   override def newWritable() = ContentResolverPersistenceFactory.newWritable()
 
   override def createEntityPersistence(entityType: EntityType, persistenceConnection: PersistenceConnection): CrudPersistence = {
+    val commandContext = persistenceConnection.commandContext
     val contentResolver = commandContext.asInstanceOf[AndroidCommandContext].context.getContentResolver
     val sharedContext = persistenceConnection.sharedContext
     val delegateListenerSet = listenerSet(entityType, sharedContext)
@@ -40,7 +41,7 @@ class ContentResolverPersistenceFactory(delegate: PersistenceFactory, commandCon
                 }
               }
             }
-            contentResolver.registerContentObserver(toUri(UriPath(entityType.entityName), sharedContext.entityTypeMap), true, observer)
+            contentResolver.registerContentObserver(toUri(UriPath(entityType.entityName), sharedContext.applicationName), true, observer)
           }
         })
         super.addListener(listener)

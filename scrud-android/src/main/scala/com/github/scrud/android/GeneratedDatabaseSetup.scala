@@ -1,11 +1,10 @@
 package com.github.scrud.android
 
 import android.database.sqlite.{SQLiteOpenHelper, SQLiteDatabase}
-import com.github.scrud.util.{Logging, Common}
+import com.github.scrud.util.{DelegateLogging, ExternalLogging}
 import android.provider.BaseColumns
 import com.github.scrud.android.persistence.{PersistedType, SQLiteAdaptableFieldFactory}
 import com.github.scrud.EntityType
-import scala.util.Try
 
 /**
  * An SQLiteOpenHelper for scrud.
@@ -14,9 +13,9 @@ import scala.util.Try
  *         Time: 11:45 AM
  */
 class GeneratedDatabaseSetup(commandContext: AndroidCommandContext, persistenceFactory: SQLitePersistenceFactory)
-  extends SQLiteOpenHelper(commandContext.context, commandContext.application.nameId, null, commandContext.dataVersion) with Logging {
+  extends SQLiteOpenHelper(commandContext.context, commandContext.applicationName.toSnakeCase, null, commandContext.dataVersion) with DelegateLogging {
 
-  protected lazy val logTag = Try(commandContext.application.logTag).getOrElse(Common.logTag)
+  override protected def loggingDelegate: ExternalLogging = commandContext.applicationName
 
   private lazy val entityTypeMap = commandContext.entityTypeMap
   private lazy val entityTypesRequiringTables: Seq[EntityType] = entityTypeMap.allEntityTypes.filter(entityTypeMap.isSavable(_))

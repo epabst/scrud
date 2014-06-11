@@ -3,11 +3,9 @@ package com.github.scrud.android
 import android.content.ContentValues
 import persistence.SQLiteUtil
 import android.database.sqlite.SQLiteDatabase
-import com.github.scrud.{EntityType, EntityName}
+import com.github.scrud.EntityType
 import com.github.scrud.persistence._
 import com.github.scrud.state.DestroyStateListener
-import com.github.scrud.android.state.ActivityVar
-import com.github.scrud.context.CommandContext
 import com.github.scrud.EntityName
 
 /** A PersistenceFactory for SQLite.
@@ -21,10 +19,10 @@ class SQLitePersistenceFactory extends AbstractPersistenceFactory with DataListe
   private object WritableDatabaseVar extends PersistenceConnectionVar[SQLiteDatabase]
 
   override def createEntityPersistence(entityType: EntityType, persistenceConnection: PersistenceConnection): CrudPersistence = {
-    val androidCommandContext = persistenceConnection
+    val androidCommandContext = persistenceConnection.commandContext.asInstanceOf[AndroidCommandContext]
 
     val writableDatabase = WritableDatabaseVar.getOrSet(persistenceConnection, {
-      val databaseSetup = new GeneratedDatabaseSetup(persistenceConnection, this)
+      val databaseSetup = new GeneratedDatabaseSetup(androidCommandContext, this)
       val writableDatabase = databaseSetup.getWritableDatabase
       persistenceConnection.addListener(new DestroyStateListener {
         def onDestroyState() {

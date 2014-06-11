@@ -17,3 +17,9 @@ abstract class AdaptableFieldSeq {
     new AdaptedFieldSeq(adaptedFields)
   }
 }
+
+object AdaptableFieldSeq {
+  def apply(fields: BaseAdaptableField*): AdaptableFieldSeq = new AdaptableFieldSeq {
+    override def adaptableFields: Seq[BaseAdaptableField] = fields
+  }
+}

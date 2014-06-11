@@ -5,10 +5,10 @@ import android.net.Uri
 import com.github.scrud.state.{LazyStateVal, State}
 import ref.WeakReference
 import android.graphics.drawable.Drawable
-import collection.mutable
 import java.util.concurrent.ConcurrentHashMap
-import scala.collection.JavaConversions.asScalaConcurrentMap
 import com.github.scrud.android.util.ViewUtil.withViewOnUIThread
+import scala.collection.JavaConverters._
+import scala.Some
 
 /**
  * Loads Images into ImageViews.
@@ -66,6 +66,6 @@ class ImageViewLoader(imageLoader: ImageLoader = new ImageLoader) {
 
 // The WeakReference must directly contain the Drawable or else it might be released due to no references
 // existing to the intermediate container.
-private object DrawableByUriCache extends LazyStateVal[mutable.ConcurrentMap[Uri,WeakReference[Drawable]]](
-  new ConcurrentHashMap[Uri,WeakReference[Drawable]]()
+private object DrawableByUriCache extends LazyStateVal[collection.concurrent.Map[Uri,WeakReference[Drawable]]](
+  new ConcurrentHashMap[Uri, WeakReference[Drawable]]().asScala
 )

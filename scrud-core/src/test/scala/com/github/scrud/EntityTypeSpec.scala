@@ -4,7 +4,7 @@ import org.scalatest.FunSpec
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import org.scalatest.matchers.MustMatchers
-import com.github.scrud.copy.{TargetType, SourceType}
+import com.github.scrud.copy.{AdaptableFieldSeq, TargetType, SourceType}
 import com.github.scrud.copy.types.MapStorage
 
 /**
@@ -18,9 +18,10 @@ class EntityTypeSpec extends FunSpec with MustMatchers {
   describe("adapt") {
     it("must fail if no fields support the SourceType") {
       val entityType = new EntityTypeForTesting()
+      val fields = AdaptableFieldSeq(entityType.Name.toAdaptableField, entityType.BirthDate.toAdaptableField)
       val unknownSourceType = new SourceType {}
       val exception = intercept[UnsupportedOperationException] {
-        entityType.adapt(unknownSourceType, MapStorage)
+        fields.adapt(unknownSourceType, MapStorage)
       }
       exception.getMessage must include (unknownSourceType.toString)
     }

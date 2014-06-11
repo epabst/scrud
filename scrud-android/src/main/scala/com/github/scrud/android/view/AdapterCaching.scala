@@ -58,6 +58,6 @@ class AdapterCachingStateListener(commandContext: AndroidCommandContext) extends
   }
 
   def onClearState(stayActive: Boolean) {
-    commandContext.application.FuturePortableValueCache.get(commandContext.stateHolder).clear()
+    commandContext.androidApplication.FuturePortableValueCache.get(commandContext.stateHolder).clear()
   }
 }

@@ -11,7 +11,7 @@ import com.github.scrud
 import scrud.action.CrudOperationType
 import scrud.platform.PlatformTypes
 import scrud.persistence.{PersistenceFactory, DataListener}
-import scrud.android.action.{AndroidOperation, OperationResponse, OptionsMenuActivity}
+import com.github.scrud.android.action.{AndroidCommandContextDelegator, AndroidOperation, OperationResponse, OptionsMenuActivity}
 import scrud.android.state.CachedStateListener
 import android.view.{MenuItem, View, ContextMenu}
 import android.view.ContextMenu.ContextMenuInfo
@@ -19,7 +19,6 @@ import android.widget.AdapterView.AdapterContextMenuInfo
 import scrud.platform.PlatformTypes._
 import java.util.concurrent.atomic.AtomicReference
 import scrud.android.view.AndroidConversions._
-import scrud.util.Common
 import scrud.android.view.AndroidResourceAnalyzer._
 import scrud.android.view._
 import scrud.{android=>_,_}
@@ -27,28 +26,21 @@ import scala.collection.mutable
 import com.github.scrud.android.persistence.EntityTypePersistedInfo
 import java.util.concurrent.ConcurrentHashMap
 import scala.collection.JavaConversions.mapAsScalaConcurrentMap
-import com.github.scrud.context.SharedContext
 import scala.collection.concurrent
 import com.github.scrud.platform.representation.{DetailUI, SummaryUI, EditUI}
 import com.github.scrud.copy._
-import scala.util.Try
 import com.github.scrud.EntityName
 import scala.Some
 import com.github.scrud.android.persistence.ContentQuery
 import com.github.scrud.action.CrudOperation
 import com.github.scrud.action.OperationAction
 import com.github.scrud.android.view.OnClickSetterField
-import scala.concurrent.ExecutionContext.Implicits.global
 
 /** A generic Activity for CRUD operations
   * @author Eric Pabst (epabst@gmail.com)
   */
-class CrudActivity extends FragmentActivity with OptionsMenuActivity with LoaderManager.LoaderCallbacks[Cursor] { self =>
-  lazy val crudApplication: CrudApplication = super.getApplication.asInstanceOf[CrudAndroidApplication].application
-
-  lazy val platformDriver: AndroidPlatformDriver = crudApplication.platformDriver.asInstanceOf[AndroidPlatformDriver]
-
-  lazy val entityType: EntityType = crudApplication.entityTypeMap.allEntityTypes.find(entityType => Some(entityType.entityName) == currentUriPath.lastEntityNameOption).getOrElse {
+class CrudActivity extends FragmentActivity with OptionsMenuActivity with LoaderManager.LoaderCallbacks[Cursor] with AndroidCommandContextDelegator { self =>
+  lazy val entityType: EntityType = entityTypeMap.allEntityTypes.find(entityType => Some(entityType.entityName) == currentUriPath.lastEntityNameOption).getOrElse {
     throw new IllegalStateException("No valid entityName in " + currentUriPath)
   }
 
@@ -69,7 +61,7 @@ class CrudActivity extends FragmentActivity with OptionsMenuActivity with Loader
 
   protected lazy val initialUriPath: UriPath = {
     // The primary EntityType is used as the default starting point.
-    val defaultContentUri = toUriPath(baseUriFor(crudApplication.entityTypeMap)) / crudApplication.primaryEntityType.entityName
+    val defaultContentUri = toUriPath(baseUriFor(applicationName)) / entityNavigation.primaryEntityType.entityName
     // If no data was given in the intent (e.g. because we were started as a MAIN activity),
     // then use our default content provider.
     Option(getIntent).flatMap(intent => Option(intent.getData).map(toUriPath(_))).getOrElse(defaultContentUri)
@@ -107,13 +99,9 @@ class CrudActivity extends FragmentActivity with OptionsMenuActivity with Loader
   //final since only here as a convenience method.
   final def stateHolder = commandContext.stateHolder
 
-  lazy val commandContext: AndroidCommandContext = new AndroidCommandContext(this, crudApplication)
+  lazy val commandContext: AndroidCommandContext = new AndroidCommandContext(this, getApplication.asInstanceOf[CrudAndroidApplication])
 
-  def sharedContext: SharedContext = commandContext.sharedContext
-
-  protected lazy val logTag = Try(crudApplication.name).getOrElse(Common.logTag)
-
-  protected lazy val normalActions = crudApplication.actionsFromCrudOperation(currentCrudOperation)
+  protected lazy val normalActions = entityNavigation.actionsFromCrudOperation(currentCrudOperation)
 
   private var adapterView: AdapterView[_ <: Adapter] = null
 
@@ -135,7 +123,7 @@ class CrudActivity extends FragmentActivity with OptionsMenuActivity with Loader
       setContentViewForOperation()
       populateDataInViews()
       bindActionsToViews()
-      if (crudApplication.entityTypeMap.maySpecifyEntityInstance(currentUriPath, entityType)) {
+      if (entityTypeMap.maySpecifyEntityInstance(currentUriPath, entityType)) {
         commandContext.addCachedActivityStateListener(new CachedStateListener {
           def onClearState(stayActive: Boolean) {
             if (stayActive) {
@@ -203,7 +191,7 @@ class CrudActivity extends FragmentActivity with OptionsMenuActivity with Loader
       case _ =>
         val uri = currentUriPath
         commandContext.future {
-          if (crudApplication.entityTypeMap.maySpecifyEntityInstance(uri, entityType)) {
+          if (entityTypeMap.maySpecifyEntityInstance(uri, entityType)) {
             populateFromUri(entityType, uri, currentUITargetType)
           } else {
             val defaultValues = commandContext.findDefault(entityType, uri, currentUITargetType)
@@ -217,8 +205,8 @@ class CrudActivity extends FragmentActivity with OptionsMenuActivity with Loader
     val uriPath = currentUriPath
     //copy each referenced Entity's data to the Activity if identified in the currentUriPath
     entityType.referencedEntityNames.foreach { referencedEntityName =>
-      val referencedEntityType = crudApplication.entityTypeMap.entityType(referencedEntityName)
-      if (crudApplication.entityTypeMap.maySpecifyEntityInstance(uriPath, referencedEntityType)) {
+      val referencedEntityType = entityTypeMap.entityType(referencedEntityName)
+      if (entityTypeMap.maySpecifyEntityInstance(uriPath, referencedEntityType)) {
         populateFromUri(referencedEntityType, uriPath, currentUITargetType)
       }
     }
@@ -293,7 +281,7 @@ class CrudActivity extends FragmentActivity with OptionsMenuActivity with Loader
   }
 
   protected lazy val contextMenuActions: Seq[OperationAction] = {
-    val actions = crudApplication.actionsFromCrudOperation(CrudOperation(entityName, CrudOperationType.Read))
+    val actions = entityNavigation.actionsFromCrudOperation(CrudOperation(entityName, CrudOperationType.Read))
     // Include the first action based on Android Feel even though available by just tapping.
     actions.filter(_.command.title.isDefined)
   }
@@ -321,7 +309,7 @@ class CrudActivity extends FragmentActivity with OptionsMenuActivity with Loader
   def onListItemClick(l: AdapterView[_ <: Adapter], v: View, position: Int, id: ID) {
     commandContext.withExceptionReporting {
       if (id >= 0) {
-        crudApplication.actionsFromCrudOperation(CrudOperation(entityName, CrudOperationType.Read)).headOption.map(_.invoke(uriWithId(id), commandContext)).getOrElse {
+        entityNavigation.actionsFromCrudOperation(CrudOperation(entityName, CrudOperationType.Read)).headOption.map(_.invoke(uriWithId(id), commandContext)).getOrElse {
           warn("There are no entity actions defined for " + entityType)
         }
       } else {
@@ -334,7 +322,7 @@ class CrudActivity extends FragmentActivity with OptionsMenuActivity with Loader
     commandContext.withExceptionReporting {
       if (currentCrudOperationType == CrudOperationType.Create || currentCrudOperationType == CrudOperationType.Update) {
         commandContext.future {
-          val createId = crudApplication.saveIfValid(currentUriPath, EditUI, this, entityType, commandContext)
+          val createId = commandContext.saveIfValid(currentUriPath, EditUI, this, entityType)
           val idOpt = entityType.idField.findFromContext(entityType.toUri(createId), commandContext)
           if (idOpt.isEmpty) {
             createId.foreach(id => createdId.set(Some(id)))
@@ -365,9 +353,9 @@ class CrudActivity extends FragmentActivity with OptionsMenuActivity with Loader
     commandContext.populateFromValueSeq(adaptedValueSeq, this)
   }
 
-  lazy val entityNameLayoutPrefix = crudApplication.entityNameLayoutPrefixFor(entityName)
+  lazy val entityNameLayoutPrefix = entityName.toSnakeCase
 
-  private def rLayoutClasses = crudApplication.rLayoutClasses
+  private def rLayoutClasses = androidApplication.rLayoutClasses
 
   protected def getLayoutKey(layoutName: String): LayoutKey =
     findResourceIdWithName(rLayoutClasses, layoutName).getOrElse {
@@ -380,8 +368,8 @@ class CrudActivity extends FragmentActivity with OptionsMenuActivity with Loader
   lazy val listLayout: LayoutKey = findResourceIdWithName(rLayoutClasses, entityNameLayoutPrefix + "_list").getOrElse(getLayoutKey("entity_list"))
 
   protected def listViewName: String = entityName + "_list"
-  lazy val listViewKey: ViewKey = resourceIdWithName(crudApplication.rIdClasses, listViewName, "id")
-  lazy val emptyListViewKeyOpt: Option[ViewKey] = findResourceIdWithName(crudApplication.rIdClasses, entityName + "_emptyList")
+  lazy val listViewKey: ViewKey = resourceIdWithName(androidApplication.rIdClasses, listViewName, "id")
+  lazy val emptyListViewKeyOpt: Option[ViewKey] = findResourceIdWithName(androidApplication.rIdClasses, entityName + "_emptyList")
 
   lazy val rowLayout: LayoutKey = getLayoutKey(entityNameLayoutPrefix + "_row")
   /** The layout used for each entity when allowing the user to pick one of them. */
@@ -390,7 +378,7 @@ class CrudActivity extends FragmentActivity with OptionsMenuActivity with Loader
 
   /** The layout used for each entity when allowing the user to pick one of them. */
   def pickLayoutFor(entityName: EntityName): LayoutKey = {
-    findResourceIdWithName(rLayoutClasses, crudApplication.entityNameLayoutPrefixFor(entityName) + "_pick").getOrElse(
+    findResourceIdWithName(rLayoutClasses, entityName.toSnakeCase + "_pick").getOrElse(
       _root_.android.R.layout.simple_spinner_dropdown_item)
   }
 
@@ -399,7 +387,7 @@ class CrudActivity extends FragmentActivity with OptionsMenuActivity with Loader
 
   protected lazy val nestedNormalOperationSetters: Seq[NestedTargetField[Nothing]] = {
     val setters = normalActions.map { action =>
-      val viewRef = ViewRef(action.command.commandId.toCamelCase + "_command", crudApplication.rIdClasses)
+      val viewRef = ViewRef(action.command.commandId.toCamelCase + "_command", androidApplication.rIdClasses)
       new OnClickSetterField(_ => action.operation).forTargetView(ViewSpecifier(viewRef))
     }
     setters
@@ -443,7 +431,7 @@ class CrudActivity extends FragmentActivity with OptionsMenuActivity with Loader
 
   def setListAdapter[A <: Adapter](adapterView: AdapterView[A], entityType: EntityType, uri: UriPath, activity: Activity, itemLayout: LayoutKey) {
     val entityTypePersistedInfo = new EntityTypePersistedInfo(entityType)
-    val androidUri = toUri(uri, commandContext.entityTypeMap)
+    val androidUri = toUri(uri, applicationName)
     val adapter = new EntityCursorAdapter(entityType, uri, commandContext, new ViewInflater(itemLayout, activity.getLayoutInflater), null)
     val cursorLoaderData = CursorLoaderData(ContentQuery(androidUri, entityTypePersistedInfo.queryFieldNames), adapter)
     runOnUiThread {
@@ -472,14 +460,14 @@ class CrudActivity extends FragmentActivity with OptionsMenuActivity with Loader
   def onLoaderReset(loader: Loader[Cursor]) {
     commandContext.withExceptionReporting {
       debug("onLoaderReset(" + loader + ")")
-      crudApplication.FuturePortableValueCache.get(stateHolder).clear()
+      sharedContext.FuturePortableValueCache.get(stateHolder).clear()
     }
   }
 
   def onLoadFinished(loader: Loader[Cursor], data: Cursor) {
     commandContext.withExceptionReporting {
       debug("onLoadFinished(" + loader + ", cursor with count=" + data.getCount + ")")
-      crudApplication.FuturePortableValueCache.get(stateHolder).clear()
+      sharedContext.FuturePortableValueCache.get(stateHolder).clear()
       cursorLoaderDataByLoader.get(loader).foreach { cursorLoaderData =>
         cursorLoaderData.adapter.swapCursor(data)
       }

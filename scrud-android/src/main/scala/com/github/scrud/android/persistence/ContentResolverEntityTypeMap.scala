@@ -11,7 +11,7 @@ import com.github.scrud.android.AndroidCommandContext
  * Date: 4/4/13
  * Time: 3:22 PM
  */
-class ContentResolverEntityTypeMap(delegate: EntityTypeMap, commandContext: AndroidCommandContext)
+class ContentResolverEntityTypeMap(delegate: EntityTypeMap)
     extends EntityTypeMap(delegate.applicationName, delegate.platformDriver) {
 
   override lazy val entityTypesAndFactories: Seq[(EntityType, PersistenceFactory)] = delegate.entityTypesAndFactories
@@ -19,7 +19,7 @@ class ContentResolverEntityTypeMap(delegate: EntityTypeMap, commandContext: Andr
   override def packageName = delegate.packageName
 
   private val cachedPersistenceFactoryByEntityType = CachedFunction { (entityType: EntityType) =>
-    new ContentResolverPersistenceFactory(delegate.persistenceFactory(entityType), commandContext)
+    new ContentResolverPersistenceFactory(delegate.persistenceFactory(entityType))
   }
 
   override def persistenceFactory(entityType: EntityType) = cachedPersistenceFactoryByEntityType(entityType)

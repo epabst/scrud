@@ -1,7 +1,6 @@
 package com.github.scrud.android.generate
 
 import com.github.scrud.EntityType
-import com.github.scrud.android.NamingConventions
 import com.github.scrud.android.view.AndroidResourceAnalyzer._
 import com.github.scrud.persistence.EntityTypeMap
 
@@ -14,7 +13,7 @@ import com.github.scrud.persistence.EntityTypeMap
 
 case class EntityTypeViewInfo(entityType: EntityType, entityTypeMap: EntityTypeMap) {
   val entityName = entityType.entityName
-  lazy val layoutPrefix = NamingConventions.toLayoutPrefix(entityType.entityName)
+  lazy val layoutPrefix = entityType.entityName.toSnakeCase
   lazy val rIdClasses: Seq[Class[_]] = detectRIdClasses(entityType.getClass)
   lazy val entityFieldInfos: List[EntityFieldInfo] = entityType.fieldDeclarations.map(EntityFieldInfo(_, rIdClasses, entityTypeMap)).toList
   private[generate] lazy val shallowDisplayableViewIdFieldInfos: List[ViewIdFieldInfo] = entityFieldInfos.flatMap(_.shallowDisplayableViewIdFieldInfos)

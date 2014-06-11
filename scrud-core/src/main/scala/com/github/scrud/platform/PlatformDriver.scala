@@ -1,13 +1,18 @@
 package com.github.scrud.platform
 
 import com.github.scrud.persistence.PersistenceFactory
-import com.github.scrud.action.{Operation, PlatformCommand}
-import com.github.scrud.{FieldName, EntityType, EntityName}
+import com.github.scrud.action.Operation
+import com.github.scrud.EntityType
 import com.github.scrud.types.QualifiedType
 import com.github.scrud.copy._
 import com.github.scrud.util.{Logging, Name}
 import com.netaporter.uri.Uri
 import scala.util.Try
+import com.github.scrud.platform.PlatformTypes._
+import com.github.scrud.FieldName
+import com.github.scrud.EntityName
+import com.github.scrud.copy.CompositeAdaptableField
+import com.github.scrud.action.PlatformCommand
 
 /**
  * An API for an app to interact with the host platform such as Android.
@@ -43,6 +48,12 @@ trait PlatformDriver extends Logging {
    * @see [[com.github.scrud.EntityType.idField]]
    */
   def idFieldName(entityName: EntityName): String
+
+  /** Get a localizable string key by name or fail. */
+  def getStringKey(stringName: String): SKey = tryStringKey(stringName).get
+
+  /** Try to get a localizable string key by name. */
+  def tryStringKey(stringName: String): Try[SKey]
 
   def commandToListItems(entityName: EntityName): PlatformCommand
 

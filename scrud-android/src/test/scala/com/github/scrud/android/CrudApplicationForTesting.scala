@@ -25,5 +25,4 @@ class CrudApplicationForTesting(platformDriver: PlatformDriver, entityTypeMap: E
 
   val name = "test app"
 
-  override def entityNameLayoutPrefixFor(entityName: EntityName) = "test"
 }

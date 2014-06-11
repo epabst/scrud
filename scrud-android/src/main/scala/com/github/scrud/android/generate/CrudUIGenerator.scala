@@ -57,7 +57,7 @@ class CrudUIGenerator extends Logging {
           </intent-filter>
         </activity>
         {activityNames.tail.map { name => <activity android:name={name} android:label="@string/app_name"/>}}
-        <provider android:authorities={AndroidConversions.authorityFor(application.entityTypeMap)}
+        <provider android:authorities={AndroidConversions.authorityFor(application.entityTypeMap.applicationName)}
                   android:name="com.github.scrud.android.persistence.LocalCrudContentProvider"
                   android:exported="false"
                   android:grantUriPermissions="false"

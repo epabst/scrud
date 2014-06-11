@@ -54,7 +54,7 @@ case class ViewIdFieldInfo(id: String, displayName: String, field: BaseFieldDecl
     case _ => None
   }
 
-  val defaultLayoutOrEmpty = defaultLayoutOpt.fold(NodeSeq.Empty)
+  val defaultLayoutOrEmpty = defaultLayoutOpt.getOrElse(NodeSeq.Empty)
 
   lazy val nestedEntityTypeViewInfoOpt: Option[EntityTypeViewInfo] = field.qualifiedType match {
     case referencedEntityName: EntityName => Some(EntityTypeViewInfo(entityTypeMap.entityType(referencedEntityName), entityTypeMap))

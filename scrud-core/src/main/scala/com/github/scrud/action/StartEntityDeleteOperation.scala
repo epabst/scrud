@@ -3,7 +3,6 @@ package com.github.scrud.action
 import com.github.scrud.{UriPath, EntityType}
 import com.github.scrud.persistence.PersistenceConnection
 import com.github.scrud.platform.PlatformTypes._
-import com.github.scrud.context.CommandContext
 import com.github.scrud.platform.representation.Persistence
 
 /**
@@ -15,15 +14,16 @@ import com.github.scrud.platform.representation.Persistence
 //final to guarantee equality is correct
 final case class StartEntityDeleteOperation(entityType: EntityType) extends PersistenceOperation {
 
-  def invoke(uri: UriPath, persistenceConnection: PersistenceConnection, commandContext: CommandContext) {
+  def invoke(uri: UriPath, persistenceConnection: PersistenceConnection) {
     val persistence = persistenceConnection.persistenceFor(entityType)
+    val commandContext = persistenceConnection.commandContext
     persistence.find(uri).foreach { readable =>
       val idOpt: Option[ID] = entityType.findPersistedId(readable, uri)
-      val writable = persistence.toWritable(Persistence.Latest, readable, uri, commandContext)
+      val writable = persistence.toWritable(Persistence.Latest, readable, uri, persistenceConnection.commandContext)
       persistence.delete(uri)
       val undoDeleteOperation = new PersistenceOperation {
         // make this stateless using a source and sourceType
-        def invoke(uri: UriPath, persistenceConnection: PersistenceConnection, commandContext: CommandContext) {
+        def invoke(uri: UriPath, persistenceConnection: PersistenceConnection) {
           persistence.save(idOpt, writable)
         }
       }

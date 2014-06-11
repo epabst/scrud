@@ -4,6 +4,7 @@ import org.scalatest.FunSpec
 import org.scalatest.matchers.MustMatchers
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
+import com.github.scrud.context.ApplicationName
 
 /**
  * A behavior specification for [[com.github.scrud.EntityName]].
@@ -12,7 +13,7 @@ import org.junit.runner.RunWith
  *         Time: 8:56 AM
  */
 @RunWith(classOf[JUnitRunner])
-class EntityNameSpec extends FunSpec with MustMatchers {
+class NameSpec extends FunSpec with MustMatchers {
   describe("toDisplayableString") {
     it("must not add spaces for a single word") {
       EntityName("Book").toDisplayableString must be ("Book")
@@ -43,6 +44,10 @@ class EntityNameSpec extends FunSpec with MustMatchers {
     it("must ignore apostrophes") {
       EntityName("My dog's tail is awesome!").toTitleCase must be ("MyDogsTailIsAwesome")
     }
+
+    it("must preserve acronymns") {
+      EntityName("UPS is fast!").toTitleCase must be ("UPSIsFast")
+    }
   }
 
   describe("toCamelCase") {
@@ -62,6 +67,24 @@ class EntityNameSpec extends FunSpec with MustMatchers {
 
     it("must remove any whitespace that is present and format correctly") {
       EntityName("Fast   jumping \tMonkey").toSnakeCase must be ("fast_jumping_monkey")
+    }
+
+    it("must continue to use the same database (My Application represents a real app)") {
+      val applicationName = "My Application"
+      // This was the original algorithm to determine the database id
+      val databaseId = applicationName.replace(" ", "_").toLowerCase
+      ApplicationName(applicationName).toSnakeCase must be (databaseId)
+    }
+
+    it("must continue to use the same database (Application represents a real app)") {
+      val applicationName = "Application"
+      // This was the original algorithm to determine the database id
+      val databaseId = applicationName.replace(" ", "_").toLowerCase
+      ApplicationName(applicationName).toSnakeCase must be (databaseId)
+    }
+
+    it("must preserve acronymns") {
+      EntityName("UPS is fast!").toSnakeCase must be ("ups_is_fast")
     }
   }
 }

@@ -9,7 +9,7 @@ import com.github.scrud.util.{ExternalLogging, Name}
  *         Time: 11:43 PM
  */
 case class ApplicationName(name: String) extends Name with ExternalLogging {
-  def logTag = name
+  def logTag = toSnakeCase
 
   val packageName: String = getClass.getPackage.getName
 }

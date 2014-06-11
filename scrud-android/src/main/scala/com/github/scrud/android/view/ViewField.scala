@@ -15,26 +15,6 @@ import com.github.scrud.android.AndroidCommandContext
 import com.github.scrud.copy.{TypedTargetField, TypedSourceField, SourceField, AdaptedField}
 import com.github.scrud.context.CommandContext
 
-/** A Map of ViewKey with values.
-  * Wraps a map so that it is distinguished from persisted fields.
-  */
-@deprecated("use MapStorage", since = "2014-05-15")
-case class ViewKeyMap(map: Map[ViewKey,Option[Any]]) {
-  def contains(key: ViewKey) = map.contains(key)
-  def apply(key: ViewKey) = map.apply(key)
-  def get(key: ViewKey) = map.get(key)
-  def iterator = map.iterator
-  def -(key: ViewKey) = ViewKeyMap(map - key)
-  def +[B1 >: Any](kv: (ViewKey, Option[B1])) = ViewKeyMap(map + kv)
-}
-
-@deprecated("use MapStorage", since = "2014-05-15")
-object ViewKeyMap {
-  val empty = ViewKeyMap()
-  def apply(elems: (ViewKey,Option[Any])*): ViewKeyMap = new ViewKeyMap(Map(elems: _*))
-}
-
-
 /** PortableField for Views.
   * @param defaultLayout the default layout used as an example and by [[com.github.scrud.android.generate.CrudUIGenerator]].
   * @author Eric Pabst (epabst@gmail.com)

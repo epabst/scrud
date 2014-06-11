@@ -13,7 +13,7 @@ import android.provider.BaseColumns
 import persistence.CursorStream
 import persistence.SQLiteCriteria
 import scala.Some
-import com.github.scrud.android.backup.{CrudBackupAgent, DeletedEntityIdApplication}
+import com.github.scrud.android.backup.CrudBackupAgent
 import com.github.scrud.platform.representation.{Persistence, Query}
 import com.github.scrud.copy.SourceType
 import com.github.scrud.copy.types.MapStorage
@@ -31,7 +31,6 @@ class SQLiteThinEntityPersistence(entityType: EntityType, database: SQLiteDataba
   private val cursors = new mutable.SynchronizedQueue[Cursor]
   private lazy val entityTypePersistedInfo = EntityTypePersistedInfo(entityType)
   private def queryFieldNames = entityTypePersistedInfo.queryFieldNames
-  private lazy val deletedEntityIdCrudType = DeletedEntityIdApplication
   private def toOption(string: String): Option[String] = if (string == "") None else Some(string)
   private lazy val backupManager = new BackupManager(commandContext.context)
 
@@ -93,7 +92,7 @@ class SQLiteThinEntityPersistence(entityType: EntityType, database: SQLiteDataba
     }
     commandContext.future {
       ids.foreach { id =>
-        deletedEntityIdCrudType.recordDeletion(entityType.entityName, id, commandContext)
+        androidApplication.deletedEntityTypeMap.recordDeletion(entityType.entityName, id, commandContext)
       }
       notifyDataChanged()
     }

@@ -25,10 +25,14 @@ class DerivedPersistenceFactorySpec extends FunSpec with MustMatchers with CrudM
         List("findAll", "was", "called")
       }
     }
-    val entityTypeMap = EntityTypeMapForTesting(new EntityTypeForTesting(entity1), new EntityTypeForTesting(entity2))
-    val sharedContext = new SharedContextForTesting(entityTypeMap)
-    val persistenceConnection = new PersistenceConnection(entityTypeMap, sharedContext)
-    val persistence = factory.createEntityPersistence(mock[EntityType], persistenceConnection)
+    val entityType1 = new EntityTypeForTesting(entity1)
+    val entityType2 = new EntityTypeForTesting(entity2)
+    val derivedEntity = EntityName("derivedEntity")
+    val derivedEntityType = new EntityTypeForTesting(derivedEntity)
+    val entityTypeMap = EntityTypeMapForTesting(entityType1, entityType2, derivedEntityType)
+    val commandContext = new CommandContextForTesting(entityTypeMap)
+    val persistenceConnection = new PersistenceConnection(commandContext)
+    val persistence = factory.createEntityPersistence(derivedEntityType, persistenceConnection)
     persistence.findAll(UriPath()) must be (List("findAll", "was", "called"))
   }
 
@@ -37,11 +41,6 @@ class DerivedPersistenceFactorySpec extends FunSpec with MustMatchers with CrudM
     val entity2 = EntityName("entity2")
     val persistence1 = mock[ThinPersistence]
     val persistence2 = mock[ThinPersistence]
-    val entityTypeMap = EntityTypeMapForTesting(
-      new EntityTypeForTesting(entity1) -> new PersistenceFactoryForTesting(persistence1),
-      new EntityTypeForTesting(entity2) -> new PersistenceFactoryForTesting(persistence2))
-    val commandContext = new CommandContextForTesting(entityTypeMap)
-    val persistenceConnection = commandContext.persistenceConnection
     val factory = new DerivedPersistenceFactory[String](entity1, entity2) {
       def findAll(entityType: EntityType, uri: UriPath, persistenceConnection: PersistenceConnection) = {
         persistenceConnection.persistenceFor(entity1) must not be null
@@ -49,7 +48,15 @@ class DerivedPersistenceFactorySpec extends FunSpec with MustMatchers with CrudM
         Nil
       }
     }
-    val derivedCrudPersistence = factory.createEntityPersistence(mock[EntityType], persistenceConnection)
+    val derivedEntity = EntityName("derivedEntity")
+    val derivedEntityType = new EntityTypeForTesting(derivedEntity)
+    val entityTypeMap = EntityTypeMapForTesting(
+      new EntityTypeForTesting(entity1) -> new PersistenceFactoryForTesting(persistence1),
+      new EntityTypeForTesting(entity2) -> new PersistenceFactoryForTesting(persistence2),
+      derivedEntityType -> factory)
+    val commandContext = new CommandContextForTesting(entityTypeMap)
+    val persistenceConnection = commandContext.persistenceConnection
+    val derivedCrudPersistence = factory.createEntityPersistence(derivedEntityType, persistenceConnection)
     derivedCrudPersistence.findAll(UriPath.EMPTY)
     persistenceConnection.close()
     verify(persistence1).close()

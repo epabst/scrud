@@ -1,9 +1,7 @@
 package com.github.scrud.context
 
-import com.github.scrud.UriPath
 import com.github.scrud.state.{DestroyStateListener, State}
 import com.github.scrud.persistence.PersistenceConnection
-import com.github.scrud.copy.InstantiatingTargetType
 
 /**
  * The context for a given interaction or command/response.
@@ -22,7 +20,7 @@ trait CommandContext extends CommandContextHolder {
   override def persistenceConnection: PersistenceConnection = persistenceConnectionVal
 
   protected lazy val persistenceConnectionVal: PersistenceConnection = {
-    val persistenceConnection = sharedContext.openPersistence()
+    val persistenceConnection = new PersistenceConnection(this)
     state.addListener(new DestroyStateListener {
       override def onDestroyState() {
         persistenceConnection.close()

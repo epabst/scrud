@@ -9,10 +9,8 @@ import com.github.scrud.android.CrudAndroidApplication
  * Time: 5:24 PM
  */
 class LocalCrudContentProvider extends CrudContentProvider {
-  lazy val crudAndroidApplication = getContext.getApplicationContext.asInstanceOf[CrudAndroidApplication]
+  override lazy val androidApplication = getContext.getApplicationContext.asInstanceOf[CrudAndroidApplication]
 
-  def applicationState = crudAndroidApplication.applicationState
-
-  lazy val application = crudAndroidApplication.application
+  def applicationState = androidApplication.applicationState
 }
 

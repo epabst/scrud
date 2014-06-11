@@ -8,7 +8,8 @@ import com.github.scrud.action.ActionKey
 import com.github.scrud.action.PlatformCommand
 import com.github.scrud.util.Name
 import com.netaporter.uri.Uri
-import scala.util.Success
+import scala.util.{Try, Success}
+import com.github.scrud.platform.PlatformTypes.SKey
 
 /**
  * A simple PlatformDriver for testing.
@@ -18,6 +19,8 @@ import scala.util.Success
  */
 class TestingPlatformDriver extends PlatformDriver {
   override def tryResource(resourceName: Name) = Success(Uri.parse("image:" + resourceName.toCamelCase))
+
+  override def tryStringKey(stringName: String): Try[SKey] = Success(stringName.hashCode)
 
   val localDatabasePersistenceFactory = ListBufferPersistenceFactoryForTesting
 

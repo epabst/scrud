@@ -106,7 +106,9 @@ abstract class EntityType(val entityName: EntityName, val platformDriver: Platfo
    * @return a Seq of Representation
    * @see [[com.github.scrud.EntityType.idField]]
    */
-  protected def idFieldRepresentations: Seq[Representation[ID]] = Seq(Persistence(Int.MinValue), Query, EntityModelForPlatform, MapStorage, IdPkField)
+  protected def idFieldRepresentations: Seq[Representation[ID]] =
+    Seq(Persistence(Int.MinValue), Query, EntityModelForPlatform, MapStorage, IdPkField,
+      Calculation { context => UriPath.findId(context.sourceUri, entityName) })
 
   /**
    * The ID field declaration for this entity.
@@ -132,7 +134,7 @@ abstract class EntityType(val entityName: EntityName, val platformDriver: Platfo
     entityReferenceFieldDeclaration = fieldDeclaration.asInstanceOf[FieldDeclaration[ID]]
   } yield entityReferenceFieldDeclaration
 
-  lazy val referencedEntityNames: Seq[EntityName] = entityReferenceFieldDeclarations.map(_.entityName)
+  lazy val referencedEntityNames: Seq[EntityName] = entityReferenceFieldDeclarations.map(_.qualifiedType.asInstanceOf[EntityName])
 
   def findPersistedId(source: AnyRef, sourceUri: UriPath): Option[ID] =
     idField.findSourceField(Persistence.Latest).flatMap(_.findValue(source, new CopyContext(sourceUri, null)))

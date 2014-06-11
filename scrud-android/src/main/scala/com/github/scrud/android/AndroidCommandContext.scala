@@ -25,13 +25,30 @@ import scala.concurrent.ExecutionContext.Implicits.global
  * @author Eric Pabst (epabst@gmail.com)
  */
 @MicrotestCompatible(use = "new AndroidCommandContextForTesting(...)")
-case class AndroidCommandContext(context: Context, stateHolder: ActivityStateHolder, application: CrudApplication)
+case class AndroidCommandContext(context: Context, stateHolder: ActivityStateHolder, override val entityTypeMap: EntityTypeMap, androidApplication: CrudAndroidApplication)
     extends CommandContext with AndroidNotification {
-  def this(activityContext: Context with ActivityStateHolder, application: CrudApplication) {
-    this(activityContext, activityContext, application)
+  def this(context: Context, stateHolder: ActivityStateHolder, androidApplication: CrudAndroidApplication) {
+    this(context, stateHolder, stateHolder match {
+      case _: CrudContentProvider =>
+        androidApplication.entityTypeMap
+      case _: CrudBackupAgent =>
+        androidApplication.entityTypeMap
+      case _ =>
+        context match {
+          case _: Activity =>
+            // Use a ContentResolver (this should never be called from the ContentProvider).
+            new ContentResolverEntityTypeMap(androidApplication.entityTypeMap)
+          case _ =>
+            androidApplication.entityTypeMap
+        }
+    }, androidApplication)
   }
 
-  override def entityNavigation: EntityNavigation = application.entityNavigation
+  def this(activityContext: Context with ActivityStateHolder, androidApplication: CrudAndroidApplication) {
+    this(activityContext, activityContext, androidApplication)
+  }
+  
+  override def entityNavigation: EntityNavigation = androidApplication.entityNavigation
 
   /** Fails if the current Context is not an Activity. */
   def activity: Activity = context.asInstanceOf[Activity]
@@ -41,37 +58,20 @@ case class AndroidCommandContext(context: Context, stateHolder: ActivityStateHol
 
   lazy val androidPlatformDriver = platformDriver.asInstanceOf[AndroidPlatformDriver]
 
-  lazy val dataVersion: Int = androidPlatformDriver.calculateDataVersion(application.entityTypeMap.allEntityTypes)
-
-  override lazy val entityTypeMap: EntityTypeMap = {
-    stateHolder match {
-      case _: CrudContentProvider =>
-        application.entityTypeMap
-      case _: CrudBackupAgent =>
-        application.entityTypeMap
-      case _ =>
-        context match {
-          case _: Activity =>
-            // Use a ContentResolver (this should never be called from the ContentProvider).
-            new ContentResolverEntityTypeMap(application.entityTypeMap, this)
-          case _ =>
-            application.entityTypeMap
-        }
-    }
-  }
+  lazy val dataVersion: Int = androidPlatformDriver.calculateDataVersion(androidApplication.entityTypeMap.allEntityTypes)
 
   override lazy val sharedContext: SharedContext = new SimpleSharedContext(entityTypeMap) {
     override val applicationState: State = stateHolder.applicationState
   }
 
   def populateFromUri(entityType: EntityType, uri: UriPath, targetType: TargetType, uiTarget: AnyRef) {
-    val futurePortableValueOpt = application.futurePortableValueOpt(entityType, uri, targetType, this)
+    val futurePortableValueOpt = androidApplication.futurePortableValueOpt(entityType, uri, targetType, this)
     populateFromFutureValueSeq(futurePortableValueOpt, entityType, uri, targetType, uiTarget)
   }
 
   def populateFromSource(entityType: EntityType, sourceType: SourceType, source: AnyRef, sourceUri: UriPath, targetType: TargetType, targetView: View) {
     targetView.setTag(sourceUri)
-    val futurePortableValueOpt = application.futurePortableValueOpt(entityType, sourceType, source, sourceUri, targetType, this)
+    val futurePortableValueOpt = androidApplication.futurePortableValueOpt(entityType, sourceType, source, sourceUri, targetType, this)
     populateFromFutureValueSeq(futurePortableValueOpt, entityType, sourceUri, targetType, targetView)
   }
 

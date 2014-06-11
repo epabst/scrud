@@ -1,11 +1,14 @@
 package com.github.scrud.types
 
 import org.scalatest.{MustMatchers, FunSpec}
+import org.junit.runner.RunWith
+import org.scalatest.junit.JUnitRunner
 
 /**
  * A specification for [[com.github.scrud.types.EnumerationValueQT]].
  * Created by eric on 5/13/14.
  */
+@RunWith(classOf[JUnitRunner])
 class EnumerationValueQTSpec extends FunSpec with MustMatchers {
   object MyEnum extends Enumeration {
     val A = Value("A")

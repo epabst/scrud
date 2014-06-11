@@ -16,7 +16,7 @@ import com.github.scrud.platform.PlatformTypes
  * Date: 4/9/13
  * Time: 10:34 PM
  */
-class AndroidCommandContextForTesting(application: CrudApplication,
+class AndroidCommandContextForTesting(application: CrudAndroidApplication,
                                    activity: Context with ActivityStateHolder = new ActivityStateHolderForTesting)
     extends AndroidCommandContext(activity, application) {
 

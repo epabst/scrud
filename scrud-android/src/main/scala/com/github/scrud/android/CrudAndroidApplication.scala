@@ -1,11 +1,14 @@
 package com.github.scrud.android
 
 import android.app.Application
-import com.github.scrud.CrudApplication
-import com.github.scrud.state.{StateHolder, State}
+import com.github.scrud.EntityNavigation
+import com.github.scrud.context.SharedContext
+import com.github.scrud.persistence.EntityTypeMap
+import com.github.scrud.android.view.AndroidResourceAnalyzer._
+import com.github.scrud.android.backup.DeletedEntityTypeMap
 
 /**
- * A CrudApplication for Android.
+ * A scrud-enabled Android Application.
  *
  * Because this extends android.app.Application, it can't normally be instantiated
  * except on a device.  Because of this, there is a convention
@@ -16,6 +19,12 @@ import com.github.scrud.state.{StateHolder, State}
  * Date: 3/2/12
  * Time: 5:07 PM
  */
-abstract class CrudAndroidApplication(val application: CrudApplication) extends Application with StateHolder {
-  lazy val applicationState = new State
+class CrudAndroidApplication(val entityNavigation: EntityNavigation) extends Application with SharedContext {
+  override def entityTypeMap: EntityTypeMap = entityNavigation.entityTypeMap
+
+  private lazy val classInApplicationPackage: Class[_] = entityTypeMap.allEntityTypes.head.getClass
+  lazy val rIdClasses: Seq[Class[_]] = detectRIdClasses(classInApplicationPackage)
+  lazy val rLayoutClasses: Seq[Class[_]] = detectRLayoutClasses(classInApplicationPackage)
+
+  lazy val deletedEntityTypeMap = new DeletedEntityTypeMap(applicationName, platformDriver)
 }

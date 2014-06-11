@@ -4,12 +4,14 @@ import _root_.android.content.{ContentResolver, ContentProvider, ContentValues}
 import _root_.android.database.Cursor
 import _root_.android.net.Uri
 import com.github.scrud._
-import android.AndroidCommandContext
+import com.github.scrud.android.{CrudAndroidApplication, AndroidCommandContext}
 import android.state.ActivityStateHolder
 import com.github.scrud.android.view.AndroidConversions._
 import state.{ApplicationConcurrentMapVal, State}
 import scala.Some
-import persistence.{EntityTypeMap, CrudPersistence}
+import persistence.CrudPersistence
+import com.github.scrud.android.action.AndroidCommandContextDelegator
+import com.github.scrud.platform.representation.Persistence
 
 /**
  * A ContentProvider that uses a PersistenceFactory.
@@ -19,14 +21,13 @@ import persistence.{EntityTypeMap, CrudPersistence}
  *         Date: 3/18/13
  *         Time: 4:49 PM
  */
-abstract class CrudContentProvider extends ContentProvider with ActivityStateHolder {
+abstract class CrudContentProvider extends ContentProvider with ActivityStateHolder with AndroidCommandContextDelegator {
   // The reason this isn't derived from getContext.getApplicationContext is so that this ContentProvider
   // may be instantiated within a foreign application for efficiency.
-  protected[scrud] def application: CrudApplication
-  protected[scrud] def entityTypeMap: EntityTypeMap = application
+  protected[scrud] def androidApplication: CrudAndroidApplication
   lazy val activityState: State = new State
-  lazy val commandContext = new AndroidCommandContext(getContext, this, application)
-  lazy val contentResolver = commandContext.asInstanceOf[AndroidCommandContext].context.getContentResolver
+  lazy val commandContext = new AndroidCommandContext(getContext, this, androidApplication)
+  lazy val contentResolver = getContext.getContentResolver
 
   def onCreate(): Boolean = true
 
@@ -34,9 +35,9 @@ abstract class CrudContentProvider extends ContentProvider with ActivityStateHol
     val uriPath = toUriPath(uri)
     uriPath.findId(uriPath.lastEntityNameOrFail) match {
       case Some(id) =>
-        ContentResolver.CURSOR_ITEM_BASE_TYPE + "/vnd." + authorityFor(entityTypeMap) + "." + uriPath.lastEntityNameOrFail
+        ContentResolver.CURSOR_ITEM_BASE_TYPE + "/vnd." + authorityFor(applicationName) + "." + uriPath.lastEntityNameOrFail
       case None =>
-        ContentResolver.CURSOR_DIR_BASE_TYPE + "/vnd." + authorityFor(entityTypeMap) + "." + uriPath.lastEntityNameOrFail
+        ContentResolver.CURSOR_DIR_BASE_TYPE + "/vnd." + authorityFor(applicationName) + "." + uriPath.lastEntityNameOrFail
     }
   }
 
@@ -45,7 +46,7 @@ abstract class CrudContentProvider extends ContentProvider with ActivityStateHol
 
   private def persistenceFor(uriPath: UriPath): CrudPersistence = {
     val entityName = uriPath.lastEntityNameOrFail
-    CrudPersistenceByEntityName.get(this).getOrElseUpdate(entityName, commandContext.openEntityPersistence(entityName))
+    CrudPersistenceByEntityName.get(this).getOrElseUpdate(entityName, commandContext.persistenceFor(entityName))
   }
 
   def query(uri: Uri, projection: Array[String], selection: String, selectionArgs: Array[String], sortOrder: String): Cursor = {
@@ -64,7 +65,7 @@ abstract class CrudContentProvider extends ContentProvider with ActivityStateHol
   def insert(uri: Uri, contentValues: ContentValues): Uri = {
     val uriPath = toUriPath(uri)
     val persistence = persistenceFor(uriPath)
-    val id = persistence.save(None, persistence.toWritable(contentValues))
+    val id = persistence.save(None, persistence.toWritable(Persistence.Latest, contentValues, uriPath, commandContext))
     contentResolver.notifyChange(toNotificationUri(uri), null)
     uri.buildUpon().path(uriPath.specify(persistence.entityType.entityName, id).toString).build()
   }
@@ -73,9 +74,10 @@ abstract class CrudContentProvider extends ContentProvider with ActivityStateHol
     //todo use selection and selectionArgs
     val uriPath = toUriPath(uri)
     val persistence = persistenceFor(uriPath)
-    val writable = persistence.toWritable(values)
-    persistence.save(Some(persistence.entityType.idPkField.getRequired(uriPath)), writable)
-    val fixedUri = toUri(uriPath, entityTypeMap)
+    val writable = persistence.toWritable(Persistence.Latest, values, uriPath, commandContext)
+    commandContext.save(UriPath.lastEntityNameOrFail(uriPath), Persistence.Latest,
+      persistence.entityType.idField.findFromContext(uriPath, commandContext), writable)
+    val fixedUri = toUri(uriPath, applicationName)
     if (uri.toString != fixedUri.toString) sys.error(uri + " != " + fixedUri)
     contentResolver.notifyChange(toNotificationUri(fixedUri), null)
     1

@@ -34,13 +34,14 @@ trait Name {
   }
 
   /** The name lowercase with underscores between words. */
-  lazy val toSnakeCase: String = toTitleCase.replaceAll("([a-z])([A-Z])", "$1_$2").toLowerCase
+  lazy val toSnakeCase: String = Name.titleCaseWordRegex.replaceAllIn(toTitleCase, "_" + _.matched.toLowerCase).stripPrefix("_")
 
   lazy val toDisplayableString: String = name.replaceAll("([a-z])([A-Z])", "$1 $2")
 }
 
 object Name {
   private[Name] val wordRegex: Regex = "[\\w']+".r
+  private[Name] val titleCaseWordRegex: Regex = "\\p{javaUpperCase}+(?!\\p{javaLowerCase})|\\p{javaUpperCase}\\p{javaLowerCase}+".r
 
   def apply(name: String): Name = {
     val _name = name

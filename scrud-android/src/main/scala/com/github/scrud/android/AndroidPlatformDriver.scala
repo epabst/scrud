@@ -14,6 +14,8 @@ import com.github.scrud.android.view.ViewSpecifier
 import scala.Some
 import com.github.scrud.action.PlatformCommand
 import com.github.scrud.android.action.StartEntityIdActivityOperation
+import scala.util.Try
+import android.R
 
 /**
  * A PlatformDriver for the Android platform.
@@ -26,6 +28,26 @@ import com.github.scrud.android.action.StartEntityIdActivityOperation
 class AndroidPlatformDriver(rClass: Class[_], val activityClass: Class[_ <: CrudActivity] = classOf[CrudActivity])
     extends PlatformDriver {
   lazy val localDatabasePersistenceFactory = new SQLitePersistenceFactory
+
+  private lazy val deleteItemStringKey = getStringKey("delete_item")
+
+  def commandToListItems(entityName: EntityName): PlatformCommand = PlatformCommand(ActionKey(entityName.toSnakeCase + "_list"), None,
+    tryStringKey(entityName.toSnakeCase + "_list").toOption)
+
+  def commandToDisplayItem(entityName: EntityName): PlatformCommand = PlatformCommand(ActionKey("display_" + entityName.toSnakeCase),
+    None, None)
+
+  def commandToAddItem(entityName: EntityName): PlatformCommand = PlatformCommand(ActionKey("add_" + entityName.toSnakeCase),
+    Some(R.drawable.ic_menu_add),
+    Some(getStringKey("add_" + entityName.toSnakeCase)))
+
+  def commandToEditItem(entityName: EntityName): PlatformCommand = PlatformCommand(ActionKey("edit_" + entityName.toSnakeCase),
+    Some(R.drawable.ic_menu_edit), Some(getStringKey("edit_" + entityName.toSnakeCase)))
+
+  def commandToDeleteItem(entityName: EntityName): PlatformCommand = {
+    PlatformCommand(ActionKey("delete_" + entityName.toSnakeCase),
+      Some(R.drawable.ic_menu_delete), Some(deleteItemStringKey))
+  }
 
   lazy val undoDeleteStringKey = getStringKey("undo_delete")
   /** The command to undo the last delete. */
@@ -59,7 +81,7 @@ class AndroidPlatformDriver(rClass: Class[_], val activityClass: Class[_ <: Crud
     new ViewSpecifier(toViewRef(entityName, fieldPrefix, fieldName))
 
   def toViewRef(entityName: EntityName, fieldPrefix: String, fieldName: FieldName): ViewRef = {
-    val viewKey = AndroidPlatformDriver.fieldPrefix(entityName) + fieldPrefix + fieldName
+    val viewKey = entityName.toSnakeCase + "_" + fieldPrefix + fieldName
     ViewRef(viewKey, rClass, "id")
   }
 
@@ -70,14 +92,13 @@ class AndroidPlatformDriver(rClass: Class[_], val activityClass: Class[_ <: Crud
   private lazy val classInApplicationPackage: Class[_] = rClass
   lazy val rStringClasses: Seq[Class[_]] = detectRStringClasses(classInApplicationPackage)
 
-  def getStringKey(stringName: String): SKey =
-    findStringKey(stringName).getOrElse {
+  def tryStringKey(stringName: String): Try[SKey] = Try {
+    findResourceIdWithName(rStringClasses, stringName).getOrElse {
       rStringClasses.foreach(rStringClass => logError("Contents of " + rStringClass + " are " + rStringClass.getFields.mkString(", ")))
       throw new IllegalStateException("R.string." + stringName + " not found.  You may want to run the CrudUIGenerator.generateLayouts." +
         rStringClasses.mkString("(string classes: ", ",", ")"))
     }
-
-  def findStringKey(stringName: String): Option[SKey] = findResourceIdWithName(rStringClasses, stringName)
+  }
 }
 
 object AndroidPlatformDriver {

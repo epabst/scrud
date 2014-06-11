@@ -12,10 +12,8 @@ import com.github.scrud._
 import org.mockito.Mockito._
 import org.mockito.Matchers._
 import com.github.scrud.state.State
-import com.github.scrud.android.persistence.CursorField.PersistedId
-import com.github.scrud.persistence.EntityPersistenceForTesting
+import com.github.scrud.persistence.{PersistenceFactoryForTesting, EntityPersistenceForTesting}
 import com.github.scrud.platform.TestingPlatformDriver
-import com.github.triangle.{PortableField, BaseField}
 import com.github.scrud.EntityName
 import scala.Some
 import org.mockito.stubbing.Answer
@@ -55,7 +53,7 @@ class CrudBackupAgentSpec extends MustMatchers with CrudMockitoSugar {
     val state1 = mock[ParcelFileDescriptor]
     val state1b = mock[ParcelFileDescriptor]
 
-    val entityType = new EntityTypeForTesting
+    val entityType = new EntityTypeForTesting()
     val persistence = new EntityPersistenceForTesting(entityType)
     persistence.save(Some(100L), mutable.Map("name" -> Some("Joe"), "age" -> Some(30)))
     persistence.save(Some(101L), mutable.Map("name" -> Some("Mary"), "age" -> Some(28)))
@@ -63,7 +61,7 @@ class CrudBackupAgentSpec extends MustMatchers with CrudMockitoSugar {
     val persistence2 = new EntityPersistenceForTesting(entityType2)
     persistence2.save(Some(101L), mutable.Map("city" -> Some("Los Angeles"), "state" -> Some("CA")))
     persistence2.save(Some(104L), mutable.Map("city" -> Some("Chicago"), "state" -> Some("IL")))
-    val entityTypeB = new EntityTypeForTesting
+    val entityTypeB = new EntityTypeForTesting()
     val persistenceB = new EntityPersistenceForTesting(entityTypeB)
     val entityType2B = new EntityTypeForTesting(EntityName("OtherMap"))
     val persistence2B = new EntityPersistenceForTesting(entityType2B)
@@ -77,7 +75,7 @@ class CrudBackupAgentSpec extends MustMatchers with CrudMockitoSugar {
     when(backupTarget.writeEntity(eql("OtherMap#104"), any())).thenAnswer(saveRestoreItem(restoreItems))
     val applicationB = new CrudApplicationForTesting(entityTypeB -> new PersistenceFactoryForTesting(persistenceB),
           entityType2B -> new PersistenceFactoryForTesting(persistence2B))
-    val backupAgent = new CrudBackupAgent(application) {
+    val backupAgent = new CrudBackupAgent {
       override lazy val applicationState = new State
     }
     backupAgent.onCreate()
@@ -87,7 +85,7 @@ class CrudBackupAgentSpec extends MustMatchers with CrudMockitoSugar {
     persistenceB.findAll(UriPath.EMPTY).size must be (0)
     persistence2B.findAll(UriPath.EMPTY).size must be (0)
 
-    val backupAgentB = new CrudBackupAgent(applicationB) {
+    val backupAgentB = new CrudBackupAgent {
       override lazy val applicationState = new State
     }
     backupAgentB.onCreate()
@@ -121,12 +119,10 @@ class CrudBackupAgentSpec extends MustMatchers with CrudMockitoSugar {
       val valueFields = List[BaseField](EntityField[EntityTypeForTesting](EntityForTesting), PortableField.default[Int](100))
     }
     val state0 = null
-    when(application.entityNameLayoutPrefixFor(entityType.entityName)).thenReturn("test")
-    when(application.entityNameLayoutPrefixFor(generatedType.entityName)).thenReturn("generated")
     when(application.allEntityTypes).thenReturn(List[EntityType](entityType, generatedType))
     when(application.persistenceFactory(any[EntityName]())).thenReturn(new PersistenceFactoryForTesting(persistence))
     //shouldn't call any methods on generatedPersistence
-    val backupAgent = new CrudBackupAgent(application) {
+    val backupAgent = new CrudBackupAgent {
       override lazy val applicationState = new State
     }
     backupAgent.onCreate()

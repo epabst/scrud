@@ -37,10 +37,9 @@ class SQLitePersistenceFactorySpec extends MustMatchers with CrudMockitoSugar wi
     warn("NOT running on Real Android.")
     false
   } catch {
-    case _: Throwable => {
+    case _: Throwable =>
       info("Running on Real Android.")
       true
-    }
   }
 
   val androidPlatformDriver = new AndroidPlatformDriver(classOf[R])
@@ -51,18 +50,12 @@ class SQLitePersistenceFactorySpec extends MustMatchers with CrudMockitoSugar wi
     val age = field("age", NaturalIntQT, Seq(Persistence(1), Default(21)))
   }
 
-  val entityTypeMap = EntityTypeMapForTesting(Seq(TestEntityType -> SQLitePersistenceFactory))
-
-  object TestApplication extends CrudApplication(androidPlatformDriver, entityTypeMap) {
-    val name = "Test Application"
-  }
-  val application = TestApplication
+  val entityTypeMap = new EntityTypeMapForTesting(TestEntityType -> SQLitePersistenceFactory)
+  val androidApplication = new CrudAndroidApplication(new EntityNavigationForTesting(entityTypeMap))
 
   @Test
   def shouldUseCorrectColumnNamesForFindAll() {
-    val commandContext = mock[AndroidCommandContext]
-    stub(commandContext.application).toReturn(application)
-    stub(commandContext.entityTypeMap).toReturn(entityTypeMap)
+    new AndroidCommandContext(null, new CrudAndroidApplication(new EntityNavigationForTesting(entityTypeMap)))
 
     val entityTypePersistedInfo = EntityTypePersistedInfo(TestEntityType)
     entityTypePersistedInfo.queryFieldNames must contain(BaseColumns._ID)
@@ -72,10 +65,10 @@ class SQLitePersistenceFactorySpec extends MustMatchers with CrudMockitoSugar wi
   @Test
   def shouldCloseCursorsWhenClosing() {
     val persistenceFactory = SQLitePersistenceFactory
-    val entityTypeMap = EntityTypeMapForTesting(Seq(TestEntityType -> persistenceFactory))
+    val entityTypeMap = new EntityTypeMapForTesting(TestEntityType -> persistenceFactory)
     val commandContext = mock[AndroidCommandContext]
     stub(commandContext.stateHolder).toReturn(new ActivityStateHolderForTesting)
-    stub(commandContext.application).toReturn(application)
+    stub(commandContext.androidApplication).toReturn(androidApplication)
     stub(commandContext.entityTypeMap).toReturn(entityTypeMap)
 
     val cursors = mutable.Buffer[Cursor]()
@@ -104,12 +97,12 @@ class SQLitePersistenceFactorySpec extends MustMatchers with CrudMockitoSugar wi
 
   @Test
   def shouldRefreshCursorWhenDeletingAndSaving() {
-    val activity = new CrudActivityForTesting(application) {
+    val activity = new CrudActivityForTesting {
       override val getAdapterView: ListView = new ListView(this)
     }
     val observer = mock[DataSetObserver]
 
-    val commandContext = new AndroidCommandContextForTesting(application, activity)
+    val commandContext = new AndroidCommandContextForTesting(androidApplication, activity)
     activity.setListAdapterUsingUri(commandContext, activity)
     val listAdapter = activity.getAdapterView.getAdapter
     listAdapter.getCount must be (0)

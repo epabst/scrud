@@ -15,6 +15,8 @@ private[scrud] trait SharedContextHolder extends DelegateLogging {
 
   def entityTypeMap: EntityTypeMap = sharedContext.entityTypeMap
 
+  def applicationName: ApplicationName = sharedContext.applicationName
+
   def platformDriver: PlatformDriver = sharedContext.platformDriver
 
   /** Instantiates a data buffer which can be saved by EntityPersistence.

@@ -3,7 +3,7 @@ package com.github.scrud
 import com.github.scrud.platform.TestingPlatformDriver
 import com.github.scrud.types.{DateWithoutTimeQT, TitleQT}
 import com.github.scrud.platform.representation._
-import com.github.scrud.copy.types.MapStorage
+import com.github.scrud.copy.types.{Validation, MapStorage}
 
 /**
  * An EntityType for use when testing.
@@ -12,7 +12,7 @@ import com.github.scrud.copy.types.MapStorage
  *         Time: 3:52 PM
  */
 class EntityTypeForTesting(entityName: EntityName = EntityName("MyEntity")) extends EntityType(entityName, TestingPlatformDriver) {
-  val Name = field("name", TitleQT, Seq(MapStorage, Persistence(1), EditUI, SelectUI, Query))
+  val Name = field("name", TitleQT, Seq(MapStorage, Persistence(1), EditUI, SelectUI, Query, Validation.requiredString, LoadingIndicator("...")))
   val BirthDate = field("birthDate", DateWithoutTimeQT, Seq(MapStorage, Persistence(1), EditUI, SelectUI, Query))
 }
 

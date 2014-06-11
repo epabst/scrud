@@ -6,14 +6,13 @@ import java.io.{ObjectInputStream, ByteArrayInputStream, ObjectOutputStream, Byt
 import scala.collection.JavaConversions._
 import java.util.{Map => JMap}
 import com.github.scrud.platform.PlatformTypes._
-import com.github.scrud.{EntityType, CrudApplication}
-import com.github.scrud.util.{Logging, Common}
+import com.github.scrud.EntityType
+import com.github.scrud.util.{ExternalLogging, DelegateLogging}
 import com.github.scrud.state.State
 import scala.Some
 import com.github.scrud.android.AndroidCommandContext
 import com.github.scrud.android.state.ActivityStateHolder
 import com.github.scrud.android.CrudAndroidApplication
-import scala.util.Try
 import com.github.scrud.copy.types.MapStorage
 import com.github.scrud.copy.CopyContext
 
@@ -22,14 +21,18 @@ import com.github.scrud.copy.CopyContext
   * @author Eric Pabst (epabst@gmail.com)
   */
 
-class CrudBackupAgent(application: CrudApplication) extends BackupAgent with ActivityStateHolder with Logging {
-  val commandContext = new AndroidCommandContext(this, application)
-  val commandContextWithBackupApplication = commandContext.copy(application = DeletedEntityIdApplication)
+class CrudBackupAgent extends BackupAgent with ActivityStateHolder with DelegateLogging {
+  lazy val androidApplication = getApplicationContext.asInstanceOf[CrudAndroidApplication]
 
-  protected lazy val logTag = Try(application.logTag).getOrElse(Common.logTag)
+  val commandContext = new AndroidCommandContext(this, androidApplication)
+  val commandContextWithBackupApplication: AndroidCommandContext = commandContext.copy(entityTypeMap = androidApplication.deletedEntityTypeMap)
+
+  override protected def loggingDelegate: ExternalLogging = androidApplication.applicationName
 
   lazy val activityState: State = new State
-  lazy val applicationState: State = getApplicationContext.asInstanceOf[CrudAndroidApplication].applicationState
+  lazy val applicationState: State = {
+    androidApplication.applicationState
+  }
 
   final def onBackup(oldState: ParcelFileDescriptor, data: BackupDataOutput, newState: ParcelFileDescriptor) {
     commandContext.withExceptionReporting {
@@ -50,9 +53,9 @@ class CrudBackupAgent(application: CrudApplication) extends BackupAgent with Act
   }
 
   def onBackup(oldState: ParcelFileDescriptor, data: BackupTarget, newState: ParcelFileDescriptor) {
-    info("Backing up " + application)
+    info("Backing up " + androidApplication.applicationName)
     writeEntityRemovals(data)
-    application.entityTypeMap.allEntityTypes.filter(application.entityTypeMap.isSavable(_)).foreach { entityType =>
+    androidApplication.entityTypeMap.allEntityTypes.filter(androidApplication.entityTypeMap.isSavable(_)).foreach { entityType =>
       onBackup(entityType, data, commandContext)
     }
   }
@@ -65,9 +68,9 @@ class CrudBackupAgent(application: CrudApplication) extends BackupAgent with Act
   }
 
   private def writeEntityRemovals(data: BackupTarget) {
-    import DeletedEntityIdApplication.deletedEntityIdEntityType
-    val persistence = commandContextWithBackupApplication.persistenceFor(deletedEntityIdEntityType.entityName)
-    val uri = deletedEntityIdEntityType.entityName.toUri
+    val deletedEntityIdEntityType = androidApplication.deletedEntityTypeMap.deletedEntityIdEntityType
+    val persistence = commandContextWithBackupApplication.persistenceFor(deletedEntityIdEntityType)
+    val uri = deletedEntityIdEntityType.toUri
     val copyContext = new CopyContext(uri, commandContextWithBackupApplication)
     val nameSourceField = deletedEntityIdEntityType.entityNameField.toAdaptableField.sourceFieldOrFail(persistence.sourceType)
     val idSourceField = deletedEntityIdEntityType.entityIdField.toAdaptableField.sourceFieldOrFail(persistence.sourceType)
@@ -108,9 +111,9 @@ class CrudBackupAgent(application: CrudApplication) extends BackupAgent with Act
   }
 
   def onRestore(data: Stream[RestoreItem], appVersionCode: Int, newState: ParcelFileDescriptor) {
-    info("Restoring backup of " + application)
-    val commandContext = new AndroidCommandContext(this, application)
-    val entityTypes = application.entityTypeMap.allEntityTypes
+    info("Restoring backup of " + androidApplication.applicationName)
+    val commandContext = new AndroidCommandContext(this, androidApplication)
+    val entityTypes = androidApplication.entityTypeMap.allEntityTypes
     data.foreach { restoreItem =>
       val nameOfEntity = restoreItem.key.substring(0, restoreItem.key.lastIndexOf("#"))
       entityTypes.find(_.entityName.name == nameOfEntity).foreach {

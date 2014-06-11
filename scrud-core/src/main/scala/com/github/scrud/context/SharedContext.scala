@@ -1,10 +1,12 @@
 package com.github.scrud.context
 
-import com.github.scrud.{EntityType, EntityName}
-import com.github.scrud.state.{StateHolder, State}
-import com.github.scrud.util.{DelegateLogging, ListenerHolder}
+import com.github.scrud.{UriPath, EntityType, EntityName}
+import com.github.scrud.state.{ApplicationConcurrentMapVal, StateHolder, State}
+import com.github.scrud.util.{UrgentFutureExecutor, DelegateLogging, ListenerHolder}
 import com.github.scrud.persistence.{PersistenceConnection, EntityTypeMap, DataListener}
 import com.github.scrud.platform.PlatformDriver
+import com.github.scrud.copy.{SourceType, TargetType, AdaptedValueSeq}
+import scala.concurrent.Future
 
 /**
  * The context that is shared among all [[com.github.scrud.context.CommandContext]]s
@@ -18,6 +20,11 @@ import com.github.scrud.platform.PlatformDriver
  *         Time: 3:25 PM
  */
 trait SharedContext extends StateHolder with DelegateLogging {
+  private lazy val executor = new UrgentFutureExecutor()
+
+  private[scrud] object FuturePortableValueCache
+    extends ApplicationConcurrentMapVal[(EntityType, UriPath, CommandContext),Future[Option[AdaptedValueSeq]]]
+
   def entityTypeMap: EntityTypeMap
 
   def applicationName: ApplicationName = entityTypeMap.applicationName
@@ -26,7 +33,10 @@ trait SharedContext extends StateHolder with DelegateLogging {
 
   val applicationState: State = new State
 
-  lazy val asStubCommandContext: StubCommandContext = new StubCommandContext(this)
+  @deprecated("use makeTemporaryStubCommandContext()", since = "2014-06-07")
+  lazy val asStubCommandContext: StubCommandContext = makeTemporaryStubCommandContext()
+
+  def makeTemporaryStubCommandContext(): StubCommandContext = new StubCommandContext(this)
 
   protected def loggingDelegate = applicationName
 
@@ -42,7 +52,47 @@ trait SharedContext extends StateHolder with DelegateLogging {
     finally persistenceConnection.close()
   }
 
-  def openPersistence(): PersistenceConnection = {
-    new PersistenceConnection(entityTypeMap, this)
+  @deprecated("use CommandContext.persistenceConnection", since = "2014-06-07")
+  def openPersistence(): PersistenceConnection = makeTemporaryStubCommandContext().persistenceConnection
+
+  private def cachedFuturePortableValueOptOrCalculate(entityType: EntityType, uriPathWithId: UriPath, commandContext: CommandContext)(calculate: => Option[AdaptedValueSeq]): Future[Option[AdaptedValueSeq]] = {
+    val cache = FuturePortableValueCache.get(commandContext.sharedContext)
+    val key = (entityType, uriPathWithId, commandContext)
+    cache.get(key).getOrElse {
+      val futurePortableValueOpt = executor.urgentFuture {
+        commandContext.withExceptionReportingHavingDefaultReturnValue[Option[AdaptedValueSeq]](None) {
+          calculate
+        }
+      }
+      cache.putIfAbsent(key, futurePortableValueOpt).getOrElse(futurePortableValueOpt)
+    }
+  }
+  def futurePortableValueOpt(entityType: EntityType, sourceUriWithId: UriPath, targetType: TargetType, commandContext: CommandContext): Future[Option[AdaptedValueSeq]] = {
+    cachedFuturePortableValueOptOrCalculate(entityType, sourceUriWithId, commandContext) {
+      calculatePortableValueOpt(entityType, sourceUriWithId, targetType, commandContext)
+    }
+  }
+
+  def futurePortableValueOpt(entityType: EntityType, sourceType: SourceType, source: AnyRef,
+                             sourceUriWithId: UriPath, targetType: TargetType, commandContext: CommandContext): Future[Option[AdaptedValueSeq]] = {
+    cachedFuturePortableValueOptOrCalculate(entityType, sourceUriWithId, commandContext) {
+      Some(calculatePortableValue(entityType, sourceType, source, sourceUriWithId, targetType, commandContext))
+    }
+  }
+
+  protected def calculatePortableValueOpt(entityType: EntityType, sourceUriWithId: UriPath,
+                                          targetType: TargetType, commandContext: CommandContext): Option[AdaptedValueSeq] = {
+    val persistence = commandContext.persistenceFor(entityType.entityName)
+    val sourceOpt = persistence.find(sourceUriWithId)
+    sourceOpt.map { source =>
+      calculatePortableValue(entityType, persistence.sourceType, source, sourceUriWithId, targetType, commandContext)
+    }
+  }
+
+  protected def calculatePortableValue(entityType: EntityType, sourceType: SourceType, source: AnyRef,
+                                       sourceUriWithId: UriPath, targetType: TargetType, commandContext: CommandContext): AdaptedValueSeq = {
+    debug("Copying entityType=" + entityType + " from sourceUri=" + sourceUriWithId +
+      " from sourceType=" + sourceType + " to targetType=" + targetType)
+    entityType.copy(sourceType, source, sourceUriWithId, targetType, commandContext)
   }
 }
