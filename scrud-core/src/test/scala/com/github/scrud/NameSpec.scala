@@ -65,6 +65,10 @@ class NameSpec extends FunSpec with MustMatchers {
       EntityName("fast_jumping_monkey").toSnakeCase must be ("fast_jumping_monkey")
     }
 
+    it("must preserve something that is already correct with numbers") {
+      EntityName("camera_icon_256").toSnakeCase must be ("camera_icon_256")
+    }
+
     it("must remove any whitespace that is present and format correctly") {
       EntityName("Fast   jumping \tMonkey").toSnakeCase must be ("fast_jumping_monkey")
     }

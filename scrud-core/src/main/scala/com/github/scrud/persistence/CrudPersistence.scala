@@ -1,26 +1,24 @@
 package com.github.scrud.persistence
 
 import com.github.scrud.platform.PlatformTypes._
-import com.github.scrud.util.Logging
-import com.github.scrud.util.{Common, ListenerSet}
-import com.github.scrud.{UriPath, EntityType}
+import com.github.scrud.util.{ExternalLogging, DelegateLogging, ListenerSet}
+import com.github.scrud.{FieldDeclaration, UriPath, EntityType}
 import com.github.annotations.quality.MicrotestCompatible
-import com.github.scrud.copy.{TargetType, SourceType, InstantiatingTargetType}
+import com.github.scrud.copy.{CopyContext, TargetType, SourceType, InstantiatingTargetType}
 import com.github.scrud.platform.representation.{EntityModelForPlatform, Persistence}
 import com.github.scrud.context.{CommandContext, SharedContext}
-import scala.util.Try
 import com.github.scrud.model.IdPk
 
 /** An EntityPersistence for a CrudType.
   * @author Eric Pabst (epabst@gmail.com)
   */
 @MicrotestCompatible(use = "new CrudPersistenceUsingThin")
-trait CrudPersistence extends EntityPersistence with ListenerSet[DataListener] with Logging {
-  override protected lazy val logTag: String = Try(entityType.logTag).getOrElse(Common.logTag)
-
+trait CrudPersistence extends EntityPersistence with ListenerSet[DataListener] with DelegateLogging {
   def entityType: EntityType
 
   def sharedContext: SharedContext
+
+  override protected def loggingDelegate: ExternalLogging = sharedContext.applicationName
 
   def sourceType: SourceType = Persistence.Latest
 
@@ -54,6 +52,16 @@ trait CrudPersistence extends EntityPersistence with ListenerSet[DataListener] w
       val target = targetType.makeTarget(commandContext)
       val sourceUri = UriPath.specify(uri, entityType.findPersistedId(source, uri))
       adaptedFieldSeq.copyAndUpdate(source, sourceUri, target, commandContext)
+    }
+  }
+
+  /** Find the non-empty field values for all entities matching a URI. */
+  def findAll[V](uri: UriPath, field: FieldDeclaration[V],
+                 commandContext: CommandContext): Seq[V] = {
+    val sourceField = field.toAdaptableField.sourceFieldOrFail(sourceType)
+    val copyContext = new CopyContext(uri, commandContext)
+    findAll(uri).flatMap { entity =>
+      sourceField.findValue(entity, copyContext)
     }
   }
 

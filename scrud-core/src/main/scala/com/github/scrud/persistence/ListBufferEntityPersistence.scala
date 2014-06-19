@@ -35,7 +35,7 @@ class ListBufferEntityPersistence[E <: AnyRef](entityName: EntityName, newWritab
 
   def newWritable() = newWritableFunction
 
-  protected[persistence] def doSave(idOpt: Option[ID], entity: AnyRef) = {
+  protected def doSave(idOpt: Option[ID], entity: AnyRef) = {
     val newId = idOpt.getOrElse {
       nextId.incrementAndGet()
     }

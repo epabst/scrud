@@ -14,7 +14,7 @@ import com.github.scrud.persistence.PersistenceConnection
  *         Date: 12/10/13
  *         Time: 3:25 PM
  */
-trait CommandContext extends CommandContextHolder {
+trait CommandContext extends CommandContextHolder with PersistenceConnectionDelegator {
   protected def commandContext: CommandContext = this
 
   override def persistenceConnection: PersistenceConnection = persistenceConnectionVal

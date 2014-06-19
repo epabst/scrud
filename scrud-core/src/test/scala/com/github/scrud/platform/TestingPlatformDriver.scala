@@ -9,7 +9,7 @@ import com.github.scrud.action.PlatformCommand
 import com.github.scrud.util.Name
 import com.netaporter.uri.Uri
 import scala.util.{Try, Success}
-import com.github.scrud.platform.PlatformTypes.SKey
+import com.github.scrud.platform.PlatformTypes.{ImgKey, SKey}
 
 /**
  * A simple PlatformDriver for testing.
@@ -18,9 +18,11 @@ import com.github.scrud.platform.PlatformTypes.SKey
  *         Time: 1:27 PM
  */
 class TestingPlatformDriver extends PlatformDriver {
-  override def tryResource(resourceName: Name) = Success(Uri.parse("image:" + resourceName.toCamelCase))
+  override def tryBinaryResource(resourceName: Name) = Success(Uri.parse("image:" + resourceName.toCamelCase))
 
   override def tryStringKey(stringName: String): Try[SKey] = Success(stringName.hashCode)
+
+  override def tryImageKey(imageName: Name): Try[ImgKey] = Success(imageName.hashCode())
 
   val localDatabasePersistenceFactory = ListBufferPersistenceFactoryForTesting
 

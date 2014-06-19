@@ -1,6 +1,7 @@
 package com.github.scrud.android.persistence
 
 import com.github.scrud.android.CrudAndroidApplication
+import com.github.scrud.state.State
 
 /**
  * This is a CommandContextProvider that assumes that the application it's running in is a CrudAndroidApplication.
@@ -11,6 +12,6 @@ import com.github.scrud.android.CrudAndroidApplication
 class LocalCrudContentProvider extends CrudContentProvider {
   override lazy val androidApplication = getContext.getApplicationContext.asInstanceOf[CrudAndroidApplication]
 
-  def applicationState = androidApplication.applicationState
+  override def applicationState: State = commandContext.applicationState
 }
 

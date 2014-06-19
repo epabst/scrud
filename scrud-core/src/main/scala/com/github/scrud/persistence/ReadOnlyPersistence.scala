@@ -12,7 +12,7 @@ import com.github.scrud.UriPath
 trait ReadOnlyPersistence extends EntityPersistence {
   def newWritable() = throw new UnsupportedOperationException("write not supported")
 
-  protected[persistence] def doSave(id: Option[ID], data: AnyRef): ID = throw new UnsupportedOperationException("write not supported")
+  protected def doSave(id: Option[ID], data: AnyRef): ID = throw new UnsupportedOperationException("write not supported")
 
   def doDelete(uri: UriPath): Int = { throw new UnsupportedOperationException("delete not supported") }
 

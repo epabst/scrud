@@ -11,8 +11,12 @@ import com.github.scrud.persistence.{EntityTypeMapForTesting, PersistenceFactory
  */
 class CommandContextForTesting(sharedContext: SharedContext, entityNavigation: EntityNavigation)
     extends SimpleCommandContext(sharedContext, entityNavigation) {
+  def this(sharedContext: SharedContext) {
+    this(sharedContext, new EntityNavigation(sharedContext.entityTypeMap))
+  }
+
   def this(entityTypeMap: EntityTypeMap) {
-    this(new SimpleSharedContext(entityTypeMap), new EntityNavigation(entityTypeMap))
+    this(new SimpleSharedContext(entityTypeMap))
   }
 
   def this(entityType: EntityType) {

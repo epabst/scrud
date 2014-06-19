@@ -1,7 +1,5 @@
 package com.github.scrud.android
 
-import com.github.scrud.util.ReadyFuture
-import com.github.scrud.CrudApplication
 import android.content.Context
 import persistence.CrudContentProviderForTesting
 import state.ActivityStateHolder
@@ -9,6 +7,7 @@ import com.xtremelabs.robolectric.shadows.ShadowContentResolver
 import view.AndroidConversions._
 import collection.mutable
 import com.github.scrud.platform.PlatformTypes
+import scala.concurrent.Future
 
 /**
  * An [[com.github.scrud.android.AndroidCommandContext]] for use when testing.
@@ -17,15 +16,15 @@ import com.github.scrud.platform.PlatformTypes
  * Time: 10:34 PM
  */
 class AndroidCommandContextForTesting(application: CrudAndroidApplication,
-                                   activity: Context with ActivityStateHolder = new ActivityStateHolderForTesting)
+                                      activity: Context with ActivityStateHolder = new ActivityStateHolderForTesting)
     extends AndroidCommandContext(activity, application) {
 
   val displayedMessageKeys: mutable.Buffer[PlatformTypes.SKey] = mutable.Buffer()
 
   val contentProvider = new CrudContentProviderForTesting(application)
-  ShadowContentResolver.registerProvider(authorityFor(application.packageName), contentProvider)
+  ShadowContentResolver.registerProvider(authorityFor(application.applicationName), contentProvider)
 
-  override def future[T](body: => T) = new ReadyFuture[T](body)
+  override def future[T](body: => T) = Future.successful(body)
 
   override def reportError(throwable: Throwable) {
     throw throwable

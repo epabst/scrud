@@ -65,7 +65,10 @@ object UriPath {
   def specify(uri: UriPath, entityName: EntityName, id: ID): UriPath =
     specify(uri, entityName.name, id.toString)
 
-  def specify(uri: UriPath, idOpt: Option[ID]): UriPath = idOpt.map(id => specify(uri, id.toString)).getOrElse(uri)
+  def specify(uri: UriPath, entityName: EntityName, idOpt: Option[ID]): UriPath =
+    idOpt.fold(specify(uri, entityName))(specify(uri, entityName, _))
+
+  def specify(uri: UriPath, idOpt: Option[ID]): UriPath = idOpt.fold(uri)(id => specify(uri, id.toString))
 
   def specifyLastEntityName(uri: UriPath, entityName: EntityName): UriPath =
     UriPath.specify(uri, entityName.name +: findId(uri, entityName).map(_.toString).toList:_*)

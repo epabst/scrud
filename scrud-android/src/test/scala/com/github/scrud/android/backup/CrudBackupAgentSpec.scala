@@ -1,9 +1,8 @@
 package com.github.scrud.android.backup
 
 import org.junit.runner.RunWith
-import com.github.scrud.android._
 import org.scalatest.matchers.MustMatchers
-import com.github.scrud.util.{CalculatedIterator, CrudMockitoSugar}
+import com.github.scrud.util.CrudMockitoSugar
 import org.junit.Test
 import com.github.scrud.android.backup.CrudBackupAgent._
 import _root_.android.os.ParcelFileDescriptor
@@ -12,33 +11,18 @@ import com.github.scrud._
 import org.mockito.Mockito._
 import org.mockito.Matchers._
 import com.github.scrud.state.State
-import com.github.scrud.persistence.{PersistenceFactoryForTesting, EntityPersistenceForTesting}
+import com.github.scrud.persistence.{EntityTypeMapForTesting, PersistenceFactoryForTesting, EntityPersistenceForTesting}
 import com.github.scrud.platform.TestingPlatformDriver
 import com.github.scrud.EntityName
 import scala.Some
 import org.mockito.stubbing.Answer
+import com.github.scrud.android.{CrudAndroidApplication, CustomRobolectricTestRunner}
 
 /** A test for [[com.github.scrud.android.backup.CrudBackupAgent]].
   * @author Eric Pabst (epabst@gmail.com)
   */
 @RunWith(classOf[CustomRobolectricTestRunner])
 class CrudBackupAgentSpec extends MustMatchers with CrudMockitoSugar {
-  @Test
-  def calculatedIteratorShouldWork() {
-    val values = List("a", "b", "c").toIterator
-    val iterator = new CalculatedIterator[String] {
-      def calculateNextValue() = if (values.hasNext) Some(values.next()) else None
-    }
-    iterator.next() must be ("a")
-    iterator.hasNext must be (true)
-    iterator.hasNext must be (true)
-    iterator.next() must be ("b")
-    iterator.hasNext must be (true)
-    iterator.next() must be ("c")
-    iterator.hasNext must be (false)
-    iterator.hasNext must be (false)
-  }
-
   @Test
   def shouldMarshallAndUnmarshall() {
     val map = Map[String,Any]("name" -> "George", "age" -> 35)
@@ -67,14 +51,16 @@ class CrudBackupAgentSpec extends MustMatchers with CrudMockitoSugar {
     val persistence2B = new EntityPersistenceForTesting(entityType2B)
     val state0 = null
     val restoreItems = mutable.ListBuffer[RestoreItem]()
-    val application = new CrudApplicationForTesting(entityType -> new PersistenceFactoryForTesting(persistence),
-      entityType2 -> new PersistenceFactoryForTesting(persistence2))
+    val application = new CrudAndroidApplication(new EntityNavigation(new EntityTypeMapForTesting(
+      entityType -> new PersistenceFactoryForTesting(persistence),
+      entityType2 -> new PersistenceFactoryForTesting(persistence2))))
     when(backupTarget.writeEntity(eql("MyMap#100"), any())).thenAnswer(saveRestoreItem(restoreItems))
     when(backupTarget.writeEntity(eql("MyMap#101"), any())).thenAnswer(saveRestoreItem(restoreItems))
     when(backupTarget.writeEntity(eql("OtherMap#101"), any())).thenAnswer(saveRestoreItem(restoreItems))
     when(backupTarget.writeEntity(eql("OtherMap#104"), any())).thenAnswer(saveRestoreItem(restoreItems))
-    val applicationB = new CrudApplicationForTesting(entityTypeB -> new PersistenceFactoryForTesting(persistenceB),
-          entityType2B -> new PersistenceFactoryForTesting(persistence2B))
+    val applicationB = new CrudAndroidApplication(new EntityNavigation(new EntityTypeMapForTesting(
+      entityTypeB -> new PersistenceFactoryForTesting(persistenceB),
+      entityType2B -> new PersistenceFactoryForTesting(persistence2B))))
     val backupAgent = new CrudBackupAgent {
       override lazy val applicationState = new State
     }
@@ -92,13 +78,11 @@ class CrudBackupAgentSpec extends MustMatchers with CrudMockitoSugar {
     backupAgentB.onRestore(restoreItems.toIterator, 1, state1b)
     backupAgentB.onDestroy()
 
-    val allB = persistenceB.findAll(UriPath.EMPTY)
-    allB.size must be (2)
-    allB.map(PersistedId.getRequired(_)) must be (List(100L, 101L))
+    val allB = persistenceB.findAll(UriPath.EMPTY, entityTypeB.id, )
+    allB must be (List(100L, 101L))
 
-    val all2B = persistence2B.findAll(UriPath.EMPTY)
-    all2B.size must be (2)
-    all2B.map(PersistedId.getRequired(_)) must be (List(101L, 104L))
+    val all2B = persistence2B.findAll(UriPath.EMPTY, entityType2B.id, )
+    all2B must be (List(101L, 104L))
   }
 
   def saveRestoreItem(restoreItems: mutable.ListBuffer[RestoreItem]): Answer[Unit] = answerWithInvocation { invocation =>

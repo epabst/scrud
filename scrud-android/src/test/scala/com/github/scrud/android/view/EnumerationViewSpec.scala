@@ -9,7 +9,7 @@ import java.util.Locale
 import android.content.Context
 import com.github.scrud.android.CustomRobolectricTestRunner
 
-/** A behavior specification for [[com.github.scrud.android.view.ViewField]].
+/** A behavior specification for [[com.github.scrud.android.view.EnumerationView]].
   * @author Eric Pabst (epabst@gmail.com)
   */
 

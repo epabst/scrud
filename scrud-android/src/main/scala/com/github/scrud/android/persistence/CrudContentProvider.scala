@@ -10,7 +10,6 @@ import com.github.scrud.android.view.AndroidConversions._
 import state.{ApplicationConcurrentMapVal, State}
 import scala.Some
 import persistence.CrudPersistence
-import com.github.scrud.android.action.AndroidCommandContextDelegator
 import com.github.scrud.platform.representation.Persistence
 
 /**
@@ -21,7 +20,7 @@ import com.github.scrud.platform.representation.Persistence
  *         Date: 3/18/13
  *         Time: 4:49 PM
  */
-abstract class CrudContentProvider extends ContentProvider with ActivityStateHolder with AndroidCommandContextDelegator {
+abstract class CrudContentProvider extends ContentProvider with ActivityStateHolder {
   // The reason this isn't derived from getContext.getApplicationContext is so that this ContentProvider
   // may be instantiated within a foreign application for efficiency.
   protected[scrud] def androidApplication: CrudAndroidApplication
@@ -35,9 +34,9 @@ abstract class CrudContentProvider extends ContentProvider with ActivityStateHol
     val uriPath = toUriPath(uri)
     uriPath.findId(uriPath.lastEntityNameOrFail) match {
       case Some(id) =>
-        ContentResolver.CURSOR_ITEM_BASE_TYPE + "/vnd." + authorityFor(applicationName) + "." + uriPath.lastEntityNameOrFail
+        ContentResolver.CURSOR_ITEM_BASE_TYPE + "/vnd." + authorityFor(commandContext.applicationName) + "." + uriPath.lastEntityNameOrFail
       case None =>
-        ContentResolver.CURSOR_DIR_BASE_TYPE + "/vnd." + authorityFor(applicationName) + "." + uriPath.lastEntityNameOrFail
+        ContentResolver.CURSOR_DIR_BASE_TYPE + "/vnd." + authorityFor(commandContext.applicationName) + "." + uriPath.lastEntityNameOrFail
     }
   }
 
@@ -45,7 +44,7 @@ abstract class CrudContentProvider extends ContentProvider with ActivityStateHol
   protected def toNotificationUri(uri: Uri): Uri = uri
 
   private def persistenceFor(uriPath: UriPath): CrudPersistence = {
-    val entityName = uriPath.lastEntityNameOrFail
+    val entityName = UriPath.lastEntityNameOrFail(uriPath)
     CrudPersistenceByEntityName.get(this).getOrElseUpdate(entityName, commandContext.persistenceFor(entityName))
   }
 
@@ -77,7 +76,7 @@ abstract class CrudContentProvider extends ContentProvider with ActivityStateHol
     val writable = persistence.toWritable(Persistence.Latest, values, uriPath, commandContext)
     commandContext.save(UriPath.lastEntityNameOrFail(uriPath), Persistence.Latest,
       persistence.entityType.idField.findFromContext(uriPath, commandContext), writable)
-    val fixedUri = toUri(uriPath, applicationName)
+    val fixedUri = toUri(uriPath, commandContext.applicationName)
     if (uri.toString != fixedUri.toString) sys.error(uri + " != " + fixedUri)
     contentResolver.notifyChange(toNotificationUri(fixedUri), null)
     1

@@ -50,7 +50,7 @@ case class EntityFieldInfo(field: BaseFieldDeclaration, rIdClasses: Seq[Class[_]
 
 case class ViewIdFieldInfo(id: String, displayName: String, field: BaseFieldDeclaration, targetField: TargetField[Nothing], entityTypeMap: EntityTypeMap) {
   private val defaultLayoutOpt: Option[NodeSeq] = targetField match {
-    case viewTargetField: ViewTargetField[_,_] => Some(viewTargetField.defaultLayout)
+    case viewTargetField: TypedViewTargetField[_,_] => Some(viewTargetField.defaultLayout)
     case _ => None
   }
 

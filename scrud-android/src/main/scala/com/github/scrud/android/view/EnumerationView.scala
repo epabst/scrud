@@ -3,13 +3,14 @@ package com.github.scrud.android.view
 import android.widget.{AdapterView, ArrayAdapter, BaseAdapter}
 import scala.collection.JavaConversions._
 import com.github.scrud.android.AndroidCommandContext
+import com.github.scrud.copy.CopyContext
 
 /**
  * A ViewStorageField for an [[scala.Enumeration]].
  * @author Eric Pabst (epabst@gmail.com)
  */
 case class EnumerationView[E <: Enumeration#Value](enum: Enumeration)
-  extends ViewStorageField[AdapterView[BaseAdapter],E](<Spinner android:drawSelectorOnTop = "true"/>) {
+  extends TypedViewStorageField[AdapterView[BaseAdapter],E](<Spinner android:drawSelectorOnTop = "true"/>) {
 
   private val valueArray: java.util.List[E] = enum.values.toSeq.map(_.asInstanceOf[E])
   private val itemViewResourceId = _root_.android.R.layout.simple_spinner_dropdown_item
@@ -20,7 +21,7 @@ case class EnumerationView[E <: Enumeration#Value](enum: Enumeration)
   }
 
   /** Updates the {{{target}}} subject using the {{{valueOpt}}} for this field and some context. */
-  override def updateFieldValue(adapterView: AdapterView[BaseAdapter], valueOpt: Option[E], context: AndroidCommandContext): AdapterView[BaseAdapter] = {
+  override def updateFieldValue(adapterView: AdapterView[BaseAdapter], valueOpt: Option[E], commandContext: AndroidCommandContext, context: CopyContext): AdapterView[BaseAdapter] = {
     //don't do it again if already done from a previous time
     if (adapterView.getAdapter == null) {
       val adapter = new ArrayAdapter[E](adapterView.getContext, itemViewResourceId, valueArray)

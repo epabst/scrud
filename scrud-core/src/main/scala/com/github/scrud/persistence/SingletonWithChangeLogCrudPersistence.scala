@@ -33,10 +33,13 @@ case class SingletonWithChangeLogCrudPersistence(manyPersistence: CrudPersistenc
   def newWritable() = manyPersistence.newWritable()
 
   // Intentionally save without reusing the ID so that existing instances are never modified since a change-log
-  protected[persistence] def doSave(id: Option[PlatformTypes.ID], writable: AnyRef) = {
+  protected def doSave(id: Option[PlatformTypes.ID], writable: AnyRef) = {
     val writableWithoutId = entityType.clearId(writable)
-    //todo why not just call save?  would the listeners be notified twice?  TEST THIS
-    manyPersistence.doSave(None, writableWithoutId)
+    manyPersistence.save(None, writableWithoutId)
+  }
+
+  override protected def notifyChanged() {
+    // Do nothing since manyPersistence.save will do it.  Doing it here would be redundant.
   }
 
   def doDelete(uri: UriPath): Int = {

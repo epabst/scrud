@@ -104,10 +104,3 @@ object StartActivityForResultOperation {
       val viewIdToRespondTo = view.getId
     }
 }
-
-/** The response to a [[com.github.scrud.android.action.StartActivityForResultOperation]].
-  * This is used by [[com.github.scrud.android.CrudActivity]]'s startActivityForResult.
-  */
-case class OperationResponse(viewIdRespondingTo: ViewKey, intent: Intent)
-
-object OperationResponse extends SourceType with RepresentationByType[Nothing]

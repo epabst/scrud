@@ -2,7 +2,7 @@ package com.github.scrud.android
 
 import com.github.scrud.{UriPath, EntityType}
 import android.database.sqlite.SQLiteDatabase
-import com.github.scrud.persistence.ThinPersistence
+import com.github.scrud.persistence.{DataListener, CrudPersistence}
 import collection.mutable
 import android.database.Cursor
 import persistence._
@@ -17,16 +17,20 @@ import com.github.scrud.android.backup.CrudBackupAgent
 import com.github.scrud.platform.representation.{Persistence, Query}
 import com.github.scrud.copy.SourceType
 import com.github.scrud.copy.types.MapStorage
-import com.github.scrud.android.action.AndroidCommandContextDelegator
+import com.github.scrud.util.{DelegatingListenerSet, MutableListenerSet, ExternalLogging, DelegateLogging}
+import com.github.scrud.context.SharedContext
 
 /**
- * A ThinPersistence for interacting with SQLite.
+ * A CrudPersistence for interacting with SQLite.
  * @author Eric Pabst (epabst@gmail.com)
  *         Date: 12/17/12
  *         Time: 11:45 AM
  */
-class SQLiteThinEntityPersistence(entityType: EntityType, database: SQLiteDatabase, protected val commandContext: AndroidCommandContext)
-    extends ThinPersistence with AndroidCommandContextDelegator {
+class SQLiteCrudPersistence(val entityType: EntityType, database: SQLiteDatabase,
+                            protected val commandContext: AndroidCommandContext,
+                            protected val listenerSet: MutableListenerSet[DataListener] = new MutableListenerSet[DataListener])
+    extends CrudPersistence with DelegatingListenerSet[DataListener] with DelegateLogging {
+
   private lazy val tableName = SQLitePersistenceFactory.toTableName(entityType.entityName)
   private val cursors = new mutable.SynchronizedQueue[Cursor]
   private lazy val entityTypePersistedInfo = EntityTypePersistedInfo(entityType)
@@ -34,9 +38,13 @@ class SQLiteThinEntityPersistence(entityType: EntityType, database: SQLiteDataba
   private def toOption(string: String): Option[String] = if (string == "") None else Some(string)
   private lazy val backupManager = new BackupManager(commandContext.context)
 
+  override def sharedContext: SharedContext = commandContext.sharedContext
+
+  override protected def loggingDelegate: ExternalLogging = commandContext.applicationName
+
   def findAll(criteria: SQLiteCriteria): CursorStream = {
     val query = criteria.selection.mkString(" AND ")
-    commandContext.info("Finding each " + entityType.entityName + "'s " + queryFieldNames.mkString(", ") + " where " + query + criteria.orderBy.fold("")(" order by " + _))
+    info("Finding each " + entityType.entityName + "'s " + queryFieldNames.mkString(", ") + " where " + query + criteria.orderBy.fold("")(" order by " + _))
     val cursor = database.query(tableName, queryFieldNames.toArray,
       toOption(query).getOrElse(null), criteria.selectionArgs.toArray,
       criteria.groupBy.getOrElse(null), criteria.having.getOrElse(null), criteria.orderBy.getOrElse(null))
@@ -53,12 +61,12 @@ class SQLiteThinEntityPersistence(entityType: EntityType, database: SQLiteDataba
 
   private def notifyDataChanged() {
     backupManager.dataChanged()
-    commandContext.debug("Notified BackupManager that data changed.")
+    debug("Notified BackupManager that data changed.")
   }
 
   def newWritable() = SQLitePersistenceFactory.newWritable()
 
-  def save(idOption: Option[ID], writable: AnyRef): ID = {
+  override protected def doSave(idOption: Option[ID], writable: AnyRef): ID = {
     val contentValues = writable.asInstanceOf[ContentValues]
     val id = idOption match {
       case None =>
@@ -85,14 +93,15 @@ class SQLiteThinEntityPersistence(entityType: EntityType, database: SQLiteDataba
     id
   }
 
-  override def delete(uri: UriPath): Int = {
-    val ids = findAll(uri, entityType.id).map { id =>
+  /** @return how many were deleted */
+  override def doDelete(uri: UriPath): Int = {
+    val ids = findAll(uri, entityType.id, commandContext).map { id =>
       database.delete(tableName, BaseColumns._ID + "=" + id, Nil.toArray)
       id
     }
     commandContext.future {
       ids.foreach { id =>
-        androidApplication.deletedEntityTypeMap.recordDeletion(entityType.entityName, id, commandContext)
+        commandContext.androidApplication.deletedEntityTypeMap.recordDeletion(entityType.entityName, id, commandContext)
       }
       notifyDataChanged()
     }

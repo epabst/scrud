@@ -8,7 +8,7 @@ import com.github.scrud.{EntityName, UriPath}
  * It contains a [[com.github.scrud.context.CommandContext]].
  * @author epabst@gmail.com on 5/8/14.
  */
-class CopyContext(val sourceUri: UriPath, val commandContext: CommandContext) extends CommandContextDelegator {
+class CopyContext(val sourceUri: UriPath, val commandContext: CommandContext) extends CommandContextDelegator with PersistenceConnectionDelegator {
   /** Find using this CommandContext's URI. */
-  def findAll(entityName: EntityName): Seq[AnyRef] = persistenceConnection.persistenceFor(entityName).findAll(sourceUri)
+  def findAll(entityName: EntityName): Seq[AnyRef] = persistenceFor(entityName).findAll(sourceUri)
 }

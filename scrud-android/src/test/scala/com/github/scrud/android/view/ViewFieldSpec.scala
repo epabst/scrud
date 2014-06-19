@@ -2,7 +2,6 @@ package com.github.scrud.android.view
 
 import org.junit.runner.RunWith
 import org.scalatest.matchers.MustMatchers
-import ViewField._
 import android.view.View
 import org.junit.Test
 import org.scalatest.mock.MockitoSugar
@@ -15,7 +14,6 @@ import com.github.scrud.android._
 import org.mockito.Matchers
 import org.mockito.stubbing.Answer
 import org.mockito.invocation.InvocationOnMock
-import scala.xml.NodeSeq
 import scala.reflect.Manifest
 import com.github.scrud.copy.CopyContext
 import scala.Some
@@ -25,10 +23,10 @@ import com.github.scrud.types.StringConvertibleQT
 import scala.util.{Success, Try}
 import com.github.scrud.platform.representation.{EditUI, SummaryUI}
 
-/** A behavior specification for [[com.github.scrud.android.view.ViewField]].
-  * @author Eric Pabst (epabst@gmail.com)
-  */
-
+/**
+ * A behavior specification for Android EditUI and DisplayUI fields.
+ * @author Eric Pabst (epabst@gmail.com)
+ */
 @RunWith(classOf[CustomRobolectricTestRunner])
 class ViewFieldSpec extends MustMatchers with MockitoSugar {
   class MyEntity(var string: String, var number: Int)
@@ -40,10 +38,10 @@ class ViewFieldSpec extends MustMatchers with MockitoSugar {
 
   val stringConvertibleType = new StringConvertibleQT[String] {
     /** Convert the value to a String for display. */
-    override def convertToString(value: String): String = value + " on display"
+    override def convertToDisplayString(value: String): String = value + " on display"
 
     /** Convert the value to a String for editing.  This may simply call convertToString(value). */
-    override def convertToEditString(value: String): String = value + " to edit"
+    override def convertToString(value: String): String = value + " to edit"
 
     /** Convert the value from a String (whether for editing or display. */
     override def convertFromString(string: String): Try[String] = Success("parsed " + string)
@@ -112,20 +110,6 @@ class ViewFieldSpec extends MustMatchers with MockitoSugar {
 
     view.setText(" ")
     viewField.findSourceField(EditUI).get.findValue(view, new CopyContext(UriPath.EMPTY, null)) must be (None)
-  }
-
-  @Test
-  def defaultLayoutEditXmlMustBeEliminatedByDisplayLayout() {
-    val viewField = textView
-    viewField.suppressEdit.defaultLayout.editXml must be (NodeSeq.Empty)
-  }
-
-  @Test
-  def defaultLayoutMustBeAbleToBeOverridden() {
-    val viewField = textView
-    val newLayout = FieldLayout.textLayout("numberDecimal")
-    val adjustedViewField = viewField.withDefaultLayout(newLayout)
-    adjustedViewField.defaultLayout.editXml must be (newLayout.editXml)
   }
 
   @Test

@@ -4,6 +4,7 @@ import android.widget.TextView
 import scala.xml.NodeSeq
 import com.github.scrud.types.StringConvertibleQT
 import com.github.scrud.android.AndroidCommandContext
+import com.github.scrud.copy.CopyContext
 
 /**
  * ViewStorageField for an Android TextView.
@@ -11,9 +12,9 @@ import com.github.scrud.android.AndroidCommandContext
  * @author Eric Pabst (epabst@gmail.com)
  */
 class TextViewField[V](stringConvertibleType: StringConvertibleQT[V], defaultLayout: NodeSeq)
-    extends ViewTargetField[TextView,V](defaultLayout) {
+    extends TypedViewTargetField[TextView,V](defaultLayout) {
   /** Updates the {{{target}}} subject using the {{{valueOpt}}} for this field and some context. */
-  def updateFieldValue(textView: TextView, valueOpt: Option[V], context: AndroidCommandContext) = {
+  def updateFieldValue(textView: TextView, valueOpt: Option[V], commandContext: AndroidCommandContext, context: CopyContext) = {
     val charSequence = valueOpt.fold("")(stringConvertibleType.convertToString(_))
     textView.setText(charSequence)
     textView

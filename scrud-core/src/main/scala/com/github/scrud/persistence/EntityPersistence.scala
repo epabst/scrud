@@ -32,11 +32,15 @@ trait EntityPersistence extends ThinPersistence with ListenerSet[DataListener] {
   /** Save a created or updated entity. */
   final def save(idOption: Option[ID], writable: AnyRef): ID = {
     val id = doSave(idOption, writable)
-    listeners.foreach(_.onChanged())
+    notifyChanged()
     id
   }
 
-  protected[persistence] def doSave(id: Option[ID], writable: AnyRef): ID
+  protected def notifyChanged() {
+    listeners.foreach(_.onChanged())
+  }
+
+  protected def doSave(id: Option[ID], writable: AnyRef): ID
 
   /** Delete a set of entities by uri.
     * This should NOT delete downstream entities because that would break the existing simplistic "undo" functionality.

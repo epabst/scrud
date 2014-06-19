@@ -6,6 +6,7 @@ import java.util.concurrent.atomic.AtomicBoolean
 import com.github.scrud.state.StateVar
 import com.github.scrud.action.PlatformCommand
 import com.github.scrud.android.state.ActivityWithState
+import android.content.Context
 
 /** An Activity that has an options menu.
   * This is intended to handle both Android 2 and 3.
@@ -14,7 +15,7 @@ import com.github.scrud.android.state.ActivityWithState
   * @author Eric Pabst (epabst@gmail.com)
   */
 trait OptionsMenuActivity extends ActivityWithState with AndroidNotification {
-  def context = this
+  override def context: Context = this
 
   /** The Commands to be used if they haven't been set yet. */
   protected def defaultOptionsMenuCommands: List[PlatformCommand]

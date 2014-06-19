@@ -24,8 +24,8 @@ class ContentResolverPersistenceFactory(delegate: PersistenceFactory)
   override def newWritable() = ContentResolverPersistenceFactory.newWritable()
 
   override def createEntityPersistence(entityType: EntityType, persistenceConnection: PersistenceConnection): CrudPersistence = {
-    val commandContext = persistenceConnection.commandContext
-    val contentResolver = commandContext.asInstanceOf[AndroidCommandContext].context.getContentResolver
+    val commandContext = persistenceConnection.commandContext.asInstanceOf[AndroidCommandContext]
+    val contentResolver = commandContext.context.getContentResolver
     val sharedContext = persistenceConnection.sharedContext
     val delegateListenerSet = listenerSet(entityType, sharedContext)
     val theListenerSet = new DelegatingListenerHolder[DataListener] {
@@ -33,7 +33,7 @@ class ContentResolverPersistenceFactory(delegate: PersistenceFactory)
 
       override def addListener(listener: DataListener) {
         ContentResolverObserverInitializationVal.get(sharedContext).getOrElseUpdate(entityType.entityName, {
-          commandContext.asInstanceOf[AndroidCommandContext].runOnUiThread {
+          commandContext.runOnUiThread {
             val observer = new ContentObserver(new Handler()) {
               override def onChange(selfChange: Boolean) {
                 commandContext.withExceptionReporting {
@@ -48,7 +48,7 @@ class ContentResolverPersistenceFactory(delegate: PersistenceFactory)
       }
     }
     new ContentResolverCrudPersistence(entityType, contentResolver, sharedContext.entityTypeMap,
-      theListenerSet)
+      commandContext, theListenerSet)
   }
 }
 

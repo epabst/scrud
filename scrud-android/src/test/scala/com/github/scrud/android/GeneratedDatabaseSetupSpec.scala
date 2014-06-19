@@ -8,7 +8,7 @@ import org.scalatest.matchers.MustMatchers
 import org.mockito.Mockito._
 import org.mockito.Matchers._
 import com.github.scrud.persistence.{EntityTypeMapForTesting, CrudPersistence}
-import com.github.scrud.{EntityName, EntityType}
+import com.github.scrud.{EntityNavigation, EntityName, EntityType}
 
 /**
  * A behavior specification for [[com.github.scrud.android.GeneratedDatabaseSetup]].
@@ -34,8 +34,8 @@ class GeneratedDatabaseSetupSpec extends CrudMockitoSugar with MustMatchers {
     }
   }
   val persistenceFactory = SQLitePersistenceFactory
-  val application = new CrudApplicationForTesting(platformDriver,
-    EntityTypeMapForTesting(Seq(entityType -> persistenceFactory, entityType2 -> persistenceFactory)))
+  val application = new CrudAndroidApplication(new EntityNavigation(
+    new EntityTypeMapForTesting(entityType -> persistenceFactory, entityType2 -> persistenceFactory)))
   val sut = new GeneratedDatabaseSetup(new AndroidCommandContextForTesting(application), persistenceFactory)
 
   @Before

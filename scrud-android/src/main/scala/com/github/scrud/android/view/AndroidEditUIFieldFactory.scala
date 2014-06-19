@@ -7,6 +7,7 @@ import com.github.scrud.copy._
 import com.github.scrud.platform.representation.EditUI
 import com.github.scrud.{FieldName, EntityName}
 import com.github.scrud.types.EnumerationValueQT
+import com.github.scrud.android.action.{ActivityResultDataField, ActivityResult}
 
 /**
  * An AdaptableFieldFactory for the Android UI. 
@@ -29,22 +30,31 @@ class AndroidEditUIFieldFactory(platformDriver: AndroidPlatformDriver) extends A
   def adapt[V](entityName: EntityName, fieldName: FieldName, qualifiedType: QualifiedType[V],
                representations: Seq[Representation[V]]): AdaptableFieldWithRepresentations[V] = {
     if (representations.contains(EditUI)) {
-      val childViewField = qualifiedType match {
-        case qType@TitleQT => new EditTextField(qType, editTextLayout("text|textCapWords|textAutoCorrect"))
-        case qType@DescriptionQT => new EditTextField(qType, editTextLayout("text|textCapSentences|textMultiLine|textAutoCorrect"))
-        case qType@CurrencyQT => new EditTextField(qType, editTextLayout("numberDecimal|numberSigned"))
-        case qType@PercentageQT => new EditTextField(qType, editTextLayout("numberDecimal|numberSigned"))
-        case DateWithoutTimeQT => new DatePickerField()
-        case EnumerationValueQT(enumeration) => EnumerationView(enumeration)
-        case qType@EntityName(_) => SelectEntityView(qType)
-        case qType: StringQualifiedType => new EditTextField(qType, editTextLayout("text|textAutoCorrect"))
-        case qType: IntQualifiedType => new EditTextField(qType, editTextLayout("number"))
+      val childViewField: ViewStorageField[V] = qualifiedType match {
+        case stringConvertibleQT: StringConvertibleQT[V] => stringConvertibleQT match {
+          case qType@TitleQT => new EditTextField(qType, editTextLayout("text|textCapWords|textAutoCorrect"))
+          case qType@DescriptionQT => new EditTextField(qType, editTextLayout("text|textCapSentences|textMultiLine|textAutoCorrect"))
+          case qType@PhoneQT => new EditTextField(qType, editTextLayout("phone"))
+          case qType@CurrencyQT => new EditTextField(qType, editTextLayout("numberDecimal|numberSigned"))
+          case qType@PercentageQT => new EditTextField(qType, editTextLayout("numberDecimal|numberSigned"))
+          case qType: StringQualifiedType => new EditTextField(qType, editTextLayout("text|textAutoCorrect"))
+          case qType: IntQualifiedType => new EditTextField(qType, editTextLayout("number"))
+        }
+        case DateWithoutTimeQT => new DatePickerField().asInstanceOf[ViewStorageField[V]]
+        case EnumerationValueQT(enumeration) => EnumerationView(enumeration).asInstanceOf[ViewStorageField[V]]
+        case qType@EntityName(_) => SelectEntityView(qType).asInstanceOf[ViewStorageField[V]]
+        case qType@ImageQT => new CapturedImageStorageField(platformDriver).asInstanceOf[ViewStorageField[V]]
       }
       val viewSpecifier = platformDriver.toViewSpecifier(entityName, "edit_", fieldName)
+
+      val additionalSourceFields: Seq[(SourceType,SourceField[V])] = qualifiedType match {
+        case qType@ImageQT => Seq(new ActivityResult(viewSpecifier.viewRef) ->
+          ActivityResultDataField.asInstanceOf[SourceField[V]])
+        case _ => Seq.empty
+      }
       AdaptableFieldWithRepresentations(AdaptableField(
-        Seq(EditUI -> childViewField.forSourceView(viewSpecifier)),
+        (EditUI -> childViewField.forSourceView(viewSpecifier)) +: additionalSourceFields,
         Seq(EditUI -> childViewField.forTargetView(viewSpecifier))), Set(EditUI))
-      //todo include supporting OperationResponse where the requestId == viewId
     } else {
       AdaptableFieldWithRepresentations.empty
     }

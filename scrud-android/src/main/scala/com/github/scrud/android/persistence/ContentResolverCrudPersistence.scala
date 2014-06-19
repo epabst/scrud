@@ -9,6 +9,8 @@ import com.github.scrud.util.{ListenerHolder, DelegatingListenerSet}
 import scala.Some
 import com.github.scrud.android.view.AndroidConversions
 import android.net.Uri
+import com.github.scrud.android.AndroidCommandContext
+import com.github.scrud.android.action.AndroidCommandContextDelegator
 
 /**
  * A [[com.github.scrud.persistence.CrudPersistence]] that delegates to ContentResolver.
@@ -17,9 +19,9 @@ import android.net.Uri
  * Time: 3:57 PM
  */
 class ContentResolverCrudPersistence(val entityType: EntityType, contentResolver: ContentResolver,
-                                     entityTypeMap: EntityTypeMap,
+                                     entityTypeMap: EntityTypeMap, protected val commandContext: AndroidCommandContext,
                                      protected val listenerSet: ListenerHolder[DataListener])
-    extends CrudPersistence with DelegatingListenerSet[DataListener] {
+    extends CrudPersistence with DelegatingListenerSet[DataListener] with AndroidCommandContextDelegator {
   private lazy val entityTypePersistedInfo = EntityTypePersistedInfo(entityType)
   private lazy val queryFieldNames = entityTypePersistedInfo.queryFieldNames.toArray
   private lazy val uriPathWithEntityName = UriPath(entityType.entityName)

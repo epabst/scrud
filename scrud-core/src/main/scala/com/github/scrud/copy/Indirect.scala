@@ -32,7 +32,7 @@ private class IndirectSourceField[E <: EntityType,V](otherEntityName: EntityName
     for {
       otherEntityId <- otherEntityIdField.findValue(source, context)
       uri = otherEntityName.toUri(otherEntityId)
-      otherEntity <- context.persistenceConnection.persistenceFor(otherEntityName).find(uri)
+      otherEntity <- context.persistenceFor(otherEntityName).find(uri)
       otherEntityType = context.entityTypeMap.entityType(otherEntityName).asInstanceOf[E]
       indirectField <- indirectFieldOptGetter(otherEntityType)
       result <- indirectField.findValue(otherEntity, context)

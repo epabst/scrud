@@ -13,13 +13,13 @@ import com.github.scrud.copy.CopyContext
  */
 class CrudPersistenceUsingThin(val entityType: EntityType, val thinPersistence: ThinPersistence, val sharedContext: SharedContext,
                               protected val listenerSet: MutableListenerSet[DataListener] = new MutableListenerSet[DataListener])
-  extends CrudPersistence with DelegatingListenerSet[DataListener] with Logging {
+  extends CrudPersistence with DelegatingListenerSet[DataListener] {
 
   def findAll(uri: UriPath): Seq[AnyRef] = thinPersistence.findAll(uri)
 
   def newWritable() = thinPersistence.newWritable()
 
-  protected[persistence] def doSave(idOption: Option[ID], writable: AnyRef): ID = {
+  protected def doSave(idOption: Option[ID], writable: AnyRef): ID = {
     val targetIdFieldOpt = entityType.idField.findTargetField(targetType)
     val sourceUri = entityType.toUri(idOption)
     val copyContext = new CopyContext(sourceUri, sharedContext.asStubCommandContext)

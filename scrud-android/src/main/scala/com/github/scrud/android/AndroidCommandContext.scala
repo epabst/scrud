@@ -2,6 +2,7 @@ package com.github.scrud.android
 
 import _root_.android.app.Activity
 import _root_.android.view.View
+import _root_.android.widget.{AdapterView, Adapter}
 import action.AndroidNotification
 import com.github.scrud.state._
 import com.github.scrud._
@@ -10,7 +11,6 @@ import state.{ActivityStateHolder, ActivityVar, CachedStateListeners, CachedStat
 import _root_.android.os.{Looper, Bundle}
 import _root_.android.content.Context
 import _root_.android.telephony.TelephonyManager
-import com.github.scrud.action.Undoable
 import com.github.scrud.android.backup.CrudBackupAgent
 import com.github.scrud.context.{SimpleSharedContext, SharedContext, CommandContext}
 import com.github.annotations.quality.MicrotestCompatible
@@ -18,6 +18,8 @@ import com.github.scrud.persistence.{PersistenceConnection, EntityTypeMap}
 import com.github.scrud.copy.{SourceType, AdaptedValueSeq, TargetType}
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
+import com.github.scrud.platform.PlatformTypes._
+import com.github.scrud.action.Undoable
 
 /**
  * The context and state for the application code to interact with.
@@ -159,6 +161,10 @@ case class AndroidCommandContext(context: Context, stateHolder: ActivityStateHol
 
   def onClearActivityState(stayActive: Boolean) {
     CachedStateListeners.get(this).foreach(_.onClearState(stayActive))
+  }
+
+  def setListAdapter[A <: Adapter](adapterView: AdapterView[A], entityType: EntityType, uri: UriPath, targetType: TargetType, itemLayout: LayoutKey) {
+    activity.asInstanceOf[CrudActivity].setListAdapter(adapterView, entityType, uri, targetType, activity, itemLayout)
   }
 }
 

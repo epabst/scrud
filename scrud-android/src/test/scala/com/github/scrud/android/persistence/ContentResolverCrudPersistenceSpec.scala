@@ -11,6 +11,7 @@ import com.github.scrud.EntityName
 import scala.Some
 import com.github.scrud.android.CrudApplicationForTesting
 import org.mockito.Mockito._
+import com.github.scrud.copy.types.MapStorage
 
 /**
  * A behavior specification for [[com.github.scrud.android.persistence.ContentResolverCrudPersistence]].
@@ -28,8 +29,8 @@ class ContentResolverCrudPersistenceSpec extends CrudMockitoSugar with MustMatch
   val barEntityType = new EntityTypeForTesting(barEntityName, platformDriver)
   val barCrudType = new CrudTypeForTesting(barEntityType, new ListBufferPersistenceFactory[Map[String,Option[Any]]](Map.empty))
   val testApplication = new CrudApplicationForTesting(fooCrudType, barCrudType)
-  val data1 = Map("name" -> Some("George"), "age" -> Some(31), "uri" -> None)
-  val data2 = Map("name" -> Some("Wilma"), "age" -> Some(30), "uri" -> None)
+  val data1 = new MapStorage("name" -> Some("George"), "age" -> Some(31), "uri" -> None)
+  val data2 = new MapStorage("name" -> Some("Wilma"), "age" -> Some(30), "uri" -> None)
 
   @Test
   def query_mustReturnMultipleRows() {

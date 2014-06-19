@@ -34,7 +34,7 @@ trait PlatformDriver extends Logging {
   /** This should only be used as a last resort.  Most logging should use ApplicationName's logging. */
   override protected val logTag: String = "scrud." + getClass.getSimpleName
 
-  def tryResource(resourceName: Name): Try[Uri]
+  def tryBinaryResource(resourceName: Name): Try[Uri]
 
   def localDatabasePersistenceFactory: PersistenceFactory
 
@@ -54,6 +54,9 @@ trait PlatformDriver extends Logging {
 
   /** Try to get a localizable string key by name. */
   def tryStringKey(stringName: String): Try[SKey]
+
+  /** Try to get a localizable image key by name. */
+  def tryImageKey(imageName: Name): Try[ImgKey]
 
   def commandToListItems(entityName: EntityName): PlatformCommand
 

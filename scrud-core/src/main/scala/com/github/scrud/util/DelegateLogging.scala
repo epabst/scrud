@@ -7,15 +7,15 @@ package com.github.scrud.util
 trait DelegateLogging {
   protected def loggingDelegate: ExternalLogging
 
-  def trace(f: => String) = loggingDelegate.trace(f)
+  protected def trace(f: => String) = loggingDelegate.trace(f)
 
-  def debug(f: => String) = loggingDelegate.debug(f)
+  protected def debug(f: => String) = loggingDelegate.debug(f)
 
-  def info(f: => String) = loggingDelegate.info(f)
+  protected def info(f: => String) = loggingDelegate.info(f)
 
-  def warn(f: => String) = loggingDelegate.warn(f)
+  protected def warn(f: => String) = loggingDelegate.warn(f)
 
-  def logError(f: => String) = loggingDelegate.logError(f)
+  protected def logError(f: => String) = loggingDelegate.logError(f)
 
-  def logError(f: => String, e: Throwable) = loggingDelegate.logError(f, e)
+  protected def logError(f: => String, e: Throwable) = loggingDelegate.logError(f, e)
 }

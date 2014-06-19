@@ -86,6 +86,6 @@ class CrudContentProviderSpec extends CrudMockitoSugar with MustMatchers {
   }
 }
 
-class CrudContentProviderForTesting(override val application: CrudApplication) extends CrudContentProvider {
+class CrudContentProviderForTesting(override val androidApplication: CrudAndroidApplication) extends CrudContentProvider {
   val applicationState = new State
 }

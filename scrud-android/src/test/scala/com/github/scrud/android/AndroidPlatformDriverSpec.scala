@@ -2,7 +2,7 @@ package com.github.scrud.android
 
 import _root_.android.content.Intent
 import action.StartActivityOperation
-import com.github.scrud.{EntityNavigationForTesting, UriPath, EntityName}
+import com.github.scrud.{FieldName, EntityNavigationForTesting, UriPath, EntityName}
 import org.junit.Test
 import org.junit.runner.RunWith
 import com.github.scrud.android.action.AndroidOperation.toRichItent
@@ -23,12 +23,11 @@ class AndroidPlatformDriverSpec extends CrudMockitoSugar with MustMatchers {
   //todo determine if shadowing, and run tests on real Android device as well.
   val isShadowing = true
   val driver = new AndroidPlatformDriver(classOf[R])
-  val application = new CrudApplicationForTesting(driver, CrudTypeForTesting) {
-  }
   val entityNavigation = new EntityNavigationForTesting(new EntityTypeMapForTesting(EntityTypeForTesting)) {
     /** Return true if the entity may be displayed in a mode that is distinct from editing. */
     override protected def isDisplayableWithoutEditing(entityName: EntityName): Boolean = true
   }
+  val application = new CrudAndroidApplication(entityNavigation)
 
   import EntityTypeForTesting.entityName
 
@@ -41,7 +40,7 @@ class AndroidPlatformDriverSpec extends CrudMockitoSugar with MustMatchers {
 
   @Test
   def createActionShouldHaveTheRightUri() {
-    val activity = new CrudActivityForTesting
+    val activity = new CrudActivityForTesting(application)
     createOperation.determineIntent(UriPath("foo"), activity).uriPath must
       be (UriPath("foo") / entityName)
     createOperation.determineIntent(UriPath("foo") / entityName, activity).uriPath must
@@ -56,7 +55,7 @@ class AndroidPlatformDriverSpec extends CrudMockitoSugar with MustMatchers {
 
   @Test
   def listActionShouldHaveTheRightUri() {
-    val activity = new CrudActivityForTesting
+    val activity = new CrudActivityForTesting(application)
     listOperation.determineIntent(UriPath("foo"), activity).uriPath must
       be (UriPath("foo") / entityName)
     listOperation.determineIntent(UriPath("foo", entityName.name), activity).uriPath must
@@ -71,7 +70,7 @@ class AndroidPlatformDriverSpec extends CrudMockitoSugar with MustMatchers {
 
   @Test
   def displayActionShouldHaveTheRightUri() {
-    val activity = new CrudActivityForTesting
+    val activity = new CrudActivityForTesting(application)
     displayOperation.determineIntent(UriPath("foo", entityName.name, "35"), activity).uriPath must
       be (UriPath("foo", entityName.name, "35"))
     displayOperation.determineIntent(UriPath("foo", entityName.name, "34", "bar"), activity).uriPath must
@@ -82,7 +81,7 @@ class AndroidPlatformDriverSpec extends CrudMockitoSugar with MustMatchers {
 
   @Test
   def updateActionShouldHaveTheRightUri() {
-    val activity = new CrudActivityForTesting
+    val activity = new CrudActivityForTesting(application)
     updateOperation.determineIntent(UriPath("foo", entityName.name, "35"), activity).uriPath must
       be (UriPath("foo", entityName.name, "35"))
     updateOperation.determineIntent(UriPath("foo", entityName.name, "34", "bar"), activity).uriPath must
@@ -148,6 +147,7 @@ class AndroidPlatformDriverSpec extends CrudMockitoSugar with MustMatchers {
   }
 
   def assertQualifiedTypeRecognized(qualifiedType: QualifiedType[_]) {
-    driver.field(EntityName("Bar"), "foo", qualifiedType, Seq.empty).toAdaptableField.findTargetField(DetailUI) must be ('isDefined)
+    val field = driver.field(EntityName("Bar"), FieldName("foo"), qualifiedType, Seq.empty)
+    field.toAdaptableField.findTargetField(DetailUI) must be ('isDefined)
   }
 }

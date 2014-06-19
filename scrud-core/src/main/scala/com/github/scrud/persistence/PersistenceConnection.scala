@@ -1,6 +1,6 @@
 package com.github.scrud.persistence
 
-import com.github.scrud.EntityType
+import com.github.scrud.{EntityName, EntityType}
 import com.github.scrud.context.{CommandContextDelegator, CommandContext}
 import com.github.scrud.state.{StateHolder, DestroyStateListener, State}
 import com.github.scrud.util.{Cache, DelegatingListenerHolder}
@@ -23,7 +23,9 @@ class PersistenceConnection(val commandContext: CommandContext)
 
   private val cache = new Cache()
 
-  override def persistenceFor(entityType: EntityType): CrudPersistence = cache.cacheBasedOn(entityType) {
+  def persistenceFor(entityName: EntityName): CrudPersistence = persistenceFor(entityTypeMap.entityType(entityName))
+
+  def persistenceFor(entityType: EntityType): CrudPersistence = cache.cacheBasedOn(entityType) {
     val entityPersistence = entityTypeMap.persistenceFactory(entityType).createEntityPersistence(entityType, this)
     state.addListener(new DestroyStateListener {
       def onDestroyState() {

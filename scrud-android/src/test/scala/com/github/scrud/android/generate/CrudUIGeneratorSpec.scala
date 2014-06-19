@@ -4,14 +4,11 @@ import org.scalatest.FunSpec
 import org.scalatest.matchers.MustMatchers
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
-import com.github.scrud.android.persistence.CursorField._
 import com.github.scrud.android._
 import org.scalatest.mock.MockitoSugar
 import com.github.scrud.{FieldName, CrudApplication, EntityType}
-import com.github.scrud.android.view.ViewField
-import ViewField._
 import com.github.scrud.types.TitleQT
-import com.github.scrud.persistence.{PersistenceFactoryForTesting, EntityTypeMapForTesting, EntityTypeMap}
+import com.github.scrud.persistence.{PersistenceFactoryForTesting, EntityTypeMapForTesting}
 import com.github.scrud.platform.representation.SummaryUI
 
 /** A behavior specification for [[com.github.scrud.android.generate.CrudUIGenerator]].

@@ -9,7 +9,7 @@ import com.github.scrud.copy.CopyContext
  * ViewStorageField for a [[android.widget.DatePicker]].
  * @author Eric Pabst (epabst@gmail.com)
  */
-class DatePickerField extends ViewStorageField[DatePicker,Calendar](<DatePicker/>) {
+class DatePickerField extends TypedViewStorageField[DatePicker,Calendar](<DatePicker/>) {
   /** Updates the {{{target}}} subject using the {{{valueOpt}}} for this field and some context. */
   def updateFieldValue(datePicker: DatePicker, valueOpt: Option[Calendar], androidcontext: AndroidCommandContext, context: CopyContext) = {
     val calendar = valueOpt.getOrElse(Calendar.getInstance())

@@ -73,7 +73,7 @@ class SQLitePersistenceFactorySpec extends MustMatchers with CrudMockitoSugar wi
 
     val cursors = mutable.Buffer[Cursor]()
     val database = new GeneratedDatabaseSetup(commandContext, persistenceFactory).getWritableDatabase
-    val thinPersistence = new SQLiteThinEntityPersistence(TestEntityType, database, commandContext)
+    val thinPersistence = new SQLiteCrudPersistence(TestEntityType, database, commandContext)
     val sharedContext = new SharedContextForTesting(entityTypeMap)
     val persistence = new CrudPersistenceUsingThin(TestEntityType, thinPersistence, sharedContext) {
       override def findAll(uri: UriPath) = {
@@ -97,7 +97,7 @@ class SQLitePersistenceFactorySpec extends MustMatchers with CrudMockitoSugar wi
 
   @Test
   def shouldRefreshCursorWhenDeletingAndSaving() {
-    val activity = new CrudActivityForTesting {
+    val activity = new CrudActivityForTesting(androidApplication) {
       override val getAdapterView: ListView = new ListView(this)
     }
     val observer = mock[DataSetObserver]

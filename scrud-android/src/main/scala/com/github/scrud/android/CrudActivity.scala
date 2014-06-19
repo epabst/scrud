@@ -11,7 +11,7 @@ import com.github.scrud
 import scrud.action.CrudOperationType
 import scrud.platform.PlatformTypes
 import scrud.persistence.{PersistenceFactory, DataListener}
-import com.github.scrud.android.action.{AndroidCommandContextDelegator, AndroidOperation, OperationResponse, OptionsMenuActivity}
+import com.github.scrud.android.action.{AndroidOperation, ActivityResult, OptionsMenuActivity}
 import scrud.android.state.CachedStateListener
 import android.view.{MenuItem, View, ContextMenu}
 import android.view.ContextMenu.ContextMenuInfo
@@ -35,14 +35,18 @@ import com.github.scrud.android.persistence.ContentQuery
 import com.github.scrud.action.CrudOperation
 import com.github.scrud.action.OperationAction
 import com.github.scrud.android.view.OnClickSetterField
+import com.github.scrud.context.SharedContextHolder
+import com.github.scrud.state.State
 
 /** A generic Activity for CRUD operations
   * @author Eric Pabst (epabst@gmail.com)
   */
-class CrudActivity extends FragmentActivity with OptionsMenuActivity with LoaderManager.LoaderCallbacks[Cursor] with AndroidCommandContextDelegator { self =>
-  lazy val entityType: EntityType = entityTypeMap.allEntityTypes.find(entityType => Some(entityType.entityName) == currentUriPath.lastEntityNameOption).getOrElse {
+class CrudActivity extends FragmentActivity with OptionsMenuActivity with LoaderManager.LoaderCallbacks[Cursor] with SharedContextHolder { self =>
+  lazy val entityType: EntityType = entityTypeMap.allEntityTypes.find(entityType => Some(entityType.entityName) == UriPath.lastEntityNameOption(currentUriPath)).getOrElse {
     throw new IllegalStateException("No valid entityName in " + currentUriPath)
   }
+
+  override lazy val applicationState: State = super.applicationState
 
   def entityName = entityType.entityName
 
@@ -61,7 +65,7 @@ class CrudActivity extends FragmentActivity with OptionsMenuActivity with Loader
 
   protected lazy val initialUriPath: UriPath = {
     // The primary EntityType is used as the default starting point.
-    val defaultContentUri = toUriPath(baseUriFor(applicationName)) / entityNavigation.primaryEntityType.entityName
+    val defaultContentUri = toUriPath(baseUriFor(applicationName)) / sharedContext.entityNavigation.primaryEntityType.entityName
     // If no data was given in the intent (e.g. because we were started as a MAIN activity),
     // then use our default content provider.
     Option(getIntent).flatMap(intent => Option(intent.getData).map(toUriPath(_))).getOrElse(defaultContentUri)
@@ -94,12 +98,18 @@ class CrudActivity extends FragmentActivity with OptionsMenuActivity with Loader
       DetailUI
   }
 
-  def uriWithId(id: ID): UriPath = currentUriPath.specify(entityName, id)
+  def uriWithId(id: ID): UriPath = UriPath.specify(currentUriPath, entityName, id)
 
   //final since only here as a convenience method.
   final def stateHolder = commandContext.stateHolder
 
-  lazy val commandContext: AndroidCommandContext = new AndroidCommandContext(this, getApplication.asInstanceOf[CrudAndroidApplication])
+  lazy val sharedContext = getApplication.asInstanceOf[CrudAndroidApplication]
+
+  override lazy val platformDriver: AndroidPlatformDriver = super.platformDriver.asInstanceOf[AndroidPlatformDriver]
+
+  def entityNavigation = sharedContext.entityNavigation
+
+  lazy val commandContext: AndroidCommandContext = new AndroidCommandContext(this, sharedContext)
 
   protected lazy val normalActions = entityNavigation.actionsFromCrudOperation(currentCrudOperation)
 
@@ -309,9 +319,8 @@ class CrudActivity extends FragmentActivity with OptionsMenuActivity with Loader
   def onListItemClick(l: AdapterView[_ <: Adapter], v: View, position: Int, id: ID) {
     commandContext.withExceptionReporting {
       if (id >= 0) {
-        entityNavigation.actionsFromCrudOperation(CrudOperation(entityName, CrudOperationType.Read)).headOption.map(_.invoke(uriWithId(id), commandContext)).getOrElse {
-          warn("There are no entity actions defined for " + entityType)
-        }
+        entityNavigation.actionsFromCrudOperation(CrudOperation(entityName, CrudOperationType.Read)).headOption.
+          fold(warn("There are no entity actions defined for " + entityType))(_.invoke(uriWithId(id), commandContext))
       } else {
         debug("Ignoring " + entityType + ".onListItemClick(" + id + ")")
       }
@@ -337,8 +346,8 @@ class CrudActivity extends FragmentActivity with OptionsMenuActivity with Loader
     super.onActivityResult(requestCode, resultCode, data)
     commandContext.withExceptionReporting {
       if (resultCode == Activity.RESULT_OK) {
-        //"this" is included in the list so that existing data isn't cleared.
-        entityType.copyAndUpdate(OperationResponse, OperationResponse(requestCode, data), currentUriPath, currentUITargetType, this, commandContext)
+        // Only fields that can use a SourceType ActivityResult(ViewRef(requestCode)) will use this.
+        entityType.copyAndUpdate(ActivityResult(ViewRef(requestCode)), data, currentUriPath, currentUITargetType, this, commandContext)
       } else {
         debug("onActivityResult received resultCode of " + resultCode + " and data " + data + " for request " + requestCode)
       }
@@ -355,21 +364,14 @@ class CrudActivity extends FragmentActivity with OptionsMenuActivity with Loader
 
   lazy val entityNameLayoutPrefix = entityName.toSnakeCase
 
-  private def rLayoutClasses = androidApplication.rLayoutClasses
-
-  protected def getLayoutKey(layoutName: String): LayoutKey =
-    findResourceIdWithName(rLayoutClasses, layoutName).getOrElse {
-      rLayoutClasses.foreach(layoutClass => logError("Contents of " + layoutClass + " are " + layoutClass.getFields.mkString(", ")))
-      throw new IllegalStateException("R.layout." + layoutName + " not found.  You may want to run the CrudUIGenerator.generateLayouts." +
-              rLayoutClasses.mkString("(layout classes: ", ",", ")"))
-    }
+  protected def getLayoutKey(layoutName: String): LayoutKey = platformDriver.getLayoutKey(layoutName)
 
   lazy val headerLayout: LayoutKey = getLayoutKey(entityNameLayoutPrefix + "_header")
-  lazy val listLayout: LayoutKey = findResourceIdWithName(rLayoutClasses, entityNameLayoutPrefix + "_list").getOrElse(getLayoutKey("entity_list"))
+  lazy val listLayout: LayoutKey = findResourceIdWithName(platformDriver.rLayoutClasses, entityNameLayoutPrefix + "_list").getOrElse(getLayoutKey("entity_list"))
 
   protected def listViewName: String = entityName + "_list"
-  lazy val listViewKey: ViewKey = resourceIdWithName(androidApplication.rIdClasses, listViewName, "id")
-  lazy val emptyListViewKeyOpt: Option[ViewKey] = findResourceIdWithName(androidApplication.rIdClasses, entityName + "_emptyList")
+  lazy val listViewKey: ViewKey = resourceIdWithName(sharedContext.rIdClasses, listViewName, "id")
+  lazy val emptyListViewKeyOpt: Option[ViewKey] = findResourceIdWithName(sharedContext.rIdClasses, entityName + "_emptyList")
 
   lazy val rowLayout: LayoutKey = getLayoutKey(entityNameLayoutPrefix + "_row")
   /** The layout used for each entity when allowing the user to pick one of them. */
@@ -377,17 +379,14 @@ class CrudActivity extends FragmentActivity with OptionsMenuActivity with Loader
   lazy val entryLayout: LayoutKey = getLayoutKey(entityNameLayoutPrefix + "_entry")
 
   /** The layout used for each entity when allowing the user to pick one of them. */
-  def pickLayoutFor(entityName: EntityName): LayoutKey = {
-    findResourceIdWithName(rLayoutClasses, entityName.toSnakeCase + "_pick").getOrElse(
-      _root_.android.R.layout.simple_spinner_dropdown_item)
-  }
+  def pickLayoutFor(entityName: EntityName): LayoutKey = platformDriver.selectUILayoutFor(entityName)
 
   // not a val because it is dynamic
   protected def applicableActions: List[OperationAction] = LastUndoable.get(commandContext.stateHolder).map(_.undoAction).toList ++ normalActions
 
   protected lazy val nestedNormalOperationSetters: Seq[NestedTargetField[Nothing]] = {
     val setters = normalActions.map { action =>
-      val viewRef = ViewRef(action.command.commandId.toCamelCase + "_command", androidApplication.rIdClasses)
+      val viewRef = ViewRef(action.command.commandId.toCamelCase + "_command", sharedContext.rIdClasses)
       new OnClickSetterField(_ => action.operation).forTargetView(ViewSpecifier(viewRef))
     }
     setters
@@ -426,13 +425,13 @@ class CrudActivity extends FragmentActivity with OptionsMenuActivity with Loader
   }
 
   final def setListAdapterUsingUri(commandContext: AndroidCommandContext, activity: CrudActivity) {
-    setListAdapter(activity.getAdapterView, entityType, activity.currentUriPath, activity, rowLayout)
+    setListAdapter(activity.getAdapterView, entityType, activity.currentUriPath, activity.currentUITargetType, activity, rowLayout)
   }
 
-  def setListAdapter[A <: Adapter](adapterView: AdapterView[A], entityType: EntityType, uri: UriPath, activity: Activity, itemLayout: LayoutKey) {
+  def setListAdapter[A <: Adapter](adapterView: AdapterView[A], entityType: EntityType, uri: UriPath, targetType: TargetType, activity: Activity, itemLayout: LayoutKey) {
     val entityTypePersistedInfo = new EntityTypePersistedInfo(entityType)
     val androidUri = toUri(uri, applicationName)
-    val adapter = new EntityCursorAdapter(entityType, uri, commandContext, new ViewInflater(itemLayout, activity.getLayoutInflater), null)
+    val adapter = new EntityCursorAdapter(entityType, uri, targetType, commandContext, new ViewInflater(itemLayout, activity.getLayoutInflater), null)
     val cursorLoaderData = CursorLoaderData(ContentQuery(androidUri, entityTypePersistedInfo.queryFieldNames), adapter)
     runOnUiThread {
       adapterView.setAdapter(adapter.asInstanceOf[A])

@@ -4,6 +4,7 @@ import android.widget.EditText
 import scala.xml.NodeSeq
 import com.github.scrud.types.StringConvertibleQT
 import com.github.scrud.android.AndroidCommandContext
+import com.github.scrud.copy.CopyContext
 
 /**
  * TargetField for an Android EditText view.
@@ -11,10 +12,10 @@ import com.github.scrud.android.AndroidCommandContext
  * @author Eric Pabst (epabst@gmail.com)
  */
 class EditTextField[V](stringConvertible: StringConvertibleQT[V], defaultLayout: NodeSeq)
-    extends ViewStorageField[EditText,V](defaultLayout) {
+    extends TypedViewStorageField[EditText,V](defaultLayout) {
   /** Updates the {{{target}}} subject using the {{{valueOpt}}} for this field and some context. */
-  def updateFieldValue(editTextView: EditText, valueOpt: Option[V], context: AndroidCommandContext) = {
-    val charSequence = valueOpt.fold("")(stringConvertible.convertToEditString(_))
+  def updateFieldValue(editTextView: EditText, valueOpt: Option[V], commandContext: AndroidCommandContext, context: CopyContext) = {
+    val charSequence = valueOpt.fold("")(stringConvertible.convertToString(_))
     editTextView.setText(charSequence)
     editTextView
   }

@@ -4,7 +4,7 @@ import android.database.Cursor
 import android.content.ContentValues
 import android.os.Bundle
 import com.github.scrud.types._
-import com.github.scrud.util.Cache
+import scala.collection.concurrent
 
 private[persistence] trait BasePersistedType {
   def sqliteType: String
@@ -69,7 +69,8 @@ private class DirectPersistedType[T <: AnyRef](val sqliteType: String,
 }
 
 object PersistedType {
-  private val cache: Cache = new Cache
+  private val persistedTypeByQualifiedType: concurrent.Map[BaseQualifiedType,BasePersistedType] =
+    concurrent.TrieMap[BaseQualifiedType,BasePersistedType]()
 
   def apply(qualifiedType: BaseQualifiedType): BasePersistedType =
     apply(qualifiedType.asInstanceOf[QualifiedType[_]])
@@ -86,11 +87,11 @@ object PersistedType {
   }
 
   private def toConvertedPersistedType[T](stringConvertibleQT: StringConvertibleQT[T]): PersistedType[T] = {
-    cache.cacheBasedOn(stringConvertibleQT) {
+    persistedTypeByQualifiedType.getOrElseUpdate(stringConvertibleQT, {
       new ConvertedPersistedType[T, String](
         stringConvertibleQT.convertFromString(_).toOption,
-        stringConvertibleQT.convertToString(_))(PersistedType.stringType)
-    }
+        stringConvertibleQT.convertToString(_))
+    }).asInstanceOf[PersistedType[T]]
   }
 
   private def enforceTypeMatch[T,RT](qualifiedType: QualifiedType[T], persistedType: PersistedType[T]): PersistedType[RT] =

@@ -21,4 +21,8 @@ public final class R {
     public static final int my_map_header = 201;
     public static final int my_map_row = 202;
   }
+  public static final class string {
+      public static final int delete_item = 301;
+      public static final int edit_test = 302;
+  }
 }

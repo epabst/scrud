@@ -41,6 +41,10 @@ object AndroidResourceAnalyzer extends Logging {
     findRInnerClass(clazz, "string").toSeq ++ Seq(classOf[android.R.string])
   }
 
+  def detectRDrawableClasses(clazz: Class[_]): Seq[Class[_]] = {
+    findRInnerClass(clazz, "drawable").toSeq ++ Seq(classOf[android.R.drawable])
+  }
+
   def findResourceFieldWithIntValue(classes: Seq[Class[_]], value: Int): Option[Field] =
     findMatchingResourceField(classes, field => field.getInt(null) == value)
 
