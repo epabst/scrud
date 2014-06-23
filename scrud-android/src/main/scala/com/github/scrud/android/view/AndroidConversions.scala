@@ -6,6 +6,7 @@ import android.net.Uri
 import com.github.scrud.UriPath
 import android.content.Context
 import com.github.scrud.context.ApplicationName
+import com.github.scrud.android.CrudAndroidApplication
 
 /** Useful conversions for Android development. */
 object AndroidConversions {
@@ -15,6 +16,8 @@ object AndroidConversions {
   def authorityFor(applicationPackageName: String): String = applicationPackageName + ".provider"
 
   def authorityFor(applicationName: ApplicationName): String = authorityFor(applicationName.packageName)
+
+  def authorityFor(application: CrudAndroidApplication): String = authorityFor(application.applicationName)
 
   def baseUriFor(applicationName: ApplicationName): Uri = baseUriFor(applicationName.packageName)
 

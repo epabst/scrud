@@ -34,7 +34,7 @@ class CrudActivitySpec extends CrudMockitoSugar with MustMatchers {
   @Test
   def shouldSaveOnBackPressed() {
     val _entityType = EntityTypeForTesting
-    val application = new CrudAndroidApplication(new EntityNavigationForTesting(new EntityTypeMapForTesting(_entityType -> persistenceFactory)))
+    val application = new CrudAndroidApplication(new EntityTypeMapForTesting(_entityType -> persistenceFactory))
     val entity = new MapStorage(_entityType.name -> Some("Bob"), _entityType.age -> Some(25))
     val uri = UriPath(_entityType.entityName)
     val activity = new CrudActivityForTesting(application) {
@@ -54,7 +54,7 @@ class CrudActivitySpec extends CrudMockitoSugar with MustMatchers {
   @Test
   def onPauseShouldNotCreateANewIdEveryTime() {
     val _entityType = EntityTypeForTesting
-    val application = new CrudAndroidApplication(new EntityNavigationForTesting(new EntityTypeMapForTesting(_entityType -> persistenceFactory)))
+    val application = new CrudAndroidApplication(new EntityTypeMapForTesting(_entityType -> persistenceFactory))
     val entity = Map[String,Option[Any]]("name" -> Some("Bob"), "age" -> Some(25))
     val uri = UriPath(_entityType.entityName)
     val activity = new CrudActivityForTesting(application) {
@@ -89,7 +89,7 @@ class CrudActivitySpec extends CrudMockitoSugar with MustMatchers {
     val entityTypeMap = new EntityTypeMapForTesting(entityType1 -> PersistenceFactoryForTesting,
       parentEntityType -> new PersistenceFactoryForTesting(persistenceForParent))
 
-    val application = new CrudAndroidApplication(new EntityNavigation(entityTypeMap))
+    val application = new CrudAndroidApplication(entityTypeMap)
     val activity = new CrudActivityForTesting(application) {
       override def currentUriPath = UriPath(entityType1.entityName)
     }
@@ -102,7 +102,7 @@ class CrudActivitySpec extends CrudMockitoSugar with MustMatchers {
     val persistence = mock[ThinPersistence]
     val _entityType = EntityTypeForTesting
     val persistenceFactory = new PersistenceFactoryForTesting(persistence)
-    val application = new CrudAndroidApplication(new EntityNavigationForTesting(new EntityTypeMapForTesting(_entityType -> persistenceFactory)))
+    val application = new CrudAndroidApplication(new EntityTypeMapForTesting(_entityType -> persistenceFactory))
     when(persistence.findAll(any())).thenReturn(Seq(
       new MapStorage(_entityType.id -> Some(400L), _entityType.name -> Some("Bob"),
         _entityType.age -> Some(25), _entityType.url -> None)))
@@ -124,7 +124,7 @@ class CrudActivitySpec extends CrudMockitoSugar with MustMatchers {
     val ignoredView: View = null
     val ignoredMenuInfo: ContextMenu.ContextMenuInfo = null
     val _entityType = EntityTypeForTesting
-    val application = new CrudAndroidApplication(new EntityNavigationForTesting(new EntityTypeMapForTesting(_entityType)))
+    val application = new CrudAndroidApplication(new EntityTypeMapForTesting(_entityType))
     val activity = new CrudActivityForTesting(application) {
       override lazy val currentAction = ListActionName
     }
@@ -163,7 +163,7 @@ class CrudActivitySpec extends CrudMockitoSugar with MustMatchers {
     val persistence = mock[ThinPersistence]
     when(persistence.findAll(any())).thenReturn(Seq(Map[String,Any]("name" -> "Bob", "age" -> 25)))
     val _entityType = new EntityTypeForTesting
-    val application = new CrudAndroidApplication(new EntityNavigationForTesting(new EntityTypeMapForTesting(_entityType -> new PersistenceFactoryForTesting(persistence))))
+    val application = new CrudAndroidApplication(new EntityTypeMapForTesting(_entityType -> new PersistenceFactoryForTesting(persistence)))
     class SomeCrudListActivity extends CrudActivityForTesting(application)
     val activity = new SomeCrudListActivity
     activity.setIntent(new Intent(Intent.ACTION_MAIN))
@@ -178,13 +178,13 @@ class CrudActivitySpec extends CrudMockitoSugar with MustMatchers {
   @Test
   def shouldIgnoreClicksOnHeader() {
     val _entityType = EntityTypeForTesting
-    val application = new CrudAndroidApplication(new EntityNavigationForTesting(new EntityTypeMapForTesting(_entityType)))
+    val application = new CrudAndroidApplication(new EntityTypeMapForTesting(_entityType))
     val activity = new CrudActivityForTesting(application)
     // should do nothing
     activity.onListItemClick(null, null, -1, -1)
   }
 
-  val seqPersistence = mock[SeqCrudPersistence[Map[String,Any]]]
+  val seqPersistence = mock[TypedCrudPersistence[Map[String,Any]]]
   val adapterView = mock[AdapterView[BaseAdapter]]
   val activity = mock[Activity]
   val listAdapterCapture = capturingAnswer[Unit] { Unit }

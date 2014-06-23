@@ -10,6 +10,8 @@ import org.mockito.Matchers.{eq => eql, _}
 import android.view.{MenuItem, Menu}
 import com.github.scrud.action.{ActionKey, PlatformCommand}
 import com.github.scrud.android.CustomRobolectricTestRunner
+import com.github.scrud.util.ExternalLogging
+import com.github.scrud.ApplicationNameForTesting
 
 /** A behavior specification for [[com.github.scrud.android.action.OptionsMenuActivity]].
   * @author Eric Pabst (epabst@gmail.com)
@@ -19,7 +21,7 @@ class OptionsMenuActivitySpec extends MustMatchers with MockitoSugar {
   class StubOptionsMenuActivity extends Activity with OptionsMenuActivity {
     protected val defaultOptionsMenuCommands = Nil
 
-    protected val logTag = "log"
+    override protected val loggingDelegate: ExternalLogging = ApplicationNameForTesting
   }
 
   @Test
@@ -50,7 +52,7 @@ class OptionsMenuActivitySpec extends MustMatchers with MockitoSugar {
       var invalidated, populated = false
 
       //this will be called using reflection
-      def invalidateOptionsMenu() {
+      override def invalidateOptionsMenu() {
         invalidated = true
       }
 
@@ -73,7 +75,7 @@ class OptionsMenuActivitySpec extends MustMatchers with MockitoSugar {
     val activity = new StubOptionsMenuActivity {
       var populated = false
 
-      def invalidateOptionsMenu() {}
+      override def invalidateOptionsMenu() {}
 
       override private[action] def populateMenu(menu: Menu, actions: List[PlatformCommand]) {
         populated = true

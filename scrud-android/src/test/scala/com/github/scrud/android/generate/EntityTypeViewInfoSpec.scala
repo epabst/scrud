@@ -24,11 +24,11 @@ class EntityTypeViewInfoSpec extends FunSpec with MustMatchers with MockitoSugar
     field("parent", SelfReferencingEntity, Seq(SummaryUI))
   }
 
-  val application = new CrudApplicationForTesting(platformDriver, EntityTypeMapForTesting(Set[EntityType](EntityTypeForTesting, SelfReferencingEntityType)))
+  private val entityTypeMap = EntityTypeMapForTesting(Set[EntityType](EntityTypeForTesting, SelfReferencingEntityType))
 
   describe("displayableViewIdFieldInfos") {
     it("must not have an infinite loop for a self-referencing EntityType") {
-      val info = EntityTypeViewInfo(SelfReferencingEntityType, application)
+      val info = EntityTypeViewInfo(SelfReferencingEntityType, entityTypeMap)
       val fieldInfos = info.displayableViewIdFieldInfos
       fieldInfos.size must be (4)
     }

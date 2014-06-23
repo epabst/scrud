@@ -7,16 +7,18 @@ import org.junit.Test
 import com.github.scrud.android.backup.CrudBackupAgent._
 import _root_.android.os.ParcelFileDescriptor
 import scala.collection.mutable
-import com.github.scrud._
 import org.mockito.Mockito._
 import org.mockito.Matchers._
-import com.github.scrud.state.State
-import com.github.scrud.persistence.{EntityTypeMapForTesting, PersistenceFactoryForTesting, EntityPersistenceForTesting}
+import com.github.scrud.persistence._
 import com.github.scrud.platform.TestingPlatformDriver
+import com.github.scrud._
+import org.mockito.stubbing.Answer
+import com.github.scrud.android.{EntityTypeForTesting, AndroidCommandContextForTesting, CrudAndroidApplication, CustomRobolectricTestRunner}
+import com.github.scrud.copy.types.{Default, Validation, MapStorage}
+import com.github.scrud.types.{NaturalIntQT, TitleQT}
+import com.github.scrud.platform.representation.{SelectUI, EditUI, Persistence}
 import com.github.scrud.EntityName
 import scala.Some
-import org.mockito.stubbing.Answer
-import com.github.scrud.android.{CrudAndroidApplication, CustomRobolectricTestRunner}
 
 /** A test for [[com.github.scrud.android.backup.CrudBackupAgent]].
   * @author Eric Pabst (epabst@gmail.com)
@@ -33,56 +35,66 @@ class CrudBackupAgentSpec extends MustMatchers with CrudMockitoSugar {
 
   @Test
   def shouldSupportBackupAndRestore() {
-    val backupTarget = mock[BackupTarget]
-    val state1 = mock[ParcelFileDescriptor]
-    val state1b = mock[ParcelFileDescriptor]
-
-    val entityType = new EntityTypeForTesting()
-    val persistence = new EntityPersistenceForTesting(entityType)
-    persistence.save(Some(100L), mutable.Map("name" -> Some("Joe"), "age" -> Some(30)))
-    persistence.save(Some(101L), mutable.Map("name" -> Some("Mary"), "age" -> Some(28)))
-    val entityType2 = new EntityTypeForTesting(EntityName("OtherMap"))
-    val persistence2 = new EntityPersistenceForTesting(entityType2)
-    persistence2.save(Some(101L), mutable.Map("city" -> Some("Los Angeles"), "state" -> Some("CA")))
-    persistence2.save(Some(104L), mutable.Map("city" -> Some("Chicago"), "state" -> Some("IL")))
-    val entityTypeB = new EntityTypeForTesting()
-    val persistenceB = new EntityPersistenceForTesting(entityTypeB)
-    val entityType2B = new EntityTypeForTesting(EntityName("OtherMap"))
-    val persistence2B = new EntityPersistenceForTesting(entityType2B)
-    val state0 = null
     val restoreItems = mutable.ListBuffer[RestoreItem]()
-    val application = new CrudAndroidApplication(new EntityNavigation(new EntityTypeMapForTesting(
-      entityType -> new PersistenceFactoryForTesting(persistence),
-      entityType2 -> new PersistenceFactoryForTesting(persistence2))))
-    when(backupTarget.writeEntity(eql("MyMap#100"), any())).thenAnswer(saveRestoreItem(restoreItems))
-    when(backupTarget.writeEntity(eql("MyMap#101"), any())).thenAnswer(saveRestoreItem(restoreItems))
-    when(backupTarget.writeEntity(eql("OtherMap#101"), any())).thenAnswer(saveRestoreItem(restoreItems))
-    when(backupTarget.writeEntity(eql("OtherMap#104"), any())).thenAnswer(saveRestoreItem(restoreItems))
-    val applicationB = new CrudAndroidApplication(new EntityNavigation(new EntityTypeMapForTesting(
-      entityTypeB -> new PersistenceFactoryForTesting(persistenceB),
-      entityType2B -> new PersistenceFactoryForTesting(persistence2B))))
-    val backupAgent = new CrudBackupAgent {
-      override lazy val applicationState = new State
+
+    // Backup
+    {
+      val entityTypeA = new EntityTypeForTesting()
+      val entityTypeB = new EntityTypeForTesting(EntityName("OtherMap")) {
+        val city = field("city", TitleQT, Seq(Persistence(1), EditUI, SelectUI, Validation.requiredString, LoadingIndicator("...")))
+        val state = field("state", TitleQT, Seq(Persistence(1), EditUI, SelectUI, Validation.requiredString, LoadingIndicator("...")))
+      }
+      val application1 = new CrudAndroidApplication(new EntityTypeMapForTesting(
+        entityTypeA -> PersistenceFactoryForTesting,
+        entityTypeB -> PersistenceFactoryForTesting))
+
+      val commandContext = new AndroidCommandContextForTesting(application1)
+      commandContext.save(entityTypeA.entityName, Some(100L), MapStorage, new MapStorage(entityTypeA.name -> Some("Joe"), entityTypeA.age -> Some(30)))
+      commandContext.save(entityTypeA.entityName, Some(101L), MapStorage, new MapStorage(entityTypeA.name -> Some("Mary"), entityTypeA.age -> Some(28)))
+      commandContext.save(entityTypeB.entityName, Some(101L), MapStorage, new MapStorage(entityTypeB.city -> Some("Los Angeles"), entityTypeB.state -> Some("CA")))
+      commandContext.save(entityTypeB.entityName, Some(104L), MapStorage, new MapStorage(entityTypeB.city -> Some("Chicago"), entityTypeB.state -> Some("IL")))
+      val state0 = null
+
+      val backupTarget = mock[BackupTarget]
+      when(backupTarget.writeEntity(eql("MyMap#100"), any())).thenAnswer(saveRestoreItem(restoreItems))
+      when(backupTarget.writeEntity(eql("MyMap#101"), any())).thenAnswer(saveRestoreItem(restoreItems))
+      when(backupTarget.writeEntity(eql("OtherMap#101"), any())).thenAnswer(saveRestoreItem(restoreItems))
+      when(backupTarget.writeEntity(eql("OtherMap#104"), any())).thenAnswer(saveRestoreItem(restoreItems))
+      val backupAgent1 = new CrudBackupAgent {
+        override lazy val androidApplication: CrudAndroidApplication = application1
+      }
+      val state1 = mock[ParcelFileDescriptor]
+      backupAgent1.onCreate()
+      backupAgent1.onBackup(state0, backupTarget, state1)
+      backupAgent1.onDestroy()
     }
-    backupAgent.onCreate()
-    backupAgent.onBackup(state0, backupTarget, state1)
-    backupAgent.onDestroy()
 
-    persistenceB.findAll(UriPath.EMPTY).size must be (0)
-    persistence2B.findAll(UriPath.EMPTY).size must be (0)
+    // Restore
+    {
+      val entityTypeA2 = new EntityTypeForTesting()
+      val entityTypeB2 = new EntityTypeForTesting(EntityName("OtherMap"))
+      val application2 = new CrudAndroidApplication(new EntityTypeMapForTesting(
+        entityTypeA2 -> PersistenceFactoryForTesting,
+        entityTypeB2 -> PersistenceFactoryForTesting))
+      val commandContext = new AndroidCommandContextForTesting(application2)
 
-    val backupAgentB = new CrudBackupAgent {
-      override lazy val applicationState = new State
+      commandContext.findAll(entityTypeA2.toUri, entityTypeA2.id).size must be (0)
+      commandContext.findAll(entityTypeB2.toUri, entityTypeB2.id).size must be (0)
+
+      val backupAgent2 = new CrudBackupAgent {
+        override lazy val androidApplication: CrudAndroidApplication = application2
+      }
+      val state2 = mock[ParcelFileDescriptor]
+      backupAgent2.onCreate()
+      backupAgent2.onRestore(restoreItems.toStream, 1, state2)
+      backupAgent2.onDestroy()
+
+      val allA = commandContext.findAll(entityTypeA2.toUri, entityTypeA2.id)
+      allA must be(List(100L, 101L))
+
+      val allB = commandContext.findAll(entityTypeB2.toUri, entityTypeB2.id)
+      allB must be(List(101L, 104L))
     }
-    backupAgentB.onCreate()
-    backupAgentB.onRestore(restoreItems.toIterator, 1, state1b)
-    backupAgentB.onDestroy()
-
-    val allB = persistenceB.findAll(UriPath.EMPTY, entityTypeB.id, )
-    allB must be (List(100L, 101L))
-
-    val all2B = persistence2B.findAll(UriPath.EMPTY, entityType2B.id, )
-    all2B must be (List(101L, 104L))
   }
 
   def saveRestoreItem(restoreItems: mutable.ListBuffer[RestoreItem]): Answer[Unit] = answerWithInvocation { invocation =>
@@ -94,21 +106,26 @@ class CrudBackupAgentSpec extends MustMatchers with CrudMockitoSugar {
 
   @Test
   def shouldSkipBackupOfGeneratedTypes() {
-    val application = mock[CrudApplication]
-    val backupTarget = mock[BackupTarget]
-    val state1 = mock[ParcelFileDescriptor]
     val entityType = new EntityTypeForTesting
-    val persistence = new EntityPersistenceForTesting(entityType)
     val generatedType = new EntityType(EntityName("Generated"), TestingPlatformDriver) {
-      val valueFields = List[BaseField](EntityField[EntityTypeForTesting](EntityForTesting), PortableField.default[Int](100))
+      val number = field("number", NaturalIntQT, Seq(Default(100)))
     }
     val state0 = null
-    when(application.allEntityTypes).thenReturn(List[EntityType](entityType, generatedType))
-    when(application.persistenceFactory(any[EntityName]())).thenReturn(new PersistenceFactoryForTesting(persistence))
+    val application = new CrudAndroidApplication(new EntityTypeMapForTesting(
+      entityType -> PersistenceFactoryForTesting,
+      generatedType -> new DerivedPersistenceFactory[MapStorage]() {
+        override def findAll(entityType: EntityType, uri: UriPath, persistenceConnection: PersistenceConnection): Seq[MapStorage] = {
+          throw new IllegalStateException("should not be called")
+        }
+      }))
     //shouldn't call any methods on generatedPersistence
     val backupAgent = new CrudBackupAgent {
-      override lazy val applicationState = new State
+      override lazy val androidApplication = application
     }
+
+    val backupTarget = mock[BackupTarget]
+    val state1 = mock[ParcelFileDescriptor]
+
     backupAgent.onCreate()
     //shouldn't fail even though one is generated
     backupAgent.onBackup(state0, backupTarget, state1)

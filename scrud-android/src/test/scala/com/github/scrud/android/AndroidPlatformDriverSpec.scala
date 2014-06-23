@@ -1,18 +1,27 @@
 package com.github.scrud.android
 
-import _root_.android.content.Intent
+import android.content.{ContentValues, Intent}
 import action.StartActivityOperation
-import com.github.scrud.{FieldName, EntityNavigationForTesting, UriPath, EntityName}
+import com.github.scrud.{EntityNavigationForTesting, UriPath}
 import org.junit.Test
 import org.junit.runner.RunWith
 import com.github.scrud.android.action.AndroidOperation.toRichItent
 import com.github.scrud.util.CrudMockitoSugar
 import com.github.scrud.types._
-import com.github.scrud.action.OperationAction
-import com.github.scrud.platform.representation.DetailUI
+import com.github.scrud.platform.representation.{Query, Persistence, DetailUI}
 import org.scalatest.MustMatchers
 import com.github.scrud.android.testres.R
 import com.github.scrud.persistence.EntityTypeMapForTesting
+import android.database.Cursor
+import org.mockito.Mockito._
+import com.github.scrud.FieldName
+import com.github.scrud.EntityName
+import scala.Some
+import com.github.scrud.action.OperationAction
+import com.github.scrud.types.EnumerationValueQT
+import com.github.scrud.android.persistence.{SQLiteCriteria, ContentValuesStorageType}
+import com.github.scrud.copy.SourceType
+import com.github.scrud.copy.types.MapStorage
 
 /** A test for [[com.github.scrud.android.AndroidPlatformDriver]].
   * @author Eric Pabst (epabst@gmail.com)
@@ -150,4 +159,90 @@ class AndroidPlatformDriverSpec extends CrudMockitoSugar with MustMatchers {
     val field = driver.field(EntityName("Bar"), FieldName("foo"), qualifiedType, Seq.empty)
     field.toAdaptableField.findTargetField(DetailUI) must be ('isDefined)
   }
+
+  @Test
+  def persistenceShouldReturnNoneIfNullInCursor() {
+    val cursor = mock[Cursor]
+    when(cursor.getColumnIndex("name")).thenReturn(1)
+    when(cursor.isNull(1)).thenReturn(true)
+    val commandContext = new AndroidCommandContextForTesting(EntityTypeForTesting)
+    EntityTypeForTesting.name.findApplicable(Persistence.Latest, cursor, UriPath.EMPTY, commandContext) must be (None)
+  }
+
+  @Test
+  def persistenceFieldShouldNotBeDefinedIfColumnNotInCursor() {
+    val cursor = mock[Cursor]
+    when(cursor.getColumnIndex("name")).thenReturn(-1)
+    val commandContext = new AndroidCommandContextForTesting(EntityTypeForTesting)
+    val exception = intercept[IllegalArgumentException] {
+      EntityTypeForTesting.name.findApplicable(Persistence.Latest, cursor, UriPath.EMPTY, commandContext)
+    }
+    exception.getMessage must include ("not")
+    exception.getMessage must include ("name")
+  }
+
+  @Test
+  def persistenceShouldReturnNoneIfNullInContentValues() {
+    val contentValues = mock[ContentValues]
+    when(contentValues.getAsString("name")).thenReturn(null)
+    val commandContext = new AndroidCommandContextForTesting(EntityTypeForTesting)
+    EntityTypeForTesting.name.findApplicable(ContentValuesStorageType, contentValues, UriPath.EMPTY, commandContext) must be (None)
+  }
+
+  @Test
+  def persistenceFieldShouldNotBeDefinedIfColumnNotInContentValues() {
+    val contentValues = mock[ContentValues]
+    when(contentValues.containsKey("name")).thenReturn(false)
+    val commandContext = new AndroidCommandContextForTesting(EntityTypeForTesting)
+    val exception = intercept[IllegalArgumentException] {
+      EntityTypeForTesting.name.findApplicable(ContentValuesStorageType, contentValues, UriPath.EMPTY, commandContext)
+    }
+    exception.getMessage must include ("not")
+    exception.getMessage must include ("name")
+  }
+
+  @Test
+  def persistenceShouldPutNullIntoContentValuesForNoValue() {
+    val contentValues = mock[ContentValues]
+    val commandContext = new AndroidCommandContextForTesting(EntityTypeForTesting)
+    EntityTypeForTesting.name.updateWithValue(Persistence.Latest, contentValues, None, UriPath.EMPTY, commandContext)
+    verify(contentValues).putNull("name")
+  }
+
+  @Test
+  def persistenceShouldNotPutAnythingIntoContentValuesForUndefined() {
+    val contentValues = mock[ContentValues]
+    val commandContext = new AndroidCommandContextForTesting(EntityTypeForTesting)
+    val unknownSourceType = new SourceType {}
+    EntityTypeForTesting.copyAndUpdate(unknownSourceType, new Object, UriPath.EMPTY, Persistence.Latest, contentValues, commandContext)
+    verifyNoMoreInteractions(contentValues)
+  }
+
+  @Test
+  def shouldGetCriteriaCorrectlyForANumber() {
+    val commandContext = new AndroidCommandContextForTesting(EntityTypeForTesting)
+    val source = new MapStorage(EntityTypeForTesting.age -> Some(19))
+    val criteria: SQLiteCriteria = EntityTypeForTesting.copyAndUpdate(
+      MapStorage, source, UriPath.EMPTY, Query, new SQLiteCriteria(), commandContext)
+    criteria.selection must be (List("age=19"))
+  }
+
+  @Test
+  def shouldGetCriteriaCorrectlyForAString() {
+    val commandContext = new AndroidCommandContextForTesting(EntityTypeForTesting)
+    val source = new MapStorage(EntityTypeForTesting.name -> Some("John Doe"))
+    val criteria: SQLiteCriteria = EntityTypeForTesting.copyAndUpdate(
+      MapStorage, source, UriPath.EMPTY, Query, new SQLiteCriteria(), commandContext)
+    criteria.selection must be (List("name=\"John Doe\""))
+  }
+
+  @Test
+  def shouldHandleMultipleSelectionCriteria() {
+    val commandContext = new AndroidCommandContextForTesting(EntityTypeForTesting)
+    val source = new MapStorage(EntityTypeForTesting.name -> Some("John Doe"), EntityTypeForTesting.age -> Some(19))
+    val criteria: SQLiteCriteria = EntityTypeForTesting.copyAndUpdate(
+      MapStorage, source, UriPath.EMPTY, Query, new SQLiteCriteria(), commandContext)
+    criteria.selection.toSet must be (Set("name=\"John Doe\"", "age=19"))
+  }
 }
+

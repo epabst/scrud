@@ -3,6 +3,7 @@ package com.github.scrud.android
 import com.github.scrud.platform.{PlatformDriver, TestingPlatformDriver}
 import com.github.scrud.{EntityType, EntityName, CrudApplication}
 import com.github.scrud.persistence.{EntityTypeMapForTesting, EntityTypeMap, PersistenceFactory}
+import com.github.scrud.context.ApplicationName
 
 /**
  * A test application.
@@ -22,7 +23,5 @@ class CrudApplicationForTesting(platformDriver: PlatformDriver, entityTypeMap: E
   def this(entityType1: EntityType, otherEntityTypes: EntityType*) {
     this(EntityTypeMapForTesting((entityType1 +: otherEntityTypes).toSet))
   }
-
-  val name = "test app"
 
 }

@@ -2,7 +2,8 @@ package com.github.scrud.android.persistence
 
 import com.github.scrud.util.MutableListenerSet
 import com.github.scrud.persistence.DataListener
-import com.github.scrud.{EntityType, CrudApplication}
+import com.github.scrud.EntityType
+import com.github.scrud.android.{AndroidCommandContext, CrudAndroidApplication}
 
 /**
  * A [[com.github.scrud.android.persistence.ContentResolverCrudPersistence]] for testing.
@@ -10,11 +11,12 @@ import com.github.scrud.{EntityType, CrudApplication}
  * Date: 3/24/13
  * Time: 12:01 AM
  */
-object ContentResolverCrudPersistenceForTesting {
-  def apply(entityType: EntityType, application: CrudApplication): ContentResolverCrudPersistence = {
-    val contentProvider = new CrudContentProviderForTesting(application)
-    val contentResolver = new ContentResolverForTesting(Map(application -> contentProvider))
-    new ContentResolverCrudPersistence(entityType, contentResolver, application,
-      new MutableListenerSet[DataListener])
+class ContentResolverCrudPersistenceForTesting(entityType: EntityType, application: CrudAndroidApplication,
+                                               contentProvider: CrudContentProviderForTesting, commandContext: AndroidCommandContext)
+  extends ContentResolverCrudPersistence(entityType, new ContentResolverForTesting(Map(application.applicationName -> contentProvider)),
+    application.entityTypeMap, commandContext, new MutableListenerSet[DataListener]) {
+
+  def this(entityType: EntityType, application: CrudAndroidApplication, commandContext: AndroidCommandContext) {
+    this(entityType, application, new CrudContentProviderForTesting(application), commandContext)
   }
 }

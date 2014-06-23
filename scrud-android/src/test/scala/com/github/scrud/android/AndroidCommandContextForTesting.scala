@@ -8,6 +8,8 @@ import view.AndroidConversions._
 import collection.mutable
 import com.github.scrud.platform.PlatformTypes
 import scala.concurrent.Future
+import com.github.scrud.persistence.{EntityTypeMapForTesting, EntityTypeMap}
+import com.github.scrud.EntityType
 
 /**
  * An [[com.github.scrud.android.AndroidCommandContext]] for use when testing.
@@ -18,6 +20,14 @@ import scala.concurrent.Future
 class AndroidCommandContextForTesting(application: CrudAndroidApplication,
                                       activity: Context with ActivityStateHolder = new ActivityStateHolderForTesting)
     extends AndroidCommandContext(activity, application) {
+
+  def this(entityTypeMap: EntityTypeMap) {
+    this(new CrudAndroidApplication(entityTypeMap))
+  }
+
+  def this(entityType: EntityType) {
+    this(new EntityTypeMapForTesting(entityType))
+  }
 
   val displayedMessageKeys: mutable.Buffer[PlatformTypes.SKey] = mutable.Buffer()
 

@@ -12,7 +12,7 @@ import com.github.scrud.EntityName
 abstract class DerivedCrudPersistence[E <: AnyRef](val persistenceConnection: PersistenceConnection,
                                                    protected val listenerSet: ListenerSet[DataListener],
                                                    delegateEntityNames: EntityName*)
-        extends SeqCrudPersistence[E] with ReadOnlyPersistence with DelegatingListenerSet[DataListener] {
+        extends TypedReadOnlyCrudPersistence[E] with DelegatingListenerSet[DataListener] {
   {
     val sharedContext = persistenceConnection.sharedContext
     val listenerForDelegateChanges = NotifyDataListenerSetListener(listenerSet)

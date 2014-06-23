@@ -82,11 +82,16 @@ trait PersistenceConnectionDelegator {
 
   def delete(uri: UriPath): Int = persistenceFor(uri).delete(uri)
 
-  def save(entityName: EntityName, sourceType: SourceType, idOpt: Option[ID], source: AnyRef): ID = {
+  def save(entityName: EntityName, idOpt: Option[ID], sourceType: SourceType, source: AnyRef): ID = {
     val sourceUri = entityName.toUri(idOpt)
     val persistence = persistenceFor(entityName)
     val dataToSave = persistenceConnection.entityTypeMap.entityType(entityName).copyAndUpdate(sourceType, source, sourceUri,
       persistence.targetType, persistence.newWritable(), persistenceConnection.commandContext)
     persistence.save(idOpt, dataToSave)
+  }
+
+  @deprecated("specify idOpt before sourceType", since = "2014-06-19")
+  def save(entityName: EntityName, sourceType: SourceType, idOpt: Option[ID], source: AnyRef): ID = {
+    save(entityName, idOpt, sourceType, source)
   }
 }

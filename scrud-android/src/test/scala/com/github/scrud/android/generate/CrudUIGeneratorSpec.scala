@@ -6,25 +6,27 @@ import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import com.github.scrud.android._
 import org.scalatest.mock.MockitoSugar
-import com.github.scrud.{FieldName, CrudApplication, EntityType}
 import com.github.scrud.types.TitleQT
 import com.github.scrud.persistence.{PersistenceFactoryForTesting, EntityTypeMapForTesting}
-import com.github.scrud.platform.representation.SummaryUI
+import com.github.scrud.android.testres.R
 
 /** A behavior specification for [[com.github.scrud.android.generate.CrudUIGenerator]].
   * @author Eric Pabst (epabst@gmail.com)
   */
 @RunWith(classOf[JUnitRunner])
 class CrudUIGeneratorSpec extends FunSpec with MustMatchers with MockitoSugar {
-  val platformDriver = new AndroidPlatformDriver(classOf[res.R])
-  val displayName = "My Name"
-  val viewIdFieldInfo = ViewIdFieldInfo("foo", displayName, platformDriver.field(EntityTypeForTesting.entityName, FieldName("foo"), TitleQT, Seq(SummaryUI)))
+  val platformDriver = new AndroidPlatformDriver(classOf[R])
+  val entityType = new EntityTypeForTesting(platformDriver = platformDriver)
+  private val entityTypeMap = new EntityTypeMapForTesting(entityType)
+  val entityTypeViewInfo = new EntityTypeViewInfo(entityType, entityTypeMap)
+//  val entityFieldInfo = entityTypeViewInfo.entityFieldInfos.head
+  val viewIdFieldInfo = entityTypeViewInfo.displayableViewIdFieldInfos.head
 
   describe("fieldLayoutForHeader") {
     it("must show the display name") {
       val position = 0
       val fieldLayout = CrudUIGenerator.fieldLayoutForHeader(viewIdFieldInfo, position)
-      fieldLayout.attributes.find(_.key == "text").get.value.text must be ("My Name")
+      fieldLayout.attributes.find(_.key == "text").get.value.text must be ("Name")
     }
 
     it("must put the first field on the left side of the screen") {
@@ -60,44 +62,40 @@ class CrudUIGeneratorSpec extends FunSpec with MustMatchers with MockitoSugar {
 
   describe("generateValueStrings") {
     it("must include 'list', 'add' and 'edit' strings for modifiable entities") {
-      val myEntityType = new EntityTypeForTesting
-      val application = new CrudApplication(platformDriver, EntityTypeMapForTesting(Set[EntityType](myEntityType))) {
-        val name = "Test App"
-      }
-      val valueStrings = CrudUIGenerator.generateValueStrings(EntityTypeViewInfo(myEntityType, application))
+      val valueStrings = CrudUIGenerator.generateValueStrings(entityTypeViewInfo)
       valueStrings.foreach(println(_))
       (valueStrings \\ "string").length must be (3)
+      valueStrings.toString().toLowerCase must include("list")
+      valueStrings.toString().toLowerCase must include("add")
+      valueStrings.toString().toLowerCase must include("edit")
     }
 
     it("must not include an 'add' string for unaddable entities") {
       val myEntityType = new EntityTypeForTesting {
         field("model", TitleQT, Seq(BundleStorage))
       }
-      val entityTypeMap = EntityTypeMapForTesting(new PersistenceFactoryForTesting(myEntityType) {
+      val entityTypeMap = new EntityTypeMapForTesting(myEntityType -> new PersistenceFactoryForTesting {
         override def canCreate: Boolean = false
       })
-      val application = new CrudApplication(platformDriver, entityTypeMap) {
-        val name = "Test App"
-      }
-      val valueStrings = CrudUIGenerator.generateValueStrings(EntityTypeViewInfo(myEntityType, application))
+      val valueStrings = CrudUIGenerator.generateValueStrings(EntityTypeViewInfo(myEntityType, entityTypeMap))
       valueStrings.foreach(println(_))
       (valueStrings \\ "string").length must be (2)
+      valueStrings.toString().toLowerCase must include("list")
+      valueStrings.toString().toLowerCase must include("edit")
     }
 
     it("must not include 'add' and 'edit' strings for unmodifiable entities") {
-      val _entityType = new EntityTypeForTesting {
+      val myEntityType = new EntityTypeForTesting {
         field("model", TitleQT, Seq(BundleStorage))
       }
-      val entityTypeMap = EntityTypeMapForTesting(new PersistenceFactoryForTesting(_entityType) {
+      val entityTypeMap = new EntityTypeMapForTesting(myEntityType -> new PersistenceFactoryForTesting {
         override def canCreate: Boolean = false
         override val canSave: Boolean = false
       })
-      val application = new CrudApplication(platformDriver, entityTypeMap) {
-        val name = "Test App"
-      }
-      val valueStrings = CrudUIGenerator.generateValueStrings(EntityTypeViewInfo(_entityType, application))
+      val valueStrings = CrudUIGenerator.generateValueStrings(EntityTypeViewInfo(myEntityType, entityTypeMap))
       valueStrings.foreach(println(_))
       (valueStrings \\ "string").length must be (1)
+      valueStrings.toString().toLowerCase must include("list")
     }
   }
 }

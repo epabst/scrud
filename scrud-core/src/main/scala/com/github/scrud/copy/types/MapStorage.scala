@@ -44,8 +44,21 @@ class MapStorage extends AnyRef {
   def put(entityName: EntityName, fieldName: FieldName, valueOpt: Option[_]) = {
     valueOpt match {
       case Some(value) => map.put(toKey(entityName, fieldName), value)
-      case None => map.remove(toKey(entityName, fieldName))
+      case None => remove(entityName, fieldName)
     }
+  }
+
+  def -(fieldDeclaration: FieldDeclaration[_]): this.type = {
+    remove(fieldDeclaration)
+    this
+  }
+
+  def remove(fieldDeclaration: FieldDeclaration[_]) {
+    remove(fieldDeclaration.entityName, fieldDeclaration.fieldName)
+  }
+
+  def remove(entityName: EntityName, fieldName: FieldName) {
+    map.remove(toKey(entityName, fieldName))
   }
 
   private def toKey(entityName: EntityName, fieldName: FieldName): String = {

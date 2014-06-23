@@ -57,7 +57,7 @@ class EntityFieldInfoSpec extends FunSpec with MustMatchers with MockitoSugar {
     it("must provide a single field for an EntityView field to allow choosing Entity instance") {
       val fieldInfos = fieldInfo_name.updateableViewIdFieldInfos
       fieldInfos.map(_.id) must be (List("foo"))
-      fieldInfos.map(_.layout).head.head.label must be ("Spinner")
+      fieldInfos.map(_.layoutForEditUI(0)).head.head.label must be ("Spinner")
     }
   }
 

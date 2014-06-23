@@ -20,6 +20,10 @@ import com.github.scrud.android.backup.DeletedEntityTypeMap
  * Time: 5:07 PM
  */
 class CrudAndroidApplication(val entityNavigation: EntityNavigation) extends Application with SharedContext {
+  def this(entityTypeMap: EntityTypeMap) {
+    this(new EntityNavigation(entityTypeMap))
+  }
+
   override def entityTypeMap: EntityTypeMap = entityNavigation.entityTypeMap
 
   private lazy val classInApplicationPackage: Class[_] = entityTypeMap.allEntityTypes.head.getClass

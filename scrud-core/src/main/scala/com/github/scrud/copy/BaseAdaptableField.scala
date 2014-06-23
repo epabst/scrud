@@ -14,6 +14,9 @@ abstract class BaseAdaptableField {
 
   def findSourceField(sourceType: SourceType): Option[SourceField[Any]]
 
+  def targetFieldOrFail(targetType: TargetType): TargetField[Nothing] =
+    findTargetField(targetType).getOrElse(sys.error(this + " has no TargetField for " + targetType))
+
   def findTargetField(targetType: TargetType): Option[TargetField[Nothing]]
 
   def hasSourceField(sourceType: SourceType) = findSourceField(sourceType).isDefined

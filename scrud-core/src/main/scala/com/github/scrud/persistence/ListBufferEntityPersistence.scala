@@ -13,7 +13,7 @@ import java.util.concurrent.atomic.AtomicLong
  *         Time: 4:57 PM
  */
 class ListBufferEntityPersistence[E <: AnyRef](entityName: EntityName, newWritableFunction: => E,
-                                               listenerSet: ListenerSet[DataListener]) extends SeqEntityPersistence[E] {
+                                               listenerSet: ListenerSet[DataListener]) extends TypedEntityPersistence[E] {
   private case class IDAndEntity(id: ID, entity: E) {
     override def toString = id + " -> " + entity
   }

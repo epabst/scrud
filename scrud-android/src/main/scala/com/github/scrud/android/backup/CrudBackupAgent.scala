@@ -62,7 +62,7 @@ class CrudBackupAgent extends BackupAgent with ActivityStateHolder with Delegate
 
   def onBackup(entityType: EntityType, data: BackupTarget, commandContext: AndroidCommandContext) {
     commandContext.findAll(entityType.toUri, MapStorage).foreach { entityStorage =>
-      val id = entityType.findPersistedId(entityStorage, entityType.toUri).get
+      val id = entityStorage.get(entityType.id).get
       data.writeEntity(entityType.entityName + "#" + id, Some(entityStorage.toMap))
     }
   }

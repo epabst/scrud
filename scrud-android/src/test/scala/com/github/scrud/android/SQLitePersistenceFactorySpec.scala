@@ -18,9 +18,9 @@ import com.github.scrud._
 import com.github.scrud.EntityName
 import state.ActivityStateHolder
 import com.github.scrud.android.testres.R
-import com.github.scrud.types.NaturalIntQT
+import com.github.scrud.types.{TitleQT, NaturalIntQT}
 import com.github.scrud.copy.types.{MapStorage, Default}
-import com.github.scrud.platform.representation.Persistence
+import com.github.scrud.platform.representation.{EditUI, DetailUI, Persistence}
 import com.github.scrud.context.SharedContextForTesting
 import com.github.scrud.copy.SourceType
 
@@ -51,15 +51,16 @@ class SQLitePersistenceFactorySpec extends MustMatchers with CrudMockitoSugar wi
   }
 
   val entityTypeMap = new EntityTypeMapForTesting(TestEntityType -> SQLitePersistenceFactory)
-  val androidApplication = new CrudAndroidApplication(new EntityNavigationForTesting(entityTypeMap))
+  val androidApplication = new CrudAndroidApplication(entityTypeMap)
 
   @Test
   def shouldUseCorrectColumnNamesForFindAll() {
-    new AndroidCommandContext(null, new CrudAndroidApplication(new EntityNavigationForTesting(entityTypeMap)))
-
-    val entityTypePersistedInfo = EntityTypePersistedInfo(TestEntityType)
+    val entityTypePersistedInfo = EntityTypePersistedInfo(new EntityTypeForTesting {
+      field("unpersisted", TitleQT, Seq(EditUI, DetailUI, Default("hello")))
+    })
     entityTypePersistedInfo.queryFieldNames must contain(BaseColumns._ID)
     entityTypePersistedInfo.queryFieldNames must contain("age")
+    entityTypePersistedInfo.queryFieldNames must not(contain("unpersisted"))
   }
 
   @Test
@@ -84,7 +85,7 @@ class SQLitePersistenceFactorySpec extends MustMatchers with CrudMockitoSugar wi
       }
     }
     //UseDefaults is provided here in the item list for the sake of PortableField.adjustment[SQLiteCriteria] fields
-    val id = commandContext.save(TestEntity, SourceType.none, None, SourceType.none)
+    val id = commandContext.save(TestEntity, None, SourceType.none, SourceType.none)
     val uri = persistence.toUri(id)
     persistence.find(uri)
     persistence.findAll(UriPath.EMPTY)
@@ -107,12 +108,12 @@ class SQLitePersistenceFactorySpec extends MustMatchers with CrudMockitoSugar wi
     val listAdapter = activity.getAdapterView.getAdapter
     listAdapter.getCount must be (0)
 
-    val id = commandContext.save(TestEntity, SourceType.none, None, SourceType.none)
+    val id = commandContext.save(TestEntity, None, SourceType.none, SourceType.none)
     //it must have refreshed the listAdapter
     listAdapter.getCount must be (if (runningOnRealAndroid) 1 else 0)
 
     listAdapter.registerDataSetObserver(observer)
-    commandContext.save(TestEntity, MapStorage, Some(id), new MapStorage(TestEntityType.age -> Some(50)))
+    commandContext.save(TestEntity, Some(id), MapStorage, new MapStorage(TestEntityType.age -> Some(50)))
     //it must have refreshed the listAdapter (notified the observer)
     listAdapter.unregisterDataSetObserver(observer)
     listAdapter.getCount must be (if (runningOnRealAndroid) 1 else 0)

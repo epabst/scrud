@@ -7,6 +7,7 @@ import com.github.scrud.{BaseFieldDeclaration, EntityName}
 import com.github.scrud.platform.representation.{PersistenceRange, DetailUI, EditUI}
 import com.github.scrud.persistence.EntityTypeMap
 import com.github.scrud.copy.TargetField
+import com.github.scrud.util.Name
 
 case class EntityFieldInfo(field: BaseFieldDeclaration, rIdClasses: Seq[Class[_]], entityTypeMap: EntityTypeMap) {
   val entityName = field.entityName
@@ -17,7 +18,7 @@ case class EntityFieldInfo(field: BaseFieldDeclaration, rIdClasses: Seq[Class[_]
     field.toAdaptableField.findTargetField(DetailUI).toSeq.map { targetField =>
       val viewRef = platformDriver.toViewRef(entityName, "", field.fieldName)
       val idString = viewRef.fieldName(rIdClasses)
-      val displayName = FieldLayout.toDisplayName(idString.stripPrefix(fieldPrefix))
+      val displayName = Name(idString.stripPrefix(fieldPrefix)).toDisplayableString
       ViewIdFieldInfo(idString, displayName, field, targetField, entityTypeMap)
     }
   }
@@ -42,13 +43,17 @@ case class EntityFieldInfo(field: BaseFieldDeclaration, rIdClasses: Seq[Class[_]
     field.toAdaptableField.findTargetField(EditUI).toSeq.map { targetField =>
       val viewRef = platformDriver.toViewRef(entityName, "edit_", field.fieldName)
       val idString = viewRef.fieldName(rIdClasses)
-      val displayName = FieldLayout.toDisplayName(idString.stripPrefix(fieldPrefix))
+      val displayName = Name(idString.stripPrefix(fieldPrefix)).toDisplayableString
       ViewIdFieldInfo(idString, displayName, field, targetField, entityTypeMap)
     }
   }
 }
 
 case class ViewIdFieldInfo(id: String, displayName: String, field: BaseFieldDeclaration, targetField: TargetField[Nothing], entityTypeMap: EntityTypeMap) {
+  def this(id: String, field: BaseFieldDeclaration, targetField: TargetField[Nothing], entityTypeMap: EntityTypeMap) {
+    this(id, Name(id).toDisplayableString, field, targetField, entityTypeMap)
+  }
+
   private val defaultLayoutOpt: Option[NodeSeq] = targetField match {
     case viewTargetField: TypedViewTargetField[_,_] => Some(viewTargetField.defaultLayout)
     case _ => None
@@ -87,10 +92,10 @@ case class ViewIdFieldInfo(id: String, displayName: String, field: BaseFieldDecl
     case x => x
   }
 
-  private def adjustHeadNode(xml: NodeSeq, f: Node => Node): NodeSeq = xml.headOption.map(f(_) +: xml.tail).getOrElse(xml)
+  private def adjustHeadNode(xml: NodeSeq, f: Node => Node): NodeSeq = xml.headOption.fold(xml)(f(_) +: xml.tail)
 }
 
 object ViewIdFieldInfo {
   def apply(id: String, field: BaseFieldDeclaration, targetField: TargetField[Nothing], entityTypeMap: EntityTypeMap): ViewIdFieldInfo =
-    ViewIdFieldInfo(id, FieldLayout.toDisplayName(id), field, targetField, entityTypeMap)
+    ViewIdFieldInfo(id, Name(id).toDisplayableString, field, targetField, entityTypeMap)
 }

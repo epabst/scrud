@@ -14,24 +14,24 @@ class AndroidResourceAnalyzerSpec extends FunSpec with MustMatchers {
   describe("detectRIdClasses") {
     it("must be able to find all of the R.id instances") {
       AndroidResourceAnalyzer.detectRIdClasses(classOf[SiblingToR]) must
-              be (Seq(classOf[R.id], classOf[android.R.id], classOf[com.github.scrud.android.res.R.id]))
+              be (Seq(classOf[R.id], classOf[android.R.id]))
     }
 
     it("must look in parent packages to find the application R.id instance") {
       AndroidResourceAnalyzer.detectRIdClasses(classOf[subpackage.ClassInSubpackage]) must
-              be (Seq(classOf[R.id], classOf[android.R.id], classOf[com.github.scrud.android.res.R.id]))
+              be (Seq(classOf[R.id], classOf[android.R.id]))
     }
   }
 
   describe("detectRLayoutClasses") {
     it("must be able to find all of the R.layout instances") {
       AndroidResourceAnalyzer.detectRLayoutClasses(classOf[SiblingToR]) must
-              be (Seq(classOf[R.layout], classOf[android.R.layout], classOf[com.github.scrud.android.res.R.layout]))
+              be (Seq(classOf[R.layout], classOf[android.R.layout]))
     }
 
     it("must look in parent packages to find the application R.layout instance") {
       AndroidResourceAnalyzer.detectRLayoutClasses(classOf[subpackage.ClassInSubpackage]) must
-              be (Seq(classOf[R.layout], classOf[android.R.layout], classOf[com.github.scrud.android.res.R.layout]))
+              be (Seq(classOf[R.layout], classOf[android.R.layout]))
     }
   }
 

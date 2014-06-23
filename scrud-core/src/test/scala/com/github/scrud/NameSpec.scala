@@ -26,6 +26,18 @@ class NameSpec extends FunSpec with MustMatchers {
     it("must preserve the original") {
       EntityName("My dog's bark is awesome!").toDisplayableString must be ("My dog's bark is awesome!")
     }
+
+    it("must add a space before capital letters") {
+      FieldName("anIdentifier").toDisplayableString.count(_ == ' ') must be (1)
+    }
+
+    it("must uppercase the first character") {
+      FieldName("anIdentifier").toDisplayableString must be ("An Identifier")
+    }
+
+    it("must replace '_' with a space and upper case the next letter") {
+      FieldName("a_cool_identifier").toDisplayableString must be ("A Cool Identifier")
+    }
   }
 
   describe("toTitleCase") {

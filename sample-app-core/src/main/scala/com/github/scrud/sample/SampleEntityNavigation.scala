@@ -9,10 +9,10 @@ import com.github.scrud.EntityNavigation
  *         Date: 2/6/14
  *         Time: 12:51 AM
  */
-class SampleEntityNavigation(override val entityTypeMap: SampleEntityTypeMap, platformDriver: PlatformDriver)
-    extends EntityNavigation(SampleApplication, entityTypeMap, platformDriver) {
+class SampleEntityNavigation(override val entityTypeMap: SampleEntityTypeMap)
+    extends EntityNavigation(entityTypeMap) {
 
   def this(platformDriver: PlatformDriver) {
-    this(new SampleEntityTypeMap(platformDriver), platformDriver)
+    this(new SampleEntityTypeMap(platformDriver))
   }
 }
