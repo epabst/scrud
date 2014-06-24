@@ -1,32 +1,22 @@
-package com.github.scrud.platform
+package com.github.scrud.copy
 
-import com.github.scrud.copy._
-import com.github.scrud.copy.AdaptableFieldWithRepresentations
-import com.github.scrud.copy.MapTargetField
 import com.github.scrud.{FieldName, EntityName}
 import com.github.scrud.types.QualifiedType
+import com.github.scrud.platform.AdaptableFieldFactory
 import com.github.scrud.copy.types.MapStorage
 
 /**
- * An [[com.github.scrud.platform.AdaptableFieldFactory]] that simply uses MapStorage
- * for every specified SourceType and TargetType.
+ * An [[com.github.scrud.platform.AdaptableFieldFactory]] that enables copying to/from a MapStorage,
+ * regardless of whether or not it was specified as a Representation.
  * @author Eric Pabst (epabst@gmail.com)
- *         Date: 2/11/14
- *         Time: 3:13 PM
+ *         Date: 6/24/14
  */
 class MapStorageAdaptableFieldFactory extends AdaptableFieldFactory {
   def adapt[V](entityName: EntityName, fieldName: FieldName, qualifiedType: QualifiedType[V], representations: Seq[Representation[V]]): AdaptableFieldWithRepresentations[V] = {
-    val representationsByType = representations.collect {
-      case representationByType: RepresentationByType[V] if !representationByType.isInstanceOf[AdaptableFieldConvertible[_]] =>
-        representationByType
-    }
-    val applicability = representationsByType.foldLeft(FieldApplicability.Empty)(_ + toFieldApplicability(_))
     val sourceField = createSourceField[V](entityName, fieldName, qualifiedType)
     val targetField = createTargetField[V](entityName, fieldName, qualifiedType)
-    val fieldByType = new AdaptableFieldByType[V](
-      applicability.from.map(_ -> sourceField).toMap,
-      applicability.to.map(_ -> targetField).toMap)
-    AdaptableFieldWithRepresentations(fieldByType, representationsByType.toSet)
+    val fieldByType = new AdaptableFieldByType[V](Seq(MapStorage -> sourceField), Seq(MapStorage -> targetField))
+    AdaptableFieldWithRepresentations(fieldByType, Set(MapStorage))
   }
 
   def createSourceField[V](entityName: EntityName, fieldName: FieldName, qualifiedType: QualifiedType[V]): TypedSourceField[MapStorage, V] = {
@@ -39,10 +29,6 @@ class MapStorageAdaptableFieldFactory extends AdaptableFieldFactory {
 
   def createTargetField[V](entityName: EntityName, fieldName: FieldName, qualifiedType: QualifiedType[V]): TypedTargetField[MapStorage, V] =
     new MapTargetField[V](entityName, fieldName)
-
-  def toFieldApplicability(representation: RepresentationByType[Any]): FieldApplicability = {
-    representation.toPlatformIndependentFieldApplicability
-  }
 }
 
 object MapStorageAdaptableFieldFactory extends MapStorageAdaptableFieldFactory

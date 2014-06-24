@@ -33,3 +33,8 @@ dependencies {
     // todo don't include when running simple unit tests since slf4j-jdk14 should be used then.
     runtime "org.slf4j:slf4j-android:1.6.1-RC1"
 }
+
+tasks.withType(Test) {
+    scanForTestClasses = false
+    include "**/*Spec.class"
+}

@@ -22,7 +22,9 @@ public final class R {
     public static final int my_map_row = 202;
   }
   public static final class string {
-      public static final int delete_item = 301;
-      public static final int edit_test = 302;
+      public static final int add_my_map = 301;
+      public static final int edit_my_map = 302;
+      public static final int delete_item = 310;
+      public static final int edit_test = 311;
   }
 }

@@ -10,4 +10,4 @@ import java.io.File
  * Time: 6:22 PM
  */
 class CustomRobolectricTestRunner(testClass: Class[_])
-    extends RobolectricTestRunner(testClass, new File("../scrud-android-res"))
+    extends RobolectricTestRunner(testClass, new File("src/test"))
