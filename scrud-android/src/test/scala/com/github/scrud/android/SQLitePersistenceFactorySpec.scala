@@ -1,10 +1,8 @@
 package com.github.scrud.android
 
 import _root_.android.provider.BaseColumns
-import _root_.android.app.Activity
 import _root_.android.database.{Cursor, DataSetObserver}
 import _root_.android.widget.ListView
-import com.github.scrud.state._
 import com.github.scrud.persistence._
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -16,7 +14,6 @@ import Mockito._
 import com.github.scrud.util.{Logging, CrudMockitoSugar}
 import com.github.scrud._
 import com.github.scrud.EntityName
-import state.ActivityStateHolder
 import com.github.scrud.android.testres.R
 import com.github.scrud.types.{TitleQT, NaturalIntQT}
 import com.github.scrud.copy.types.{MapStorage, Default}
@@ -133,9 +130,4 @@ class SQLitePersistenceFactorySpec extends MustMatchers with CrudMockitoSugar wi
   def tableNameMustNotBeReservedWord(name: String) {
     SQLitePersistenceFactory.toTableName(EntityName(name)) must be (name + "0")
   }
-}
-
-class ActivityStateHolderForTesting extends Activity with ActivityStateHolder {
-  val activityState = new State
-  val applicationState = new State
 }

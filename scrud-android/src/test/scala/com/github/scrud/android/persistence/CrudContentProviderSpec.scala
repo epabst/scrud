@@ -8,7 +8,6 @@ import com.github.scrud.{UriPath, EntityName}
 import com.github.scrud.android.view.AndroidConversions._
 import android.content.{ContentValues, ContentResolver}
 import com.github.scrud.android._
-import com.github.scrud.state.State
 import com.github.scrud.persistence.EntityTypeMapForTesting
 import scala.Some
 import view.AndroidConversions
@@ -86,8 +85,4 @@ class CrudContentProviderSpec extends CrudMockitoSugar with MustMatchers {
 
     provider.delete(uri1, null, Array.empty) must be (0)
   }
-}
-
-class CrudContentProviderForTesting(override val androidApplication: CrudAndroidApplication) extends CrudContentProvider {
-  val applicationState = new State
 }
