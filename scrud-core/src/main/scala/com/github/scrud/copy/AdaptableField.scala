@@ -31,11 +31,43 @@ abstract class AdaptableField[V] extends BaseAdaptableField { self =>
 }
 
 object AdaptableField {
-  def apply[V](sourceFields: Seq[(SourceType,SourceField[V])], targetFields: Seq[(TargetType,TargetField[V])]) =
+  def apply[V](delegates: Seq[ExtensibleAdaptableField[V]]): ExtensibleAdaptableField[V] = {
+    combineByType(flattenComposites(delegates).filter(_ != AdaptableField.empty))
+  }
+
+  def apply[V](sourceFields: Seq[(SourceType,SourceField[V])], targetFields: Seq[(TargetType,TargetField[V])]): AdaptableFieldByType[V] =
     new AdaptableFieldByType[V](sourceFields, targetFields)
 
-  def apply[V](sourceFields: Map[SourceType,SourceField[V]], targetFields: Map[TargetType,TargetField[V]]) =
+  def apply[V](sourceFields: Map[SourceType,SourceField[V]], targetFields: Map[TargetType,TargetField[V]]): AdaptableFieldByType[V] =
     new AdaptableFieldByType[V](sourceFields, targetFields)
+
+  private def flattenComposites[V](delegates: Seq[ExtensibleAdaptableField[V]]): Seq[ExtensibleAdaptableField[V]] = {
+    val (composites: Seq[CompositeAdaptableField[V]], others) = delegates.partition(_.isInstanceOf[CompositeAdaptableField[V]])
+    composites.flatMap(composite => flattenComposites(composite.delegates)) ++ others
+  }
+
+  private def combineByType[V](delegates: Seq[ExtensibleAdaptableField[V]]): ExtensibleAdaptableField[V] = {
+    val (adaptableFieldByTypeSeq: Seq[AdaptableFieldByType[V]], otherAdaptableFields) =
+      delegates.partition(_.isInstanceOf[AdaptableFieldByType[V]])
+    if (adaptableFieldByTypeSeq.isEmpty) {
+      if (otherAdaptableFields.isEmpty) {
+        AdaptableField.empty[V]
+      } else if (otherAdaptableFields.tail.isEmpty) {
+        otherAdaptableFields.head
+      } else {
+        new CompositeAdaptableField[V](otherAdaptableFields)
+      }
+    } else {
+      val fieldByType = new AdaptableFieldByType[V](
+        adaptableFieldByTypeSeq.flatMap(_.sourceFields.toSeq),
+        adaptableFieldByTypeSeq.flatMap(_.targetFields.toSeq))
+      if (otherAdaptableFields.isEmpty) {
+        fieldByType
+      } else {
+        new CompositeAdaptableField[V](fieldByType +: otherAdaptableFields)
+      }
+    }
+  }
 
   private val Empty = new ExtensibleAdaptableField[Any] {
     def findSourceField(sourceType: SourceType): Option[Nothing] = None

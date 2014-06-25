@@ -28,15 +28,16 @@ class AndroidDisplayUIFieldFactory(platformDriver: AndroidPlatformDriver) extend
    */
   def adapt[V](entityName: EntityName, fieldName: FieldName, qualifiedType: QualifiedType[V],
                representations: Seq[Representation[V]]): AdaptableFieldWithRepresentations[V] = {
-    val displayUIs = representations.collect { case displayUI: DisplayUI => displayUI }
+    val displayUIs = representations.collect { case displayUI: DisplayUI => displayUI.targetTypes }.flatten
     if (!displayUIs.isEmpty) {
       val targetField: ViewTargetField[V] = qualifiedType match {
         case stringConvertibleType: StringConvertibleQT[V] => new TextViewField[V](stringConvertibleType, defaultTextViewLayout)
         case referencedEntityName @ EntityName(_) => new EntityReferenceView(referencedEntityName).asInstanceOf[TypedViewTargetField[_ <: View,V]]
       }
       val viewSpecifier = platformDriver.toViewSpecifier(entityName, "", fieldName)
+      val nestedTargetField = targetField.forTargetView(viewSpecifier)
       AdaptableFieldWithRepresentations(AdaptableField(Seq.empty,
-        displayUIs.map(_ -> targetField.forTargetView(viewSpecifier))), displayUIs.toSet)
+        displayUIs.map(_ -> nestedTargetField)), displayUIs.toSet[Representation[V]])
     } else {
       AdaptableFieldWithRepresentations.empty
     }

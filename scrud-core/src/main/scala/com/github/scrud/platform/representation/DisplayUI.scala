@@ -9,4 +9,8 @@ import com.github.scrud.copy.{RepresentationByType, TargetType}
  *         Date: 12/11/13
  *         Time: 9:16 AM
  */
-abstract class DisplayUI extends TargetType with RepresentationByType[Nothing]
+abstract class DisplayUI extends TargetType with RepresentationByType[Nothing] {
+  def impliedTargetTypes: Seq[DisplayUI]
+
+  final lazy val targetTypes: Seq[DisplayUI] = this +: impliedTargetTypes
+}

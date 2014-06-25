@@ -11,7 +11,6 @@ import scala.util.Try
 import com.github.scrud.platform.PlatformTypes._
 import com.github.scrud.FieldName
 import com.github.scrud.EntityName
-import com.github.scrud.copy.CompositeAdaptableField
 import com.github.scrud.action.PlatformCommand
 
 /**
@@ -90,12 +89,12 @@ trait PlatformDriver extends Logging {
       val convertibles = representations.collect {
         case convertible: AdaptableFieldConvertible[V] => convertible
       }
-      val field = CompositeAdaptableField(convertibles.map(_.toAdaptableField))
+      val field = AdaptableField(convertibles.map(_.toAdaptableField))
       AdaptableFieldWithRepresentations(field, convertibles.toSet)
     }
   }
 
-  final lazy val fieldFactories = platformSpecificFieldFactories :+ AdaptableFieldConvertibleFactory
+  final lazy val fieldFactories = platformSpecificFieldFactories :+ AdaptableFieldConvertibleFactory :+ MapStorageAdaptableFieldFactory
 
   def field[V](entityName: EntityName, fieldName: FieldName, qualifiedType: QualifiedType[V], representations: Seq[Representation[V]]): ExtensibleAdaptableField[V] = {
     val fieldWithRepresentations = adapt(fieldFactories, entityName, fieldName, qualifiedType, representations)

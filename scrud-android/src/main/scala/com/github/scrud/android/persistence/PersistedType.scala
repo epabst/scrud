@@ -5,6 +5,7 @@ import android.content.ContentValues
 import android.os.Bundle
 import com.github.scrud.types._
 import scala.collection.concurrent
+import com.github.scrud.EntityName
 
 private[persistence] trait BasePersistedType {
   def sqliteType: String
@@ -78,6 +79,7 @@ object PersistedType {
   def apply[T](qualifiedType: QualifiedType[T]): PersistedType[T] = {
     qualifiedType match {
       case q: LongQualifiedType => enforceTypeMatch[Long,T](q, PersistedType.longType)
+      case q: EntityName => enforceTypeMatch[Long,T](q, PersistedType.longType)
       case q: IntQualifiedType => enforceTypeMatch[Int,T](q, PersistedType.intType)
       case q: StringQualifiedType => enforceTypeMatch[String,T](q, PersistedType.stringType)
       case q: DoubleQualifiedType => enforceTypeMatch[Double,T](q, PersistedType.doubleType)

@@ -7,4 +7,6 @@ package com.github.scrud.platform.representation
  *         Date: 12/11/13
  *         Time: 9:16 AM
  */
-object SummaryUI extends DisplayUI
+object SummaryUI extends DisplayUI {
+  override def impliedTargetTypes: Seq[DisplayUI] = DetailUI.targetTypes
+}

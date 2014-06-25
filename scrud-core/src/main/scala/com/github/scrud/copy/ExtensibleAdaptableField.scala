@@ -22,7 +22,7 @@ abstract class ExtensibleAdaptableField[V] extends AdaptableField[V] with Adapta
     if (adaptableField == AdaptableField.empty) {
       this
     } else {
-      CompositeAdaptableField[V](Vector(this, adaptableField))
+      AdaptableField[V](Vector(this, adaptableField))
     }
   }
 

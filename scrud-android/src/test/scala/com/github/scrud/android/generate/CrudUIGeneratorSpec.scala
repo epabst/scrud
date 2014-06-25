@@ -19,8 +19,8 @@ class CrudUIGeneratorSpec extends FunSpec with MustMatchers with MockitoSugar {
   val entityType = new EntityTypeForTesting(platformDriver = platformDriver)
   private val entityTypeMap = new EntityTypeMapForTesting(entityType)
   val entityTypeViewInfo = new EntityTypeViewInfo(entityType, entityTypeMap)
-//  val entityFieldInfo = entityTypeViewInfo.entityFieldInfos.head
-  val viewIdFieldInfo = entityTypeViewInfo.displayableViewIdFieldInfos.head
+  val displayableViewIdFieldInfos = entityTypeViewInfo.displayableViewIdFieldInfos
+  val viewIdFieldInfo = displayableViewIdFieldInfos.head
 
   describe("fieldLayoutForHeader") {
     it("must show the display name") {

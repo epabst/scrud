@@ -8,6 +8,7 @@ import org.scalatest.mock.MockitoSugar
 import com.github.scrud.copy.types.{Default, MapStorage}
 
 /**
+ * A behavior specification for [[com.github.scrud.copy.AdaptableField]].
  * @author Eric Pabst (epabst@gmail.com)
  *         Date: 6/24/14
  */
@@ -20,10 +21,10 @@ class AdaptableFieldSpec extends FunSpec with MustMatchers with MockitoSugar {
 
   describe("AdaptableField.apply") {
     it("must combine AdaptableFieldByType instances") {
-      val composite = CompositeAdaptableField[String](Seq(
+      val field = AdaptableField[String](Seq(
         new AdaptableFieldByType(Seq(EditUI -> sourceField1), Seq(EditUI -> targetField1)),
         new AdaptableFieldByType(Seq(MapStorage -> sourceField2), Seq(SummaryUI -> targetField2))))
-      val CompositeAdaptableField(Seq(field: AdaptableFieldByType[String])) = composite
+      field.isInstanceOf[AdaptableFieldByType[String]] must be (true)
       field.findSourceField(EditUI) must not be None
       field.findSourceField(MapStorage) must not be None
       field.findTargetField(EditUI) must not be None
@@ -31,11 +32,11 @@ class AdaptableFieldSpec extends FunSpec with MustMatchers with MockitoSugar {
     }
 
     it("must combine AdaptableFieldByType instances even if already combined with others") {
-      val composite = CompositeAdaptableField[String](Seq(
-        CompositeAdaptableField[String](Seq(
+      val composite = AdaptableField[String](Seq(
+        AdaptableField[String](Seq(
           new AdaptableFieldByType(Seq(EditUI -> sourceField1), Seq(EditUI -> targetField1)),
           Default("hello"))),
-        CompositeAdaptableField[String](Seq(
+        AdaptableField[String](Seq(
           new AdaptableFieldByType(Seq(MapStorage -> sourceField2), Seq(SummaryUI -> targetField2)),
           Default("hi")))))
       val CompositeAdaptableField(Seq(field: AdaptableFieldByType[String],

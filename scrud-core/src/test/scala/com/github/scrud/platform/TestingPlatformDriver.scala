@@ -28,10 +28,10 @@ class TestingPlatformDriver extends PlatformDriver {
 
   private object PersistenceFieldFactory extends PersistenceAdaptableFieldFactory {
     def sourceField[V](entityName: EntityName, fieldName: FieldName, qualifiedType: QualifiedType[V]) =
-      MapStorageAdaptableFieldFactory.createSourceField(entityName, fieldName, qualifiedType)
+      UniversalMapStorageAdaptableFieldFactory.createSourceField(entityName, fieldName, qualifiedType)
 
     def targetField[V](entityName: EntityName, fieldName: FieldName, qualifiedType: QualifiedType[V]) =
-      MapStorageAdaptableFieldFactory.createTargetField(entityName, fieldName, qualifiedType)
+      UniversalMapStorageAdaptableFieldFactory.createTargetField(entityName, fieldName, qualifiedType)
   }
 
   def idFieldName(entityName: EntityName): String = "id"
@@ -65,7 +65,7 @@ class TestingPlatformDriver extends PlatformDriver {
   /** The command to undo the last delete. */
   def commandToUndoDelete = PlatformCommand(ActionKey("command1"), None, None)
 
-  val platformSpecificFieldFactories = Seq(MapStorageAdaptableFieldFactory, PersistenceFieldFactory)
+  val platformSpecificFieldFactories = Seq(UniversalMapStorageAdaptableFieldFactory, PersistenceFieldFactory)
 
 }
 

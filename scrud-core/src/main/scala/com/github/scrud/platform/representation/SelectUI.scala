@@ -10,4 +10,6 @@ import com.github.scrud.copy.StorageType
  *         Time: 9:16 AM
  */
 //todo rename to IdentifyUI
-object SelectUI extends DisplayUI with StorageType
+object SelectUI extends DisplayUI with StorageType {
+  override def impliedTargetTypes: Seq[DisplayUI] = SummaryUI.targetTypes
+}
