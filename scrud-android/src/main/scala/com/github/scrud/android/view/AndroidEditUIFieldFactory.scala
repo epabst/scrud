@@ -45,7 +45,7 @@ class AndroidEditUIFieldFactory(platformDriver: AndroidPlatformDriver) extends A
         case qType@EntityName(_) => SelectEntityView(qType).asInstanceOf[ViewStorageField[V]]
         case qType@ImageQT => new CapturedImageStorageField(platformDriver).asInstanceOf[ViewStorageField[V]]
       }
-      val viewSpecifier = platformDriver.toViewSpecifier(entityName, "edit_", fieldName)
+      val viewSpecifier = platformDriver.toViewSpecifier("edit_", fieldName)
 
       val additionalSourceFields: Seq[(SourceType,SourceField[V])] = qualifiedType match {
         case qType@ImageQT => Seq(new ActivityResult(viewSpecifier.viewRef) ->

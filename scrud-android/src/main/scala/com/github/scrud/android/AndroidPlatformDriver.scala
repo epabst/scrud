@@ -80,11 +80,11 @@ class AndroidPlatformDriver(rClass: Class[_], val activityClass: Class[_ <: Crud
     QueryAdaptableFieldFactory
   )
 
-  def toViewSpecifier(entityName: EntityName, fieldPrefix: String, fieldName: FieldName): ViewSpecifier =
-    new ViewSpecifier(toViewRef(entityName, fieldPrefix, fieldName))
+  def toViewSpecifier(fieldPrefix: String, fieldName: FieldName): ViewSpecifier =
+    new ViewSpecifier(toViewRef(fieldPrefix, fieldName))
 
-  def toViewRef(entityName: EntityName, fieldPrefix: String, fieldName: FieldName): ViewRef = {
-    val viewKey = entityName.toSnakeCase + "_" + fieldPrefix + fieldName
+  def toViewRef(fieldPrefix: String, fieldName: FieldName): ViewRef = {
+    val viewKey = fieldPrefix + fieldName
     ViewRef(viewKey, rClass, "id")
   }
 
@@ -144,8 +144,4 @@ class AndroidPlatformDriver(rClass: Class[_], val activityClass: Class[_ <: Crud
    * @see [[com.github.scrud.EntityType.idField]]
    */
   override def idFieldName(entityName: EntityName): String = BaseColumns._ID
-}
-
-object AndroidPlatformDriver {
-  def fieldPrefix(entityName: EntityName): String = entityName.toString + "_"
 }

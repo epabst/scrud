@@ -34,7 +34,7 @@ class AndroidDisplayUIFieldFactory(platformDriver: AndroidPlatformDriver) extend
         case stringConvertibleType: StringConvertibleQT[V] => new TextViewField[V](stringConvertibleType, defaultTextViewLayout)
         case referencedEntityName @ EntityName(_) => new EntityReferenceView(referencedEntityName).asInstanceOf[TypedViewTargetField[_ <: View,V]]
       }
-      val viewSpecifier = platformDriver.toViewSpecifier(entityName, "", fieldName)
+      val viewSpecifier = platformDriver.toViewSpecifier("", fieldName)
       val nestedTargetField = targetField.forTargetView(viewSpecifier)
       AdaptableFieldWithRepresentations(AdaptableField(Seq.empty,
         displayUIs.map(_ -> nestedTargetField)), displayUIs.toSet[Representation[V]])

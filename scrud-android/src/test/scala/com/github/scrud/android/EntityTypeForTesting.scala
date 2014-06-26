@@ -21,6 +21,8 @@ class EntityTypeForTesting(entityName: EntityName = EntityForTesting, platformDr
   val age = field("age", NaturalIntQT, Seq(Persistence(1), EditUI, SummaryUI, Query))
 
   val url = field("url", UriQT, Seq(Persistence(1), Query))
+
+  val parent = field("parent", EntityForTesting, Seq(Persistence(1), DetailUI, EditUI))
 }
 
 object EntityTypeForTesting extends EntityTypeForTesting(EntityForTesting, AndroidPlatformDriverForTesting)

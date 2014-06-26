@@ -9,6 +9,7 @@ import org.scalatest.mock.MockitoSugar
 import com.github.scrud.types.TitleQT
 import com.github.scrud.persistence.{PersistenceFactoryForTesting, EntityTypeMapForTesting}
 import com.github.scrud.android.testres.R
+import com.github.scrud.platform.representation.DetailUI
 
 /** A behavior specification for [[com.github.scrud.android.generate.CrudUIGenerator]].
   * @author Eric Pabst (epabst@gmail.com)
@@ -19,7 +20,8 @@ class CrudUIGeneratorSpec extends FunSpec with MustMatchers with MockitoSugar {
   val entityType = new EntityTypeForTesting(platformDriver = platformDriver)
   private val entityTypeMap = new EntityTypeMapForTesting(entityType)
   val entityTypeViewInfo = new EntityTypeViewInfo(entityType, entityTypeMap)
-  val displayableViewIdFieldInfos = entityTypeViewInfo.displayableViewIdFieldInfos
+  val displayableEntityTypeViewInfo = new TargetedEntityTypeViewInfo(entityTypeViewInfo, DetailUI)
+  val displayableViewIdFieldInfos = displayableEntityTypeViewInfo.viewIdFieldInfos
   val viewIdFieldInfo = displayableViewIdFieldInfos.head
 
   describe("fieldLayoutForHeader") {

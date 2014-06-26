@@ -50,7 +50,7 @@ class CapturedImageStorageFieldSpec extends MustMatchers with MockitoSugar {
     }
     val copyContext: CopyContext = new CopyContext(UriPath.EMPTY, new CommandContextForTesting(EntityTypeForTesting))
 
-    val viewRef = platformDriver.toViewRef(entityType.entityName, "", entityType.imageField.fieldName)
+    val viewRef = platformDriver.toViewRef("", entityType.imageField.fieldName)
     val adaptableField: ExtensibleAdaptableField[netaporter.uri.Uri] = entityType.imageField.toAdaptableField
     adaptableField.findSourceField(ActivityResult(viewRef)).get.findValue(intent, copyContext) must be (Some(uri))
   }

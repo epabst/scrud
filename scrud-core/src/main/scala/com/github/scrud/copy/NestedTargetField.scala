@@ -4,7 +4,7 @@ package com.github.scrud.copy
  * A TargetField that has a TargetField that operates on only part of the target.
  * @author epabst@gmail.com on 5/15/14.
  */
-class NestedTargetField[V](partSpecifier: SourceField[AnyRef], nestedField: TargetField[V]) extends TargetField[V] {
+class NestedTargetField[V](partSpecifier: SourceField[AnyRef], val nestedField: TargetField[V]) extends TargetField[V] {
   /**
    * Updates the <code>target</code> subject using the <code>valueOpt</code> for this field and some context.
    * @return the updated target, which should be the target itself if mutable.

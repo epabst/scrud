@@ -16,11 +16,4 @@ case class EntityTypeViewInfo(entityType: EntityType, entityTypeMap: EntityTypeM
   lazy val layoutPrefix = entityType.entityName.toSnakeCase
   lazy val rIdClasses: Seq[Class[_]] = detectRIdClasses(entityType.getClass)
   lazy val entityFieldInfos: List[EntityFieldInfo] = entityType.fieldDeclarations.map(EntityFieldInfo(_, rIdClasses, entityTypeMap)).toList
-  private[generate] lazy val shallowDisplayableViewIdFieldInfos: List[ViewIdFieldInfo] = entityFieldInfos.flatMap(_.shallowDisplayableViewIdFieldInfos)
-  lazy val displayableViewIdFieldInfos: List[ViewIdFieldInfo] = entityFieldInfos.flatMap(_.displayableViewIdFieldInfos)
-  lazy val shortDisplayableViewIdFieldInfos: List[ViewIdFieldInfo] =
-    shallowDisplayableViewIdFieldInfos.filter(!_.defaultLayoutOrEmpty.toString().contains("textMultiLine"))
-  lazy val identifyingDisplayableViewIdFieldInfos: List[ViewIdFieldInfo] = shortDisplayableViewIdFieldInfos.take(1)
-  lazy val updateableViewIdFieldInfos: List[ViewIdFieldInfo] = entityFieldInfos.flatMap(_.updateableViewIdFieldInfos)
-  lazy val isUpdateable: Boolean = !updateableViewIdFieldInfos.isEmpty
 }

@@ -8,14 +8,14 @@ import com.github.scrud.android._
 import org.scalatest.mock.MockitoSugar
 import com.github.scrud.{EntityType, EntityName}
 import com.github.scrud.android.testres.R
-import com.github.scrud.platform.representation.SummaryUI
+import com.github.scrud.platform.representation.{DetailUI, SummaryUI}
 import com.github.scrud.persistence.EntityTypeMapForTesting
 
-/** A behavior specification for [[com.github.scrud.android.generate.EntityFieldInfo]].
+/** A behavior specification for [[com.github.scrud.android.generate.TargetedEntityTypeViewInfo]].
   * @author Eric Pabst (epabst@gmail.com)
   */
 @RunWith(classOf[JUnitRunner])
-class EntityTypeViewInfoSpec extends FunSpec with MustMatchers with MockitoSugar {
+class TargetedEntityTypeViewInfoSpec extends FunSpec with MustMatchers with MockitoSugar {
   object SelfReferencingEntity extends EntityName("SelfReferencingEntity")
 
   val platformDriver = new AndroidPlatformDriver(classOf[R])
@@ -29,8 +29,9 @@ class EntityTypeViewInfoSpec extends FunSpec with MustMatchers with MockitoSugar
   describe("displayableViewIdFieldInfos") {
     it("must not have an infinite loop for a self-referencing EntityType") {
       val info = EntityTypeViewInfo(SelfReferencingEntityType, entityTypeMap)
-      val fieldInfos = info.displayableViewIdFieldInfos
-      fieldInfos.size must be (4)
+      val displayableInfo = TargetedEntityTypeViewInfo(info, DetailUI)
+      val fieldInfos = displayableInfo.viewIdFieldInfos
+      fieldInfos.size must be <= 10
     }
   }
 }
