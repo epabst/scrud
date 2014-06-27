@@ -4,7 +4,7 @@ import _root_.android.content.{ContentResolver, ContentProvider, ContentValues}
 import _root_.android.database.Cursor
 import _root_.android.net.Uri
 import com.github.scrud._
-import com.github.scrud.android.{CrudAndroidApplication, AndroidCommandContext}
+import com.github.scrud.android.{CrudAndroidApplicationLike, AndroidCommandContext}
 import android.state.ActivityStateHolder
 import com.github.scrud.android.view.AndroidConversions._
 import state.{ApplicationConcurrentMapVal, State}
@@ -23,7 +23,7 @@ import com.github.scrud.platform.representation.Persistence
 abstract class CrudContentProvider extends ContentProvider with ActivityStateHolder {
   // The reason this isn't derived from getContext.getApplicationContext is so that this ContentProvider
   // may be instantiated within a foreign application for efficiency.
-  protected[scrud] def androidApplication: CrudAndroidApplication
+  protected[scrud] def androidApplication: CrudAndroidApplicationLike
   lazy val activityState: State = new State
   lazy val commandContext = new AndroidCommandContext(getContext, this, androidApplication)
   lazy val contentResolver = getContext.getContentResolver

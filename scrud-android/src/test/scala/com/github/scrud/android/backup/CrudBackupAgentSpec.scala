@@ -13,12 +13,12 @@ import com.github.scrud.persistence._
 import com.github.scrud.platform.TestingPlatformDriver
 import com.github.scrud._
 import org.mockito.stubbing.Answer
-import com.github.scrud.android.{EntityTypeForTesting, AndroidCommandContextForTesting, CrudAndroidApplication, CustomRobolectricTestRunner}
+import com.github.scrud.android._
 import com.github.scrud.copy.types.{Default, Validation, MapStorage}
 import com.github.scrud.types.{NaturalIntQT, TitleQT}
 import com.github.scrud.platform.representation.{SelectUI, EditUI, Persistence}
+import com.github.scrud.android.EntityTypeForTesting
 import com.github.scrud.EntityName
-import scala.Some
 
 /** A test for [[com.github.scrud.android.backup.CrudBackupAgent]].
   * @author Eric Pabst (epabst@gmail.com)
@@ -61,7 +61,7 @@ class CrudBackupAgentSpec extends MustMatchers with CrudMockitoSugar {
       when(backupTarget.writeEntity(eql("OtherMap#101"), any())).thenAnswer(saveRestoreItem(restoreItems))
       when(backupTarget.writeEntity(eql("OtherMap#104"), any())).thenAnswer(saveRestoreItem(restoreItems))
       val backupAgent1 = new CrudBackupAgent {
-        override lazy val androidApplication: CrudAndroidApplication = application1
+        override lazy val androidApplication: CrudAndroidApplicationLike = application1
       }
       val state1 = mock[ParcelFileDescriptor]
       backupAgent1.onCreate()
@@ -82,7 +82,7 @@ class CrudBackupAgentSpec extends MustMatchers with CrudMockitoSugar {
       commandContext.findAll(entityTypeB2.toUri, entityTypeB2.id).size must be (0)
 
       val backupAgent2 = new CrudBackupAgent {
-        override lazy val androidApplication: CrudAndroidApplication = application2
+        override lazy val androidApplication: CrudAndroidApplicationLike = application2
       }
       val state2 = mock[ParcelFileDescriptor]
       backupAgent2.onCreate()

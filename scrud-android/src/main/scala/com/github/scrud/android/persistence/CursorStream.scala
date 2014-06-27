@@ -21,10 +21,12 @@ case class EntityTypePersistedInfo(entityType: EntityType) {
   * @author Eric Pabst (epabst@gmail.com)
   */
 case class CursorStream(cursor: Cursor, entityTypePersistedInfo: EntityTypePersistedInfo, commandContext: CommandContext) extends Stream[MapStorage] {
+  val storageType = MapStorage
+
   override lazy val headOption: Option[MapStorage] = {
     if (cursor.moveToNext) {
       val entityType = entityTypePersistedInfo.entityType
-      Some(entityType.copyAndUpdate(Persistence.Latest, cursor, entityType.toUri, MapStorage, commandContext))
+      Some(entityType.copyAndUpdate(Persistence.Latest, cursor, entityType.toUri, storageType, commandContext))
     } else {
       cursor.close()
       None

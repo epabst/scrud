@@ -10,9 +10,8 @@ import com.github.scrud.EntityType
 import com.github.scrud.util.{ExternalLogging, DelegateLogging}
 import com.github.scrud.state.State
 import scala.Some
-import com.github.scrud.android.AndroidCommandContext
+import com.github.scrud.android.{CrudAndroidApplicationLike, AndroidCommandContext, CrudAndroidApplication}
 import com.github.scrud.android.state.ActivityStateHolder
-import com.github.scrud.android.CrudAndroidApplication
 import com.github.scrud.copy.types.MapStorage
 import com.github.scrud.copy.CopyContext
 
@@ -22,7 +21,7 @@ import com.github.scrud.copy.CopyContext
   */
 
 class CrudBackupAgent extends BackupAgent with ActivityStateHolder with DelegateLogging {
-  lazy val androidApplication = getApplicationContext.asInstanceOf[CrudAndroidApplication]
+  lazy val androidApplication: CrudAndroidApplicationLike = getApplicationContext.asInstanceOf[CrudAndroidApplicationLike]
 
   val commandContext = new AndroidCommandContext(this, androidApplication)
   val commandContextWithBackupApplication: AndroidCommandContext = commandContext.copy(entityTypeMap = androidApplication.deletedEntityTypeMap)

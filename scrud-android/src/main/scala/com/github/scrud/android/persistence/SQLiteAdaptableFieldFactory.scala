@@ -32,6 +32,9 @@ object SQLiteAdaptableFieldFactory extends PersistenceAdaptableFieldFactory {
     override def findFieldValue(cursor: Cursor, context: CopyContext): Option[V] = {
 //      todo is this faster?    val columnIndex = weakColumnIndexByCursor.getOrElseUpdate(cursor, cursor.getColumnIndex(persistedFieldName))
       val columnIndex = cursor.getColumnIndex(persistedFieldName)
+      if (columnIndex < 0) {
+        throw new IllegalArgumentException("column=" + persistedFieldName + " does not exist in cursor=" + cursor)
+      }
       persistedType.getValue(cursor, columnIndex)
     }
   }

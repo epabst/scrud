@@ -103,7 +103,7 @@ class CrudActivity extends FragmentActivity with OptionsMenuActivity with Loader
   //final since only here as a convenience method.
   final def stateHolder = commandContext.stateHolder
 
-  lazy val sharedContext = getApplication.asInstanceOf[CrudAndroidApplication]
+  lazy val sharedContext = getApplication.asInstanceOf[CrudAndroidApplicationLike]
 
   override lazy val platformDriver: AndroidPlatformDriver = super.platformDriver.asInstanceOf[AndroidPlatformDriver]
 

@@ -8,7 +8,7 @@ import android.app.Activity
  * @author Eric Pabst (epabst@gmail.com)
  *         Date: 6/24/14
  */
-class ActivityStateHolderForTesting extends Activity with ActivityStateHolder {
+class ActivityStateHolderForTesting extends ActivityStateHolder {
   val activityState = new State
   val applicationState = new State
 }

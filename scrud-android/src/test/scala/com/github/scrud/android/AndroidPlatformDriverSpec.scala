@@ -156,7 +156,7 @@ class AndroidPlatformDriverSpec extends CrudMockitoSugar with MustMatchers {
   }
 
   def assertQualifiedTypeRecognized(qualifiedType: QualifiedType[_]) {
-    val field = driver.field(EntityName("Bar"), FieldName("foo"), qualifiedType, Seq.empty)
+    val field = driver.field(EntityName("Bar"), FieldName("foo"), qualifiedType, Seq(DetailUI))
     field.toAdaptableField.findTargetField(DetailUI) must be ('isDefined)
   }
 

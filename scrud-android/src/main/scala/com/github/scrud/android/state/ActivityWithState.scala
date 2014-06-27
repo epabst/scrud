@@ -2,7 +2,7 @@ package com.github.scrud.android.state
 
 import android.app.Activity
 import com.github.scrud.state.State
-import com.github.scrud.android.CrudAndroidApplication
+import com.github.scrud.android.CrudAndroidApplicationLike
 
 /**
  * The state for an Android Activity mixed in with the Activity itself.
@@ -12,7 +12,7 @@ import com.github.scrud.android.CrudAndroidApplication
  */
 trait ActivityWithState extends Activity with ActivityStateHolder {
   // getApplication gets the Android application, which should extend CrudAndroidApplication
-  lazy val applicationState: State = getApplication.asInstanceOf[CrudAndroidApplication].applicationState
+  lazy val applicationState: State = getApplication.asInstanceOf[CrudAndroidApplicationLike].applicationState
 
   lazy val activityState = new State
 }

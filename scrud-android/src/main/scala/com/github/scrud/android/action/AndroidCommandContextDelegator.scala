@@ -1,7 +1,7 @@
 package com.github.scrud.android.action
 
 import com.github.scrud.context.CommandContextDelegator
-import com.github.scrud.android.{CrudAndroidApplication, AndroidPlatformDriver, AndroidCommandContext}
+import com.github.scrud.android.{CrudAndroidApplicationLike, AndroidPlatformDriver, AndroidCommandContext}
 
 /**
  * A CommandContextHolder for Android.
@@ -10,7 +10,7 @@ import com.github.scrud.android.{CrudAndroidApplication, AndroidPlatformDriver, 
 trait AndroidCommandContextDelegator extends CommandContextDelegator {
   protected def commandContext: AndroidCommandContext
 
-  def androidApplication: CrudAndroidApplication = commandContext.androidApplication
+  def androidApplication: CrudAndroidApplicationLike = commandContext.androidApplication
 
   override lazy val platformDriver: AndroidPlatformDriver = super.platformDriver.asInstanceOf[AndroidPlatformDriver]
 }

@@ -27,9 +27,9 @@ import com.github.scrud.action.Undoable
  * @author Eric Pabst (epabst@gmail.com)
  */
 @MicrotestCompatible(use = "new AndroidCommandContextForTesting(...)")
-case class AndroidCommandContext(context: Context, stateHolder: ActivityStateHolder, override val entityTypeMap: EntityTypeMap, androidApplication: CrudAndroidApplication)
+case class AndroidCommandContext(context: Context, stateHolder: ActivityStateHolder, override val entityTypeMap: EntityTypeMap, androidApplication: CrudAndroidApplicationLike)
     extends CommandContext with AndroidNotification {
-  def this(context: Context, stateHolder: ActivityStateHolder, androidApplication: CrudAndroidApplication) {
+  def this(context: Context, stateHolder: ActivityStateHolder, androidApplication: CrudAndroidApplicationLike) {
     this(context, stateHolder, stateHolder match {
       case _: CrudContentProvider =>
         androidApplication.entityTypeMap
@@ -46,7 +46,7 @@ case class AndroidCommandContext(context: Context, stateHolder: ActivityStateHol
     }, androidApplication)
   }
 
-  def this(activityContext: Context with ActivityStateHolder, androidApplication: CrudAndroidApplication) {
+  def this(activityContext: Context with ActivityStateHolder, androidApplication: CrudAndroidApplicationLike) {
     this(activityContext, activityContext, androidApplication)
   }
   

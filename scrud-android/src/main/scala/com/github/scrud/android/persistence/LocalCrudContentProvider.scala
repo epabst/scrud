@@ -1,6 +1,6 @@
 package com.github.scrud.android.persistence
 
-import com.github.scrud.android.CrudAndroidApplication
+import com.github.scrud.android.CrudAndroidApplicationLike
 import com.github.scrud.state.State
 
 /**
@@ -10,8 +10,7 @@ import com.github.scrud.state.State
  * Time: 5:24 PM
  */
 class LocalCrudContentProvider extends CrudContentProvider {
-  override lazy val androidApplication = getContext.getApplicationContext.asInstanceOf[CrudAndroidApplication]
+  override lazy val androidApplication: CrudAndroidApplicationLike = getContext.getApplicationContext.asInstanceOf[CrudAndroidApplicationLike]
 
   override def applicationState: State = commandContext.applicationState
 }
-

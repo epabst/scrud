@@ -9,7 +9,6 @@ import org.mockito.Mockito._
 import android.database.Cursor
 import com.github.scrud.android.{EntityTypeForTesting, AndroidCommandContextForTesting}
 import com.github.scrud.persistence.EntityTypeMapForTesting
-import com.github.scrud.platform.representation.Persistence
 
 /** A behavior specification for [[com.github.scrud.persistence.EntityPersistence]].
   * @author Eric Pabst (epabst@gmail.com)
@@ -28,7 +27,7 @@ class CursorStreamSpec extends FunSpec with MustMatchers with MockitoSugar {
   }
 
   it("must not instantiate the entire Stream for an infinite Cursor") {
-    val entityType = EntityTypeForTesting
+    val entityType = new EntityTypeForTesting()
     val cursor = mock[Cursor]
     stub(cursor.moveToNext).toReturn(true)
     stub(cursor.getColumnIndex("name")).toReturn(1)
@@ -37,7 +36,7 @@ class CursorStreamSpec extends FunSpec with MustMatchers with MockitoSugar {
     val commandContext = new AndroidCommandContextForTesting(new EntityTypeMapForTesting(entityType))
     val stream = CursorStream(cursor, EntityTypePersistedInfo(entityType), commandContext)
     val second = stream.tail.head
-    entityType.name.getRequired(Persistence.Latest, second, entityType.toUri, commandContext) must be ("Bryce")
+    entityType.name.getRequired(stream.storageType, second, entityType.toUri, commandContext) must be ("Bryce")
   }
 
   it("must have correct number of elements") {
@@ -74,7 +73,7 @@ class CursorStreamSpec extends FunSpec with MustMatchers with MockitoSugar {
     val stream = CursorStream(cursor, EntityTypePersistedInfo(entityType), commandContext)
     val second = stream.tail.head
     val first = stream.head
-    entityType.name.getRequired(Persistence.Latest, second, entityType.toUri, commandContext) must be ("Bryce")
-    entityType.name.getRequired(Persistence.Latest, first, entityType.toUri, commandContext) must be ("Allen")
+    entityType.name.getRequired(stream.storageType, second, entityType.toUri, commandContext) must be ("Bryce")
+    entityType.name.getRequired(stream.storageType, first, entityType.toUri, commandContext) must be ("Allen")
   }
 }

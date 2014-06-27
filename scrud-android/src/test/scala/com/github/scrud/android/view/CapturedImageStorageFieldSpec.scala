@@ -8,9 +8,9 @@ import org.mockito.Mockito._
 import com.github.scrud.android.action.{ActivityResultDataField, ActivityResult}
 import android.net.Uri
 import android.content.Intent
-import com.github.scrud.android.{AndroidPlatformDriver, CustomRobolectricTestRunner}
+import com.github.scrud.android.{EntityTypeForTesting, AndroidPlatformDriver, CustomRobolectricTestRunner}
 import com.github.scrud.copy.{ExtensibleAdaptableField, CopyContext}
-import com.github.scrud.{EntityTypeForTesting, UriPath}
+import com.github.scrud.UriPath
 import com.github.scrud.context.CommandContextForTesting
 import com.github.scrud.types.ImageQT
 import com.github.scrud.platform.representation.{EditUI, SelectUI}
