@@ -1,6 +1,6 @@
 package com.github.scrud.android.persistence
 
-import com.github.scrud.copy.StorageType
+import com.github.scrud.copy.{RepresentationByType, StorageType}
 
 /**
  * A StorageType for [[android.content.ContentValues]].
@@ -8,4 +8,4 @@ import com.github.scrud.copy.StorageType
  * @author Eric Pabst (epabst@gmail.com)
  *         Date: 6/23/14
  */
-object ContentValuesStorageType extends StorageType
+object ContentValuesStorage extends StorageType with RepresentationByType[Nothing]
