@@ -41,7 +41,7 @@ class ContentResolverPersistenceFactory(delegate: PersistenceFactory)
                 }
               }
             }
-            contentResolver.registerContentObserver(toUri(UriPath(entityType.entityName), sharedContext.applicationName), true, observer)
+            contentResolver.registerContentObserver(toUri(UriPath(entityType.entityName), sharedContext), true, observer)
           }
         })
         super.addListener(listener)

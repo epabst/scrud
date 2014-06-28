@@ -7,7 +7,6 @@ import org.scalatest.junit.JUnitRunner
 import com.github.scrud.android._
 import org.scalatest.mock.MockitoSugar
 import com.github.scrud.{EntityType, EntityName}
-import com.github.scrud.android.testres.R
 import com.github.scrud.platform.representation.{DetailUI, SummaryUI}
 import com.github.scrud.persistence.EntityTypeMapForTesting
 

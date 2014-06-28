@@ -37,7 +37,7 @@ class AndroidCommandContextForTesting(application: CrudAndroidApplicationLike,
 
   try {
     val contentProvider = new CrudContentProviderForTesting(application)
-    ShadowContentResolver.registerProvider(authorityFor(application.applicationName), contentProvider)
+    ShadowContentResolver.registerProvider(authorityFor(application), contentProvider)
   } catch {
     case e: RuntimeException if Option(e.getMessage).exists(_.contains("Stub!")) =>
       warn("Failed to register ContentProvider: " + e)

@@ -1,4 +1,4 @@
-package com.github.scrud.android.testres;
+package com.github.scrud.android;
 
 /**
  * An android resource for testing.

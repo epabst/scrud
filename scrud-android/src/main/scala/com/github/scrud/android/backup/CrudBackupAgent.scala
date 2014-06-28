@@ -10,7 +10,7 @@ import com.github.scrud.EntityType
 import com.github.scrud.util.{ExternalLogging, DelegateLogging}
 import com.github.scrud.state.State
 import scala.Some
-import com.github.scrud.android.{CrudAndroidApplicationLike, AndroidCommandContext, CrudAndroidApplication}
+import com.github.scrud.android.{CrudAndroidApplicationLike, AndroidCommandContext}
 import com.github.scrud.android.state.ActivityStateHolder
 import com.github.scrud.copy.types.MapStorage
 import com.github.scrud.copy.CopyContext

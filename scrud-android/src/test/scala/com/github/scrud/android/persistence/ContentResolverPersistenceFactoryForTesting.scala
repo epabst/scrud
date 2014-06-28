@@ -14,5 +14,5 @@ import com.github.scrud.android.CrudAndroidApplicationLike
 class ContentResolverPersistenceFactoryForTesting(delegate: PersistenceFactory, application: CrudAndroidApplicationLike)
     extends ContentResolverPersistenceFactory(delegate) {
   val contentProvider = new CrudContentProviderForTesting(application)
-  ShadowContentResolver.registerProvider(authorityFor(application.applicationName), contentProvider)
+  ShadowContentResolver.registerProvider(authorityFor(application), contentProvider)
 }

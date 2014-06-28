@@ -8,7 +8,6 @@ import com.github.scrud.android._
 import org.scalatest.mock.MockitoSugar
 import com.github.scrud.types.TitleQT
 import com.github.scrud.persistence.{PersistenceFactoryForTesting, EntityTypeMapForTesting}
-import com.github.scrud.android.testres.R
 import com.github.scrud.platform.representation.DetailUI
 
 /** A behavior specification for [[com.github.scrud.android.generate.CrudUIGenerator]].

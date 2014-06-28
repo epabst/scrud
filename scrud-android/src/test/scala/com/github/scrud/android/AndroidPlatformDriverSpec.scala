@@ -1,8 +1,8 @@
 package com.github.scrud.android
 
-import android.content.{ContentValues, Intent}
-import action.StartActivityOperation
-import com.github.scrud.{EntityNavigationForTesting, UriPath}
+import _root_.android.content.{ContentValues, Intent}
+import com.github.scrud.android.action.StartActivityOperation
+import com.github.scrud._
 import org.junit.Test
 import org.junit.runner.RunWith
 import com.github.scrud.android.action.AndroidOperation.toRichItent
@@ -10,18 +10,18 @@ import com.github.scrud.util.CrudMockitoSugar
 import com.github.scrud.types._
 import com.github.scrud.platform.representation.{Query, Persistence, DetailUI}
 import org.scalatest.MustMatchers
-import com.github.scrud.android.testres.R
 import com.github.scrud.persistence.EntityTypeMapForTesting
-import android.database.Cursor
+import _root_.android.database.Cursor
 import org.mockito.Mockito._
+import com.github.scrud.android.persistence.ContentValuesStorage
+import com.github.scrud.copy.SourceType
+import com.github.scrud.copy.types.MapStorage
 import com.github.scrud.FieldName
 import com.github.scrud.EntityName
 import scala.Some
 import com.github.scrud.action.OperationAction
 import com.github.scrud.types.EnumerationValueQT
-import com.github.scrud.android.persistence.{SQLiteCriteria, ContentValuesStorageType}
-import com.github.scrud.copy.SourceType
-import com.github.scrud.copy.types.MapStorage
+import com.github.scrud.android.persistence.SQLiteCriteria
 
 /** A test for [[com.github.scrud.android.AndroidPlatformDriver]].
   * @author Eric Pabst (epabst@gmail.com)
@@ -186,19 +186,7 @@ class AndroidPlatformDriverSpec extends CrudMockitoSugar with MustMatchers {
     val contentValues = mock[ContentValues]
     when(contentValues.getAsString("name")).thenReturn(null)
     val commandContext = new AndroidCommandContextForTesting(EntityTypeForTesting)
-    EntityTypeForTesting.name.findApplicable(ContentValuesStorageType, contentValues, UriPath.EMPTY, commandContext) must be (None)
-  }
-
-  @Test
-  def persistenceFieldShouldNotBeDefinedIfColumnNotInContentValues() {
-    val contentValues = mock[ContentValues]
-    when(contentValues.containsKey("name")).thenReturn(false)
-    val commandContext = new AndroidCommandContextForTesting(EntityTypeForTesting)
-    val exception = intercept[IllegalArgumentException] {
-      EntityTypeForTesting.name.findApplicable(ContentValuesStorageType, contentValues, UriPath.EMPTY, commandContext)
-    }
-    exception.getMessage must include ("not")
-    exception.getMessage must include ("name")
+    EntityTypeForTesting.name.findApplicable(ContentValuesStorage, contentValues, UriPath.EMPTY, commandContext) must be (None)
   }
 
   @Test
@@ -214,7 +202,11 @@ class AndroidPlatformDriverSpec extends CrudMockitoSugar with MustMatchers {
     val contentValues = mock[ContentValues]
     val commandContext = new AndroidCommandContextForTesting(EntityTypeForTesting)
     val unknownSourceType = new SourceType {}
-    EntityTypeForTesting.copyAndUpdate(unknownSourceType, new Object, UriPath.EMPTY, Persistence.Latest, contentValues, commandContext)
+    try {
+      EntityTypeForTesting.copyAndUpdate(unknownSourceType, new Object, UriPath.EMPTY, ContentValuesStorage, contentValues, commandContext)
+    } catch {
+      case e: UnsupportedOperationException if Option(e.getMessage).exists(_.contains(unknownSourceType.toString)) => Unit
+    }
     verifyNoMoreInteractions(contentValues)
   }
 
@@ -245,4 +237,3 @@ class AndroidPlatformDriverSpec extends CrudMockitoSugar with MustMatchers {
     criteria.selection.toSet must be (Set("name=\"John Doe\"", "age=19"))
   }
 }
-

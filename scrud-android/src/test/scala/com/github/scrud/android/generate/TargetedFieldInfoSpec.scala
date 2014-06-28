@@ -4,7 +4,6 @@ import org.scalatest.FunSpec
 import org.scalatest.matchers.MustMatchers
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
-import com.github.scrud.android.testres.R
 import com.github.scrud.android._
 import org.scalatest.mock.MockitoSugar
 import com.github.scrud.platform.representation.{EditUI, DetailUI}

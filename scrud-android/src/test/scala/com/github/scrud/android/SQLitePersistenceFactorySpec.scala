@@ -14,7 +14,6 @@ import Mockito._
 import com.github.scrud.util.{Logging, CrudMockitoSugar}
 import com.github.scrud._
 import com.github.scrud.EntityName
-import com.github.scrud.android.testres.R
 import com.github.scrud.types.{TitleQT, NaturalIntQT}
 import com.github.scrud.copy.types.{MapStorage, Default}
 import com.github.scrud.platform.representation.{EditUI, DetailUI, Persistence}

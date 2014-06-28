@@ -2,26 +2,26 @@ package com.github.scrud.android.view
 
 import org.junit.runner.RunWith
 import org.scalatest.matchers.MustMatchers
-import android.view.View
+import _root_.android.view.View
 import org.junit.Test
 import org.scalatest.mock.MockitoSugar
 import org.mockito.Mockito._
-import com.github.scrud.{FieldName, EntityType, UriPath, EntityName}
-import android.widget._
+import _root_.android.widget._
 import java.util.Locale
-import android.content.Context
+import _root_.android.content.Context
 import com.github.scrud.android._
 import org.mockito.Matchers
 import org.mockito.stubbing.Answer
 import org.mockito.invocation.InvocationOnMock
 import scala.reflect.Manifest
 import com.github.scrud.copy.CopyContext
-import scala.Some
-import com.github.scrud.android.testres.R
 import com.github.scrud.persistence.{PersistenceFactory, EntityTypeMapForTesting}
 import com.github.scrud.types.StringConvertibleQT
-import scala.util.{Success, Try}
+import scala.util.{Success,Try}
 import com.github.scrud.platform.representation.{EditUI, SummaryUI}
+import com.github.scrud.{android => _,_}
+import com.github.scrud.FieldName
+import com.github.scrud.EntityName
 
 /**
  * A behavior specification for Android EditUI and DisplayUI fields.
@@ -31,7 +31,7 @@ import com.github.scrud.platform.representation.{EditUI, SummaryUI}
 class ViewFieldSpec extends MustMatchers with MockitoSugar {
   class MyEntity(var string: String, var number: Int)
   val context = mock[Context]
-  val itemLayoutId = android.R.layout.simple_spinner_dropdown_item
+  val itemLayoutId = _root_.android.R.layout.simple_spinner_dropdown_item
   Locale.setDefault(Locale.US)
   private val platformDriver = new AndroidPlatformDriver(classOf[R])
   val application = new CrudApplicationForTesting(platformDriver, EntityTypeMapForTesting(Map.empty[EntityType,PersistenceFactory]))

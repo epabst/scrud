@@ -21,20 +21,19 @@ import scala.Some
 import com.github.scrud.action.CrudOperation
 import com.github.scrud.platform.representation.{EditUI, Persistence}
 import com.github.scrud.copy.types.MapStorage
-import com.github.scrud.android.testres.R
+import com.github.scrud.android.generate.CrudUIGeneratorForTesting
 
 /** A test for [[com.github.scrud.android.CrudActivity]].
   * @author Eric Pabst (epabst@gmail.com)
   */
 @RunWith(classOf[CustomRobolectricTestRunner])
-class CrudActivitySpec extends CrudMockitoSugar with MustMatchers {
+class CrudActivitySpec extends CrudUIGeneratorForTesting with CrudMockitoSugar with MustMatchers {
   val persistenceFactory = ListBufferPersistenceFactoryForTesting
   val listAdapter = mock[ListAdapter]
 
   @Test
   def shouldSaveOnBackPressed() {
-    val _entityType = EntityTypeForTesting
-    val application = new CrudAndroidApplication(new EntityTypeMapForTesting(_entityType -> persistenceFactory))
+    val application = new CrudAndroidApplication(entityTypeMap)
     val entity = new MapStorage(_entityType.name -> Some("Bob"), _entityType.age -> Some(25))
     val uri = UriPath(_entityType.entityName)
     val activity = new CrudActivityForTesting(application) {
@@ -53,8 +52,7 @@ class CrudActivitySpec extends CrudMockitoSugar with MustMatchers {
 
   @Test
   def onPauseShouldNotCreateANewIdEveryTime() {
-    val _entityType = EntityTypeForTesting
-    val application = new CrudAndroidApplication(new EntityTypeMapForTesting(_entityType -> persistenceFactory))
+    val application = new CrudAndroidApplication(entityTypeMap)
     val entity = Map[String,Option[Any]]("name" -> Some("Bob"), "age" -> Some(25))
     val uri = UriPath(_entityType.entityName)
     val activity = new CrudActivityForTesting(application) {
@@ -164,8 +162,7 @@ class CrudActivitySpec extends CrudMockitoSugar with MustMatchers {
     when(persistence.findAll(any())).thenReturn(Seq(Map[String,Any]("name" -> "Bob", "age" -> 25)))
     val _entityType = new EntityTypeForTesting
     val application = new CrudAndroidApplication(new EntityTypeMapForTesting(_entityType -> new PersistenceFactoryForTesting(persistence)))
-    class SomeCrudListActivity extends CrudActivityForTesting(application)
-    val activity = new SomeCrudListActivity
+    val activity = new CrudActivityForTesting(application)
     activity.setIntent(new Intent(Intent.ACTION_MAIN))
     activity.onCreate(null)
     activity.onPause()

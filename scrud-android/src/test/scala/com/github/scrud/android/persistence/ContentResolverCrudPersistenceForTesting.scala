@@ -13,7 +13,7 @@ import com.github.scrud.android.{CrudAndroidApplicationLike, AndroidCommandConte
  */
 class ContentResolverCrudPersistenceForTesting(entityType: EntityType, application: CrudAndroidApplicationLike,
                                                contentProvider: CrudContentProviderForTesting, commandContext: AndroidCommandContext)
-  extends ContentResolverCrudPersistence(entityType, new ContentResolverForTesting(Map(application.applicationName -> contentProvider)),
+  extends ContentResolverCrudPersistence(entityType, new ContentResolverForTesting(Seq(application.getClass -> contentProvider)),
     application.entityTypeMap, commandContext, new MutableListenerSet[DataListener]) {
 
   def this(entityType: EntityType, application: CrudAndroidApplicationLike, commandContext: AndroidCommandContext) {

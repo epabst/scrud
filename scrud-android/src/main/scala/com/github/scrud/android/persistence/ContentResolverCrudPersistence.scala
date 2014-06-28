@@ -25,7 +25,7 @@ class ContentResolverCrudPersistence(val entityType: EntityType, contentResolver
   private lazy val entityTypePersistedInfo = EntityTypePersistedInfo(entityType)
   private lazy val queryFieldNames = entityTypePersistedInfo.queryFieldNames.toArray
   private lazy val uriPathWithEntityName = UriPath(entityType.entityName)
-  private lazy val applicationUri = AndroidConversions.baseUriFor(entityTypeMap.applicationName)
+  private lazy val applicationUri = AndroidConversions.baseUriFor(commandContext.androidApplication)
 
   private def toUri(uriPath: UriPath): Uri = {
     AndroidConversions.withAppendedPath(applicationUri, uriPath)

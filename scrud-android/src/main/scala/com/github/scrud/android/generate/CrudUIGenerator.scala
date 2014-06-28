@@ -5,9 +5,9 @@ import xml._
 import com.github.scrud.android.view.AndroidConversions
 import com.github.scrud.{EntityName, EntityType}
 import com.github.scrud.util.{Logging, Common}
-import com.github.scrud.android.{AndroidPlatformDriver, CrudAndroidApplication}
+import com.github.scrud.android.{CrudAndroidApplicationLike, AndroidPlatformDriver, CrudAndroidApplication}
 import com.github.scrud.android.backup.CrudBackupAgent
-import scala.reflect.io.Path
+import scala.reflect.io.{File, Directory}
 import com.github.scrud.platform.representation.{EditUI, SelectUI, SummaryUI, DetailUI}
 import com.github.scrud.persistence.EntityTypeMap
 
@@ -15,7 +15,11 @@ import com.github.scrud.persistence.EntityTypeMap
   * @author Eric Pabst (epabst@gmail.com)
   */
 
-class CrudUIGenerator extends Logging {
+class CrudUIGenerator(val workingDir: Directory, overwrite: Boolean) extends Logging {
+  def this(overwrite: Boolean) {
+    this(Directory.Current.get, overwrite)
+  }
+
   protected def logTag = Common.logTag
   private val lineSeparator = System.getProperty("line.separator")
   private val androidScope: NamespaceBinding = <TextView xmlns:android="http://schemas.android.com/apk/res/android"/>.scope
@@ -31,20 +35,25 @@ class CrudUIGenerator extends Logging {
     }
   }
 
-  private def writeXmlToFile(file: scala.reflect.io.File, xml: Elem) {
+  private def writeXmlToFile(file: File, xml: Elem) {
     file.parent.createDirectory()
-    file.writeAll("""<?xml version="1.0" encoding="utf-8"?>""", lineSeparator, prettyPrinter.format(xml))
-    println("Wrote " + file)
+    if (overwrite || !file.exists) {
+      file.writeAll( """<?xml version="1.0" encoding="utf-8"?>""", lineSeparator, prettyPrinter.format(xml))
+      println("Wrote " + file)
+    } else {
+      println("Skipped writing to " + file + " since it already exists and overwrite=false")
+    }
   }
 
-  def generateAndroidManifest(entityTypeMap: EntityTypeMap, androidApplicationClass: Class[_],
+  def generateAndroidManifest(entityTypeMap: EntityTypeMap, androidApplicationClass: Class[_ <: CrudAndroidApplicationLike],
                               backupAgentClass: Class[_ <: CrudBackupAgent]): Elem = {
     if (!classOf[CrudAndroidApplication].isAssignableFrom(androidApplicationClass)) {
       throw new IllegalArgumentException(androidApplicationClass + " does not extend CrudAndroidApplication")
     }
+    val applicationPackageName = androidApplicationClass.getPackage.getName
     val activityNames = Seq(androidPlatformDriverFor(entityTypeMap).activityClass.getName)
     <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-              package={entityTypeMap.applicationName.packageName}>
+              package={applicationPackageName}>
       <application android:label="@string/app_name" android:icon="@drawable/icon"
                    android:name={androidApplicationClass.getName}
                    android:theme="@android:style/Theme.NoTitleBar"
@@ -59,7 +68,7 @@ class CrudUIGenerator extends Logging {
           </intent-filter>
         </activity>
         {activityNames.tail.map { name => <activity android:name={name} android:label="@string/app_name"/>}}
-        <provider android:authorities={AndroidConversions.authorityFor(entityTypeMap.applicationName)}
+        <provider android:authorities={AndroidConversions.authorityFor(androidApplicationClass)}
                   android:name="com.github.scrud.android.persistence.LocalCrudContentProvider"
                   android:exported="false"
                   android:grantUriPermissions="false"
@@ -96,7 +105,9 @@ class CrudUIGenerator extends Logging {
     </resources>
   }
 
-  def generateLayouts(entityTypeMap: EntityTypeMap, androidApplicationClass: Class[_], backupAgentClass: Class[_ <: CrudBackupAgent]) {
+  def generateLayouts(entityTypeMap: EntityTypeMap,
+                      androidApplicationClass: Class[_ <: CrudAndroidApplicationLike],
+                      backupAgentClass: Class[_ <: CrudBackupAgent]) {
     val entityTypeInfos = entityTypeMap.allEntityTypes.map(EntityTypeViewInfo(_, entityTypeMap))
     val pickedEntityTypes: Seq[EntityType] = for {
       entityType <- entityTypeMap.allEntityTypes
@@ -111,8 +122,8 @@ class CrudUIGenerator extends Logging {
       val childViewInfos = entityTypeMap.downstreamEntityTypes(entityInfo.entityType).map(EntityTypeViewInfo(_, entityTypeMap))
       generateLayouts(entityInfo, childViewInfos, pickedEntityTypes)
     })
-    writeXmlToFile(Path("AndroidManifest.xml").toFile, generateAndroidManifest(entityTypeMap, androidApplicationClass, backupAgentClass))
-    writeXmlToFile((Path("res") / "values" / "strings.xml").toFile, generateValueStrings(entityTypeMap))
+    writeXmlToFile((workingDir / "AndroidManifest.xml").toFile, generateAndroidManifest(entityTypeMap, androidApplicationClass, backupAgentClass))
+    writeXmlToFile((workingDir / "res" / "values" / "strings.xml").toFile, generateValueStrings(entityTypeMap))
   }
 
   protected[generate] def fieldLayoutForHeader(field: ViewIdFieldInfo, position: Int): Elem = {
@@ -221,7 +232,7 @@ class CrudUIGenerator extends Logging {
   }
 
   private def writeLayoutFile(name: String, xml: Elem) {
-    writeXmlToFile((Path("res") / "layout" / (name + ".xml")).toFile, xml)
+    writeXmlToFile((workingDir / "res" / "layout" / (name + ".xml")).toFile, xml)
   }
 
   private def writeLayoutFileIfNotEmpty(name: String, xml: NodeSeq) {
@@ -254,4 +265,4 @@ class CrudUIGenerator extends Logging {
   }
 }
 
-object CrudUIGenerator extends CrudUIGenerator
+object CrudUIGenerator extends CrudUIGenerator(overwrite = false)

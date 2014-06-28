@@ -28,7 +28,7 @@ class CrudContentProviderSpec extends CrudMockitoSugar with MustMatchers {
   val fooEntityType = new EntityTypeForTesting(fooEntityName, platformDriver)
   val barEntityName = EntityName("Bar")
   val barEntityType = new EntityTypeForTesting(barEntityName, platformDriver)
-  val application = new CrudAndroidApplication(new EntityTypeMapForTesting(fooEntityType, barEntityType))
+  val application = new CrudAndroidApplicationForTesting(new EntityTypeMapForTesting(fooEntityType, barEntityType))
 
   private def toUri(uriPath: UriPath): Uri = AndroidConversions.toUri(uriPath, application)
 

@@ -5,6 +5,7 @@ import org.junit.runner.RunWith
 import org.scalatest.FunSpec
 import org.scalatest.matchers.MustMatchers
 import com.github.scrud.android.testres._
+import com.github.scrud.android.R
 
 /** A behavior specification for [[com.github.scrud.android.view.AndroidResourceAnalyzer]].
   * @author Eric Pabst (epabst@gmail.com)

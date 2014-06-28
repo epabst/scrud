@@ -1,11 +1,10 @@
 package com.github.scrud.android
 
 import com.github.scrud._
-import com.github.scrud.platform.{PlatformDriver, TestingPlatformDriver}
+import com.github.scrud.platform.PlatformDriver
 import com.github.scrud.types.{UriQT, NaturalIntQT, TitleQT}
 import com.github.scrud.platform.representation._
 import com.github.scrud.copy.types.Validation
-import com.github.scrud.android.testres.R
 import com.github.scrud.EntityName
 
 object EntityForTesting extends EntityName("MyMap")

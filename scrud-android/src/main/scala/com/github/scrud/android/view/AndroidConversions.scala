@@ -5,7 +5,7 @@ import android.view.View.OnClickListener
 import android.net.Uri
 import com.github.scrud.UriPath
 import android.content.Context
-import com.github.scrud.context.ApplicationName
+import com.github.scrud.context.SharedContext
 import com.github.scrud.android.CrudAndroidApplicationLike
 
 /** Useful conversions for Android development. */
@@ -15,17 +15,21 @@ object AndroidConversions {
 
   def authorityFor(applicationPackageName: String): String = applicationPackageName + ".provider"
 
-  def authorityFor(applicationName: ApplicationName): String = authorityFor(applicationName.packageName)
+  def authorityFor(application: CrudAndroidApplicationLike): String = authorityFor(application.getClass)
 
-  def authorityFor(application: CrudAndroidApplicationLike): String = authorityFor(application.applicationName)
+  def authorityFor(applicationClass: Class[_ <: CrudAndroidApplicationLike]): String = authorityFor(applicationClass.getPackage.getName)
 
-  def baseUriFor(applicationName: ApplicationName): Uri = baseUriFor(applicationName.packageName)
+  def baseUriFor(application: CrudAndroidApplicationLike): Uri = baseUriFor(application.getClass)
+
+  def baseUriFor(applicationClass: Class[_ <: CrudAndroidApplicationLike]): Uri = baseUriFor(applicationClass.getPackage.getName)
 
   def baseUriFor(packageName: String): Uri = (new Uri.Builder).scheme("content").authority(authorityFor(packageName)).build()
 
   def toUri(uriPath: UriPath, context: Context): Uri = toUri(uriPath, context.getApplicationInfo.packageName)
 
-  def toUri(uriPath: UriPath, applicationName: ApplicationName): Uri = toUri(uriPath, applicationName.packageName)
+  def toUri(uriPath: UriPath, sharedContext: SharedContext): Uri = toUri(uriPath, sharedContext.asInstanceOf[CrudAndroidApplicationLike].getClass)
+
+  def toUri(uriPath: UriPath, applicationClass: Class[_ <: CrudAndroidApplicationLike]): Uri = toUri(uriPath, applicationClass.getPackage.getName)
 
   def toUri(uriPath: UriPath, packageName: String): Uri = withAppendedPath(baseUriFor(packageName), uriPath)
 

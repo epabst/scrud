@@ -2,7 +2,6 @@ package com.github.scrud.android
 
 import action.AndroidOperation._
 import com.github.scrud.EntityNavigation
-import com.github.scrud.state.State
 
 class CrudActivityForTesting(application: CrudAndroidApplicationLike) extends CrudActivity {
 
@@ -12,7 +11,7 @@ class CrudActivityForTesting(application: CrudAndroidApplicationLike) extends Cr
   override lazy val entityType = entityNavigation.primaryEntityType
 
   override lazy val currentAction = UpdateActionName
-  override lazy val applicationState = new State
+  override lazy val sharedContext: CrudAndroidApplicationLike = application
 
   //make it public for testing
   override def onPause() {

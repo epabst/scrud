@@ -34,9 +34,9 @@ abstract class CrudContentProvider extends ContentProvider with ActivityStateHol
     val uriPath = toUriPath(uri)
     uriPath.findId(uriPath.lastEntityNameOrFail) match {
       case Some(id) =>
-        ContentResolver.CURSOR_ITEM_BASE_TYPE + "/vnd." + authorityFor(commandContext.applicationName) + "." + uriPath.lastEntityNameOrFail
+        ContentResolver.CURSOR_ITEM_BASE_TYPE + "/vnd." + authorityFor(androidApplication) + "." + uriPath.lastEntityNameOrFail
       case None =>
-        ContentResolver.CURSOR_DIR_BASE_TYPE + "/vnd." + authorityFor(commandContext.applicationName) + "." + uriPath.lastEntityNameOrFail
+        ContentResolver.CURSOR_DIR_BASE_TYPE + "/vnd." + authorityFor(androidApplication) + "." + uriPath.lastEntityNameOrFail
     }
   }
 
@@ -76,7 +76,7 @@ abstract class CrudContentProvider extends ContentProvider with ActivityStateHol
     val writable = persistence.toWritable(Persistence.Latest, values, uriPath, commandContext)
     commandContext.save(UriPath.lastEntityNameOrFail(uriPath), Persistence.Latest,
       persistence.entityType.idField.findFromContext(uriPath, commandContext), writable)
-    val fixedUri = toUri(uriPath, commandContext.applicationName)
+    val fixedUri = toUri(uriPath, commandContext.androidApplication)
     if (uri.toString != fixedUri.toString) sys.error(uri + " != " + fixedUri)
     contentResolver.notifyChange(toNotificationUri(fixedUri), null)
     1

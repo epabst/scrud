@@ -65,7 +65,7 @@ class CrudActivity extends FragmentActivity with OptionsMenuActivity with Loader
 
   protected lazy val initialUriPath: UriPath = {
     // The primary EntityType is used as the default starting point.
-    val defaultContentUri = toUriPath(baseUriFor(applicationName)) / sharedContext.entityNavigation.primaryEntityType.entityName
+    val defaultContentUri = toUriPath(baseUriFor(sharedContext)) / sharedContext.entityNavigation.primaryEntityType.entityName
     // If no data was given in the intent (e.g. because we were started as a MAIN activity),
     // then use our default content provider.
     Option(getIntent).flatMap(intent => Option(intent.getData).map(toUriPath(_))).getOrElse(defaultContentUri)
@@ -103,7 +103,10 @@ class CrudActivity extends FragmentActivity with OptionsMenuActivity with Loader
   //final since only here as a convenience method.
   final def stateHolder = commandContext.stateHolder
 
-  lazy val sharedContext = getApplication.asInstanceOf[CrudAndroidApplicationLike]
+  lazy val sharedContext: CrudAndroidApplicationLike = getApplication.asInstanceOf[CrudAndroidApplicationLike]
+
+  /** A convenient alias for [[sharedContext]]. */
+  def androidApplication: CrudAndroidApplicationLike = sharedContext
 
   override lazy val platformDriver: AndroidPlatformDriver = super.platformDriver.asInstanceOf[AndroidPlatformDriver]
 
@@ -430,7 +433,7 @@ class CrudActivity extends FragmentActivity with OptionsMenuActivity with Loader
 
   def setListAdapter[A <: Adapter](adapterView: AdapterView[A], entityType: EntityType, uri: UriPath, targetType: TargetType, activity: Activity, itemLayout: LayoutKey) {
     val entityTypePersistedInfo = new EntityTypePersistedInfo(entityType)
-    val androidUri = toUri(uri, applicationName)
+    val androidUri = toUri(uri, sharedContext)
     val adapter = new EntityCursorAdapter(entityType, uri, targetType, commandContext, new ViewInflater(itemLayout, activity.getLayoutInflater), null)
     val cursorLoaderData = CursorLoaderData(ContentQuery(androidUri, entityTypePersistedInfo.queryFieldNames), adapter)
     runOnUiThread {

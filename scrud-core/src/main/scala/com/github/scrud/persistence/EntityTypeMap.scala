@@ -27,9 +27,6 @@ abstract class EntityTypeMap(val applicationName: ApplicationName, private[scrud
     entityType
   }
 
-  @deprecated("use applicationName.packageName instead", since = "2014-05-14")
-  lazy val packageName: String = applicationName.packageName
-
   final lazy val allEntityTypes: Seq[EntityType] = entityTypesAndFactories.map(_._1)
 
   private[this] lazy val persistenceFactoryByEntityType: Map[EntityType, PersistenceFactory] = Map(entityTypesAndFactories: _*)
