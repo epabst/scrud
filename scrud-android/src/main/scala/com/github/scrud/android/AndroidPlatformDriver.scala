@@ -4,7 +4,7 @@ import action.AndroidOperation._
 import com.github.scrud.platform.PlatformDriver
 import com.github.scrud.android.view.{AndroidEditUIFieldFactory, AndroidDisplayUIFieldFactory, ViewRef}
 import com.github.scrud.action.ActionKey
-import com.github.scrud.android.persistence.{QueryAdaptableFieldFactory, SQLiteAdaptableFieldFactory}
+import com.github.scrud.android.persistence.{ContentValuesStorageAdaptableFieldFactory, QueryAdaptableFieldFactory, SQLiteAdaptableFieldFactory}
 import com.github.scrud.platform.PlatformTypes._
 import com.github.scrud.android.view.AndroidResourceAnalyzer._
 import com.github.scrud.FieldName
@@ -73,10 +73,11 @@ class AndroidPlatformDriver(rClass: Class[_], val activityClass: Class[_ <: Crud
     new StartEntityIdActivityOperation(entityName, UpdateActionName, activityClass)
 
   val platformSpecificFieldFactories = Seq(
+    ContentValuesStorageAdaptableFieldFactory,
+    BundleStorageAdaptableFieldFactory,
     new AndroidDisplayUIFieldFactory(this),
     new AndroidEditUIFieldFactory(this),
     SQLiteAdaptableFieldFactory,
-    BundleStorageAdaptableFieldFactory,
     QueryAdaptableFieldFactory
   )
 
