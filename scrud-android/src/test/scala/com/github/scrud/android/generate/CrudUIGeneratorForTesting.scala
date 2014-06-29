@@ -11,7 +11,7 @@ import com.github.scrud.persistence.EntityTypeMapForTesting
  */
 class CrudUIGeneratorForTesting extends CrudUIGenerator(Path("target/generated").toDirectory, overwrite = false) {
   val _entityType = EntityTypeForTesting
-  val entityTypeMap = new EntityTypeMapForTesting(_entityType)
+  val entityTypeMap = new EntityTypeMapForTesting(_entityType -> _entityType.platformDriver.localDatabasePersistenceFactory)
 
   def generateLayoutsIfMissing() {
     generateLayouts(entityTypeMap, classOf[CrudAndroidApplicationForRobolectric], classOf[CrudBackupAgent])

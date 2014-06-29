@@ -102,6 +102,8 @@ class CrudUIGenerator(val workingDir: Directory, overwrite: Boolean) extends Log
     <resources>
       <string name="app_name">{entityTypeMap.applicationName.name}</string>
       {entityTypeMap.allEntityTypes.flatMap(entityType => generateValueStrings(EntityTypeViewInfo(entityType, entityTypeMap)))}
+      <string name ="data_saved_notification">Saved.</string>
+      <string name ="data_not_saved_since_invalid_notification">Not saved since invalid.</string>
     </resources>
   }
 

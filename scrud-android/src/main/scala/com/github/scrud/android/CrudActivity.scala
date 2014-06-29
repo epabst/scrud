@@ -334,9 +334,9 @@ class CrudActivity extends FragmentActivity with OptionsMenuActivity with Loader
     commandContext.withExceptionReporting {
       if (currentCrudOperationType == CrudOperationType.Create || currentCrudOperationType == CrudOperationType.Update) {
         commandContext.future {
-          val createId = commandContext.saveIfValid(currentUriPath, EditUI, this, entityType)
-          val idOpt = entityType.idField.findFromContext(entityType.toUri(createId), commandContext)
-          if (idOpt.isEmpty) {
+          val uri = currentUriPath
+          val createId = commandContext.saveIfValid(uri, EditUI, this, entityType)
+          if (entityType.idField.findFromContext(uri, commandContext).isEmpty) {
             createId.foreach(id => createdId.set(Some(id)))
           }
         }
@@ -390,7 +390,7 @@ class CrudActivity extends FragmentActivity with OptionsMenuActivity with Loader
   protected lazy val nestedNormalOperationSetters: Seq[NestedTargetField[Nothing]] = {
     val setters = normalActions.map { action =>
       val viewRef = ViewRef(action.command.commandId.toCamelCase + "_command", sharedContext.rIdClasses)
-      new OnClickSetterField(_ => action.operation).forTargetView(ViewSpecifier(viewRef))
+      new OnClickSetterField(_ => action.operation).forTargetView(ViewSpecifier(viewRef, required = false))
     }
     setters
   }

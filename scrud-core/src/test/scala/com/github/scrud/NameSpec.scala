@@ -102,5 +102,9 @@ class NameSpec extends FunSpec with MustMatchers {
     it("must preserve acronymns") {
       EntityName("UPS is fast!").toSnakeCase must be ("ups_is_fast")
     }
+
+    it("must preserve a '_' prefix") {
+      FieldName("_id").toSnakeCase must be ("_id")
+    }
   }
 }

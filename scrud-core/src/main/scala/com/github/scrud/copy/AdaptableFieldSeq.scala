@@ -11,7 +11,7 @@ abstract class AdaptableFieldSeq {
 
   def adapt(sourceType: SourceType, targetType: TargetType): AdaptedFieldSeq = {
     val adaptedFields = adaptableFields.flatMap(_.attemptToAdapt(sourceType, targetType))
-    if (adaptedFields.isEmpty) {
+    if (adaptedFields.isEmpty && sourceType != SourceType.none) {
       throw new UnsupportedOperationException("Either sourceType=" + sourceType + " or targetType=" + targetType + " are unknown to all of the fields in " + this)
     }
     new AdaptedFieldSeq(adaptedFields)

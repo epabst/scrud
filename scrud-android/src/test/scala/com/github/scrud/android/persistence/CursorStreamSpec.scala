@@ -36,7 +36,7 @@ class CursorStreamSpec extends FunSpec with MustMatchers with MockitoSugar {
     val commandContext = new AndroidCommandContextForTesting(new EntityTypeMapForTesting(entityType))
     val stream = CursorStream(cursor, EntityTypePersistedInfo(entityType), commandContext)
     val second = stream.tail.head
-    entityType.name.getRequired(stream.storageType, second, entityType.toUri, commandContext) must be ("Bryce")
+    entityType.name.getRequired(CursorStream.storageType, second, entityType.toUri, commandContext) must be ("Bryce")
   }
 
   it("must have correct number of elements") {
@@ -73,7 +73,7 @@ class CursorStreamSpec extends FunSpec with MustMatchers with MockitoSugar {
     val stream = CursorStream(cursor, EntityTypePersistedInfo(entityType), commandContext)
     val second = stream.tail.head
     val first = stream.head
-    entityType.name.getRequired(stream.storageType, second, entityType.toUri, commandContext) must be ("Bryce")
-    entityType.name.getRequired(stream.storageType, first, entityType.toUri, commandContext) must be ("Allen")
+    entityType.name.getRequired(CursorStream.storageType, second, entityType.toUri, commandContext) must be ("Bryce")
+    entityType.name.getRequired(CursorStream.storageType, first, entityType.toUri, commandContext) must be ("Allen")
   }
 }

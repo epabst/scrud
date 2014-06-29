@@ -136,9 +136,6 @@ abstract class EntityType(val entityName: EntityName, val platformDriver: Platfo
 
   lazy val referencedEntityNames: Seq[EntityName] = entityReferenceFieldDeclarations.map(_.qualifiedType.asInstanceOf[EntityName])
 
-  def findPersistedId(source: AnyRef, sourceUri: UriPath): Option[ID] =
-    idField.findSourceField(Persistence.Latest).flatMap(_.findValue(source, new CopyContext(sourceUri, null)))
-
   def clearId(source: IdPk): IdPk = source.withId(None)
 
   def clearId(source: AnyRef): AnyRef = new UnsupportedOperationException

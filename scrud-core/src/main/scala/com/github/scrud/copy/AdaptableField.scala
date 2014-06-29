@@ -24,8 +24,10 @@ abstract class AdaptableField[V] extends BaseAdaptableField { self =>
   override def sourceFieldOrFail(sourceType: SourceType): SourceField[V] =
     findSourceField(sourceType).getOrElse(throw new IllegalArgumentException(this + " has no SourceField for " + sourceType))
 
+  private lazy val contextSourceField = sourceFieldOrFail(SourceType.none)
+
   def findFromContext(sourceUri: UriPath, commandContext: CommandContext): Option[V] =
-    sourceFieldOrFail(SourceType.none).findValue(SourceType.none, new CopyContext(sourceUri, commandContext))
+    contextSourceField.findValue(SourceType.none, new CopyContext(sourceUri, commandContext))
 
   def findTargetField(targetType: TargetType): Option[TargetField[V]]
 }

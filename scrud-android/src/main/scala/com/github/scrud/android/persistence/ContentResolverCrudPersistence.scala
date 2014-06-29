@@ -11,6 +11,7 @@ import com.github.scrud.android.view.AndroidConversions
 import android.net.Uri
 import com.github.scrud.android.AndroidCommandContext
 import com.github.scrud.android.action.AndroidCommandContextDelegator
+import com.github.scrud.copy.SourceType
 
 /**
  * A [[com.github.scrud.persistence.CrudPersistence]] that delegates to ContentResolver.
@@ -30,6 +31,9 @@ class ContentResolverCrudPersistence(val entityType: EntityType, contentResolver
   private def toUri(uriPath: UriPath): Uri = {
     AndroidConversions.withAppendedPath(applicationUri, uriPath)
   }
+
+  /** This override is needed because findAll returns a CursorStream which returns a copy of a Cursor row. */
+  override def sourceType: SourceType = CursorStream.storageType
 
   def findAll(uriPath: UriPath) = {
     val uri = toUri(uriPath.specifyLastEntityName(entityType.entityName))

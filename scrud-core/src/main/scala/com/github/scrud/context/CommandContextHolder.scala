@@ -53,7 +53,7 @@ private[context] trait CommandContextHolder extends SharedContextHolder with Not
     val copyContext = new CopyContext(sourceUri, commandContext)
     val idOpt = idSourceField.findValue(source, copyContext)
     if (entityType.copyAndUpdate(sourceType, source, sourceUri, ValidationResult, commandContext).isValid) {
-      val newId = commandContext.save(entityType.entityName, sourceType, idOpt, source)
+      val newId = commandContext.save(entityType.entityName, idOpt, sourceType, source)
       commandContext.displayMessageToUserBriefly(dataSavedNotificationStringKey)
       Some(newId)
     } else {

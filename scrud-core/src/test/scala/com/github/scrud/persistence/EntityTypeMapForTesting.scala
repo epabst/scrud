@@ -16,7 +16,7 @@ case class EntityTypeMapForTesting(persistenceFactoryByEntityType: (EntityType, 
   }
 
   def this(entityTypes: Set[EntityType]) {
-    this(entityTypes.toSeq.map(_ -> PersistenceFactoryForTesting): _*)
+    this(entityTypes.toSeq.map { entityType => entityType -> entityType.platformDriver.localDatabasePersistenceFactory }: _*)
   }
 
   def this(entityType1: EntityType, otherEntityTypes: EntityType*) {

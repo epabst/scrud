@@ -45,6 +45,6 @@ case class SelectEntityView(entityName: EntityName)
   /** Get some value or None from the given source. */
   def findFieldValue(adapterView: AdapterView[BaseAdapter], context: AndroidCommandContext) = {
     val id = adapterView.getSelectedItemId
-    if (id >= 0) Some(id) else None
+    if (id > 0) Some(id) else None
   }
 }

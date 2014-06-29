@@ -41,7 +41,8 @@ class CrudActivitySpec extends CrudUIGeneratorForTesting with CrudMockitoSugar w
     }
     activity.onCreate(null)
     val commandContext: AndroidCommandContext = activity.commandContext
-    _entityType.copyAndUpdate(Persistence.Latest, entity, uri, EditUI, activity, commandContext)
+    _entityType.copyAndUpdate(MapStorage, entity, uri, EditUI, activity, commandContext)
+    // This should cause it to save and change the currentUriPath to include the id.
     activity.onBackPressed()
     val results = commandContext.findAll(_entityType.toUri, MapStorage)
     val idOpt = activity.currentUriPath.findId(_entityType.entityName)

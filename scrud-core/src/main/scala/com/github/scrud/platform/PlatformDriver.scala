@@ -94,7 +94,8 @@ trait PlatformDriver extends Logging {
     }
   }
 
-  final lazy val fieldFactories = platformSpecificFieldFactories :+ AdaptableFieldConvertibleFactory :+ MapStorageAdaptableFieldFactory
+  final lazy val fieldFactories = platformSpecificFieldFactories ++
+    Seq(AdaptableFieldConvertibleFactory, MapStorageAdaptableFieldFactory)
 
   def field[V](entityName: EntityName, fieldName: FieldName, qualifiedType: QualifiedType[V], representations: Seq[Representation[V]]): ExtensibleAdaptableField[V] = {
     val fieldWithRepresentations = adapt(fieldFactories, entityName, fieldName, qualifiedType, representations)

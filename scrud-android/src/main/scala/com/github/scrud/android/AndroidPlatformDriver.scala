@@ -99,9 +99,10 @@ class AndroidPlatformDriver(rClass: Class[_], val activityClass: Class[_ <: Crud
 
   def tryStringKey(stringName: String): Try[SKey] = Try {
     findResourceIdWithName(rStringClasses, stringName).getOrElse {
-      rStringClasses.foreach(rStringClass => logError("Contents of " + rStringClass + " are " + rStringClass.getFields.mkString(", ")))
-      throw new IllegalStateException("R.string." + stringName + " not found.  You may want to run the CrudUIGenerator.generateLayouts." +
-        rStringClasses.mkString("(string classes: ", ",", ")"))
+//      rStringClasses.foreach(rStringClass => logError("Contents of " + rStringClass + " are " + rStringClass.getFields.mkString(", ")))
+      val message = "R.string." + stringName + " not found.  You may want to run the CrudUIGenerator.generateLayouts." +
+        rStringClasses.mkString("(string classes: ", ",", ")")
+      throw new IllegalStateException(message)
     }
   }
 

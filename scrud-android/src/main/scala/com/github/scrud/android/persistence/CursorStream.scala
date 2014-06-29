@@ -21,12 +21,11 @@ case class EntityTypePersistedInfo(entityType: EntityType) {
   * @author Eric Pabst (epabst@gmail.com)
   */
 case class CursorStream(cursor: Cursor, entityTypePersistedInfo: EntityTypePersistedInfo, commandContext: CommandContext) extends Stream[MapStorage] {
-  val storageType = MapStorage
-
   override lazy val headOption: Option[MapStorage] = {
     if (cursor.moveToNext) {
       val entityType = entityTypePersistedInfo.entityType
-      Some(entityType.copyAndUpdate(Persistence.Latest, cursor, entityType.toUri, storageType, commandContext))
+      val storage = entityType.copyAndUpdate(Persistence.Latest, cursor, entityType.toUri, CursorStream.storageType, commandContext)
+      Some(storage)
     } else {
       cursor.close()
       None
@@ -42,4 +41,8 @@ case class CursorStream(cursor: Cursor, entityTypePersistedInfo: EntityTypePersi
   // Must be a val so that we don't create more than one CursorStream.
   // Must be lazy so that we don't instantiate the entire stream
   override lazy val tail = if (tailDefined) CursorStream(cursor, entityTypePersistedInfo, commandContext) else throw new NoSuchElementException
+}
+
+object CursorStream {
+  val storageType = MapStorage
 }

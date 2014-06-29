@@ -14,7 +14,7 @@ import persistence.CursorStream
 import persistence.SQLiteCriteria
 import scala.Some
 import com.github.scrud.android.backup.CrudBackupAgent
-import com.github.scrud.platform.representation.{Persistence, Query}
+import com.github.scrud.platform.representation.Query
 import com.github.scrud.copy.SourceType
 import com.github.scrud.copy.types.MapStorage
 import com.github.scrud.util.{DelegatingListenerSet, MutableListenerSet, ExternalLogging, DelegateLogging}
@@ -41,6 +41,9 @@ class SQLiteCrudPersistence(val entityType: EntityType, database: SQLiteDatabase
   override def sharedContext: SharedContext = commandContext.sharedContext
 
   override protected def loggingDelegate: ExternalLogging = commandContext.applicationName
+
+  /** This override is needed because findAll returns a CursorStream which returns a copy of a Cursor row. */
+  override def sourceType: SourceType = CursorStream.storageType
 
   def findAll(criteria: SQLiteCriteria): CursorStream = {
     val query = criteria.selection.mkString(" AND ")
@@ -87,7 +90,7 @@ class SQLiteCrudPersistence(val entityType: EntityType, database: SQLiteDatabase
         givenId
     }
     notifyDataChanged()
-    val mapStorage = entityType.copyAndUpdate(Persistence.Latest, contentValues, entityType.toUri(id), MapStorage, commandContext)
+    val mapStorage = entityType.copyAndUpdate(ContentValuesStorage, contentValues, entityType.toUri(id), MapStorage, commandContext)
     val bytes = CrudBackupAgent.marshall(mapStorage.toMap)
     debug("Scheduled backup which will include " + entityType.entityName + "#" + id + ": size " + bytes.size + " bytes")
     id

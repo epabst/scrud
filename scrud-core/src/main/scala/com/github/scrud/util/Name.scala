@@ -34,7 +34,10 @@ trait Name {
   }
 
   /** The name lowercase with underscores between words. */
-  lazy val toSnakeCase: String = Name.titleCaseWordRegex.replaceAllIn(toTitleCase, "_" + _.matched.toLowerCase).stripPrefix("_")
+  lazy val toSnakeCase: String = {
+    val wordsWithUnderscorePrefix = Name.titleCaseWordRegex.replaceAllIn(toTitleCase, "_" + _.matched.toLowerCase)
+    if (name.startsWith("_")) wordsWithUnderscorePrefix else wordsWithUnderscorePrefix.stripPrefix("_")
+  }
 
   lazy val toDisplayableString: String = {
     var makeUpperCase = true

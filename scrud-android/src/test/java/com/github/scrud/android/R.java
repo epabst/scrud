@@ -14,6 +14,10 @@ public final class R {
     public static final int name = 235;
     public static final int age = 236;
     public static final int url = 237;
+    public static final int edit_name = 240;
+    public static final int edit_age = 241;
+    public static final int edit_url = 242;
+    public static final int edit_parent = 243;
   }
 
   public static final class layout {
@@ -26,5 +30,7 @@ public final class R {
       public static final int edit_my_map = 302;
       public static final int delete_item = 310;
       public static final int edit_test = 311;
+      public static final int data_saved_notification = 312;
+      public static final int data_not_saved_since_invalid_notification = 313;
   }
 }
