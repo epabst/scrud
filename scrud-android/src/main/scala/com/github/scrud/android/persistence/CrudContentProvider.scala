@@ -27,6 +27,7 @@ abstract class CrudContentProvider extends ContentProvider with ActivityStateHol
   lazy val activityState: State = new State
   lazy val commandContext = new AndroidCommandContext(getContext, this, androidApplication)
   lazy val contentResolver = getContext.getContentResolver
+  override def applicationState: State = androidApplication.applicationState
 
   def onCreate(): Boolean = true
 

@@ -23,13 +23,13 @@ public final class R {
   public static final class layout {
     public static final int my_map_entry = 200;
     public static final int my_map_header = 201;
-    public static final int my_map_row = 202;
+    public static final int my_map_list = 202;
+    public static final int my_map_row = 203;
   }
   public static final class string {
       public static final int add_my_map = 301;
       public static final int edit_my_map = 302;
       public static final int delete_item = 310;
-      public static final int edit_test = 311;
       public static final int data_saved_notification = 312;
       public static final int data_not_saved_since_invalid_notification = 313;
   }

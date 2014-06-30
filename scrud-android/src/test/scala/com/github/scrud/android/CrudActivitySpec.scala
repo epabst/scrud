@@ -33,12 +33,10 @@ class CrudActivitySpec extends CrudUIGeneratorForTesting with CrudMockitoSugar w
 
   @Test
   def shouldSaveOnBackPressed() {
-    val application = new CrudAndroidApplication(entityTypeMap)
     val entity = new MapStorage(_entityType.name -> Some("Bob"), _entityType.age -> Some(25))
     val uri = UriPath(_entityType.entityName)
-    val activity = new CrudActivityForTesting(application) {
-      override protected lazy val initialUriPath = uri
-    }
+    val activity = new CrudActivityForRobolectric
+    activity.setIntent(new Intent(Intent.ACTION_EDIT))
     activity.onCreate(null)
     val commandContext: AndroidCommandContext = activity.commandContext
     _entityType.copyAndUpdate(MapStorage, entity, uri, EditUI, activity, commandContext)
@@ -53,12 +51,9 @@ class CrudActivitySpec extends CrudUIGeneratorForTesting with CrudMockitoSugar w
 
   @Test
   def onPauseShouldNotCreateANewIdEveryTime() {
-    val application = new CrudAndroidApplication(entityTypeMap)
     val entity = Map[String,Option[Any]]("name" -> Some("Bob"), "age" -> Some(25))
     val uri = UriPath(_entityType.entityName)
-    val activity = new CrudActivityForTesting(application) {
-      override protected lazy val initialUriPath = uri
-    }
+    val activity = new CrudActivityForRobolectric
     activity.setIntent(constructIntent(AndroidOperation.CreateActionName, uri, activity, null))
     activity.onCreate(null)
     //simulate a user entering data
@@ -98,15 +93,10 @@ class CrudActivitySpec extends CrudUIGeneratorForTesting with CrudMockitoSugar w
 
   @Test
   def shouldHaveCorrectOptionsMenu() {
-    val persistence = mock[ThinPersistence]
-    val _entityType = EntityTypeForTesting
-    val persistenceFactory = new PersistenceFactoryForTesting(persistence)
-    val application = new CrudAndroidApplication(new EntityTypeMapForTesting(_entityType -> persistenceFactory))
-    when(persistence.findAll(any())).thenReturn(Seq(
-      new MapStorage(_entityType.id -> Some(400L), _entityType.name -> Some("Bob"),
-        _entityType.age -> Some(25), _entityType.url -> None)))
-    val activity = new CrudActivityForTesting(application)
+    val data = new MapStorage(_entityType.name -> Some("Bob"), _entityType.age -> Some(25))
+    val activity = new CrudActivityForRobolectric()
     activity.setIntent(new Intent(Intent.ACTION_MAIN))
+    activity.commandContext.save(EntityTypeForTesting.entityName, None, MapStorage, data)
     activity.onCreate(null)
     val menu = new TestMenu(activity)
     activity.onCreateOptionsMenu(menu)
@@ -122,13 +112,10 @@ class CrudActivitySpec extends CrudUIGeneratorForTesting with CrudMockitoSugar w
     val contextMenu = mock[ContextMenu]
     val ignoredView: View = null
     val ignoredMenuInfo: ContextMenu.ContextMenuInfo = null
-    val _entityType = EntityTypeForTesting
-    val application = new CrudAndroidApplication(new EntityTypeMapForTesting(_entityType))
-    val activity = new CrudActivityForTesting(application) {
-      override lazy val currentAction = ListActionName
-    }
+    val activity = new CrudActivityForRobolectric
+    activity.setIntent(new Intent(ListActionName))
     activity.onCreateContextMenu(contextMenu, ignoredView, ignoredMenuInfo)
-    verify(contextMenu).add(0, R.string.edit_test, 0, R.string.edit_test)
+    verify(contextMenu).add(0, R.string.edit_my_map, 0, R.string.edit_my_map)
     verify(contextMenu).add(0, R.string.delete_item, 1, R.string.delete_item)
   }
 
@@ -159,18 +146,20 @@ class CrudActivitySpec extends CrudUIGeneratorForTesting with CrudMockitoSugar w
 
   @Test
   def shouldRefreshOnResume() {
-    val persistence = mock[ThinPersistence]
-    when(persistence.findAll(any())).thenReturn(Seq(Map[String,Any]("name" -> "Bob", "age" -> 25)))
-    val _entityType = new EntityTypeForTesting
-    val application = new CrudAndroidApplication(new EntityTypeMapForTesting(_entityType -> new PersistenceFactoryForTesting(persistence)))
-    val activity = new CrudActivityForTesting(application)
-    activity.setIntent(new Intent(Intent.ACTION_MAIN))
+    val data = new MapStorage(_entityType.name -> Some("Bob"), _entityType.age -> Some(25))
+    val activity = new CrudActivityForRobolectric()
+    activity.setIntent(new Intent(ListActionName))
+    activity.commandContext.save(EntityTypeForTesting.entityName, None, MapStorage, data)
     activity.onCreate(null)
-    activity.onPause()
-    //verify(persistenceFactory, never()).refreshAfterDataChanged(anyObject())
+    activity.getAdapterView.getCount must be (1)
 
-    activity.onResume()
-    //verify(persistenceFactory, times(1)).refreshAfterDataChanged(anyObject())
+    val data2 = new MapStorage(_entityType.name -> Some("Will"), _entityType.age -> Some(31))
+    activity.commandContext.save(EntityTypeForTesting.entityName, None, MapStorage, data2)
+    activity.onPause() // this should not cause a database read.
+    activity.getAdapterView.getCount must be (1)
+
+    activity.onResume() // this should cause a database read.
+    activity.getAdapterView.getCount must be (2)
   }
 
   @Test
