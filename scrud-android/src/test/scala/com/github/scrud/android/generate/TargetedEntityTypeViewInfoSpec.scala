@@ -17,7 +17,7 @@ import com.github.scrud.persistence.EntityTypeMapForTesting
 class TargetedEntityTypeViewInfoSpec extends FunSpec with MustMatchers with MockitoSugar {
   object SelfReferencingEntity extends EntityName("SelfReferencingEntity")
 
-  val platformDriver = new AndroidPlatformDriver(classOf[R])
+  val platformDriver = AndroidPlatformDriverForTesting
 
   object SelfReferencingEntityType extends EntityTypeForTesting(SelfReferencingEntity, platformDriver) {
     field("parent", SelfReferencingEntity, Seq(SummaryUI))

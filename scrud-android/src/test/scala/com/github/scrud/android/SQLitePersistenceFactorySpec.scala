@@ -11,7 +11,7 @@ import persistence.{EntityTypePersistedInfo, CursorStream}
 import scala.collection._
 import org.mockito.Mockito
 import Mockito._
-import com.github.scrud.util.{Logging, CrudMockitoSugar}
+import com.github.scrud.util.Logging
 import com.github.scrud._
 import com.github.scrud.EntityName
 import com.github.scrud.types.{TitleQT, NaturalIntQT}
@@ -19,14 +19,15 @@ import com.github.scrud.copy.types.{MapStorage, Default}
 import com.github.scrud.platform.representation.{EditUI, DetailUI, Persistence}
 import com.github.scrud.context.SharedContextForTesting
 import com.github.scrud.copy.SourceType
+import org.robolectric.annotation.Config
+import com.github.scrud.android.generate.CrudUIGeneratorForTesting
 
 /** A test for [[com.github.scrud.android.SQLitePersistenceFactorySpec]].
   * @author Eric Pabst (epabst@gmail.com)
   */
 @RunWith(classOf[CustomRobolectricTestRunner])
-class SQLitePersistenceFactorySpec extends MustMatchers with CrudMockitoSugar with Logging {
-  protected val logTag = getClass.getSimpleName
-
+@Config(manifest = "target/generated/AndroidManifest.xml")
+class SQLitePersistenceFactorySpec extends ScrudRobolectricSpec {
   val runningOnRealAndroid: Boolean = try {
     debug("Seeing if running on Real Android...")
     Class.forName("com.xtremelabs.robolectric.RobolectricTestRunner")
@@ -38,7 +39,7 @@ class SQLitePersistenceFactorySpec extends MustMatchers with CrudMockitoSugar wi
       true
   }
 
-  val androidPlatformDriver = new AndroidPlatformDriver(classOf[R])
+  val androidPlatformDriver = AndroidPlatformDriverForTesting
 
   object TestEntity extends EntityName("Test")
 

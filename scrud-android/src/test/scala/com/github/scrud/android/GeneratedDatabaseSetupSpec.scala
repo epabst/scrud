@@ -8,7 +8,9 @@ import org.scalatest.matchers.MustMatchers
 import org.mockito.Mockito._
 import org.mockito.Matchers._
 import com.github.scrud.persistence.{EntityTypeMapForTesting, CrudPersistence}
-import com.github.scrud.{EntityNavigation, EntityName, EntityType}
+import com.github.scrud.{EntityName, EntityType}
+import org.robolectric.annotation.Config
+import com.github.scrud.android.generate.CrudUIGeneratorForTesting
 
 /**
  * A behavior specification for [[com.github.scrud.android.GeneratedDatabaseSetup]].
@@ -18,10 +20,11 @@ import com.github.scrud.{EntityNavigation, EntityName, EntityType}
  *         Time: 8:34 AM
  */
 @RunWith(classOf[CustomRobolectricTestRunner])
-class GeneratedDatabaseSetupSpec extends CrudMockitoSugar with MustMatchers {
+@Config(manifest = "target/generated/AndroidManifest.xml")
+class GeneratedDatabaseSetupSpec extends ScrudRobolectricSpec {
   val db = mock[SQLiteDatabase]
   val mockEntityType = mock[EntityType]
-  val platformDriver = new AndroidPlatformDriver(null)
+  val platformDriver = AndroidPlatformDriverForTesting
   val entityType = new EntityTypeForTesting(EntityName("Entity1"), platformDriver) {
     override def onCreateDatabase(lowLevelPersistence: CrudPersistence) {
       mockEntityType.onCreateDatabase(lowLevelPersistence)

@@ -7,6 +7,7 @@ import org.scalatest.matchers.MustMatchers
 import com.github.scrud.platform.representation.Query
 import com.github.scrud.persistence.EntityTypeMapForTesting
 import com.github.scrud.copy.SourceType
+import org.robolectric.annotation.Config
 
 /**
  * A behavior specification for [[com.github.scrud.android.persistence.SQLiteCriteria]].
@@ -15,6 +16,7 @@ import com.github.scrud.copy.SourceType
  *         Time: 3:22 PM
  */
 @RunWith(classOf[CustomRobolectricTestRunner])
+@Config(manifest = "target/generated/AndroidManifest.xml")
 class SQLiteCriteriaSpec extends MustMatchers {
   @Test
   def itMustBeCreatableFromAnEntityType() {

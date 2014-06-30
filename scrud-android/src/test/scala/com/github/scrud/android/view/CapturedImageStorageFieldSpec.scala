@@ -8,7 +8,7 @@ import org.mockito.Mockito._
 import com.github.scrud.android.action.{ActivityResultDataField, ActivityResult}
 import android.net.Uri
 import android.content.Intent
-import com.github.scrud.android.{R, EntityTypeForTesting, AndroidPlatformDriver, CustomRobolectricTestRunner}
+import com.github.scrud.android._
 import com.github.scrud.copy.{ExtensibleAdaptableField, CopyContext}
 import com.github.scrud.UriPath
 import com.github.scrud.context.CommandContextForTesting
@@ -16,6 +16,8 @@ import com.github.scrud.types.ImageQT
 import com.github.scrud.platform.representation.{EditUI, SelectUI}
 import scala.Some
 import com.netaporter
+import scala.Some
+import org.robolectric.annotation.Config
 
 /**
  * A behavior specification for [[com.github.scrud.android.view.CapturedImageStorageField]].
@@ -23,8 +25,9 @@ import com.netaporter
  */
 
 @RunWith(classOf[CustomRobolectricTestRunner])
-class CapturedImageStorageFieldSpec extends MustMatchers with MockitoSugar {
-  val platformDriver = new AndroidPlatformDriver(classOf[R])
+@Config(manifest = "target/generated/AndroidManifest.xml")
+class CapturedImageStorageFieldSpec extends ScrudRobolectricSpec {
+  val platformDriver = AndroidPlatformDriverForTesting
 
   @Test
   def capturedImageViewMustGetImageUriFromOperationResponse() {

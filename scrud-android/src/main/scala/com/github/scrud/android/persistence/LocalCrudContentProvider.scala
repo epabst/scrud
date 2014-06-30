@@ -12,5 +12,5 @@ import com.github.scrud.state.State
 class LocalCrudContentProvider extends CrudContentProvider {
   override lazy val androidApplication: CrudAndroidApplicationLike = getContext.getApplicationContext.asInstanceOf[CrudAndroidApplicationLike]
 
-  override def applicationState: State = commandContext.applicationState
+  override def applicationState: State = androidApplication.applicationState
 }

@@ -9,6 +9,7 @@ import org.junit.Test
 import android.net.Uri
 import android.graphics.drawable.BitmapDrawable
 import android.graphics.BitmapFactory
+import org.robolectric.annotation.Config
 
 /**
  * A behavior specification for [[com.github.scrud.android.util.ImageLoader]].
@@ -17,6 +18,7 @@ import android.graphics.BitmapFactory
  * Time: 12:12 PM
  */
 @RunWith(classOf[CustomRobolectricTestRunner])
+@Config(manifest = "target/generated/AndroidManifest.xml")
 class ImageLoaderSpec extends MustMatchers with MockitoSugar {
   @Test
   def loadDrawable_shouldRetryUsingPowersOf2WhileExceedsAvailableMemory() {

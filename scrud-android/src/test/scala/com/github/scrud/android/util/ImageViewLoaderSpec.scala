@@ -15,6 +15,7 @@ import android.widget.ImageView
 import android.content.res.Resources
 import android.util.DisplayMetrics
 import org.mockito.Matchers
+import org.robolectric.annotation.Config
 
 /**
  * Behavior specification for [[com.github.scrud.android.util.ImageLoader]].
@@ -23,6 +24,7 @@ import org.mockito.Matchers
  * Time: 3:38 PM
  */
 @RunWith(classOf[CustomRobolectricTestRunner])
+@Config(manifest = "target/generated/AndroidManifest.xml")
 class ImageViewLoaderSpec extends MustMatchers with MockitoSugar {
   val screenWidth = 400
   val screenHeight = 300

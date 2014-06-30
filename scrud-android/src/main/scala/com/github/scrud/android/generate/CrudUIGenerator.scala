@@ -75,7 +75,7 @@ class CrudUIGenerator(val workingDir: Directory, overwrite: Boolean) extends Log
                   android:multiprocess="true"
                   android:syncable="false"/>
       </application>
-      <uses-sdk android:minSdkVersion="8"/>
+      <uses-sdk android:minSdkVersion="16"/>
     </manifest>
   }
 
@@ -151,12 +151,12 @@ class CrudUIGenerator(val workingDir: Directory, overwrite: Boolean) extends Log
                   android:orientation="vertical"
                   android:layout_width="fill_parent"
                   android:layout_height="fill_parent">
-      <ListView android:id={"@+id/" + entityInfo.entityName + "_list"}
+      <ListView android:id={"@+id/" + entityInfo.entityName.toSnakeCase + "_list"}
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
                 android:layout_weight="1.0"/>
       {if (emptyListRenderedDifferently || addableEntityTypeInfos.isEmpty)
-        <TextView android:id={"@+id/" + entityInfo.entityName + "_emptyList"}
+        <TextView android:id={"@+id/" + entityInfo.entityName.toSnakeCase + "_emptyList"}
                   android:layout_width="wrap_content"
                   android:layout_height="wrap_content" android:layout_weight="1"
                   android:text={"Empty " + entityInfo.entityName.toDisplayableString + " List"}

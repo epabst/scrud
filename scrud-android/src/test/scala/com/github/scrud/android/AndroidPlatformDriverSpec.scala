@@ -6,10 +6,8 @@ import com.github.scrud._
 import org.junit.Test
 import org.junit.runner.RunWith
 import com.github.scrud.android.action.AndroidOperation.toRichItent
-import com.github.scrud.util.CrudMockitoSugar
 import com.github.scrud.types._
 import com.github.scrud.platform.representation.{Query, Persistence, DetailUI}
-import org.scalatest.MustMatchers
 import com.github.scrud.persistence.EntityTypeMapForTesting
 import _root_.android.database.Cursor
 import org.mockito.Mockito._
@@ -22,16 +20,18 @@ import scala.Some
 import com.github.scrud.action.OperationAction
 import com.github.scrud.types.EnumerationValueQT
 import com.github.scrud.android.persistence.SQLiteCriteria
+import org.robolectric.annotation.Config
 
 /** A test for [[com.github.scrud.android.AndroidPlatformDriver]].
   * @author Eric Pabst (epabst@gmail.com)
   */
 //todo make contract tests run as well as JUnit tests.
 @RunWith(classOf[CustomRobolectricTestRunner])
-class AndroidPlatformDriverSpec extends CrudMockitoSugar with MustMatchers {
+@Config(manifest = "target/generated/AndroidManifest.xml")
+class AndroidPlatformDriverSpec extends ScrudRobolectricSpec {
   //todo determine if shadowing, and run tests on real Android device as well.
   val isShadowing = true
-  val driver = new AndroidPlatformDriver(classOf[R])
+  val driver = AndroidPlatformDriverForTesting
   val entityNavigation = new EntityNavigationForTesting(new EntityTypeMapForTesting(EntityTypeForTesting)) {
     /** Return true if the entity may be displayed in a mode that is distinct from editing. */
     override protected def isDisplayableWithoutEditing(entityName: EntityName): Boolean = true

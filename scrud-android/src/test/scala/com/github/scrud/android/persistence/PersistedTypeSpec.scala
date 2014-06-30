@@ -6,12 +6,13 @@ import org.junit.Test
 import android.os.Bundle
 import com.github.scrud.android.CustomRobolectricTestRunner
 import com.github.scrud.types.{AmountQT, UriQT, NaturalIntQT, DateWithoutTimeQT}
+import org.robolectric.annotation.Config
 
 /** A behavior specification for [[com.github.scrud.android.persistence.PersistedType]].
   * @author Eric Pabst (epabst@gmail.com)
   */
-
 @RunWith(classOf[CustomRobolectricTestRunner])
+@Config(manifest = "target/generated/AndroidManifest.xml")
 class PersistedTypeSpec extends MustMatchers {
   @Test
   def itMustReadAndWriteBundle() {

@@ -1,9 +1,6 @@
 package com.github.scrud.android
 
-import persistence.CrudContentProviderForTesting
 import state.ActivityStateHolder
-import com.xtremelabs.robolectric.shadows.ShadowContentResolver
-import view.AndroidConversions._
 import collection.mutable
 import com.github.scrud.platform.PlatformTypes
 import scala.concurrent.Future
@@ -38,14 +35,6 @@ class AndroidCommandContextForTesting(application: CrudAndroidApplicationLike,
   }
 
   val displayedMessageKeys: mutable.Buffer[PlatformTypes.SKey] = mutable.Buffer()
-
-  try {
-    val contentProvider = new CrudContentProviderForTesting(application)
-    ShadowContentResolver.registerProvider(authorityFor(application), contentProvider)
-  } catch {
-    case e: RuntimeException if Option(e.getMessage).exists(_.contains("Stub!")) =>
-      warn("Failed to register ContentProvider: " + e)
-  }
 
   override def future[T](body: => T) = Future.successful(body)
 

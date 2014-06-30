@@ -4,12 +4,13 @@ import org.junit.runner.RunWith
 import com.github.scrud.util.CrudMockitoSugar
 import org.scalatest.matchers.MustMatchers
 import org.junit.Test
-import com.github.scrud.{EntityNavigation, UriPath, EntityName}
+import com.github.scrud.{UriPath, EntityName}
 import com.github.scrud.android._
-import com.github.scrud.persistence.{EntityTypeMapForTesting, DataListener, ListBufferPersistenceFactoryForTesting}
-import scala.Some
+import com.github.scrud.persistence.{EntityTypeMapForTesting, DataListener}
 import org.mockito.Mockito._
 import com.github.scrud.copy.types.MapStorage
+import org.robolectric.Robolectric
+import org.robolectric.annotation.Config
 
 /**
  * A behavior specification for [[com.github.scrud.android.persistence.ContentResolverCrudPersistence]].
@@ -18,8 +19,9 @@ import com.github.scrud.copy.types.MapStorage
  * Time: 4:59 PM
  */
 @RunWith(classOf[CustomRobolectricTestRunner])
-class ContentResolverCrudPersistenceSpec extends CrudMockitoSugar with MustMatchers {
-  val platformDriver = new AndroidPlatformDriver(null)
+@Config(manifest = "target/generated/AndroidManifest.xml")
+class ContentResolverCrudPersistenceSpec extends ScrudRobolectricSpec {
+  val platformDriver = AndroidPlatformDriverForTesting
   val fooEntityName = EntityName("Foo")
   val fooEntityType = new EntityTypeForTesting(fooEntityName, platformDriver)
   val barEntityName = EntityName("Bar")
@@ -30,7 +32,7 @@ class ContentResolverCrudPersistenceSpec extends CrudMockitoSugar with MustMatch
 
   @Test
   def query_mustReturnMultipleRows() {
-    val commandContext = new AndroidCommandContextForTesting(testApplication)
+    val commandContext = Robolectric.buildActivity(classOf[CrudActivityForRobolectric]).get().commandContext
     val persistence = new ContentResolverCrudPersistenceForTesting(fooEntityType, testApplication, commandContext)
     persistence.save(None, MapStorage, data1, commandContext)
     persistence.save(None, MapStorage, data2, commandContext)
@@ -41,7 +43,7 @@ class ContentResolverCrudPersistenceSpec extends CrudMockitoSugar with MustMatch
 
   @Test
   def findAll_mustOnlyReturnRowsWithMatchingId() {
-    val commandContext = new AndroidCommandContextForTesting(testApplication)
+    val commandContext = Robolectric.buildActivity(classOf[CrudActivityForRobolectric]).get().commandContext
     val persistence = new ContentResolverCrudPersistenceForTesting(fooEntityType, testApplication, commandContext)
     val id1 = persistence.save(None, MapStorage, data1, commandContext)
     persistence.save(None, MapStorage, data2, commandContext)
@@ -53,7 +55,7 @@ class ContentResolverCrudPersistenceSpec extends CrudMockitoSugar with MustMatch
 
   @Test
   def findAll_mustOnlyReturnRowsWithMatchingId_otherEntityLaterInPath() {
-    val commandContext = new AndroidCommandContextForTesting(testApplication)
+    val commandContext = Robolectric.buildActivity(classOf[CrudActivityForRobolectric]).get().commandContext
     val persistence = new ContentResolverCrudPersistenceForTesting(fooEntityType, testApplication, commandContext)
     val id1 = persistence.save(None, MapStorage, data1, commandContext)
     persistence.save(None, MapStorage, data2, commandContext)
@@ -65,7 +67,7 @@ class ContentResolverCrudPersistenceSpec extends CrudMockitoSugar with MustMatch
 
   @Test
   def update_mustModifyTheData() {
-    val commandContext = new AndroidCommandContextForTesting(testApplication)
+    val commandContext = Robolectric.buildActivity(classOf[CrudActivityForRobolectric]).get().commandContext
     val persistence = new ContentResolverCrudPersistenceForTesting(fooEntityType, testApplication, commandContext)
     val id1 = persistence.save(None, MapStorage, data1, commandContext)
     persistence.save(None, MapStorage, data2, commandContext)
@@ -78,7 +80,7 @@ class ContentResolverCrudPersistenceSpec extends CrudMockitoSugar with MustMatch
 
   @Test
   def delete_mustDelete() {
-    val commandContext = new AndroidCommandContextForTesting(testApplication)
+    val commandContext = Robolectric.buildActivity(classOf[CrudActivityForRobolectric]).get().commandContext
     val persistence = new ContentResolverCrudPersistenceForTesting(fooEntityType, testApplication, commandContext)
     val id1 = persistence.save(None, MapStorage, data1, commandContext)
     val id2 = persistence.save(None, MapStorage, data2, commandContext)
@@ -91,8 +93,8 @@ class ContentResolverCrudPersistenceSpec extends CrudMockitoSugar with MustMatch
 
   @Test
   def listenerMustReceiveNotificationsWhenSaveHappensForDesiredEntityType() {
-    val persistenceFactory = new ContentResolverPersistenceFactoryForTesting(ListBufferPersistenceFactoryForTesting, testApplication)
-    val commandContext = new AndroidCommandContextForTesting(testApplication)
+    val persistenceFactory = new ContentResolverPersistenceFactory(platformDriver.localDatabasePersistenceFactory)
+    val commandContext = Robolectric.buildActivity(classOf[CrudActivityForRobolectric]).get().commandContext
     val listener = mock[DataListener]
     persistenceFactory.listenerSet(fooEntityType, commandContext.sharedContext).addListener(listener)
     val persistence = persistenceFactory.createEntityPersistence(fooEntityType, commandContext.persistenceConnection)
@@ -108,8 +110,8 @@ class ContentResolverCrudPersistenceSpec extends CrudMockitoSugar with MustMatch
 
   @Test
   def listenerMustNotReceiveNotificationsWhenSaveHappensForDifferentEntityType() {
-    val persistenceFactory = new ContentResolverPersistenceFactoryForTesting(ListBufferPersistenceFactoryForTesting, testApplication)
-    val commandContext = new AndroidCommandContextForTesting(testApplication)
+    val persistenceFactory = new ContentResolverPersistenceFactory(platformDriver.localDatabasePersistenceFactory)
+    val commandContext = Robolectric.buildActivity(classOf[CrudActivityForRobolectric]).get().commandContext
 
     val listener = mock[DataListener]
     persistenceFactory.listenerSet(fooEntityType, commandContext.sharedContext).addListener(listener)

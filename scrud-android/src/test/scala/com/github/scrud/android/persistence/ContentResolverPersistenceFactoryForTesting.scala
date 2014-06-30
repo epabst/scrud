@@ -1,8 +1,6 @@
 package com.github.scrud.android.persistence
 
 import com.github.scrud.persistence.PersistenceFactory
-import com.xtremelabs.robolectric.shadows.ShadowContentResolver
-import com.github.scrud.android.view.AndroidConversions._
 import com.github.scrud.android.CrudAndroidApplicationLike
 
 /**
@@ -13,6 +11,4 @@ import com.github.scrud.android.CrudAndroidApplicationLike
  */
 class ContentResolverPersistenceFactoryForTesting(delegate: PersistenceFactory, application: CrudAndroidApplicationLike)
     extends ContentResolverPersistenceFactory(delegate) {
-  val contentProvider = new CrudContentProviderForTesting(application)
-  ShadowContentResolver.registerProvider(authorityFor(application), contentProvider)
 }

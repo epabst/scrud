@@ -372,9 +372,9 @@ class CrudActivity extends FragmentActivity with OptionsMenuActivity with Loader
   lazy val headerLayout: LayoutKey = getLayoutKey(entityNameLayoutPrefix + "_header")
   lazy val listLayout: LayoutKey = findResourceIdWithName(platformDriver.rLayoutClasses, entityNameLayoutPrefix + "_list").getOrElse(getLayoutKey("entity_list"))
 
-  protected def listViewName: String = entityName + "_list"
+  protected def listViewName: String = entityName.toSnakeCase + "_list"
   lazy val listViewKey: ViewKey = resourceIdWithName(sharedContext.rIdClasses, listViewName, "id")
-  lazy val emptyListViewKeyOpt: Option[ViewKey] = findResourceIdWithName(sharedContext.rIdClasses, entityName + "_emptyList")
+  lazy val emptyListViewKeyOpt: Option[ViewKey] = findResourceIdWithName(sharedContext.rIdClasses, entityName.toSnakeCase + "_emptyList")
 
   lazy val rowLayout: LayoutKey = getLayoutKey(entityNameLayoutPrefix + "_row")
   /** The layout used for each entity when allowing the user to pick one of them. */

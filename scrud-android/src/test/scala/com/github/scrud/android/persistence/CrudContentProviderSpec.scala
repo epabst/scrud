@@ -14,6 +14,7 @@ import view.AndroidConversions
 import android.net.Uri
 import com.github.scrud.platform.representation.Persistence
 import com.github.scrud.copy.types.MapStorage
+import org.robolectric.annotation.Config
 
 /**
  * A behavior specification for [[com.github.scrud.android.persistence.CrudContentProvider]].
@@ -22,6 +23,7 @@ import com.github.scrud.copy.types.MapStorage
  * Time: 4:59 PM
  */
 @RunWith(classOf[CustomRobolectricTestRunner])
+@Config(manifest = "target/generated/AndroidManifest.xml")
 class CrudContentProviderSpec extends CrudMockitoSugar with MustMatchers {
   val platformDriver = AndroidPlatformDriverForTesting
   val fooEntityName = EntityName("Foo")

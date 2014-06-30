@@ -15,8 +15,7 @@ import com.github.scrud.platform.representation.DetailUI
   */
 @RunWith(classOf[JUnitRunner])
 class CrudUIGeneratorSpec extends FunSpec with MustMatchers with MockitoSugar {
-  val platformDriver = new AndroidPlatformDriver(classOf[R])
-  val entityType = new EntityTypeForTesting(platformDriver = platformDriver)
+  val entityType = EntityTypeForTesting
   private val entityTypeMap = new EntityTypeMapForTesting(entityType)
   val entityTypeViewInfo = new EntityTypeViewInfo(entityType, entityTypeMap)
   val displayableEntityTypeViewInfo = new TargetedEntityTypeViewInfo(entityTypeViewInfo, DetailUI)

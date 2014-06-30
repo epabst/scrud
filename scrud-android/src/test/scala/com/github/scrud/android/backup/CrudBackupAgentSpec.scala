@@ -19,11 +19,13 @@ import com.github.scrud.types.{NaturalIntQT, TitleQT}
 import com.github.scrud.platform.representation.{SelectUI, EditUI, Persistence}
 import com.github.scrud.android.EntityTypeForTesting
 import com.github.scrud.EntityName
+import org.robolectric.annotation.Config
 
 /** A test for [[com.github.scrud.android.backup.CrudBackupAgent]].
   * @author Eric Pabst (epabst@gmail.com)
   */
 @RunWith(classOf[CustomRobolectricTestRunner])
+@Config(manifest = "target/generated/AndroidManifest.xml")
 class CrudBackupAgentSpec extends MustMatchers with CrudMockitoSugar {
   @Test
   def shouldMarshallAndUnmarshall() {

@@ -22,18 +22,20 @@ import com.github.scrud.platform.representation.{EditUI, SummaryUI}
 import com.github.scrud.{android => _,_}
 import com.github.scrud.FieldName
 import com.github.scrud.EntityName
+import org.robolectric.annotation.Config
 
 /**
  * A behavior specification for Android EditUI and DisplayUI fields.
  * @author Eric Pabst (epabst@gmail.com)
  */
 @RunWith(classOf[CustomRobolectricTestRunner])
-class ViewFieldSpec extends MustMatchers with MockitoSugar {
+@Config(manifest = "target/generated/AndroidManifest.xml")
+class ViewFieldSpec extends ScrudRobolectricSpec {
   class MyEntity(var string: String, var number: Int)
   val context = mock[Context]
   val itemLayoutId = _root_.android.R.layout.simple_spinner_dropdown_item
   Locale.setDefault(Locale.US)
-  private val platformDriver = new AndroidPlatformDriver(classOf[R])
+  private val platformDriver = AndroidPlatformDriverForTesting
   val application = new CrudApplicationForTesting(platformDriver, EntityTypeMapForTesting(Map.empty[EntityType,PersistenceFactory]))
 
   val stringConvertibleType = new StringConvertibleQT[String] {

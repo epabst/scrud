@@ -12,11 +12,13 @@ import com.github.scrud.action.{ActionKey, PlatformCommand}
 import com.github.scrud.android.CustomRobolectricTestRunner
 import com.github.scrud.util.ExternalLogging
 import com.github.scrud.ApplicationNameForTesting
+import org.robolectric.annotation.Config
 
 /** A behavior specification for [[com.github.scrud.android.action.OptionsMenuActivity]].
   * @author Eric Pabst (epabst@gmail.com)
   */
 @RunWith(classOf[CustomRobolectricTestRunner])
+@Config(manifest = "target/generated/AndroidManifest.xml")
 class OptionsMenuActivitySpec extends MustMatchers with MockitoSugar {
   class StubOptionsMenuActivity extends Activity with OptionsMenuActivity {
     protected val defaultOptionsMenuCommands = Nil

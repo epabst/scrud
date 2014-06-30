@@ -10,11 +10,13 @@ import com.github.scrud.android.action.AndroidOperation
 import com.github.scrud.android.{EntityTypeForTesting, AndroidCommandContextForTesting, CustomRobolectricTestRunner}
 import com.github.scrud.UriPath
 import com.github.scrud.copy.CopyContext
+import org.robolectric.annotation.Config
 
 /** A specification of [[com.github.scrud.android.view.OnClickSetterField]].
   * @author Eric Pabst (epabst@gmail.com)
   */
 @RunWith(classOf[CustomRobolectricTestRunner])
+@Config(manifest = "target/generated/AndroidManifest.xml")
 class OnClickOperationSetterSpec extends MockitoSugar {
   @Test
   def itMustSetOnClickListenerWhenClicableIsTrue() {

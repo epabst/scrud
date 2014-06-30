@@ -25,7 +25,7 @@ object AndroidConversions {
 
   def baseUriFor(packageName: String): Uri = (new Uri.Builder).scheme("content").authority(authorityFor(packageName)).build()
 
-  def toUri(uriPath: UriPath, context: Context): Uri = toUri(uriPath, context.getApplicationInfo.packageName)
+  def toUri(uriPath: UriPath, context: Context): Uri = toUri(uriPath, context.getApplicationContext.asInstanceOf[CrudAndroidApplicationLike])
 
   def toUri(uriPath: UriPath, sharedContext: SharedContext): Uri = toUri(uriPath, sharedContext.asInstanceOf[CrudAndroidApplicationLike].getClass)
 

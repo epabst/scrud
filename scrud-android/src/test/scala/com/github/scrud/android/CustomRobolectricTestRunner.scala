@@ -1,7 +1,7 @@
 package com.github.scrud.android
 
-import com.xtremelabs.robolectric.RobolectricTestRunner
 import com.github.scrud.android.generate.CrudUIGeneratorForTesting
+import org.robolectric.RobolectricTestRunner
 
 /**
  * Custom Robolectric test runner that refers to the directory with AndroidManifest.xml and the res directory.
@@ -9,7 +9,7 @@ import com.github.scrud.android.generate.CrudUIGeneratorForTesting
  * Date: 12/28/12
  * Time: 6:22 PM
  */
-class CustomRobolectricTestRunner(testClass: Class[_]) extends RobolectricTestRunner(testClass, {
+class CustomRobolectricTestRunner(testClass: Class[_]) extends RobolectricTestRunner({
   CrudUIGeneratorForTesting.generateLayoutsIfMissing()
-  CrudUIGeneratorForTesting.workingDir.jfile
+  testClass
 })

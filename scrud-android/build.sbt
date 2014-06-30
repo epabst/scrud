@@ -31,7 +31,7 @@ libraryDependencies += "junit" % "junit" % "4.8.2" % "test"
 // Required to make sbt run junit tests
 libraryDependencies += "com.novocode" % "junit-interface" % "0.4" % "test"
 
-libraryDependencies += "com.pivotallabs" % "robolectric" % "1.1" % "test"
+libraryDependencies += "com.pivotallabs" % "robolectric" % "2.3" % "test"
 
 libraryDependencies += "org.scalatest" %% "scalatest" % "1.8" % "test"
 
