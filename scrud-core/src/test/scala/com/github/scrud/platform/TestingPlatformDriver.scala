@@ -1,6 +1,6 @@
 package com.github.scrud.platform
 
-import com.github.scrud.persistence.ListBufferPersistenceFactoryForTesting
+import com.github.scrud.persistence.{PersistenceRangeAdaptableField, ListBufferPersistenceFactoryForTesting}
 import com.github.scrud.action.CrudOperationType._
 import com.github.scrud.types.QualifiedType
 import com.github.scrud.{FieldName, EntityName}
@@ -10,6 +10,8 @@ import com.github.scrud.util.Name
 import com.netaporter.uri.Uri
 import scala.util.{Try, Success}
 import com.github.scrud.platform.PlatformTypes.{ImgKey, SKey}
+import com.github.scrud.copy.{AdaptableFieldWithRepresentations, Representation}
+import com.github.scrud.platform.representation.PersistenceRange
 
 /**
  * A simple PlatformDriver for testing.
@@ -26,12 +28,15 @@ class TestingPlatformDriver extends PlatformDriver {
 
   val localDatabasePersistenceFactory = ListBufferPersistenceFactoryForTesting
 
-  private object PersistenceFieldFactory extends PersistenceAdaptableFieldFactory {
-    def sourceField[V](entityName: EntityName, fieldName: FieldName, qualifiedType: QualifiedType[V]) =
-      UniversalMapStorageAdaptableFieldFactory.createSourceField(entityName, fieldName, qualifiedType)
-
-    def targetField[V](entityName: EntityName, fieldName: FieldName, qualifiedType: QualifiedType[V]) =
-      UniversalMapStorageAdaptableFieldFactory.createTargetField(entityName, fieldName, qualifiedType)
+  private object PersistenceFieldFactory extends AdaptableFieldFactory {
+    override def adapt[V](entityName: EntityName, fieldName: FieldName, qualifiedType: QualifiedType[V],
+                          representations: Seq[Representation[V]]): AdaptableFieldWithRepresentations[V] = {
+      val persistenceRanges = representations.collect { case persistenceRange: PersistenceRange => persistenceRange }
+      val sourceField = UniversalMapStorageAdaptableFieldFactory.createSourceField(entityName, fieldName, qualifiedType)
+      val targetField = UniversalMapStorageAdaptableFieldFactory.createTargetField(entityName, fieldName, qualifiedType)
+      val adaptableField = new PersistenceRangeAdaptableField[V](persistenceRanges, Some(sourceField), Some(targetField))
+      AdaptableFieldWithRepresentations(adaptableField, persistenceRanges.toSet[Representation[V]])
+    }
   }
 
   def idFieldName(entityName: EntityName): String = "id"

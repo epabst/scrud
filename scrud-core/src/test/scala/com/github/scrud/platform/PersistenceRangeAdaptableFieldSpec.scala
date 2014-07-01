@@ -11,13 +11,13 @@ import com.github.scrud.copy.SourceType
 import com.github.scrud.context.CommandContextForTesting
 
 /**
- * A Behavior specification for [[com.github.scrud.platform.PersistenceAdaptableFieldFactory]].
+ * A Behavior specification for [[com.github.scrud.persistence.PersistenceRangeAdaptableField]].
  * @author Eric Pabst (epabst@gmail.com)
  *         Date: 2/17/14
  *         Time: 9:01 PM
  */
 @RunWith(classOf[JUnitRunner])
-class PersistenceAdaptableFieldFactorySpec extends FunSpec with MustMatchers {
+class PersistenceRangeAdaptableFieldSpec extends FunSpec with MustMatchers {
   describe("Persistence(version)") {
     it("must distinguish between data versions") {
       val platformDriver = TestingPlatformDriver

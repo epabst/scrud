@@ -9,7 +9,7 @@ import com.github.scrud.context.CommandContext
 case class EntityTypePersistedInfo(entityType: EntityType) {
   lazy val currentPersistedFields = entityType.currentPersistedFields
   lazy val currentPersistedFieldNames = entityType.currentPersistedFields.
-    map(field => SQLiteAdaptableFieldFactory.toPersistedFieldName(field.fieldName)).toIndexedSeq
+    map(field => AndroidContentAdaptableFieldFactory.toPersistedFieldName(field.fieldName)).toIndexedSeq
   lazy val queryFieldNames: Seq[String] = currentPersistedFieldNames
 
   /** Copies the current row of the given cursor to a Map.  This allows the Cursor to then move to a different position right after this. */

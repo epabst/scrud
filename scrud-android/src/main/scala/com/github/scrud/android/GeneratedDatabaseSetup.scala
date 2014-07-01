@@ -3,7 +3,7 @@ package com.github.scrud.android
 import android.database.sqlite.{SQLiteOpenHelper, SQLiteDatabase}
 import com.github.scrud.util.{DelegateLogging, ExternalLogging}
 import android.provider.BaseColumns
-import com.github.scrud.android.persistence.{PersistedType, SQLiteAdaptableFieldFactory}
+import com.github.scrud.android.persistence.{PersistedType, AndroidContentAdaptableFieldFactory}
 import com.github.scrud.EntityType
 
 /**
@@ -27,7 +27,7 @@ class GeneratedDatabaseSetup(commandContext: AndroidCommandContext, persistenceF
         append(BaseColumns._ID).append(" INTEGER PRIMARY KEY AUTOINCREMENT")
       for {
         persistedField <- entityType.currentPersistedFields
-        persistedFieldName = SQLiteAdaptableFieldFactory.toPersistedFieldName(persistedField.fieldName)
+        persistedFieldName = AndroidContentAdaptableFieldFactory.toPersistedFieldName(persistedField.fieldName)
         if persistedFieldName != BaseColumns._ID
         persistedType = PersistedType(persistedField.qualifiedType)
       } buffer.append(", ").append(persistedFieldName).append(" ").append(persistedType.sqliteType)
@@ -59,7 +59,7 @@ class GeneratedDatabaseSetup(commandContext: AndroidCommandContext, persistenceF
       if entityType.originalDataVersion <= oldVersion
       persistedField <- entityType.persistedFields(newVersion)
       if persistedField.persistenceRangeOpt.exists { range => range.minDataVersion > oldVersion && range.minDataVersion <= newVersion }
-      persistedFieldName = SQLiteAdaptableFieldFactory.toPersistedFieldName(persistedField.fieldName)
+      persistedFieldName = AndroidContentAdaptableFieldFactory.toPersistedFieldName(persistedField.fieldName)
       persistedType = PersistedType(persistedField.qualifiedType)
       command = new StringBuilder().append("ALTER TABLE ").append(SQLitePersistenceFactory.toTableName(entityType.entityName)).
           append(" ADD COLUMN ").append(persistedFieldName).append(" ").append(persistedType.sqliteType).append(";").toString()
