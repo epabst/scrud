@@ -207,6 +207,7 @@ class AndroidPlatformDriverSpec extends ScrudRobolectricSpec {
     } catch {
       case e: UnsupportedOperationException if Option(e.getMessage).exists(_.contains(unknownSourceType.toString)) => Unit
     }
+    verify(contentValues, atMost(1)).putNull(EntityTypeForTesting.id.fieldName.toSnakeCase)
     verifyNoMoreInteractions(contentValues)
   }
 
