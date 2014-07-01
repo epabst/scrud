@@ -19,4 +19,8 @@ class ContentResolverCrudPersistenceForTesting(entityType: EntityType, applicati
   def this(entityType: EntityType, application: CrudAndroidApplicationLike, commandContext: AndroidCommandContext) {
     this(entityType, application, new CrudContentProviderForTesting(application), commandContext)
   }
+
+  def this(entityType: EntityType, commandContext: AndroidCommandContext) {
+    this(entityType, commandContext.androidApplication, commandContext)
+  }
 }

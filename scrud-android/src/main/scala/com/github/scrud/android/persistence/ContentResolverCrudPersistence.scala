@@ -11,7 +11,7 @@ import com.github.scrud.android.view.AndroidConversions
 import android.net.Uri
 import com.github.scrud.android.AndroidCommandContext
 import com.github.scrud.android.action.AndroidCommandContextDelegator
-import com.github.scrud.copy.SourceType
+import com.github.scrud.copy.{StorageType, SourceType}
 
 /**
  * A [[com.github.scrud.persistence.CrudPersistence]] that delegates to ContentResolver.
@@ -44,6 +44,8 @@ class ContentResolverCrudPersistence(val entityType: EntityType, contentResolver
   }
 
   def newWritable() = ContentResolverPersistenceFactory.newWritable()
+
+  override def writableType: StorageType = ContentResolverPersistenceFactory.writableStorageType
 
   def doSave(idOpt: Option[ID], writable: AnyRef) = idOpt match {
     case Some(id) =>

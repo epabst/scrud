@@ -1,7 +1,7 @@
 package com.github.scrud.android
 
 import android.content.ContentValues
-import persistence.SQLiteUtil
+import com.github.scrud.android.persistence.{ContentValuesStorage, SQLiteUtil}
 import android.database.sqlite.SQLiteDatabase
 import com.github.scrud.EntityType
 import com.github.scrud.persistence._
@@ -15,6 +15,8 @@ class SQLitePersistenceFactory extends AbstractPersistenceFactory with DataListe
   val canSave = true
 
   def newWritable() = new ContentValues
+
+  def writableStorageType: ContentValuesStorage.type = ContentValuesStorage
 
   private object WritableDatabaseVar extends PersistenceConnectionVar[SQLiteDatabase]
 

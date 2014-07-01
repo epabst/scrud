@@ -3,6 +3,7 @@ package com.github.scrud.persistence
 import com.github.scrud.util.{CachedFunction, ListenerSet, ListenerHolder, DelegatingListenerSet}
 import com.github.scrud.UriPath
 import com.github.scrud.platform.PlatformTypes
+import com.github.scrud.copy.StorageType
 
 /**
  * A CrudPersistence that wraps another one, but only returning the first one,
@@ -31,6 +32,9 @@ case class SingletonWithChangeLogCrudPersistence(manyPersistence: CrudPersistenc
   def findAll(uri: UriPath) = cachedFindAll(uri)
 
   def newWritable() = manyPersistence.newWritable()
+
+  /** The type that is returned by newWritable(). */
+  override def writableType: StorageType = manyPersistence.writableType
 
   // Intentionally save without reusing the ID so that existing instances are never modified since a change-log
   protected def doSave(id: Option[PlatformTypes.ID], writable: AnyRef) = {

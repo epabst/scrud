@@ -15,7 +15,7 @@ import persistence.SQLiteCriteria
 import scala.Some
 import com.github.scrud.android.backup.CrudBackupAgent
 import com.github.scrud.platform.representation.Query
-import com.github.scrud.copy.SourceType
+import com.github.scrud.copy.{StorageType, SourceType}
 import com.github.scrud.copy.types.MapStorage
 import com.github.scrud.util.{DelegatingListenerSet, MutableListenerSet, ExternalLogging, DelegateLogging}
 import com.github.scrud.context.SharedContext
@@ -68,6 +68,9 @@ class SQLiteCrudPersistence(val entityType: EntityType, database: SQLiteDatabase
   }
 
   def newWritable() = SQLitePersistenceFactory.newWritable()
+
+  /** The type that is returned by newWritable(). */
+  override def writableType: StorageType = SQLitePersistenceFactory.writableStorageType
 
   override protected def doSave(idOption: Option[ID], writable: AnyRef): ID = {
     val contentValues = writable.asInstanceOf[ContentValues]

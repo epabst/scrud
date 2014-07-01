@@ -86,7 +86,7 @@ trait PersistenceConnectionDelegator {
     val sourceUri = entityName.toUri(idOpt)
     val persistence = persistenceFor(entityName)
     val dataToSave = persistenceConnection.entityTypeMap.entityType(entityName).copyAndUpdate(sourceType, source, sourceUri,
-      persistence.targetType, persistence.newWritable(), persistenceConnection.commandContext)
+      persistence.writableType, persistence.newWritable(), persistenceConnection.commandContext)
     persistence.save(idOpt, dataToSave)
   }
 

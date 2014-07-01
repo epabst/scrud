@@ -10,7 +10,6 @@ import com.github.scrud.android.view.AndroidConversions._
 import state.{ApplicationConcurrentMapVal, State}
 import scala.Some
 import persistence.CrudPersistence
-import com.github.scrud.platform.representation.Persistence
 
 /**
  * A ContentProvider that uses a PersistenceFactory.
@@ -75,8 +74,8 @@ abstract class CrudContentProvider extends ContentProvider with ActivityStateHol
     val uriPath = toUriPath(uri)
     val persistence = persistenceFor(uriPath)
     val writable = persistence.toWritable(ContentValuesStorage, values, uriPath, commandContext)
-    commandContext.save(UriPath.lastEntityNameOrFail(uriPath), Persistence.Latest,
-      persistence.entityType.idField.findFromContext(uriPath, commandContext), writable)
+    val idOpt = persistence.entityType.idField.findFromContext(uriPath, commandContext)
+    commandContext.save(UriPath.lastEntityNameOrFail(uriPath), idOpt, persistence.writableType, writable)
     val fixedUri = toUri(uriPath, commandContext.androidApplication)
     if (uri.toString != fixedUri.toString) sys.error(uri + " != " + fixedUri)
     contentResolver.notifyChange(toNotificationUri(fixedUri), null)

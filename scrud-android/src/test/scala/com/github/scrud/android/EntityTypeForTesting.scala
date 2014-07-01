@@ -8,6 +8,7 @@ import com.github.scrud.copy.types.Validation
 import com.github.scrud.EntityName
 
 object EntityForTesting extends EntityName("MyMap")
+object EntityForTesting2 extends EntityName("Foo")
 
 /** An EntityType for testing.
   * @author Eric Pabst (epabst@gmail.com)

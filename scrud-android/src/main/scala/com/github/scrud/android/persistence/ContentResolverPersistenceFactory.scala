@@ -9,6 +9,7 @@ import android.database.ContentObserver
 import android.os.Handler
 import com.github.scrud.state.ApplicationConcurrentMapVal
 import com.github.scrud.util.DelegatingListenerHolder
+import com.github.scrud.android.persistence.ContentValuesStorage
 
 /**
  * A PersistenceFactory that uses the ContentResolver.
@@ -56,4 +57,6 @@ object ContentResolverObserverInitializationVal extends ApplicationConcurrentMap
 
 object ContentResolverPersistenceFactory {
   def newWritable() = new ContentValues()
+
+  def writableStorageType: ContentValuesStorage.type = ContentValuesStorage
 }

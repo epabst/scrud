@@ -2,6 +2,8 @@ package com.github.scrud.persistence
 
 import com.github.scrud.platform.PlatformTypes._
 import com.github.scrud.UriPath
+import com.github.scrud.copy.StorageType
+import com.github.scrud.platform.representation.Persistence
 
 /**
  * Ths minimalistic Persistence support based on a UriPath.
@@ -15,6 +17,9 @@ trait ThinPersistence {
 
   /** Should delegate to PersistenceFactory.newWritable. */
   def newWritable(): AnyRef
+
+  /** The type that is returned by newWritable(). */
+  def writableType: StorageType = Persistence.Latest
 
   /** Save a created or updated entity. */
   def save(id: Option[ID], writable: AnyRef): ID

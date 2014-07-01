@@ -12,6 +12,6 @@ import com.github.scrud.EntityNavigation
  */
 class CrudAndroidApplicationForRobolectric(entityNavigation: EntityNavigation) extends CrudAndroidApplication(entityNavigation) {
   def this() {
-    this(new EntityNavigation(new EntityTypeMapForTesting(EntityTypeForTesting)))
+    this(new EntityNavigation(new EntityTypeMapForTesting(EntityTypeForTesting, new EntityTypeForTesting(EntityForTesting2))))
   }
 }

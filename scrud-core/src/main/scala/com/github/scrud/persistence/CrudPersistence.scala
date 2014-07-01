@@ -22,8 +22,6 @@ trait CrudPersistence extends EntityPersistence with ListenerSet[DataListener] w
 
   def sourceType: SourceType = Persistence.Latest
 
-  def targetType: TargetType = Persistence.Latest
-
   override def toUri(id: ID) = entityType.toUri(id)
 
   private lazy val idSourceField = entityType.id.toAdaptableField.sourceFieldOrFail(sourceType)
@@ -84,9 +82,13 @@ trait CrudPersistence extends EntityPersistence with ListenerSet[DataListener] w
     save(idOption, toWritable(sourceType, source, entityType.toUri(idOption), commandContext))
 
   def toWritable(sourceType: SourceType, source: AnyRef, sourceUri: UriPath, commandContext: CommandContext): AnyRef = {
-    val target = newWritable()
-    val adaptedFieldSeq = entityType.adapt(sourceType, Persistence.Latest)
-    adaptedFieldSeq.copyAndUpdate(source, sourceUri, target, commandContext)
+    if (sourceType == writableType) {
+      source
+    } else {
+      val adaptedFieldSeq = entityType.adapt(sourceType, writableType)
+      val target = newWritable()
+      adaptedFieldSeq.copyAndUpdate(source, sourceUri, target, commandContext)
+    }
   }
 
   def saveAll(modelEntityList: Seq[IdPk], commandContext: CommandContext): Seq[ID] = {
