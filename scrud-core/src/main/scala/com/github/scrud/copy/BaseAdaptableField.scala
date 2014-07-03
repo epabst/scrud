@@ -21,5 +21,7 @@ abstract class BaseAdaptableField {
 
   def hasSourceField(sourceType: SourceType) = findSourceField(sourceType).isDefined
 
+  def hasSourceFieldUsingSource(sourceType: SourceType) = findSourceField(sourceType) != findSourceField(SourceType.none)
+
   def hasTargetField(targetType: TargetType) = findTargetField(targetType).isDefined
 }

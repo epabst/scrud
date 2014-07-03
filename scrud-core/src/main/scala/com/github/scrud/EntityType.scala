@@ -34,7 +34,8 @@ abstract class EntityType(val entityName: EntityName, val platformDriver: Platfo
 
   def persistedFields(dataVersion: Int): Seq[BaseFieldDeclaration] = for {
     fieldDeclaration <- fieldDeclarations
-    if fieldDeclaration.toAdaptableField.findSourceField(Persistence(dataVersion)).isDefined
+    adaptableField = fieldDeclaration.toAdaptableField
+    if adaptableField.hasSourceFieldUsingSource(Persistence(dataVersion))
   } yield fieldDeclaration
 
   lazy val dataVersion: Int = {
