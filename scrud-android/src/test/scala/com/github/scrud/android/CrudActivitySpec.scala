@@ -40,10 +40,11 @@ class CrudActivitySpec extends CrudUIGeneratorForTesting with ScrudRobolectricSp
     val uri = UriPath(_entityType.entityName)
     val activity = Robolectric.buildActivity(classOf[CrudActivityForRobolectric]).
       withIntent(new Intent(Intent.ACTION_EDIT)).create().get()
-    val commandContext: AndroidCommandContext = activity.commandContext
+    val commandContext = activity.commandContext
     _entityType.copyAndUpdate(MapStorage, entity, uri, EditUI, activity, commandContext)
     // This should cause it to save and change the currentUriPath to include the id.
     activity.onBackPressed()
+    commandContext.waitUntilIdle()
     val results = commandContext.findAll(_entityType.toUri, MapStorage)
     val idOpt = activity.currentUriPath.findId(_entityType.entityName)
     idOpt must be ('defined)
