@@ -21,7 +21,8 @@ dependencies {
 //    compile project(":scrud:scrud-android-res"); // "com.github.epabst.scrud:scrud-android-res:scrud-android-res:0.3-alpha8-SNAPSHOT"
     compile project(":scrud:scrud-core");
     testCompile project(path: ":scrud:scrud-core", configuration: 'tests')
-    testRuntime "org.slf4j:slf4j-jdk14:1.6.1"
+    testRuntime "org.slf4j:slf4j-log4j12:1.6.1"
+    testRuntime "log4j:log4j:1.2.17"
     testCompile "org.mockito:mockito-core:1.8.5"
     testCompile "junit:junit:4.8.2"
     testCompile "com.novocode:junit-interface:0.4" // Required to make sbt run junit tests
