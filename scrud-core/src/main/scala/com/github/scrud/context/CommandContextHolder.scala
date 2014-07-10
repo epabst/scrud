@@ -6,7 +6,6 @@ import com.github.scrud.platform.PlatformTypes._
 import com.github.scrud.copy._
 import com.github.scrud.platform.Notification
 import scala.concurrent.Future
-import scala.concurrent.ExecutionContext.Implicits.global
 import com.github.scrud.action.Undoable
 import com.github.scrud.FieldDeclaration
 import com.github.scrud.copy.types.ValidationResult
@@ -30,7 +29,7 @@ private[context] trait CommandContextHolder extends SharedContextHolder with Not
 
   def entityNavigation: EntityNavigation
 
-  def future[T](body: => T): Future[T] = Future(body)
+  def future[T](body: => T): Future[T] = sharedContext.future(body)
 
   def persistenceConnection: PersistenceConnection
 

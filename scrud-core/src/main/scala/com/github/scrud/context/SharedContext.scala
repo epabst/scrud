@@ -7,6 +7,8 @@ import com.github.scrud.persistence.{PersistenceConnection, EntityTypeMap, DataL
 import com.github.scrud.platform.PlatformDriver
 import com.github.scrud.copy.{SourceType, TargetType, AdaptedValueSeq}
 import scala.concurrent.Future
+import scala.concurrent.ExecutionContext.Implicits
+import Implicits.global
 
 /**
  * The context that is shared among all [[com.github.scrud.context.CommandContext]]s
@@ -54,6 +56,8 @@ trait SharedContext extends StateHolder with DelegateLogging {
 
   @deprecated("use CommandContext.persistenceConnection", since = "2014-06-07")
   def openPersistence(): PersistenceConnection = makeTemporaryStubCommandContext().persistenceConnection
+
+  def future[T](body: => T): Future[T] = Future(body)
 
   private def cachedFuturePortableValueOptOrCalculate(entityType: EntityType, uriPathWithId: UriPath, commandContext: CommandContext)(calculate: => Option[AdaptedValueSeq]): Future[Option[AdaptedValueSeq]] = {
     val cache = FuturePortableValueCache.get(commandContext.sharedContext)
