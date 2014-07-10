@@ -83,7 +83,7 @@ class CrudContentProviderSpec extends CrudMockitoSugar with MustMatchers {
     val cursor = provider.query(toUri(UriPath(fooEntityName)), Array.empty, null, Array.empty, null)
     cursor.getCount must be (1)
     val head = CursorStream(cursor, EntityTypePersistedInfo(fooEntityType), commandContext).head
-    fooEntityType.id.getRequired(Persistence.Latest, head, fooEntityName.toUri, commandContext) must be (toUriPath(uri2).findId(fooEntityName).get)
+    fooEntityType.id.getRequired(CursorStream.storageType, head, fooEntityName.toUri, commandContext) must be (toUriPath(uri2).findId(fooEntityName).get)
 
     provider.delete(uri1, null, Array.empty) must be (0)
   }
