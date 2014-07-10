@@ -1,26 +1,25 @@
 package com.github.scrud.android
 
+import _root_.android.content.Intent
 import _root_.android.provider.BaseColumns
 import _root_.android.database.{Cursor, DataSetObserver}
-import _root_.android.widget.ListView
 import com.github.scrud.persistence._
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.scalatest.matchers.MustMatchers
-import persistence.{EntityTypePersistedInfo, CursorStream}
+import persistence.CursorStream
 import scala.collection._
-import org.mockito.Mockito
-import Mockito._
-import com.github.scrud.util.Logging
 import com.github.scrud._
-import com.github.scrud.EntityName
-import com.github.scrud.types.{TitleQT, NaturalIntQT}
+import com.github.scrud.types.TitleQT
 import com.github.scrud.copy.types.{MapStorage, Default}
-import com.github.scrud.platform.representation.{EditUI, DetailUI, Persistence}
-import com.github.scrud.context.SharedContextForTesting
+import com.github.scrud.platform.representation.{EditUI, DetailUI}
 import com.github.scrud.copy.SourceType
 import org.robolectric.annotation.Config
-import com.github.scrud.android.generate.CrudUIGeneratorForTesting
+import org.robolectric.Robolectric
+import com.github.scrud.android.action.AndroidOperation._
+import org.mockito.Mockito._
+import com.github.scrud.EntityName
+import scala.Some
+import com.github.scrud.android.persistence.EntityTypePersistedInfo
 
 /** A test for [[com.github.scrud.android.SQLitePersistenceFactorySpec]].
   * @author Eric Pabst (epabst@gmail.com)
@@ -28,28 +27,6 @@ import com.github.scrud.android.generate.CrudUIGeneratorForTesting
 @RunWith(classOf[CustomRobolectricTestRunner])
 @Config(manifest = "target/generated/AndroidManifest.xml")
 class SQLitePersistenceFactorySpec extends ScrudRobolectricSpec {
-  val runningOnRealAndroid: Boolean = try {
-    debug("Seeing if running on Real Android...")
-    Class.forName("com.xtremelabs.robolectric.RobolectricTestRunner")
-    warn("NOT running on Real Android.")
-    false
-  } catch {
-    case _: Throwable =>
-      info("Running on Real Android.")
-      true
-  }
-
-  val androidPlatformDriver = AndroidPlatformDriverForTesting
-
-  object TestEntity extends EntityName("Test")
-
-  object TestEntityType extends EntityType(TestEntity, androidPlatformDriver) {
-    val age = field("age", NaturalIntQT, Seq(Persistence(1), Default(21)))
-  }
-
-  val entityTypeMap = new EntityTypeMapForTesting(TestEntityType -> SQLitePersistenceFactory)
-  val androidApplication = new CrudAndroidApplication(entityTypeMap)
-
   @Test
   def shouldUseCorrectColumnNamesForFindAll() {
     val entityTypePersistedInfo = EntityTypePersistedInfo(new EntityTypeForTesting {
@@ -62,18 +39,15 @@ class SQLitePersistenceFactorySpec extends ScrudRobolectricSpec {
 
   @Test
   def shouldCloseCursorsWhenClosing() {
+    val commandContext = Robolectric.buildActivity(classOf[CrudActivityForRobolectric]).get().commandContext
     val persistenceFactory = SQLitePersistenceFactory
-    val entityTypeMap = new EntityTypeMapForTesting(TestEntityType -> persistenceFactory)
-    val commandContext = mock[AndroidCommandContext]
-    stub(commandContext.stateHolder).toReturn(new ActivityStateHolderForTesting)
-    stub(commandContext.androidApplication).toReturn(androidApplication)
-    stub(commandContext.entityTypeMap).toReturn(entityTypeMap)
-
     val cursors = mutable.Buffer[Cursor]()
     val database = new GeneratedDatabaseSetup(commandContext, persistenceFactory).getWritableDatabase
-    val thinPersistence = new SQLiteCrudPersistence(TestEntityType, database, commandContext)
-    val sharedContext = new SharedContextForTesting(entityTypeMap)
-    val persistence = new CrudPersistenceUsingThin(TestEntityType, thinPersistence, sharedContext) {
+    val listenerSet = persistenceFactory.listenerSet(EntityTypeForTesting, commandContext.sharedContext)
+    val thinPersistence = new SQLiteCrudPersistence(EntityTypeForTesting, database, commandContext,
+      listenerSet)
+    val sharedContext = commandContext.sharedContext
+    val persistence = new CrudPersistenceUsingThin(EntityTypeForTesting, thinPersistence, sharedContext, listenerSet) {
       override def findAll(uri: UriPath) = {
         val result = super.findAll(uri)
         val CursorStream(cursor, _, _) = result
@@ -82,7 +56,7 @@ class SQLitePersistenceFactorySpec extends ScrudRobolectricSpec {
       }
     }
     //UseDefaults is provided here in the item list for the sake of PortableField.adjustment[SQLiteCriteria] fields
-    val id = commandContext.save(TestEntity, None, SourceType.none, SourceType.none)
+    val id = commandContext.save(EntityForTesting, None, SourceType.none, SourceType.none)
     val uri = persistence.toUri(id)
     persistence.find(uri)
     persistence.findAll(UriPath.EMPTY)
@@ -94,30 +68,35 @@ class SQLitePersistenceFactorySpec extends ScrudRobolectricSpec {
   }
 
   @Test
-  def shouldRefreshCursorWhenDeletingAndSaving() {
-    val activity = new CrudActivityForTesting(androidApplication) {
-      override val getAdapterView: ListView = new ListView(this)
-    }
+  def shouldRefreshCursorWhenSavingAndDeleting() {
+    val activityController = Robolectric.buildActivity(classOf[CrudActivityForRobolectric]).
+      withIntent(new Intent(ListActionName))
+    val activity = activityController.create().get()
     val observer = mock[DataSetObserver]
+    val commandContext = activity.commandContext
 
-    val commandContext = new AndroidCommandContextForTesting(androidApplication, activity)
-    activity.setListAdapterUsingUri(commandContext, activity)
-    val listAdapter = activity.getAdapterView.getAdapter
-    listAdapter.getCount must be (0)
+    activityController.start()
+    activity.listAdapter.getCount must be (0)
+    activity.listAdapter.registerDataSetObserver(observer)
+    verify(observer, never()).onChanged()
 
-    val id = commandContext.save(TestEntity, None, SourceType.none, SourceType.none)
-    //it must have refreshed the listAdapter
-    listAdapter.getCount must be (if (runningOnRealAndroid) 1 else 0)
-
-    listAdapter.registerDataSetObserver(observer)
-    commandContext.save(TestEntity, Some(id), MapStorage, new MapStorage(TestEntityType.age -> Some(50)))
+    val id = commandContext.save(EntityForTesting, None, MapStorage, new MapStorage(EntityTypeForTesting.name -> Some("Gilbert")))
+    commandContext.waitUntilIdle()
     //it must have refreshed the listAdapter (notified the observer)
-    listAdapter.unregisterDataSetObserver(observer)
-    listAdapter.getCount must be (if (runningOnRealAndroid) 1 else 0)
+    activity.listAdapter.getCount must be (1)
+    verify(observer, times(1)).onChanged()
 
-    commandContext.delete(TestEntity.toUri(id)) must be (1)
+    commandContext.save(EntityForTesting, Some(id), MapStorage, new MapStorage(EntityTypeForTesting.name -> Some("Patricia")))
+    commandContext.waitUntilIdle()
+    //it must have refreshed the listAdapter (notified the observer)
+    verify(observer, times(2)).onChanged()
+    activity.listAdapter.getCount must be (1)
+
+    commandContext.delete(EntityForTesting.toUri(id)) must be (1)
+    commandContext.waitUntilIdle()
+    verify(observer, times(3)).onChanged()
     //it must have refreshed the listAdapter
-    listAdapter.getCount must be (0)
+    activity.listAdapter.getCount must be (0)
   }
 
   @Test

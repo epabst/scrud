@@ -6,7 +6,7 @@ import _root_.android.support.v4.content.{CursorLoader, Loader}
 import android.os.Bundle
 import android.content.Intent
 import android.app.Activity
-import _root_.android.widget.{Adapter, AdapterView, ListView}
+import _root_.android.widget._
 import com.github.scrud
 import scrud.action.CrudOperationType
 import scrud.platform.PlatformTypes
@@ -35,6 +35,7 @@ import com.github.scrud.android.persistence.ContentQuery
 import com.github.scrud.action.CrudOperation
 import com.github.scrud.action.OperationAction
 import com.github.scrud.android.view.OnClickSetterField
+import com.github.scrud.android.view.ViewSpecifier
 import com.github.scrud.context.SharedContextHolder
 import com.github.scrud.state.State
 
@@ -50,7 +51,7 @@ class CrudActivity extends FragmentActivity with OptionsMenuActivity with Loader
 
   def entityName = entityType.entityName
 
-  protected lazy val persistenceFactory: PersistenceFactory = commandContext.entityTypeMap.persistenceFactory(entityType)
+  protected lazy val persistenceFactory: PersistenceFactory = entityTypeMap.persistenceFactory(entityType)
 
   protected[this] val createdId: AtomicReference[Option[ID]] = new AtomicReference(None)
 
@@ -87,7 +88,7 @@ class CrudActivity extends FragmentActivity with OptionsMenuActivity with Loader
     case AndroidOperation.DeleteActionName => CrudOperationType.Delete
   }
 
-  lazy val currentAction: String = getIntent.getAction
+  lazy val currentAction: String = Option(getIntent.getAction).getOrElse(sys.error("setIntent must be called first"))
 
   lazy val currentUITargetType: TargetType = currentCrudOperationType match {
     case CrudOperationType.Update | CrudOperationType.Create =>
@@ -116,7 +117,7 @@ class CrudActivity extends FragmentActivity with OptionsMenuActivity with Loader
 
   protected lazy val normalActions = entityNavigation.actionsFromCrudOperation(currentCrudOperation)
 
-  private var adapterView: AdapterView[_ <: Adapter] = null
+  private var adapterView: AdapterView[_ <: ListAdapter] = null
 
   protected val mOnClickListener: AdapterView.OnItemClickListener = new AdapterView.OnItemClickListener {
     def onItemClick(parent: AdapterView[_], v: View, position: Int, id: Long) {
@@ -196,6 +197,7 @@ class CrudActivity extends FragmentActivity with OptionsMenuActivity with Loader
           populateFromReferencedEntities()
           persistenceFactory.addListener(new DataListener {
             def onChanged() {
+              debug("notified: DataListener in populateFromReferencedEntities")
               //Some of the parent fields may be calculated from the children
               populateFromReferencedEntities()
             }
@@ -242,7 +244,7 @@ class CrudActivity extends FragmentActivity with OptionsMenuActivity with Loader
     super.onContentChanged()
     if (currentCrudOperationType == CrudOperationType.List) {
       val emptyViewOpt: Option[View] = emptyListViewKeyOpt.flatMap(key => Option(findViewById(key)))
-      this.adapterView = Option(findViewById(listViewKey).asInstanceOf[AdapterView[_ <: Adapter]]).getOrElse {
+      this.adapterView = Option(findViewById(listViewKey).asInstanceOf[AdapterView[_ <: ListAdapter]]).getOrElse {
         throw new RuntimeException("The content layout must have an AdapterView (e.g. ListView) whose id attribute is " + listViewName)
       }
       emptyViewOpt.map(adapterView.setEmptyView(_))
@@ -288,9 +290,18 @@ class CrudActivity extends FragmentActivity with OptionsMenuActivity with Loader
   /**
    * Get the activity's list view widget.
    */
-  def getAdapterView: AdapterView[_ <: Adapter] = {
+  def getAdapterView: AdapterView[_ <: ListAdapter] = {
     ensureAdapterView()
     adapterView
+  }
+  
+  lazy val listAdapter: ListAdapter = findInnermostAdapter(getAdapterView.getAdapter)
+
+  private def findInnermostAdapter(adapter: ListAdapter): ListAdapter = {
+    adapter match {
+      case wrapper: WrapperListAdapter => findInnermostAdapter(wrapper.getWrappedAdapter)
+      case _ => adapter
+    }
   }
 
   protected lazy val contextMenuActions: Seq[OperationAction] = {
@@ -443,13 +454,14 @@ class CrudActivity extends FragmentActivity with OptionsMenuActivity with Loader
     }
   }
 
-  def onCreateLoader(id: Int, args: Bundle) = {
+  def onCreateLoader(id: Int, args: Bundle): CursorLoader = {
     commandContext.propagateWithExceptionReporting {
       debug("onCreateLoader(" + id + ")")
       val cursorLoaderData = cursorLoaderDataList(id)
       val contentQuery: ContentQuery = cursorLoaderData.query
       val loader = new CursorLoader(this)
       loader.setUri(contentQuery.uri)
+      debug("Created CursorLoader with uri=" + contentQuery.uri)
       loader.setProjection(contentQuery.projection.toArray)
       loader.setSelection(contentQuery.selection.mkString(" AND "))
       loader.setSelectionArgs(contentQuery.selectionArgs.toArray)
@@ -472,6 +484,7 @@ class CrudActivity extends FragmentActivity with OptionsMenuActivity with Loader
       sharedContext.FuturePortableValueCache.get(stateHolder).clear()
       cursorLoaderDataByLoader.get(loader).foreach { cursorLoaderData =>
         cursorLoaderData.adapter.swapCursor(data)
+        debug("Swapped Cursor in adapter=" + cursorLoaderData.adapter)
       }
     }
   }

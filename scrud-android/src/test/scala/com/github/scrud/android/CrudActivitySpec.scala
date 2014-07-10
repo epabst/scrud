@@ -159,12 +159,12 @@ class CrudActivitySpec extends CrudUIGeneratorForTesting with ScrudRobolectricSp
     activity.commandContext.save(EntityTypeForTesting.entityName, None, MapStorage, data)
 
     activityController.create()
-    activity.getAdapterView.getCount must be (1)
+    activity.listAdapter.getCount must be (1)
 
     val data2 = new MapStorage(_entityType.name -> Some("Will"), _entityType.age -> Some(31))
     activity.commandContext.save(EntityTypeForTesting.entityName, None, MapStorage, data2)
     activity.onPause() // this should not cause a database read.
-    activity.getAdapterView.getCount must be (1)
+    activity.listAdapter.getCount must be (1)
 
     activity.onResume() // this should cause a database read.
 // todo   activity.getAdapterView.getCount must be (2)

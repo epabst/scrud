@@ -2,10 +2,9 @@ package com.github.scrud.android
 
 import scala.collection.mutable
 import com.github.scrud.platform.PlatformTypes
-import scala.concurrent.{Await, ExecutionContext, Future}
-import java.util.concurrent.{TimeUnit, ConcurrentLinkedQueue, Executors}
-import scala.concurrent.duration.Duration
-import scala.concurrent.ExecutionContext.Implicits
+import scala.concurrent.ExecutionContext
+import java.util.concurrent.Executors
+import org.robolectric.Robolectric
 
 /**
  * An [[com.github.scrud.android.AndroidCommandContext]] for use when testing with Robolectric.
@@ -15,10 +14,10 @@ import scala.concurrent.ExecutionContext.Implicits
 class AndroidCommandContextForRobolectric(application: CrudAndroidApplicationLike, activity: CrudActivity)
   extends AndroidCommandContext(activity, application) {
 
-  private val scheduledFutures = new ConcurrentLinkedQueue[Future[Any]]()
-  private val failures = new ConcurrentLinkedQueue[Throwable]()
-  val uiThreadExecutionContext: ExecutionContext = ExecutionContext.fromExecutorService(Executors.newFixedThreadPool(1),
-    throwable => failures.add(throwable))
+  private def androidApplicationForRobolectric: CrudAndroidApplicationForRobolectric =
+    androidApplication.asInstanceOf[CrudAndroidApplicationForRobolectric]
+
+  val uiThreadExecutionContext: ExecutionContext = androidApplicationForRobolectric.toExecutionContext(Executors.newFixedThreadPool(1))
 
   private val entityTypesWithWrongPlatformDriver = entityTypeMap.allEntityTypes.filter(!_.platformDriver.isInstanceOf[AndroidPlatformDriver])
   if (!entityTypesWithWrongPlatformDriver.isEmpty) {
@@ -27,33 +26,14 @@ class AndroidCommandContextForRobolectric(application: CrudAndroidApplicationLik
 
   val displayedMessageKeys: mutable.Buffer[PlatformTypes.SKey] = mutable.Buffer()
 
-  override def future[T](body: => T) = {
-    runAndAddFuture(body)(Implicits.global)
-  }
-
   override def runOnUiThread[T](body: => T) {
-    runAndAddFuture(body)(uiThreadExecutionContext)
-  }
-
-  private def runAndAddFuture[T](body: => T)(executionContext: ExecutionContext): Future[T] = {
-    val future = Future(body)(executionContext)
-    scheduledFutures.add(future)
-    future
+    androidApplicationForRobolectric.runAndAddFuture(body)(uiThreadExecutionContext)
   }
 
   def waitUntilIdle() {
-    if (!failures.isEmpty) {
-      reportError(failures.peek())
-    }
-    while (!scheduledFutures.isEmpty) {
-      val future = scheduledFutures.peek()
-      Await.result(future, Duration(2, TimeUnit.MINUTES))
-      scheduledFutures.remove(scheduledFutures)
-
-      if (!failures.isEmpty) {
-        reportError(failures.peek())
-      }
-    }
+    androidApplicationForRobolectric.waitUntilIdle()
+    while (Robolectric.getBackgroundScheduler.runOneTask()) {}
+    androidApplicationForRobolectric.waitUntilIdle()
   }
 
   override def reportError(throwable: Throwable) {
