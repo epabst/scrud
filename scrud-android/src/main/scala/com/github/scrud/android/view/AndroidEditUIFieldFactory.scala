@@ -39,9 +39,9 @@ class AndroidEditUIFieldFactory(platformDriver: AndroidPlatformDriver) extends A
           case qType@PercentageQT => new EditTextField(qType, editTextLayout("numberDecimal|numberSigned"))
           case qType: StringQualifiedType => new EditTextField(qType, editTextLayout("text|textAutoCorrect"))
           case qType: IntQualifiedType => new EditTextField(qType, editTextLayout("number"))
+          case EnumerationValueQT(enumeration) => EnumerationView(enumeration).asInstanceOf[ViewStorageField[V]]
         }
         case DateWithoutTimeQT => new DatePickerField().asInstanceOf[ViewStorageField[V]]
-        case EnumerationValueQT(enumeration) => EnumerationView(enumeration).asInstanceOf[ViewStorageField[V]]
         case qType@EntityName(_) => SelectEntityView(qType).asInstanceOf[ViewStorageField[V]]
         case qType@ImageQT => new CapturedImageStorageField(platformDriver).asInstanceOf[ViewStorageField[V]]
       }
