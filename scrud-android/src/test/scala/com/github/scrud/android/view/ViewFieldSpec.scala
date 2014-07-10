@@ -1,28 +1,27 @@
 package com.github.scrud.android.view
 
 import org.junit.runner.RunWith
-import org.scalatest.matchers.MustMatchers
 import _root_.android.view.View
 import org.junit.Test
-import org.scalatest.mock.MockitoSugar
 import org.mockito.Mockito._
 import _root_.android.widget._
 import java.util.Locale
-import _root_.android.content.Context
+import _root_.android.content.{Intent, Context}
 import com.github.scrud.android._
 import org.mockito.Matchers
 import org.mockito.stubbing.Answer
 import org.mockito.invocation.InvocationOnMock
 import scala.reflect.Manifest
 import com.github.scrud.copy.CopyContext
-import com.github.scrud.persistence.{PersistenceFactory, EntityTypeMapForTesting}
-import com.github.scrud.types.StringConvertibleQT
-import scala.util.{Success,Try}
+import com.github.scrud.types.{TitleQT, StringConvertibleQT}
+import scala.util.Try
 import com.github.scrud.platform.representation.{EditUI, SummaryUI}
-import com.github.scrud.{android => _,_}
-import com.github.scrud.FieldName
-import com.github.scrud.EntityName
+import com.github.scrud.{android => _, EntityTypeForTesting => _,_}
 import org.robolectric.annotation.Config
+import org.robolectric.Robolectric
+import com.github.scrud.android.action.AndroidOperation._
+import scala.Some
+import scala.util.Success
 
 /**
  * A behavior specification for Android EditUI and DisplayUI fields.
@@ -32,11 +31,11 @@ import org.robolectric.annotation.Config
 @Config(manifest = "target/generated/AndroidManifest.xml")
 class ViewFieldSpec extends ScrudRobolectricSpec {
   class MyEntity(var string: String, var number: Int)
-  val context = mock[Context]
   val itemLayoutId = _root_.android.R.layout.simple_spinner_dropdown_item
   Locale.setDefault(Locale.US)
   private val platformDriver = AndroidPlatformDriverForTesting
-  val application = new CrudApplicationForTesting(platformDriver, EntityTypeMapForTesting(Map.empty[EntityType,PersistenceFactory]))
+  val entityName = EntityTypeForTesting.entityName
+  val fieldName = EntityTypeForTesting.name.fieldName
 
   val stringConvertibleType = new StringConvertibleQT[String] {
     /** Convert the value to a String for display. */
@@ -53,15 +52,16 @@ class ViewFieldSpec extends ScrudRobolectricSpec {
 
   @Test
   def itMustClearTheViewIfEmpty() {
+    val commandContext = Robolectric.buildActivity(classOf[CrudActivityForRobolectric]).
+      withIntent(new Intent(UpdateActionName)).get().commandContext
     val viewGroup = mock[View]
-    val view1 = mockView[TextView]
-    val view2 = mockView[TextView]
-    val view3 = mockView[TextView]
-    stub(viewGroup.findViewById(101)).toReturn(view1)
-    stub(viewGroup.findViewById(102)).toReturn(view2)
-    stub(viewGroup.findViewById(103)).toReturn(view3)
-    val viewField = platformDriver.field(EntityName("foo"), FieldName("bar"), stringConvertibleType, Seq(SummaryUI, EditUI))
-    viewField.toAdaptableField.findTargetField(EditUI).get.updateValue(viewGroup, None, new CopyContext(UriPath.EMPTY, null))
+    val view1 = mockView[EditText]
+    stub(viewGroup.findViewById(R.id.edit_name)).toReturn(view1)
+    val viewField = platformDriver.field(entityName, fieldName, stringConvertibleType, Seq(SummaryUI, EditUI))
+    val targetField = viewField.toAdaptableField.findTargetField(EditUI).get
+    val copyContext = new CopyContext(UriPath.EMPTY, commandContext)
+    targetField.updateValue(viewGroup, None, copyContext)
+    commandContext.waitUntilIdle()
     verify(view1).setText("")
   }
 
@@ -79,62 +79,95 @@ class ViewFieldSpec extends ScrudRobolectricSpec {
 
   @Test
   def itMustOnlyCopyToAndFromViewByIdIfIdIsFound() {
+    val commandContext = Robolectric.buildActivity(classOf[CrudActivityForRobolectric]).
+      withIntent(new Intent(UpdateActionName)).get().commandContext
     val viewGroup = mock[View]
     stub(viewGroup.findViewById(Matchers.anyInt())).toReturn(null)
-    val viewField = platformDriver.field(EntityName("foo"), FieldName("bar"), stringConvertibleType, Seq(SummaryUI, EditUI))
+    val viewField = platformDriver.field(entityName, fieldName, stringConvertibleType, Seq(SummaryUI, EditUI))
     val targetField = viewField.toAdaptableField.findTargetField(EditUI)
-    val copyContext = new CopyContext(UriPath.EMPTY, null)
+    val copyContext = new CopyContext(UriPath.EMPTY, commandContext)
     targetField.get.updateValue(viewGroup, None, copyContext)
+    commandContext.waitUntilIdle()
   }
 
   @Test
   def itMustConvertNullToNone() {
-    val viewField = platformDriver.field(EntityName("foo"), FieldName("bar"), stringConvertibleType, Seq(SummaryUI, EditUI))
-    val view = new TextView(context)
+    val activity = Robolectric.buildActivity(classOf[CrudActivityForRobolectric]).
+      withIntent(new Intent(UpdateActionName)).create().get()
+    val commandContext = activity.commandContext
+    val viewField = platformDriver.field(entityName, fieldName, stringConvertibleType, Seq(SummaryUI, EditUI))
+    val view = new EditText(activity)
     view.setText(null)
-    viewField.findSourceField(EditUI).get.findValue(view, new CopyContext(UriPath.EMPTY, null)) must be (None)
+    viewField.findSourceField(EditUI).get.findValue(view, new CopyContext(UriPath.EMPTY, commandContext)) must be (None)
   }
 
   @Test
   def itMustConvertEmptyStringToNone() {
-    val viewField = platformDriver.field(EntityName("foo"), FieldName("bar"), stringConvertibleType, Seq(SummaryUI, EditUI))
-    val view = new TextView(context)
+    val activity = Robolectric.buildActivity(classOf[CrudActivityForRobolectric]).
+      withIntent(new Intent(UpdateActionName)).create().get()
+    val commandContext = activity.commandContext
+    val viewField = platformDriver.field(entityName, fieldName, stringConvertibleType, Seq(SummaryUI, EditUI))
+    val view = new EditText(activity)
     view.setText("")
-    viewField.findSourceField(EditUI).get.findValue(view, new CopyContext(UriPath.EMPTY, null)) must be (None)
+    viewField.findSourceField(EditUI).get.findValue(view, new CopyContext(UriPath.EMPTY, commandContext)) must be (None)
   }
 
   @Test
   def itMustTrimStrings() {
-    val viewField = platformDriver.field(EntityName("foo"), FieldName("bar"), stringConvertibleType, Seq(SummaryUI, EditUI))
-    val view = new TextView(context)
+    val activity = Robolectric.buildActivity(classOf[CrudActivityForRobolectric]).
+      withIntent(new Intent(UpdateActionName)).create().get()
+    val commandContext = activity.commandContext
+    val viewField = platformDriver.field(entityName, fieldName, TitleQT, Seq(SummaryUI, EditUI))
+    val viewGroup = mock[View]
+    val view = new EditText(activity)
+    stub(viewGroup.findViewById(R.id.edit_name)).toReturn(view)
     view.setText(" hello world ")
-    viewField.findSourceField(EditUI).get.findValue(view, new CopyContext(UriPath.EMPTY, null)) must be (Some("hello world"))
+    viewField.findSourceField(EditUI).get.findValue(viewGroup, new CopyContext(UriPath.EMPTY, commandContext)) must be (Some("hello world"))
 
     view.setText(" ")
-    viewField.findSourceField(EditUI).get.findValue(view, new CopyContext(UriPath.EMPTY, null)) must be (None)
+    viewField.findSourceField(EditUI).get.findValue(viewGroup, new CopyContext(UriPath.EMPTY, commandContext)) must be (None)
   }
 
   @Test
   def formattedTextViewMustUseToEditStringConverterForEditTextView() {
-    val viewField = platformDriver.field(EntityName("foo"), FieldName("bar"), stringConvertibleType, Seq(SummaryUI, EditUI))
+    val commandContext = Robolectric.buildActivity(classOf[CrudActivityForRobolectric]).
+      withIntent(new Intent(UpdateActionName)).get().commandContext
+    val viewField = platformDriver.field(entityName, fieldName, stringConvertibleType, Seq(SummaryUI, EditUI))
+    val viewGroup = mock[View]
     val editView = mockView[EditText]
-    viewField.toAdaptableField.findTargetField(EditUI).get.updateValue(editView, Some("marbles"), new CopyContext(UriPath.EMPTY, null))
+    stub(viewGroup.findViewById(R.id.edit_name)).toReturn(editView)
+    viewField.toAdaptableField.findTargetField(EditUI).get.updateValue(viewGroup, Some("marbles"),
+      new CopyContext(UriPath.EMPTY, commandContext))
+    commandContext.waitUntilIdle()
     verify(editView).setText("marbles to edit")
   }
 
   @Test
   def formattedTextViewMustUseToDisplayStringConverterForTextView() {
-    val viewField = platformDriver.field(EntityName("foo"), FieldName("bar"), stringConvertibleType, Seq(SummaryUI, EditUI))
-    val textView = mockView[TextView]
-    viewField.toAdaptableField.findTargetField(SummaryUI).get.updateValue(textView, Some("marbles"), new CopyContext(UriPath.EMPTY, null))
-    verify(textView).setText("marbles on display")
+    val activity = Robolectric.buildActivity(classOf[CrudActivityForRobolectric]).
+      withIntent(new Intent(UpdateActionName)).create().get()
+    val commandContext = activity.commandContext
+    val viewField = platformDriver.field(entityName, fieldName, stringConvertibleType, Seq(SummaryUI, EditUI))
+    val viewGroup = mock[View]
+    val textView = new TextView(activity)
+    stub(viewGroup.findViewById(R.id.name)).toReturn(textView)
+    val copyContext = new CopyContext(UriPath.EMPTY, commandContext)
+    val targetField = viewField.toAdaptableField.findTargetField(SummaryUI).get
+    targetField.updateValue(viewGroup, Some("marbles"), copyContext)
+    commandContext.waitUntilIdle()
+    textView.getText.toString must be ("marbles on display")
   }
 
   @Test
   def formattedTextViewMustTrimAndUseFromStringConverterWhenGetting() {
-    val viewField = platformDriver.field(EntityName("foo"), FieldName("bar"), stringConvertibleType, Seq(SummaryUI, EditUI))
-    val textView = mockView[TextView]
-    stub(textView.getText).toReturn("  given text   ")
-    viewField.toAdaptableField.findSourceField(EditUI).get.findValue(textView, new CopyContext(UriPath.EMPTY, null)) must be (Some("parsed given text"))
+    val activity = Robolectric.buildActivity(classOf[CrudActivityForRobolectric]).
+      withIntent(new Intent(UpdateActionName)).create().get()
+    val commandContext = activity.commandContext
+    val viewField = platformDriver.field(entityName, EntityTypeForTesting.name.fieldName, stringConvertibleType, Seq(SummaryUI, EditUI))
+    val viewGroup = mock[View]
+    val editText = new EditText(activity)
+    stub(viewGroup.findViewById(R.id.edit_name)).toReturn(editText)
+    editText.setText("  given text   ")
+    viewField.toAdaptableField.findSourceField(EditUI).get.findValue(viewGroup, new CopyContext(UriPath.EMPTY, commandContext)) must be (Some("parsed given text"))
   }
 }

@@ -22,10 +22,19 @@ class EditTextField[V](stringConvertible: StringConvertibleQT[V], defaultLayout:
 
   /** Get some value or None from the given source. */
   def findFieldValue(editTextView: EditText, context: AndroidCommandContext) =
-    toOption(editTextView.getText).flatMap { charSequence =>
-      stringConvertible.convertFromString(charSequence.toString).toOption
+    toTrimmedStringOption(editTextView.getText).flatMap { string =>
+      stringConvertible.convertFromString(string).toOption
     }
 
-  private def toOption(charSequence: CharSequence): Option[CharSequence] =
-    if (charSequence.length() == 0) None else Some(charSequence)
+  private def toTrimmedStringOption(charSequence: CharSequence): Option[String] =
+    if (charSequence.length() == 0) {
+      None
+    } else {
+      val string = charSequence.toString.trim
+      if (string == "") {
+        None
+      } else {
+        Some(string)
+      }
+    }
 }

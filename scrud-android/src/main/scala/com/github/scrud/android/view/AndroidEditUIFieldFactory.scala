@@ -40,6 +40,7 @@ class AndroidEditUIFieldFactory(platformDriver: AndroidPlatformDriver) extends A
           case qType: StringQualifiedType => new EditTextField(qType, editTextLayout("text|textAutoCorrect"))
           case qType: IntQualifiedType => new EditTextField(qType, editTextLayout("number"))
           case EnumerationValueQT(enumeration) => EnumerationView(enumeration).asInstanceOf[ViewStorageField[V]]
+          case qType => new EditTextField(qType, editTextLayout("text"))
         }
         case DateWithoutTimeQT => new DatePickerField().asInstanceOf[ViewStorageField[V]]
         case qType@EntityName(_) => SelectEntityView(qType).asInstanceOf[ViewStorageField[V]]
