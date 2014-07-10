@@ -13,6 +13,7 @@ import com.github.scrud.android.CustomRobolectricTestRunner
 import com.github.scrud.util.ExternalLogging
 import com.github.scrud.ApplicationNameForTesting
 import org.robolectric.annotation.Config
+import org.robolectric.Robolectric
 
 /** A behavior specification for [[com.github.scrud.android.action.OptionsMenuActivity]].
   * @author Eric Pabst (epabst@gmail.com)
@@ -20,15 +21,9 @@ import org.robolectric.annotation.Config
 @RunWith(classOf[CustomRobolectricTestRunner])
 @Config(manifest = "target/generated/AndroidManifest.xml")
 class OptionsMenuActivitySpec extends MustMatchers with MockitoSugar {
-  class StubOptionsMenuActivity extends Activity with OptionsMenuActivity {
-    protected val defaultOptionsMenuCommands = Nil
-
-    override protected val loggingDelegate: ExternalLogging = ApplicationNameForTesting
-  }
-
   @Test
   def mustUseLatestOptionsMenuForCreate() {
-    val activity = new StubOptionsMenuActivity
+    val activity = Robolectric.buildActivity(classOf[StubOptionsMenuActivity]).create().get()
     activity.optionsMenuCommands = List(PlatformCommand(ActionKey("command1"), None, Some(10)))
 
     val menu = mock[Menu]
@@ -39,104 +34,41 @@ class OptionsMenuActivitySpec extends MustMatchers with MockitoSugar {
   }
 
   @Test
-  def mustUseLatestOptionsMenuForPrepare_Android2() {
-    val activity = new StubOptionsMenuActivity
-    activity.optionsMenuCommands = List(PlatformCommand(ActionKey("command1"), None, Some(10)))
-
-    val menu = mock[Menu]
-    activity.onPrepareOptionsMenu(menu)
-    verify(menu, times(1)).add(anyInt(), eql(10), anyInt(), anyInt())
-  }
-
-  @Test
   def mustCallInvalidateOptionsMenuAndNotRepopulateForAndroid3WhenSet() {
-    val activity = new StubOptionsMenuActivity {
-      var invalidated, populated = false
-
-      //this will be called using reflection
-      override def invalidateOptionsMenu() {
-        invalidated = true
-      }
-
-      override private[action] def populateMenu(menu: Menu, actions: List[PlatformCommand]) {
-        populated = true
-      }
-    }
+    val activity = Robolectric.buildActivity(classOf[StubOptionsMenuActivity]).create().get()
     activity.optionsMenuCommands = List(mock[PlatformCommand])
     activity.invalidated must be (true)
-    activity.populated must be (false)
+    activity.populated must be (0)
 
     val menu = mock[Menu]
     activity.onPrepareOptionsMenu(menu)
-    activity.populated must be (false)
+    activity.populated must be (0)
     verify(menu, never()).clear()
   }
 
   @Test
   def mustNotRepopulateInPrepareWhenNotSet_Android3() {
-    val activity = new StubOptionsMenuActivity {
-      var populated = false
-
-      override def invalidateOptionsMenu() {}
-
-      override private[action] def populateMenu(menu: Menu, actions: List[PlatformCommand]) {
-        populated = true
-      }
-    }
+    val activity = Robolectric.buildActivity(classOf[StubOptionsMenuActivity]).create().get()
     val menu = mock[Menu]
     activity.onPrepareOptionsMenu(menu)
     verify(menu, never()).clear()
-    activity.populated must be (false)
-  }
-
-  @Test
-  def mustNotRepopulateInPrepareWhenNotSet_Android2() {
-    val activity = new StubOptionsMenuActivity {
-      var populated = false
-
-      override private[action] def populateMenu(menu: Menu, actions: List[PlatformCommand]) {
-        populated = true
-      }
-    }
-    val menu = mock[Menu]
-    activity.onPrepareOptionsMenu(menu)
-    verify(menu, never()).clear()
-    activity.populated must be (false)
-  }
-
-  @Test
-  def mustRepopulateInPrepareForAndroid2AfterSetting() {
-    val activity = new StubOptionsMenuActivity {
-      var populated = false
-
-      override private[action] def populateMenu(menu: Menu, actions: List[PlatformCommand]) {
-        populated = true
-      }
-    }
-    activity.optionsMenuCommands = List(mock[PlatformCommand])
-    activity.populated must be (false)
-
-    val menu = mock[Menu]
-    activity.onPrepareOptionsMenu(menu)
-    verify(menu).clear()
-    activity.populated must be (true)
-  }
-
-  @Test
-  def mustOnlyRepopulateOnceForAndroid2AfterSetting() {
-    val activity = new StubOptionsMenuActivity {
-      var populated = 0
-
-      override private[action] def populateMenu(menu: Menu, actions: List[PlatformCommand]) {
-        populated += 1
-      }
-    }
-    activity.optionsMenuCommands = List(mock[PlatformCommand])
     activity.populated must be (0)
+  }
+}
 
-    val menu = mock[Menu]
-    activity.onPrepareOptionsMenu(menu)
-    activity.onPrepareOptionsMenu(menu)
-    activity.populated must be (1)
+class StubOptionsMenuActivity extends Activity with OptionsMenuActivity {
+  override protected val loggingDelegate: ExternalLogging = ApplicationNameForTesting
+  protected val defaultOptionsMenuCommands = Nil
+  var invalidated = false
+  var populated: Int = 0
+
+  //this will be called using reflection
+  override def invalidateOptionsMenu() {
+    invalidated = true
+  }
+
+  override private[action] def populateMenu(menu: Menu, actions: List[PlatformCommand]) {
+    populated +=  1
+    super.populateMenu(menu, actions)
   }
 }
