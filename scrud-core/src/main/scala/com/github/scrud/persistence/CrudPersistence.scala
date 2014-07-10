@@ -81,6 +81,11 @@ trait CrudPersistence extends EntityPersistence with ListenerSet[DataListener] w
   def save(idOption: Option[ID], sourceType: SourceType, source: AnyRef, commandContext: CommandContext): ID =
     save(idOption, toWritable(sourceType, source, entityType.toUri(idOption), commandContext))
 
+  override protected def notifyChanged() {
+    debug("Notifying DataListeners of entityType=" + entityType)
+    super.notifyChanged()
+  }
+
   def toWritable(sourceType: SourceType, source: AnyRef, sourceUri: UriPath, commandContext: CommandContext): AnyRef = {
     if (sourceType == writableType) {
       source

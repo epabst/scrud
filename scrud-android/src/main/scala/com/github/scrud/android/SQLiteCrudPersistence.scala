@@ -11,14 +11,15 @@ import com.github.scrud.platform.PlatformTypes._
 import android.content.ContentValues
 import android.provider.BaseColumns
 import persistence.CursorStream
-import persistence.SQLiteCriteria
 import scala.Some
 import com.github.scrud.android.backup.CrudBackupAgent
+import com.github.scrud.android.persistence.SQLiteCriteria
 import com.github.scrud.platform.representation.Query
 import com.github.scrud.copy.{StorageType, SourceType}
 import com.github.scrud.copy.types.MapStorage
-import com.github.scrud.util.{DelegatingListenerSet, MutableListenerSet, ExternalLogging, DelegateLogging}
+import com.github.scrud.util._
 import com.github.scrud.context.SharedContext
+import com.github.scrud.android.persistence.EntityTypePersistedInfo
 
 /**
  * A CrudPersistence for interacting with SQLite.
@@ -28,7 +29,7 @@ import com.github.scrud.context.SharedContext
  */
 class SQLiteCrudPersistence(val entityType: EntityType, database: SQLiteDatabase,
                             protected val commandContext: AndroidCommandContext,
-                            protected val listenerSet: MutableListenerSet[DataListener] = new MutableListenerSet[DataListener])
+                            protected val listenerSet: ListenerSet[DataListener])
     extends CrudPersistence with DelegatingListenerSet[DataListener] with DelegateLogging {
 
   private lazy val tableName = SQLitePersistenceFactory.toTableName(entityType.entityName)

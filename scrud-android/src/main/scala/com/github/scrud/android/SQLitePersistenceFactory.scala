@@ -37,8 +37,8 @@ class SQLitePersistenceFactory extends AbstractPersistenceFactory with DataListe
     createEntityPersistence(entityType, writableDatabase, androidCommandContext)
   }
 
-  def createEntityPersistence(entityType: EntityType, writableDatabase: SQLiteDatabase, androidCommandContext: AndroidCommandContext): CrudPersistence = {
-    new SQLiteCrudPersistence(entityType, writableDatabase, androidCommandContext)
+  def createEntityPersistence(entityType: EntityType, writableDatabase: SQLiteDatabase, commandContext: AndroidCommandContext): CrudPersistence = {
+    new SQLiteCrudPersistence(entityType, writableDatabase, commandContext, listenerHolder(entityType, commandContext.sharedContext))
   }
 
   def toTableName(entityName: EntityName): String = SQLiteUtil.toNonReservedWord(entityName.name)

@@ -8,8 +8,7 @@ import com.github.scrud.android.AndroidCommandContext
 import android.database.ContentObserver
 import android.os.Handler
 import com.github.scrud.state.ApplicationConcurrentMapVal
-import com.github.scrud.util.DelegatingListenerHolder
-import com.github.scrud.android.persistence.ContentValuesStorage
+import com.github.scrud.util.{ExternalLogging, DelegateLogging, DelegatingListenerHolder}
 
 /**
  * A PersistenceFactory that uses the ContentResolver.
@@ -29,14 +28,17 @@ class ContentResolverPersistenceFactory(delegate: PersistenceFactory)
     val contentResolver = commandContext.context.getContentResolver
     val sharedContext = persistenceConnection.sharedContext
     val delegateListenerSet = listenerSet(entityType, sharedContext)
-    val theListenerSet = new DelegatingListenerHolder[DataListener] {
+    val theListenerSet = new DelegatingListenerHolder[DataListener] with DelegateLogging {
       protected def listenerHolder = delegateListenerSet
+
+      override protected def loggingDelegate: ExternalLogging = persistenceConnection.applicationName
 
       override def addListener(listener: DataListener) {
         ContentResolverObserverInitializationVal.get(sharedContext).getOrElseUpdate(entityType.entityName, {
           commandContext.runOnUiThread {
             val observer = new ContentObserver(new Handler()) {
               override def onChange(selfChange: Boolean) {
+                debug("notified: ContentObserver in createEntityPersistence notifying delegate listeners")
                 commandContext.withExceptionReporting {
                   delegateListenerSet.listeners.foreach(_.onChanged())
                 }

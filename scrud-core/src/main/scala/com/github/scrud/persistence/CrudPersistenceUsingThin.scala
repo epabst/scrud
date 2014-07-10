@@ -2,7 +2,7 @@ package com.github.scrud.persistence
 
 import com.github.scrud.platform.PlatformTypes._
 import com.github.scrud.{UriPath, EntityType}
-import com.github.scrud.util.{MutableListenerSet, DelegatingListenerSet}
+import com.github.scrud.util.{ListenerSet, DelegatingListenerSet}
 import com.github.scrud.context.SharedContext
 import com.github.scrud.copy.{StorageType, CopyContext}
 
@@ -11,7 +11,7 @@ import com.github.scrud.copy.{StorageType, CopyContext}
  * @author Eric Pabst (epabst@gmail.com)
  */
 class CrudPersistenceUsingThin(val entityType: EntityType, val thinPersistence: ThinPersistence, val sharedContext: SharedContext,
-                              protected val listenerSet: MutableListenerSet[DataListener] = new MutableListenerSet[DataListener])
+                              protected val listenerSet: ListenerSet[DataListener])
   extends CrudPersistence with DelegatingListenerSet[DataListener] {
 
   def findAll(uri: UriPath): Seq[AnyRef] = thinPersistence.findAll(uri)

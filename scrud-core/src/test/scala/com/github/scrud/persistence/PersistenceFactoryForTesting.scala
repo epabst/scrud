@@ -15,7 +15,8 @@ class PersistenceFactoryForTesting(thinPersistenceOpt: Option[ThinPersistence] =
   }
 
   override def createEntityPersistence(entityType: EntityType, persistenceConnection: PersistenceConnection): CrudPersistence = {
-    thinPersistenceOpt.fold(super.createEntityPersistence(entityType, persistenceConnection))(new CrudPersistenceUsingThin(entityType, _, persistenceConnection.sharedContext))
+    thinPersistenceOpt.fold(super.createEntityPersistence(entityType, persistenceConnection))(
+      new CrudPersistenceUsingThin(entityType, _, persistenceConnection.sharedContext, listenerHolder(entityType, persistenceConnection.sharedContext)))
   }
 }
 

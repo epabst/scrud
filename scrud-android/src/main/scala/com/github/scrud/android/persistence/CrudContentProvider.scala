@@ -65,7 +65,6 @@ abstract class CrudContentProvider extends ContentProvider with ActivityStateHol
     val uriPath = toUriPath(uri)
     val persistence = persistenceFor(uriPath)
     val id = persistence.save(None, persistence.toWritable(ContentValuesStorage, contentValues, uriPath, commandContext))
-    contentResolver.notifyChange(toNotificationUri(uri), null)
     uri.buildUpon().path(uriPath.specify(persistence.entityType.entityName, id).toString).build()
   }
 
@@ -78,7 +77,6 @@ abstract class CrudContentProvider extends ContentProvider with ActivityStateHol
     commandContext.save(UriPath.lastEntityNameOrFail(uriPath), idOpt, persistence.writableType, writable)
     val fixedUri = toUri(uriPath, commandContext.androidApplication)
     if (uri.toString != fixedUri.toString) sys.error(uri + " != " + fixedUri)
-    contentResolver.notifyChange(toNotificationUri(fixedUri), null)
     1
   }
 
@@ -86,9 +84,7 @@ abstract class CrudContentProvider extends ContentProvider with ActivityStateHol
     //todo use selection and selectionArgs
     val uriPath = toUriPath(uri)
     val persistence = persistenceFor(uriPath)
-    val result = persistence.delete(uri)
-    contentResolver.notifyChange(toNotificationUri(uri), null)
-    result
+    persistence.delete(uri)
   }
 }
 
