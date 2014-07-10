@@ -15,8 +15,7 @@ import com.github.scrud.android.state.ActivityStateHolder
 import com.github.scrud.copy.types.MapStorage
 import com.github.scrud.copy.CopyContext
 
-/** A BackupAgent for a CrudApplication.
-  * It must be subclassed in order to put it into the AndroidManifest.xml.
+/** A BackupAgent for a [[com.github.scrud.android.CrudAndroidApplication]].
   * @author Eric Pabst (epabst@gmail.com)
   */
 

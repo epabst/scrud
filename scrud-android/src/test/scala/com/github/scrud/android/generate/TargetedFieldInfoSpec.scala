@@ -20,7 +20,6 @@ class TargetedFieldInfoSpec extends FunSpec with MustMatchers with MockitoSugar 
   }
   val entityType = EntityTypeWithBogusField
   private val entityTypeMap = EntityTypeMapForTesting(entityType)
-  val application = new CrudApplicationForTesting(entityTypeMap)
 
   val entityTypeViewInfo = EntityTypeViewInfo(EntityTypeForTesting, entityTypeMap)
   val fieldInfo_id = EntityFieldInfo(entityType.id, Seq(classOf[R]), entityTypeMap)
