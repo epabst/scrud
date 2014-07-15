@@ -10,7 +10,9 @@ import com.github.scrud.context.ApplicationName
 class PrebuiltEntityTypeMap(applicationName: ApplicationName, _entityTypesAndFactories: (EntityType, PersistenceFactory)*)
   extends EntityTypeMap(applicationName, _entityTypesAndFactories.head._1.platformDriver) {
 
-  override lazy val entityTypesAndFactories: Seq[(EntityType, PersistenceFactory)] = _entityTypesAndFactories
+  for {
+    (entityType, persistenceFactory) <- _entityTypesAndFactories
+  } addEntityType(entityType, persistenceFactory)
 
   validate()
 }

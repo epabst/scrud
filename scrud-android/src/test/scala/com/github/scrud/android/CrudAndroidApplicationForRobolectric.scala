@@ -1,11 +1,11 @@
 package com.github.scrud.android
 
-import com.github.scrud.persistence.EntityTypeMapForTesting
 import com.github.scrud.EntityNavigation
 import java.util.concurrent.{TimeUnit, ExecutorService, ConcurrentLinkedQueue}
 import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.concurrent.ExecutionContext.Implicits
 import scala.concurrent.duration.Duration
+import com.github.scrud.android.persistence.EntityTypeMapWithBackupForTesting
 
 /**
  * An approximation to a scrud-enabled Android Application for use when testing.
@@ -16,7 +16,7 @@ import scala.concurrent.duration.Duration
  */
 class CrudAndroidApplicationForRobolectric(entityNavigation: EntityNavigation) extends CrudAndroidApplication(entityNavigation) {
   def this() {
-    this(new EntityNavigation(new EntityTypeMapForTesting(EntityTypeForTesting, new EntityTypeForTesting(EntityForTesting2))))
+    this(new EntityNavigation(EntityTypeMapWithBackupForTesting))
   }
 
   private val scheduledFutures = new ConcurrentLinkedQueue[Future[Any]]()

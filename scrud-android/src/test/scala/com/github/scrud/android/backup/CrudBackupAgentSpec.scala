@@ -14,12 +14,14 @@ import com.github.scrud.platform.TestingPlatformDriver
 import com.github.scrud._
 import org.mockito.stubbing.Answer
 import com.github.scrud.android._
-import com.github.scrud.copy.types.{Default, Validation, MapStorage}
-import com.github.scrud.types.{NaturalIntQT, TitleQT}
-import com.github.scrud.platform.representation.{SelectUI, EditUI, Persistence}
+import com.github.scrud.copy.types.{Default, MapStorage}
+import com.github.scrud.types.NaturalIntQT
 import com.github.scrud.android.EntityTypeForTesting
-import com.github.scrud.EntityName
 import org.robolectric.annotation.Config
+import com.github.scrud.EntityName
+import org.robolectric.Robolectric
+import com.netaporter.uri.Uri
+import com.github.scrud.android.persistence.EntityTypeMapWithBackupForTesting
 
 /** A test for [[com.github.scrud.android.backup.CrudBackupAgent]].
   * @author Eric Pabst (epabst@gmail.com)
@@ -41,27 +43,20 @@ class CrudBackupAgentSpec extends MustMatchers with CrudMockitoSugar {
 
     // Backup
     {
-      val entityTypeA = new EntityTypeForTesting()
-      val entityTypeB = new EntityTypeForTesting(EntityName("OtherMap")) {
-        val city = field("city", TitleQT, Seq(Persistence(1), EditUI, SelectUI, Validation.requiredString, LoadingIndicator("...")))
-        val state = field("state", TitleQT, Seq(Persistence(1), EditUI, SelectUI, Validation.requiredString, LoadingIndicator("...")))
-      }
-      val application1 = new CrudAndroidApplication(new EntityTypeMapForTesting(
-        entityTypeA -> PersistenceFactoryForTesting,
-        entityTypeB -> PersistenceFactoryForTesting))
+      val entityTypeA = EntityTypeForTesting
+      val entityTypeB = new EntityTypeForTesting(EntityForTesting2)
+      val activity = Robolectric.buildActivity(classOf[CrudActivityForRobolectric]).get()
+      val application1 = activity.androidApplication
 
-      val commandContext = new AndroidCommandContextForTesting(application1)
+      val commandContext = activity.commandContext
       commandContext.save(entityTypeA.entityName, Some(100L), MapStorage, new MapStorage(entityTypeA.name -> Some("Joe"), entityTypeA.age -> Some(30)))
       commandContext.save(entityTypeA.entityName, Some(101L), MapStorage, new MapStorage(entityTypeA.name -> Some("Mary"), entityTypeA.age -> Some(28)))
-      commandContext.save(entityTypeB.entityName, Some(101L), MapStorage, new MapStorage(entityTypeB.city -> Some("Los Angeles"), entityTypeB.state -> Some("CA")))
-      commandContext.save(entityTypeB.entityName, Some(104L), MapStorage, new MapStorage(entityTypeB.city -> Some("Chicago"), entityTypeB.state -> Some("IL")))
+      commandContext.save(entityTypeB.entityName, Some(101L), MapStorage, new MapStorage(entityTypeB.name -> Some("Susan"), entityTypeB.url -> Some(Uri.parse("/artist"))))
+      commandContext.save(entityTypeB.entityName, Some(104L), MapStorage, new MapStorage(entityTypeB.name -> Some("Bob"), entityTypeB.url -> Some(Uri.parse("/seaman"))))
       val state0 = null
 
       val backupTarget = mock[BackupTarget]
-      when(backupTarget.writeEntity(eql("MyMap#100"), any())).thenAnswer(saveRestoreItem(restoreItems))
-      when(backupTarget.writeEntity(eql("MyMap#101"), any())).thenAnswer(saveRestoreItem(restoreItems))
-      when(backupTarget.writeEntity(eql("OtherMap#101"), any())).thenAnswer(saveRestoreItem(restoreItems))
-      when(backupTarget.writeEntity(eql("OtherMap#104"), any())).thenAnswer(saveRestoreItem(restoreItems))
+      when(backupTarget.writeEntity(any(), any())).thenAnswer(saveRestoreItem(restoreItems))
       val backupAgent1 = new CrudBackupAgent {
         override lazy val androidApplication: CrudAndroidApplicationLike = application1
       }
@@ -69,16 +64,19 @@ class CrudBackupAgentSpec extends MustMatchers with CrudMockitoSugar {
       backupAgent1.onCreate()
       backupAgent1.onBackup(state0, backupTarget, state1)
       backupAgent1.onDestroy()
+      verify(backupTarget, times(4)).writeEntity(any(), any())
+
+      commandContext.delete(entityTypeA.toUri) must be (2)
+      commandContext.delete(entityTypeB.toUri) must be (2)
     }
 
     // Restore
     {
-      val entityTypeA2 = new EntityTypeForTesting()
-      val entityTypeB2 = new EntityTypeForTesting(EntityName("OtherMap"))
-      val application2 = new CrudAndroidApplication(new EntityTypeMapForTesting(
-        entityTypeA2 -> PersistenceFactoryForTesting,
-        entityTypeB2 -> PersistenceFactoryForTesting))
-      val commandContext = new AndroidCommandContextForTesting(application2)
+      val entityTypeA2 = EntityTypeForTesting
+      val entityTypeB2 = new EntityTypeForTesting(EntityForTesting2)
+      val activity = Robolectric.buildActivity(classOf[CrudActivityForRobolectric]).get()
+      val application2 = activity.androidApplication
+      val commandContext = activity.commandContext
 
       commandContext.findAll(entityTypeA2.toUri, entityTypeA2.id).size must be (0)
       commandContext.findAll(entityTypeB2.toUri, entityTypeB2.id).size must be (0)
@@ -91,10 +89,10 @@ class CrudBackupAgentSpec extends MustMatchers with CrudMockitoSugar {
       backupAgent2.onRestore(restoreItems.toStream, 1, state2)
       backupAgent2.onDestroy()
 
-      val allA = commandContext.findAll(entityTypeA2.toUri, entityTypeA2.id)
+      val allA = commandContext.findAll(entityTypeA2.toUri, entityTypeA2.id).toList.sorted
       allA must be(List(100L, 101L))
 
-      val allB = commandContext.findAll(entityTypeB2.toUri, entityTypeB2.id)
+      val allB = commandContext.findAll(entityTypeB2.toUri, entityTypeB2.id).toList.sorted
       allB must be(List(101L, 104L))
     }
   }
@@ -108,18 +106,19 @@ class CrudBackupAgentSpec extends MustMatchers with CrudMockitoSugar {
 
   @Test
   def shouldSkipBackupOfGeneratedTypes() {
-    val entityType = new EntityTypeForTesting
+    val _entityType = new EntityTypeForTesting
     val generatedType = new EntityType(EntityName("Generated"), TestingPlatformDriver) {
       val number = field("number", NaturalIntQT, Seq(Default(100)))
     }
     val state0 = null
-    val application = new CrudAndroidApplication(new EntityTypeMapForTesting(
-      entityType -> PersistenceFactoryForTesting,
-      generatedType -> new DerivedPersistenceFactory[MapStorage]() {
+    val application = new CrudAndroidApplication(new EntityTypeMapWithBackupForTesting {
+      addEntityType(_entityType, _entityType.platformDriver.localDatabasePersistenceFactory)
+      addEntityType(generatedType, new DerivedPersistenceFactory[MapStorage]() {
         override def findAll(entityType: EntityType, uri: UriPath, persistenceConnection: PersistenceConnection): Seq[MapStorage] = {
           throw new IllegalStateException("should not be called")
         }
-      }))
+      })
+    })
     //shouldn't call any methods on generatedPersistence
     val backupAgent = new CrudBackupAgent {
       override lazy val androidApplication = application

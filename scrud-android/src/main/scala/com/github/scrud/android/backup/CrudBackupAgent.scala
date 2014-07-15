@@ -21,28 +21,25 @@ import com.github.scrud.copy.CopyContext
 
 class CrudBackupAgent extends BackupAgent with ActivityStateHolder with DelegateLogging {
   lazy val androidApplication: CrudAndroidApplicationLike = getApplicationContext.asInstanceOf[CrudAndroidApplicationLike]
+  val deletedEntityIdEntityType: DeletedEntityIdEntityType =
+    androidApplication.entityTypeMap.entityType(DeletedEntityId).asInstanceOf[DeletedEntityIdEntityType]
 
   val commandContext = new AndroidCommandContext(this, androidApplication)
-  val commandContextWithBackupApplication: AndroidCommandContext = commandContext.copy(entityTypeMap = androidApplication.deletedEntityTypeMap)
 
   override protected def loggingDelegate: ExternalLogging = androidApplication.applicationName
 
   lazy val activityState: State = new State
-  lazy val applicationState: State = {
-    androidApplication.applicationState
-  }
+  lazy val applicationState: State = androidApplication.applicationState
 
   final def onBackup(oldState: ParcelFileDescriptor, data: BackupDataOutput, newState: ParcelFileDescriptor) {
     commandContext.withExceptionReporting {
       onBackup(oldState, new BackupTarget {
         def writeEntity(key: String, mapOpt: Option[Map[String,Any]]) {
-          debug("Backing up " + key + " <- " + mapOpt)
           mapOpt match {
             case Some(map) =>
               val bytes = CrudBackupAgent.marshall(map)
               data.writeEntityHeader(key, bytes.length)
               data.writeEntityData(bytes, bytes.length)
-              debug("Backed up " + key + " with " + bytes.length + " bytes")
             case None => data.writeEntityHeader(key, -1)
           }
         }
@@ -53,23 +50,28 @@ class CrudBackupAgent extends BackupAgent with ActivityStateHolder with Delegate
   def onBackup(oldState: ParcelFileDescriptor, data: BackupTarget, newState: ParcelFileDescriptor) {
     info("Backing up " + androidApplication.applicationName)
     writeEntityRemovals(data)
-    androidApplication.entityTypeMap.allEntityTypes.filter(androidApplication.entityTypeMap.isSavable(_)).foreach { entityType =>
-      onBackup(entityType, data, commandContext)
-    }
+    for {
+      entityType <- androidApplication.entityTypeMap.allEntityTypes
+      if entityType != deletedEntityIdEntityType
+      if androidApplication.entityTypeMap.isSavable(entityType)
+    } onBackup(entityType, data, commandContext)
   }
 
   def onBackup(entityType: EntityType, data: BackupTarget, commandContext: AndroidCommandContext) {
+    info("Backing up entityType=" + entityType)
     commandContext.findAll(entityType.toUri, MapStorage).foreach { entityStorage =>
       val id = entityStorage.get(entityType.id).get
-      data.writeEntity(entityType.entityName + "#" + id, Some(entityStorage.toMap))
+      val key = entityType.entityName + "#" + id
+      val mapOpt = Some(entityStorage.toMap)
+      debug("Backing up " + key + " <- " + mapOpt)
+      data.writeEntity(key, mapOpt)
     }
   }
 
   private def writeEntityRemovals(data: BackupTarget) {
-    val deletedEntityIdEntityType = androidApplication.deletedEntityTypeMap.deletedEntityIdEntityType
-    val persistence = commandContextWithBackupApplication.persistenceFor(deletedEntityIdEntityType)
+    val persistence = commandContext.persistenceFor(deletedEntityIdEntityType)
     val uri = deletedEntityIdEntityType.toUri
-    val copyContext = new CopyContext(uri, commandContextWithBackupApplication)
+    val copyContext = new CopyContext(uri, commandContext)
     val nameSourceField = deletedEntityIdEntityType.entityNameField.toAdaptableField.sourceFieldOrFail(persistence.sourceType)
     val idSourceField = deletedEntityIdEntityType.entityIdField.toAdaptableField.sourceFieldOrFail(persistence.sourceType)
     persistence.findAll(uri).foreach { entity =>
@@ -113,6 +115,7 @@ class CrudBackupAgent extends BackupAgent with ActivityStateHolder with Delegate
     val commandContext = new AndroidCommandContext(this, androidApplication)
     val entityTypes = androidApplication.entityTypeMap.allEntityTypes
     data.foreach { restoreItem =>
+      debug("Preparing to restore " + restoreItem.key)
       val nameOfEntity = restoreItem.key.substring(0, restoreItem.key.lastIndexOf("#"))
       entityTypes.find(_.entityName.name == nameOfEntity).foreach {
         onRestore(_, restoreItem, commandContext)
@@ -123,7 +126,7 @@ class CrudBackupAgent extends BackupAgent with ActivityStateHolder with Delegate
   def onRestore(entityType: EntityType, restoreItem: RestoreItem, commandContext: AndroidCommandContext) {
     debug("Restoring " + restoreItem.key + " <- " + restoreItem.map)
     val id = restoreItem.key.substring(restoreItem.key.lastIndexOf("#") + 1).toLong
-    commandContext.save(entityType.entityName, MapStorage, Some(id), new MapStorage(entityType.entityName, restoreItem.map))
+    commandContext.save(entityType.entityName, Some(id), MapStorage, new MapStorage(entityType.entityName, restoreItem.map))
     Unit
   }
 }

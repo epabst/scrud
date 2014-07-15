@@ -21,13 +21,16 @@ case class EntityTypePersistedInfo(entityType: EntityType) {
   * @author Eric Pabst (epabst@gmail.com)
   */
 case class CursorStream(cursor: Cursor, entityTypePersistedInfo: EntityTypePersistedInfo, commandContext: CommandContext) extends Stream[MapStorage] {
+  def entityType = entityTypePersistedInfo.entityType
+
   override lazy val headOption: Option[MapStorage] = {
     if (cursor.moveToNext) {
-      val entityType = entityTypePersistedInfo.entityType
       val storage = entityType.copyAndUpdate(Persistence.Latest, cursor, entityType.toUri, CursorStream.storageType, commandContext)
+      commandContext.applicationName.debug(this + " found another: " + storage)
       Some(storage)
     } else {
       cursor.close()
+      commandContext.applicationName.debug(this + " didn't find any more")
       None
     }
   }
@@ -41,6 +44,8 @@ case class CursorStream(cursor: Cursor, entityTypePersistedInfo: EntityTypePersi
   // Must be a val so that we don't create more than one CursorStream.
   // Must be lazy so that we don't instantiate the entire stream
   override lazy val tail = if (tailDefined) CursorStream(cursor, entityTypePersistedInfo, commandContext) else throw new NoSuchElementException
+
+  override def toString(): String = entityType + " Query #" + System.identityHashCode(cursor)
 }
 
 object CursorStream {

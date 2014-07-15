@@ -48,12 +48,21 @@ class SQLiteCrudPersistence(val entityType: EntityType, database: SQLiteDatabase
 
   def findAll(criteria: SQLiteCriteria): CursorStream = {
     val query = criteria.selection.mkString(" AND ")
-    info("Finding each " + entityType.entityName + "'s " + queryFieldNames.mkString(", ") + " where " + query + criteria.orderBy.fold("")(" order by " + _))
-    val cursor = database.query(tableName, queryFieldNames.toArray,
-      toOption(query).getOrElse(null), criteria.selectionArgs.toArray,
-      criteria.groupBy.getOrElse(null), criteria.having.getOrElse(null), criteria.orderBy.getOrElse(null))
-    cursors += cursor
-    CursorStream(cursor, entityTypePersistedInfo, commandContext)
+    try {
+      val cursor = database.query(tableName, queryFieldNames.toArray,
+        toOption(query).getOrElse(null), criteria.selectionArgs.toArray,
+        criteria.groupBy.getOrElse(null), criteria.having.getOrElse(null), criteria.orderBy.getOrElse(null))
+      cursors += cursor
+      val result = CursorStream(cursor, entityTypePersistedInfo, commandContext)
+      info("SQLite: Finding each " + entityType.entityName + "'s " + queryFieldNames.mkString(", ") +
+        (if (query.isEmpty) "" else " where " + query) + criteria.orderBy.fold("")(" order by " + _) + " returned " + result)
+      result
+    } catch {
+      case e: Exception =>
+        logError("SQLite: Error finding each " + entityType.entityName + "'s " + queryFieldNames.mkString(", ") +
+          (if (query.isEmpty) "" else " where " + query) + criteria.orderBy.fold("")(" order by " + _), e)
+        throw e
+    }
   }
 
   //UseDefaults is provided here in the item list for the sake of PortableField.adjustment[SQLiteCriteria] fields
@@ -78,18 +87,19 @@ class SQLiteCrudPersistence(val entityType: EntityType, database: SQLiteDatabase
     val id = idOption match {
       case None =>
         val newId = database.insertOrThrow(tableName, null, contentValues)
-        info("Added " + entityType.entityName + " #" + newId + " with " + contentValues)
+        info("SQLite: Added " + entityType.entityName + " #" + newId + " with " + contentValues)
         newId
       case Some(givenId) =>
-        info("Updating " + entityType.entityName + " #" + givenId + " with " + contentValues)
         val rowCount = database.update(tableName, contentValues, BaseColumns._ID + "=" + givenId, null)
         if (rowCount == 0) {
           contentValues.put(BaseColumns._ID, givenId)
-          info("Added " + entityType.entityName + " #" + givenId + " with " + contentValues + " since id is not present yet")
           val resultingId = database.insert(tableName, null, contentValues)
+          info("SQLite: Added " + entityType.entityName + " #" + givenId + " with " + contentValues + " since id is not present yet")
           if (givenId != resultingId)
             throw new IllegalStateException("id changed from " + givenId + " to " + resultingId +
                     " when restoring " + entityType.entityName + " #" + givenId + " with " + contentValues)
+        } else {
+          info("SQLite: Updated " + entityType.entityName + " #" + givenId + " with " + contentValues)
         }
         givenId
     }
@@ -108,7 +118,7 @@ class SQLiteCrudPersistence(val entityType: EntityType, database: SQLiteDatabase
     }
     commandContext.future {
       ids.foreach { id =>
-        commandContext.androidApplication.deletedEntityTypeMap.recordDeletion(entityType.entityName, id, commandContext)
+        commandContext.androidApplication.recordDeletion(entityType.entityName, id, commandContext)
       }
       notifyDataChanged()
     }

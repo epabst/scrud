@@ -1,7 +1,7 @@
 package com.github.scrud.android.backup
 
 /**
- * todo A ... 
+ * A place to write backup data to.
  * @author Eric Pabst (epabst@gmail.com)
  *         Date: 4/24/13
  *         Time: 3:11 PM
