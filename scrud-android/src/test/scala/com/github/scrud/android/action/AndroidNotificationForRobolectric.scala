@@ -2,6 +2,8 @@ package com.github.scrud.android.action
 
 import scala.collection.mutable
 import com.github.scrud.platform.PlatformTypes
+import com.github.scrud.android.view.AndroidResourceAnalyzer
+import com.github.scrud.android.R
 
 /**
  * @author Eric Pabst (epabst@gmail.com)
@@ -21,6 +23,11 @@ trait AndroidNotificationForRobolectric extends AndroidNotification {
    */
   override def displayMessageToUserBriefly(messageKey: PlatformTypes.SKey) {
     displayedMessageKeys += messageKey
-    info("Displaying messageKey=" + messageKey + " briefly")
+    val name = AndroidResourceAnalyzer.resourceFieldWithIntValue(List(classOf[R.string]), messageKey).getName
+    info("Displaying messageKey=" + messageKey + ":" + name + " briefly")
+  }
+
+  override def displayMessageToUser(message: String) {
+    info("Displaying message: " + message)
   }
 }
