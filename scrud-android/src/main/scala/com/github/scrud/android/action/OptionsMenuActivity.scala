@@ -4,7 +4,6 @@ import android.view.Menu
 import com.github.scrud.state.StateVar
 import com.github.scrud.action.PlatformCommand
 import com.github.scrud.android.state.ActivityWithState
-import android.content.Context
 
 /** An Activity that has an options menu.
   * This no longer supports Android 2.
@@ -12,8 +11,8 @@ import android.content.Context
   * When the options menu changes, invoke {{{this.optionsMenuCommands = ...}}}
   * @author Eric Pabst (epabst@gmail.com)
   */
-trait OptionsMenuActivity extends ActivityWithState with AndroidNotification {
-  override def context: Context = this
+trait OptionsMenuActivity extends ActivityWithState {
+  protected def notification: AndroidNotification
 
   /** The Commands to be used if they haven't been set yet. */
   protected def defaultOptionsMenuCommands: List[PlatformCommand]
@@ -36,7 +35,7 @@ trait OptionsMenuActivity extends ActivityWithState with AndroidNotification {
   }
 
   override def onCreateOptionsMenu(menu: Menu): Boolean = {
-    withExceptionReporting {
+    notification.withExceptionReporting {
       populateMenu(menu, optionsMenuCommands)
     }
     true

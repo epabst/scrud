@@ -14,6 +14,7 @@ import com.github.scrud.util.ExternalLogging
 import com.github.scrud.ApplicationNameForTesting
 import org.robolectric.annotation.Config
 import org.robolectric.Robolectric
+import android.content.Context
 
 /** A behavior specification for [[com.github.scrud.android.action.OptionsMenuActivity]].
   * @author Eric Pabst (epabst@gmail.com)
@@ -56,8 +57,14 @@ class OptionsMenuActivitySpec extends MustMatchers with MockitoSugar {
   }
 }
 
-class StubOptionsMenuActivity extends Activity with OptionsMenuActivity {
-  override protected val loggingDelegate: ExternalLogging = ApplicationNameForTesting
+class StubOptionsMenuActivity extends Activity with OptionsMenuActivity { self =>
+  override val notification: AndroidNotification =
+    new AndroidNotificationForRobolectric {
+      override def context: Context = self
+
+      override protected val loggingDelegate: ExternalLogging = ApplicationNameForTesting
+    }
+
   protected val defaultOptionsMenuCommands = Nil
   var invalidated = false
   var populated: Int = 0

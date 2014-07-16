@@ -11,7 +11,7 @@ import com.github.scrud
 import scrud.action.CrudOperationType
 import scrud.platform.PlatformTypes
 import scrud.persistence.{PersistenceFactory, DataListener}
-import com.github.scrud.android.action.{AndroidOperation, ActivityResult, OptionsMenuActivity}
+import com.github.scrud.android.action.{AndroidNotification, AndroidOperation, ActivityResult, OptionsMenuActivity}
 import scrud.android.state.CachedStateListener
 import android.view.{MenuItem, View, ContextMenu}
 import android.view.ContextMenu.ContextMenuInfo
@@ -114,6 +114,8 @@ class CrudActivity extends FragmentActivity with OptionsMenuActivity with Loader
   def entityNavigation = sharedContext.entityNavigation
 
   lazy val commandContext: AndroidCommandContext = new AndroidCommandContext(this, sharedContext)
+
+  override protected def notification: AndroidNotification = commandContext
 
   protected lazy val normalActions = entityNavigation.actionsFromCrudOperation(currentCrudOperation)
 
@@ -447,7 +449,7 @@ class CrudActivity extends FragmentActivity with OptionsMenuActivity with Loader
     val androidUri = toUri(uri, sharedContext)
     val adapter = new EntityCursorAdapter(entityType, uri, targetType, commandContext, new ViewInflater(itemLayout, activity.getLayoutInflater), null)
     val cursorLoaderData = CursorLoaderData(ContentQuery(androidUri, entityTypePersistedInfo.queryFieldNames), adapter)
-    runOnUiThread {
+    notification.runOnUiThread {
       adapterView.setAdapter(adapter.asInstanceOf[A])
       cursorLoaderDataList.append(cursorLoaderData)
       Option(getSupportLoaderManager).foreach(_.initLoader(cursorLoaderDataList.size - 1, null, this))
