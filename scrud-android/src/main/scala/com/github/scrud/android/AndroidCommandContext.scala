@@ -62,9 +62,7 @@ case class AndroidCommandContext(context: Context, stateHolder: ActivityStateHol
 
   lazy val dataVersion: Int = androidPlatformDriver.calculateDataVersion(androidApplication.entityTypeMap.allEntityTypes)
 
-  override lazy val sharedContext: SharedContext = new SimpleSharedContext(entityTypeMap) {
-    override val applicationState: State = stateHolder.applicationState
-  }
+  override final def sharedContext: SharedContext = androidApplication
 
   def populateFromUri(entityType: EntityType, uri: UriPath, targetType: TargetType, uiTarget: AnyRef) {
     val futurePortableValueOpt = androidApplication.futurePortableValueOpt(entityType, uri, targetType, this)

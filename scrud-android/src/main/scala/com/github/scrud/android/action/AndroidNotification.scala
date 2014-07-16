@@ -3,7 +3,7 @@ package com.github.scrud.android.action
 import android.content.Context
 import android.app.Activity
 import android.widget.Toast
-import com.github.scrud.util.Common
+import com.github.scrud.util.{Debug, Common}
 import com.github.scrud.platform.{Notification, PlatformTypes}
 
 trait AndroidNotification extends Notification {
@@ -28,6 +28,10 @@ trait AndroidNotification extends Notification {
   }
 
   def runOnUiThread[T](body: => T) {
-    contextAsActivity.runOnUiThread(Common.toRunnable(withExceptionReporting(body)))
+    if (Debug.threading) debug("Scheduling UI thread task")
+    contextAsActivity.runOnUiThread(Common.toRunnable("UI thread task", loggingDelegate)(withExceptionReporting {
+      body
+    }))
+    if (Debug.threading) debug("Done scheduling UI thread task")
   }
 }

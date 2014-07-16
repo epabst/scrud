@@ -2,7 +2,7 @@ package com.github.scrud.context
 
 import com.github.scrud.{UriPath, EntityType, EntityName}
 import com.github.scrud.state.{ApplicationConcurrentMapVal, StateHolder, State}
-import com.github.scrud.util.{UrgentFutureExecutor, DelegateLogging, ListenerHolder}
+import com.github.scrud.util.{Debug, UrgentFutureExecutor, DelegateLogging, ListenerHolder}
 import com.github.scrud.persistence.{PersistenceConnection, EntityTypeMap, DataListener}
 import com.github.scrud.platform.PlatformDriver
 import com.github.scrud.copy.{SourceType, TargetType, AdaptedValueSeq}
@@ -57,7 +57,20 @@ trait SharedContext extends StateHolder with DelegateLogging {
   @deprecated("use CommandContext.persistenceConnection", since = "2014-06-07")
   def openPersistence(): PersistenceConnection = makeTemporaryStubCommandContext().persistenceConnection
 
-  def future[T](body: => T): Future[T] = Future(body)
+  def future[T](body: => T): Future[T] = {
+    if (Debug.threading) debug("Scheduling future (in SharedContext)")
+    val future = Future {
+      if (Debug.threading) debug("Running future (in SharedContext)")
+      val result = try {
+        body
+      } finally {
+        if (Debug.threading) debug("Done running future (in SharedContext)")
+      }
+      result
+    }
+    if (Debug.threading) debug("Done scheduling future (in SharedContext)")
+    future
+  }
 
   private def cachedFuturePortableValueOptOrCalculate(entityType: EntityType, uriPathWithId: UriPath, commandContext: CommandContext)(calculate: => Option[AdaptedValueSeq]): Future[Option[AdaptedValueSeq]] = {
     val cache = FuturePortableValueCache.get(commandContext.sharedContext)

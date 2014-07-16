@@ -21,7 +21,5 @@ class AndroidCommandContextForRobolectric(application: CrudAndroidApplicationLik
 
   def waitUntilIdle() {
     androidApplicationForRobolectric.waitUntilIdle()
-    while (Robolectric.getBackgroundScheduler.runOneTask()) {}
-    androidApplicationForRobolectric.waitUntilIdle()
   }
 }

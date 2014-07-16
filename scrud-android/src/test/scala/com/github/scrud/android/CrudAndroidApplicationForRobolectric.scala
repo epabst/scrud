@@ -6,8 +6,10 @@ import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.concurrent.ExecutionContext.Implicits
 import scala.concurrent.duration.Duration
 import com.github.scrud.android.persistence.EntityTypeMapWithBackupForTesting
+ import org.robolectric.Robolectric
+ import com.github.scrud.util.Debug
 
-/**
+ /**
  * An approximation to a scrud-enabled Android Application for use when testing.
  *
  * @author Eric Pabst (epabst@gmail.com)
@@ -27,7 +29,17 @@ class CrudAndroidApplicationForRobolectric(entityNavigation: EntityNavigation) e
   }
   
   private[android] def runAndAddFuture[T](body: => T)(executionContext: ExecutionContext): Future[T] = {
-    val future = Future(body)(executionContext)
+    if (Debug.threading) debug("Scheduling future (in CrudAndroidApplicationForRobolectric)")
+    val future = Future {
+      if (Debug.threading) debug("Running future (in CrudAndroidApplicationForRobolectric)")
+      val result = try {
+        body
+      } finally {
+        if (Debug.threading) debug("Done running future (in CrudAndroidApplicationForRobolectric)")
+      }
+      result
+    }(executionContext)
+    if (Debug.threading) debug("Done scheduling future (in CrudAndroidApplicationForRobolectric)")
     scheduledFutures.add(future)
     future
   }
@@ -37,6 +49,8 @@ class CrudAndroidApplicationForRobolectric(entityNavigation: EntityNavigation) e
   }
 
   def waitUntilIdle() {
+    if (Debug.threading) debug("Waiting until idle")
+    while (Robolectric.getUiThreadScheduler.runOneTask() || Robolectric.getBackgroundScheduler.runOneTask()) {}
     if (!failures.isEmpty) {
       throw failures.peek()
     }
@@ -45,9 +59,11 @@ class CrudAndroidApplicationForRobolectric(entityNavigation: EntityNavigation) e
       Await.result(future, Duration(2, TimeUnit.MINUTES))
       scheduledFutures.remove(future)
 
+      while (Robolectric.getUiThreadScheduler.runOneTask() || Robolectric.getBackgroundScheduler.runOneTask()) {}
       if (!failures.isEmpty) {
         throw failures.peek()
       }
     }
+    if (Debug.threading) debug("Done waiting until idle")
   }
 }

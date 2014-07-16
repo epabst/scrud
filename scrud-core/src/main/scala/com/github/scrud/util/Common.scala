@@ -19,4 +19,13 @@ object Common {
       operation
     }
   }
+
+  def toRunnable(name: String, logging: ExternalLogging)(operation: => Unit): Runnable = toRunnable {
+    if (Debug.threading) logging.debug(s"Running $name")
+    try {
+      operation
+    } finally {
+      if (Debug.threading) logging.debug(s"Done running $name")
+    }
+  }
 }
