@@ -48,8 +48,9 @@ class AndroidPlatformDriver(rClass: Class[_], val activityClass: Class[_ <: Crud
     Some(R.drawable.ic_menu_edit), Some(getStringKey("edit_" + entityName.toSnakeCase)))
 
   def commandToDeleteItem(entityName: EntityName): PlatformCommand = {
-    PlatformCommand(ActionKey("delete_" + entityName.toSnakeCase),
-      Some(R.drawable.ic_menu_delete), Some(deleteItemStringKey))
+    val deleteKey = "delete_" + entityName.toSnakeCase
+    PlatformCommand(ActionKey(deleteKey),
+      Some(R.drawable.ic_menu_delete), tryStringKey(deleteKey).toOption.orElse(Some(deleteItemStringKey)))
   }
 
   lazy val undoDeleteStringKey = getStringKey("undo_delete")

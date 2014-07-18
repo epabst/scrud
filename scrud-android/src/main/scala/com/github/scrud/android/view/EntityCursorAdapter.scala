@@ -8,6 +8,7 @@ import com.github.scrud.{UriPath, EntityType}
 import android.view.View
 import com.github.scrud.android.AndroidCommandContext
 import com.github.scrud.copy.{SourceType, TargetType}
+import com.github.scrud.copy.types.MapStorage
 import com.github.scrud.platform.representation.Persistence
 
 /**
@@ -28,6 +29,6 @@ class EntityCursorAdapter(val entityType: EntityType, sourceUri: UriPath, val ta
 
   def bindView(view: View, context: Context, cursor: Cursor) {
     val row: AnyRef = entityTypePersistedInfo.copyRowToMap(cursor, commandContext)
-    bindViewFromCacheOrSource(view, cursor.getPosition, adapterSourceType, row, commandContext)
+    bindViewFromCacheOrSource(view, cursor.getPosition, MapStorage, row, commandContext)
   }
 }

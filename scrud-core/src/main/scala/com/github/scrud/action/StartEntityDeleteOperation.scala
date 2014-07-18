@@ -19,7 +19,7 @@ final case class StartEntityDeleteOperation(entityType: EntityType) extends Pers
     val commandContext = persistenceConnection.commandContext
     persistence.find(uri).foreach { readable =>
       val idOpt: Option[ID] = persistence.idOption(readable, uri)
-      val writable = persistence.toWritable(Persistence.Latest, readable, uri, persistenceConnection.commandContext)
+      val writable = persistence.toWritable(persistence.sourceType, readable, uri, persistenceConnection.commandContext)
       persistence.delete(uri)
       val undoDeleteOperation = new PersistenceOperation {
         // make this stateless using a source and sourceType

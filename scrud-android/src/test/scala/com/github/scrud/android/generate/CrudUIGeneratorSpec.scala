@@ -64,10 +64,7 @@ class CrudUIGeneratorSpec extends FunSpec with MustMatchers with MockitoSugar {
     it("must include 'list', 'add' and 'edit' strings for modifiable entities") {
       val valueStrings = CrudUIGenerator.generateValueStrings(entityTypeViewInfo)
       valueStrings.foreach(println(_))
-      (valueStrings \\ "string").length must be (3)
-      valueStrings.toString().toLowerCase must include("list")
-      valueStrings.toString().toLowerCase must include("add")
-      valueStrings.toString().toLowerCase must include("edit")
+      (valueStrings \\ "string").flatMap(_.attribute("name")).map(_.text) must be (Seq("my_map_list", "add_my_map", "edit_my_map", "delete_my_map"))
     }
 
     it("must not include an 'add' string for unaddable entities") {
@@ -79,9 +76,7 @@ class CrudUIGeneratorSpec extends FunSpec with MustMatchers with MockitoSugar {
       })
       val valueStrings = CrudUIGenerator.generateValueStrings(EntityTypeViewInfo(myEntityType, entityTypeMap))
       valueStrings.foreach(println(_))
-      (valueStrings \\ "string").length must be (2)
-      valueStrings.toString().toLowerCase must include("list")
-      valueStrings.toString().toLowerCase must include("edit")
+      (valueStrings \\ "string").flatMap(_.attribute("name")).map(_.text) must be (Seq("my_map_list", "edit_my_map", "delete_my_map"))
     }
 
     it("must not include 'add' and 'edit' strings for unmodifiable entities") {
@@ -94,8 +89,7 @@ class CrudUIGeneratorSpec extends FunSpec with MustMatchers with MockitoSugar {
       })
       val valueStrings = CrudUIGenerator.generateValueStrings(EntityTypeViewInfo(myEntityType, entityTypeMap))
       valueStrings.foreach(println(_))
-      (valueStrings \\ "string").length must be (1)
-      valueStrings.toString().toLowerCase must include("list")
+      (valueStrings \\ "string").flatMap(_.attribute("name")).map(_.text) must be (Seq("my_map_list"))
     }
   }
 }

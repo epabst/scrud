@@ -49,10 +49,14 @@ class ContentResolverCrudPersistence(val entityType: EntityType, contentResolver
 
   def doSave(idOpt: Option[ID], writable: AnyRef) = idOpt match {
     case Some(id) =>
-      contentResolver.update(toUri(uriPathWithEntityName / id), writable.asInstanceOf[ContentValues], null, Array.empty)
+      val uri = toUri(uriPathWithEntityName / id)
+      debug("ContentResolver: Updating uri=" + uri+ " contentValues=" + writable)
+      contentResolver.update(uri, writable.asInstanceOf[ContentValues], null, Array.empty)
       id
     case None =>
-      val newUri: UriPath = contentResolver.insert(toUri(uriPathWithEntityName), writable.asInstanceOf[ContentValues])
+      val uri = toUri(uriPathWithEntityName)
+      debug("ContentResolver: Inserting uri=" + uri+ " contentValues=" + writable)
+      val newUri: UriPath = contentResolver.insert(uri, writable.asInstanceOf[ContentValues])
       newUri.findId(entityType.entityName).get
   }
 

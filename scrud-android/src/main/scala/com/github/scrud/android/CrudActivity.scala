@@ -8,7 +8,7 @@ import android.content.Intent
 import android.app.Activity
 import _root_.android.widget._
 import com.github.scrud
-import scrud.action.CrudOperationType
+import com.github.scrud.action.{PlatformCommand, CrudOperationType, CrudOperation, OperationAction}
 import scrud.platform.PlatformTypes
 import scrud.persistence.{PersistenceFactory, DataListener}
 import com.github.scrud.android.action.{AndroidNotification, AndroidOperation, ActivityResult, OptionsMenuActivity}
@@ -32,8 +32,6 @@ import com.github.scrud.copy._
 import com.github.scrud.EntityName
 import scala.Some
 import com.github.scrud.android.persistence.ContentQuery
-import com.github.scrud.action.CrudOperation
-import com.github.scrud.action.OperationAction
 import com.github.scrud.android.view.OnClickSetterField
 import com.github.scrud.android.view.ViewSpecifier
 import com.github.scrud.context.SharedContextHolder
@@ -165,7 +163,7 @@ class CrudActivity extends FragmentActivity with OptionsMenuActivity with Loader
 
     currentCrudOperationType match {
       case CrudOperationType.List =>
-    		getAdapterView match {
+        getAdapterView match {
           case listView: ListView =>
             listView.setHeaderDividersEnabled(true)
             listView.addHeaderView(getLayoutInflater.inflate(headerLayout, null))
@@ -296,7 +294,7 @@ class CrudActivity extends FragmentActivity with OptionsMenuActivity with Loader
     ensureAdapterView()
     adapterView
   }
-  
+
   lazy val listAdapter: ListAdapter = findInnermostAdapter(getAdapterView.getAdapter)
 
   private def findInnermostAdapter(adapter: ListAdapter): ListAdapter = {
@@ -348,9 +346,10 @@ class CrudActivity extends FragmentActivity with OptionsMenuActivity with Loader
       if (currentCrudOperationType == CrudOperationType.Create || currentCrudOperationType == CrudOperationType.Update) {
         commandContext.future {
           val uri = currentUriPath
-          val createId = commandContext.saveIfValid(uri, EditUI, this, entityType)
-          if (entityType.idField.findFromContext(uri, commandContext).isEmpty) {
-            createId.foreach(id => createdId.set(Some(id)))
+          val createdIdOpt = commandContext.saveIfValid(uri, EditUI, this, entityType)
+          createdIdOpt.foreach { id =>
+            debug("Set CrudActivity.createdId=" + id)
+            createdId.set(Some(id))
           }
         }
       }
@@ -422,7 +421,7 @@ class CrudActivity extends FragmentActivity with OptionsMenuActivity with Loader
     applicableActions.filter(action => action.command.title.isDefined || action.command.icon.isDefined)
 
   // not a val because it is dynamic
-  def defaultOptionsMenuCommands = generateOptionsMenu.map(_.command)
+  lazy val defaultOptionsMenuCommands: List[PlatformCommand] = generateOptionsMenu.map(_.command)
 
   override def onOptionsItemSelected(item: MenuItem): Boolean = {
     commandContext.withExceptionReportingHavingDefaultReturnValue(exceptionalReturnValue = true) {

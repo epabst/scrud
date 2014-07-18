@@ -88,7 +88,8 @@ class CrudUIGenerator(val workingDir: Directory, overwrite: Boolean) extends Log
     val addSeq = if (entityTypeMap.isCreatable(entityType)) <string name={"add_" + layoutPrefix}>Add {entityName.toDisplayableString}</string> else NodeSeq.Empty
     val editSeq = if (entityTypeMap.isSavable(entityType)) <string name={"edit_" + layoutPrefix}>Edit {entityName.toDisplayableString}</string> else NodeSeq.Empty
     val listSeq = if (entityTypeMap.isListable(entityType)) <string name={layoutPrefix + "_list"}>{entityName.toDisplayableString} List</string> else NodeSeq.Empty
-    listSeq ++ addSeq ++ editSeq
+    val deleteSeq = if (entityTypeMap.isDeletable(entityType)) <string name={"delete_" + layoutPrefix}>Delete {entityName.toDisplayableString}</string> else NodeSeq.Empty
+    listSeq ++ addSeq ++ editSeq ++ deleteSeq
   }
 
   def attemptToEvaluate[T](f: => T): Option[T] =
@@ -102,6 +103,8 @@ class CrudUIGenerator(val workingDir: Directory, overwrite: Boolean) extends Log
     <resources>
       <string name="app_name">{entityTypeMap.applicationName.name}</string>
       {entityTypeMap.allEntityTypes.flatMap(entityType => generateValueStrings(EntityTypeViewInfo(entityType, entityTypeMap)))}
+      <string name ="delete_item">Delete</string>
+      <string name ="undo_delete">Undo Delete</string>
       <string name ="data_saved_notification">Saved.</string>
       <string name ="data_not_saved_since_invalid_notification">Not saved since invalid.</string>
     </resources>

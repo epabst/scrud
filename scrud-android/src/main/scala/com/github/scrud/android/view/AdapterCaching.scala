@@ -31,17 +31,17 @@ trait AdapterCaching extends Logging { self: BaseAdapter =>
 
   private lazy val context = new CopyContext(uriPathWithoutEntityId, commandContext)
 
-  private lazy val idSourceFieldOpt = entityType.idField.findSourceField(adapterSourceType)
-
-  def getItemId(item: AnyRef, position: Int): ID =
+  def getItemId(itemSourceType: SourceType, item: AnyRef, position: Int): ID = {
+    val idSourceFieldOpt = entityType.idField.findSourceField(itemSourceType)
     idSourceFieldOpt.flatMap(_.findValue(item, context)).getOrElse(position)
+  }
 
   protected[scrud] def bindViewFromCacheOrItems(view: View, position: Int, commandContext: CommandContext) {
     bindViewFromCacheOrSource(view, position, adapterSourceType, getItem(position), commandContext)
   }
 
   protected[scrud] def bindViewFromCacheOrSource(view: View, position: Int, sourceType: SourceType, source: AnyRef, commandContext: CommandContext) {
-    val uri = baseUriPath / getItemId(source, position)
+    val uri = baseUriPath / getItemId(sourceType, source, position)
     bindViewFromCacheOrSource(view, sourceType, source, new CopyContext(uri, commandContext))
   }
 

@@ -16,7 +16,7 @@ import _root_.android.util.SparseArray
 import com.github.scrud.EntityName
 import scala.Some
 import com.github.scrud.action.CrudOperation
-import com.github.scrud.platform.representation.{EditUI, Persistence}
+import com.github.scrud.platform.representation.EditUI
 import com.github.scrud.copy.types.MapStorage
 import com.github.scrud.android.generate.CrudUIGeneratorForTesting
 import org.robolectric.tester.android.view.TestMenu
@@ -38,15 +38,19 @@ class CrudActivitySpec extends CrudUIGeneratorForTesting with ScrudRobolectricSp
   def shouldSaveOnBackPressed() {
     val entity = new MapStorage(_entityType.name -> Some("Bob"), _entityType.age -> Some(25))
     val uri = UriPath(_entityType.entityName)
-    val activity = Robolectric.buildActivity(classOf[CrudActivityForRobolectric]).
-      withIntent(new Intent(Intent.ACTION_EDIT)).create().get()
+    val intent = new Intent(CreateActionName, AndroidConversions.toUri(uri, classOf[CrudAndroidApplicationForRobolectric]))
+    val activityController = Robolectric.buildActivity(classOf[CrudActivityForRobolectric]).
+      withIntent(intent).create().start().visible()
+    val activity = activityController.get()
     val commandContext = activity.commandContext
     _entityType.copyAndUpdate(MapStorage, entity, uri, EditUI, activity, commandContext)
     // This should cause it to save and change the currentUriPath to include the id.
     activity.onBackPressed()
     commandContext.waitUntilIdle()
+
     val results = commandContext.findAll(_entityType.toUri, MapStorage)
-    val idOpt = activity.currentUriPath.findId(_entityType.entityName)
+    val updatedUri = activity.currentUriPath
+    val idOpt = UriPath.findId(updatedUri, _entityType.entityName)
     idOpt must be ('defined)
     results must be (Seq(new MapStorage(_entityType.id -> idOpt, _entityType.name -> Some("Bob"),
       _entityType.age -> Some(25))))
@@ -54,17 +58,21 @@ class CrudActivitySpec extends CrudUIGeneratorForTesting with ScrudRobolectricSp
 
   @Test
   def onPauseShouldNotCreateANewIdEveryTime() {
-    val entity = Map[String,Option[Any]]("name" -> Some("Bob"), "age" -> Some(25))
+    val entity = new MapStorage(_entityType.name -> Some("Bob"), _entityType.age -> Some(25))
     val uri = UriPath(_entityType.entityName)
     val activityController = Robolectric.buildActivity(classOf[CrudActivityForRobolectric])
     val activity = activityController.get()
     activityController.withIntent(new Intent(AndroidOperation.CreateActionName, AndroidConversions.toUri(uri, activity))).create()
     //simulate a user entering data
-    _entityType.copyAndUpdate(Persistence.Latest, entity, uri, EditUI, activity, activity.commandContext)
+    _entityType.copyAndUpdate(MapStorage, entity, uri, EditUI, activity, activity.commandContext)
     activity.onBackPressed()
+    activity.commandContext.waitUntilIdle()
+
     val uriPathAfterFirstSave = activity.currentUriPath
     //simulate saving again
     activity.onBackPressed()
+    activity.commandContext.waitUntilIdle()
+
     activity.currentUriPath must be (uriPathAfterFirstSave)
     val results = activity.commandContext.findAll(_entityType.toUri, MapStorage)
     results.size must be (1)
@@ -83,34 +91,35 @@ class CrudActivitySpec extends CrudUIGeneratorForTesting with ScrudRobolectricSp
       override lazy val referencedEntityNames: Seq[EntityName] = Seq(parentEntityName)
     }
     val parentEntityType = new EntityTypeForTesting(parentEntityName)
-    val entityTypeMap = new EntityTypeMapForTesting(entityType1 -> PersistenceFactoryForTesting,
+    val entityTypeMap = new EntityTypeMapForTesting(entityType1 -> entityType1.platformDriver.localDatabasePersistenceFactory,
       parentEntityType -> new PersistenceFactoryForTesting(persistenceForParent))
 
     val application = new CrudAndroidApplication(entityTypeMap)
     val activity = new CrudActivityForTesting(application) {
-      override def currentUriPath = UriPath(entityType1.entityName)
+      override def currentUriPath = entityType1.toUri
     }
     activity.populateFromReferencedEntities()
     verify(persistenceForParent, never()).findAll(any())
   }
 
   @Test
-  def shouldHaveCorrectOptionsMenu() {
-    val activityController = Robolectric.buildActivity(classOf[CrudActivityForRobolectric]).
-      withIntent(new Intent(Intent.ACTION_MAIN))
-    val activity = activityController.get()
-
+  def shouldHaveCorrectOptionsMenuInUpdate() {
     val data = new MapStorage(_entityType.name -> Some("Bob"), _entityType.age -> Some(25))
-    activity.commandContext.save(EntityTypeForTesting.entityName, None, MapStorage, data)
+    val activityController = Robolectric.buildActivity(classOf[CrudActivityForRobolectric])
+    val activity = activityController.get()
+    val commandContext = activity.commandContext
 
-    activityController.create()
+    val id = commandContext.save(EntityTypeForTesting.entityName, None, MapStorage, data)
+
+    activityController.withIntent(new Intent(UpdateActionName, AndroidConversions.toUri(_entityType.toUri(id), activity)))
+    activityController.create().start()
+    commandContext.waitUntilIdle()
+
     val menu = new TestMenu(activity)
     activity.onCreateOptionsMenu(menu)
-    val item0 = menu.getItem(0)
-    item0.getTitle.toString must be ("Delete")
-    menu.size must be (1)
-
-    activity.onOptionsItemSelected(item0) must be (true)
+    val items = 0.to(menu.size() - 1).map(menu.getItem(_))
+    items.map(_.getTitle.toString) must be (Seq("Add My Map", "My Map List", "Delete"))
+    activity.onOptionsItemSelected(items.last) must be (true)
   }
 
   @Test
@@ -121,8 +130,9 @@ class CrudActivitySpec extends CrudUIGeneratorForTesting with ScrudRobolectricSp
     val activity = Robolectric.buildActivity(classOf[CrudActivityForRobolectric]).
       withIntent(new Intent(ListActionName)).create().get()
     activity.onCreateContextMenu(contextMenu, ignoredView, ignoredMenuInfo)
-    verify(contextMenu).add(0, R.string.edit_my_map, 0, R.string.edit_my_map)
-    verify(contextMenu).add(0, R.string.delete_item, 1, R.string.delete_item)
+    verify(contextMenu).add(0, R.string.my_map_list, 0, R.string.my_map_list)
+    verify(contextMenu).add(0, R.string.edit_my_map, 1, R.string.edit_my_map)
+    verify(contextMenu).add(0, R.string.delete_item, 2, R.string.delete_item)
   }
 
   @Test
@@ -151,23 +161,25 @@ class CrudActivitySpec extends CrudUIGeneratorForTesting with ScrudRobolectricSp
   }
 
   @Test
-  def shouldRefreshOnResume() {
+  def shouldRefreshOnRestart() {
     val data = new MapStorage(_entityType.name -> Some("Bob"), _entityType.age -> Some(25))
     val activityController = Robolectric.buildActivity(classOf[CrudActivityForRobolectric]).
-      withIntent(new Intent(ListActionName))
+      withIntent(new Intent(ListActionName)).create().start()
     val activity = activityController.get()
-    activity.commandContext.save(EntityTypeForTesting.entityName, None, MapStorage, data)
 
-    activityController.create()
+    activity.commandContext.save(EntityTypeForTesting.entityName, None, MapStorage, data)
+    activity.commandContext.waitUntilIdle()
     activity.listAdapter.getCount must be (1)
 
+    activityController.stop()  // this should prevent a database read.
     val data2 = new MapStorage(_entityType.name -> Some("Will"), _entityType.age -> Some(31))
     activity.commandContext.save(EntityTypeForTesting.entityName, None, MapStorage, data2)
-    activity.onPause() // this should not cause a database read.
-    activity.listAdapter.getCount must be (1)
+    activity.commandContext.waitUntilIdle()
+    activity.listAdapter.getCount must be (1) // Should not have refreshed yet since paused.
 
-    activity.onResume() // this should cause a database read.
-// todo   activity.getAdapterView.getCount must be (2)
+    activityController.restart() // this should cause a database read.
+    activity.commandContext.waitUntilIdle()
+    activity.listAdapter.getCount must be (2)
   }
 
   @Test
