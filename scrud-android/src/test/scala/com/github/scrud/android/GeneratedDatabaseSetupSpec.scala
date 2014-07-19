@@ -7,8 +7,10 @@ import com.github.scrud.util.CrudMockitoSugar
 import org.scalatest.matchers.MustMatchers
 import org.mockito.Mockito._
 import org.mockito.Matchers._
-import com.github.scrud.persistence.CrudPersistence
+import com.github.scrud.persistence.{EntityTypeMapForTesting, CrudPersistence}
 import com.github.scrud.{EntityName, EntityType}
+import org.robolectric.annotation.Config
+import com.github.scrud.android.generate.CrudUIGeneratorForTesting
 
 /**
  * A behavior specification for [[com.github.scrud.android.GeneratedDatabaseSetup]].
@@ -18,23 +20,26 @@ import com.github.scrud.{EntityName, EntityType}
  *         Time: 8:34 AM
  */
 @RunWith(classOf[CustomRobolectricTestRunner])
-class GeneratedDatabaseSetupSpec extends CrudMockitoSugar with MustMatchers {
+@Config(manifest = "target/generated/AndroidManifest.xml")
+class GeneratedDatabaseSetupSpec extends ScrudRobolectricSpecBase {
   val db = mock[SQLiteDatabase]
   val mockEntityType = mock[EntityType]
-  val entityType = new MyEntityType(EntityName("Entity1")) {
+  val platformDriver = AndroidPlatformDriverForTesting
+  val entityType = new EntityTypeForTesting(EntityName("Entity1"), platformDriver) {
     override def onCreateDatabase(lowLevelPersistence: CrudPersistence) {
       mockEntityType.onCreateDatabase(lowLevelPersistence)
     }
   }
   val mockEntityType2 = mock[EntityType]
-  val entityType2 = new MyEntityType(EntityName("Entity2")) {
+  val entityType2 = new EntityTypeForTesting(EntityName("Entity2"), platformDriver) {
     override def onCreateDatabase(lowLevelPersistence: CrudPersistence) {
       mockEntityType2.onCreateDatabase(lowLevelPersistence)
     }
   }
   val persistenceFactory = SQLitePersistenceFactory
-  val application = MyCrudApplication(CrudType(entityType, persistenceFactory), CrudType(entityType2, persistenceFactory))
-  val sut = new GeneratedDatabaseSetup(AndroidCrudContext(new MyContextWithVars, application), persistenceFactory)
+  val application = new CrudAndroidApplication(
+    new EntityTypeMapForTesting(entityType -> persistenceFactory, entityType2 -> persistenceFactory))
+  val sut = new GeneratedDatabaseSetup(new AndroidCommandContextForTesting(application), persistenceFactory)
 
   @Before
   def setUp() {

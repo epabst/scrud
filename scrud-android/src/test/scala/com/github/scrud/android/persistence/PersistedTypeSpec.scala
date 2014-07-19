@@ -2,18 +2,18 @@ package com.github.scrud.android.persistence
 
 import org.junit.runner.RunWith
 import org.scalatest.matchers.MustMatchers
-import org.scalatest.mock.EasyMockSugar
 import org.junit.Test
 import android.os.Bundle
 import com.github.scrud.android.CustomRobolectricTestRunner
-
+import com.github.scrud.types.{AmountQT, UriQT, NaturalIntQT, DateWithoutTimeQT}
+import org.robolectric.annotation.Config
 
 /** A behavior specification for [[com.github.scrud.android.persistence.PersistedType]].
   * @author Eric Pabst (epabst@gmail.com)
   */
-
 @RunWith(classOf[CustomRobolectricTestRunner])
-class PersistedTypeSpec extends MustMatchers with EasyMockSugar {
+@Config(manifest = "target/generated/AndroidManifest.xml")
+class PersistedTypeSpec extends MustMatchers {
   @Test
   def itMustReadAndWriteBundle() {
     import PersistedType._
@@ -44,5 +44,13 @@ class PersistedTypeSpec extends MustMatchers with EasyMockSugar {
     doubleType.sqliteType must be ("REAL")
     floatRefType.sqliteType must be ("REAL")
     floatType.sqliteType must be ("REAL")
+  }
+
+  @Test
+  def itMustReuseConvertedInstances() {
+    PersistedType(DateWithoutTimeQT) eq PersistedType(DateWithoutTimeQT) must be (right = true)
+    PersistedType(UriQT) eq PersistedType(UriQT) must be (right = true)
+    PersistedType(NaturalIntQT) eq PersistedType(NaturalIntQT) must be (right = true)
+    PersistedType(AmountQT) eq PersistedType(AmountQT) must be (right = true)
   }
 }

@@ -7,6 +7,8 @@ import org.scalatest.FunSpec
 import org.scalatest.mock.MockitoSugar
 import org.mockito.Mockito._
 import android.database.Cursor
+import com.github.scrud.android.{EntityTypeForTesting, AndroidCommandContextForTesting}
+import com.github.scrud.persistence.EntityTypeMapForTesting
 
 /** A behavior specification for [[com.github.scrud.persistence.EntityPersistence]].
   * @author Eric Pabst (epabst@gmail.com)
@@ -14,61 +16,64 @@ import android.database.Cursor
 @RunWith(classOf[JUnitRunner])
 class CursorStreamSpec extends FunSpec with MustMatchers with MockitoSugar {
   it("must handle an empty Cursor") {
-    val field = CursorField.persisted[String]("name")
+    val entityType = EntityTypeForTesting
     val cursor = mock[Cursor]
     stub(cursor.moveToNext()).toReturn(false)
-    val stream = CursorStream(cursor, EntityTypePersistedInfo(List(field)))
+    val commandContext = new AndroidCommandContextForTesting(new EntityTypeMapForTesting(entityType))
+    val stream = CursorStream(cursor, EntityTypePersistedInfo(entityType), commandContext)
     stream.isEmpty must be (true)
     stream.size must be (0)
     stream.headOption must be (None)
   }
 
   it("must not instantiate the entire Stream for an infinite Cursor") {
-    val field = CursorField.persisted[String]("name")
-
+    val entityType = new EntityTypeForTesting()
     val cursor = mock[Cursor]
     stub(cursor.moveToNext).toReturn(true)
     stub(cursor.getColumnIndex("name")).toReturn(1)
     stub(cursor.getString(1)).toReturn("Bryce")
 
-    val stream = CursorStream(cursor, EntityTypePersistedInfo(List(field)))
+    val commandContext = new AndroidCommandContextForTesting(new EntityTypeMapForTesting(entityType))
+    val stream = CursorStream(cursor, EntityTypePersistedInfo(entityType), commandContext)
     val second = stream.tail.head
-    field.getRequired(second) must be ("Bryce")
+    entityType.name.getRequired(CursorStream.storageType, second, entityType.toUri, commandContext) must be ("Bryce")
   }
 
   it("must have correct number of elements") {
-    val field = CursorField.persisted[String]("name")
-
+    val entityType = EntityTypeForTesting
     val cursor = mock[Cursor]
     when(cursor.moveToNext).thenReturn(true).thenReturn(true).thenReturn(false)
     stub(cursor.getColumnIndex("name")).toReturn(1)
     stub(cursor.getString(1)).toReturn("Allen")
 
-    val stream = CursorStream(cursor, EntityTypePersistedInfo(List(field)))
+    val commandContext = new AndroidCommandContextForTesting(new EntityTypeMapForTesting(entityType))
+    val stream = CursorStream(cursor, EntityTypePersistedInfo(entityType), commandContext)
     stream.toList.size must be (2)
   }
 
   it("must have correct size") {
+    val entityType = EntityTypeForTesting
     val cursor = mock[Cursor]
     stub(cursor.getCount).toReturn(500)
 
-    val stream = CursorStream(cursor, EntityTypePersistedInfo(List(CursorField.persisted[String]("name"))))
+    val commandContext = new AndroidCommandContextForTesting(new EntityTypeMapForTesting(entityType))
+    val stream = CursorStream(cursor, EntityTypePersistedInfo(entityType), commandContext)
     stream.size must be (500)
     stream.length must be (500)
   }
 
   it("must allow accessing data from different positions in any order") {
-    val field = CursorField.persisted[String]("name")
-
+    val entityType = EntityTypeForTesting
     val cursor = mock[Cursor]
     when(cursor.moveToNext).thenReturn(true).thenReturn(true).thenReturn(false)
     stub(cursor.getColumnIndex("name")).toReturn(1)
     when(cursor.getString(1)).thenReturn("Allen").thenReturn("Bryce")
 
-    val stream = CursorStream(cursor, EntityTypePersistedInfo(List(field)))
+    val commandContext = new AndroidCommandContextForTesting(new EntityTypeMapForTesting(entityType))
+    val stream = CursorStream(cursor, EntityTypePersistedInfo(entityType), commandContext)
     val second = stream.tail.head
     val first = stream.head
-    field.getRequired(second) must be ("Bryce")
-    field.getRequired(first) must be ("Allen")
+    entityType.name.getRequired(CursorStream.storageType, second, entityType.toUri, commandContext) must be ("Bryce")
+    entityType.name.getRequired(CursorStream.storageType, first, entityType.toUri, commandContext) must be ("Allen")
   }
 }

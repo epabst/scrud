@@ -4,28 +4,29 @@ import org.scalatest.FunSpec
 import org.scalatest.matchers.MustMatchers
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
-import com.github.scrud.android.persistence.CursorField._
 import com.github.scrud.android._
 import org.scalatest.mock.MockitoSugar
-import com.github.scrud.{CrudApplication, EntityType}
-import com.github.scrud.android.view.ViewField
-import ViewField._
 import com.github.scrud.types.TitleQT
+import com.github.scrud.persistence.{PersistenceFactoryForTesting, EntityTypeMapForTesting}
+import com.github.scrud.platform.representation.DetailUI
 
 /** A behavior specification for [[com.github.scrud.android.generate.CrudUIGenerator]].
   * @author Eric Pabst (epabst@gmail.com)
   */
 @RunWith(classOf[JUnitRunner])
 class CrudUIGeneratorSpec extends FunSpec with MustMatchers with MockitoSugar {
-  val platformDriver = new AndroidPlatformDriver(classOf[res.R])
-  val displayName = "My Name"
-  val viewIdFieldInfo = ViewIdFieldInfo("foo", displayName, textView)
+  val entityType = EntityTypeForTesting
+  private val entityTypeMap = new EntityTypeMapForTesting(entityType)
+  val entityTypeViewInfo = new EntityTypeViewInfo(entityType, entityTypeMap)
+  val displayableEntityTypeViewInfo = new TargetedEntityTypeViewInfo(entityTypeViewInfo, DetailUI)
+  val displayableViewIdFieldInfos = displayableEntityTypeViewInfo.viewIdFieldInfos
+  val viewIdFieldInfo = displayableViewIdFieldInfos.head
 
   describe("fieldLayoutForHeader") {
     it("must show the display name") {
       val position = 0
       val fieldLayout = CrudUIGenerator.fieldLayoutForHeader(viewIdFieldInfo, position)
-      fieldLayout.attributes.find(_.key == "text").get.value.text must be ("My Name")
+      fieldLayout.attributes.find(_.key == "text").get.value.text must be ("Name")
     }
 
     it("must put the first field on the left side of the screen") {
@@ -61,48 +62,34 @@ class CrudUIGeneratorSpec extends FunSpec with MustMatchers with MockitoSugar {
 
   describe("generateValueStrings") {
     it("must include 'list', 'add' and 'edit' strings for modifiable entities") {
-      val myEntityType = new MyEntityType {
-        override val valueFields = List(persisted[String]("model") + namedViewField("model", TitleQT))
-      }
-      val application = new CrudApplication(platformDriver) {
-        val allCrudTypes = List(new MyCrudType(myEntityType))
-        val dataVersion = 1
-        val name = "Test App"
-      }
-      val valueStrings = CrudUIGenerator.generateValueStrings(EntityTypeViewInfo(myEntityType, application))
+      val valueStrings = CrudUIGenerator.generateValueStrings(entityTypeViewInfo)
       valueStrings.foreach(println(_))
-      (valueStrings \\ "string").length must be (3)
+      (valueStrings \\ "string").flatMap(_.attribute("name")).map(_.text) must be (Seq("my_map_list", "add_my_map", "edit_my_map", "delete_my_map"))
     }
 
     it("must not include an 'add' string for unaddable entities") {
-      val myEntityType = new MyEntityType {
-        override val valueFields = List(bundleField[String]("model"))
+      val myEntityType = new EntityTypeForTesting {
+        field("model", TitleQT, Seq(BundleStorage))
       }
-      val application = new CrudApplication(platformDriver) {
-        val allCrudTypes = List(new MyCrudType(myEntityType))
-        val dataVersion = 1
-        val name = "Test App"
-        override def isCreatable(entityType: EntityType) = false
-      }
-      val valueStrings = CrudUIGenerator.generateValueStrings(EntityTypeViewInfo(myEntityType, application))
+      val entityTypeMap = new EntityTypeMapForTesting(myEntityType -> new PersistenceFactoryForTesting {
+        override def canCreate: Boolean = false
+      })
+      val valueStrings = CrudUIGenerator.generateValueStrings(EntityTypeViewInfo(myEntityType, entityTypeMap))
       valueStrings.foreach(println(_))
-      (valueStrings \\ "string").length must be (2)
+      (valueStrings \\ "string").flatMap(_.attribute("name")).map(_.text) must be (Seq("my_map_list", "edit_my_map", "delete_my_map"))
     }
 
     it("must not include 'add' and 'edit' strings for unmodifiable entities") {
-      val _entityType = new MyEntityType {
-        override def valueFields = List(bundleField[String]("model"))
+      val myEntityType = new EntityTypeForTesting {
+        field("model", TitleQT, Seq(BundleStorage))
       }
-      val application = new CrudApplication(platformDriver) {
-        val allCrudTypes = List(new MyCrudType(_entityType))
-        val dataVersion = 1
-        val name = "Test App"
-        override def isCreatable(entityType: EntityType) = false
-        override def isSavable(entityType: EntityType) = false
-      }
-      val valueStrings = CrudUIGenerator.generateValueStrings(EntityTypeViewInfo(_entityType, application))
+      val entityTypeMap = new EntityTypeMapForTesting(myEntityType -> new PersistenceFactoryForTesting {
+        override def canCreate: Boolean = false
+        override val canSave: Boolean = false
+      })
+      val valueStrings = CrudUIGenerator.generateValueStrings(EntityTypeViewInfo(myEntityType, entityTypeMap))
       valueStrings.foreach(println(_))
-      (valueStrings \\ "string").length must be (1)
+      (valueStrings \\ "string").flatMap(_.attribute("name")).map(_.text) must be (Seq("my_map_list"))
     }
   }
 }

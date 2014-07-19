@@ -1,31 +1,36 @@
 package com.github.scrud.android.persistence
 
 import android.database.Cursor
-import com.github.triangle.FieldList
 import com.github.scrud.EntityType
+import com.github.scrud.platform.representation.Persistence
+import com.github.scrud.copy.types.MapStorage
+import com.github.scrud.context.CommandContext
 
-case class EntityTypePersistedInfo(persistedFields: Seq[CursorField[_]]) {
-  private val persistedFieldList = FieldList(persistedFields: _*)
-  lazy val queryFieldNames: Seq[String] = persistedFields.map(_.columnName)
+case class EntityTypePersistedInfo(entityType: EntityType) {
+  lazy val currentPersistedFields = entityType.currentPersistedFields
+  lazy val currentPersistedFieldNames = entityType.currentPersistedFields.
+    map(field => AndroidContentAdaptableFieldFactory.toPersistedFieldName(field.fieldName)).toIndexedSeq
+  lazy val queryFieldNames: Seq[String] = currentPersistedFieldNames
 
   /** Copies the current row of the given cursor to a Map.  This allows the Cursor to then move to a different position right after this. */
-  def copyRowToMap(cursor: Cursor): Map[String,Option[Any]] =
-    persistedFieldList.copyAndUpdate(cursor, Map.empty[String,Option[Any]])
-}
-
-object EntityTypePersistedInfo {
-  def apply(entityType: EntityType): EntityTypePersistedInfo = EntityTypePersistedInfo(CursorField.persistedFields(entityType))
+  def copyRowToMap(cursor: Cursor, commandContext: CommandContext): MapStorage =
+    entityType.copyAndUpdate(Persistence.Latest, cursor, entityType.toUri, MapStorage, commandContext)
 }
 
 /** A Stream that wraps a Cursor.
   * @author Eric Pabst (epabst@gmail.com)
   */
-case class CursorStream(cursor: Cursor, entityTypePersistedInfo: EntityTypePersistedInfo) extends Stream[Map[String,Any]] {
-  override lazy val headOption = {
+case class CursorStream(cursor: Cursor, entityTypePersistedInfo: EntityTypePersistedInfo, commandContext: CommandContext) extends Stream[MapStorage] {
+  def entityType = entityTypePersistedInfo.entityType
+
+  override lazy val headOption: Option[MapStorage] = {
     if (cursor.moveToNext) {
-      Some(entityTypePersistedInfo.copyRowToMap(cursor))
+      val storage = entityType.copyAndUpdate(Persistence.Latest, cursor, entityType.toUri, CursorStream.storageType, commandContext)
+      commandContext.applicationName.debug(this + " found another: " + storage)
+      Some(storage)
     } else {
       cursor.close()
+      commandContext.applicationName.debug(this + " didn't find any more")
       None
     }
   }
@@ -38,5 +43,11 @@ case class CursorStream(cursor: Cursor, entityTypePersistedInfo: EntityTypePersi
   def tailDefined = !isEmpty
   // Must be a val so that we don't create more than one CursorStream.
   // Must be lazy so that we don't instantiate the entire stream
-  override lazy val tail = if (tailDefined) CursorStream(cursor, entityTypePersistedInfo) else throw new NoSuchElementException
+  override lazy val tail = if (tailDefined) CursorStream(cursor, entityTypePersistedInfo, commandContext) else throw new NoSuchElementException
+
+  override def toString(): String = entityType + " Query #" + System.identityHashCode(cursor)
+}
+
+object CursorStream {
+  val storageType = MapStorage
 }

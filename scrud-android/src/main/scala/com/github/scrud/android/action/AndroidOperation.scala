@@ -5,22 +5,23 @@ import com.github.scrud.platform.PlatformTypes._
 import _root_.android.content.{Context, Intent}
 import com.github.scrud.android.view.AndroidConversions._
 import _root_.android.view.View
-import com.github.triangle.Field
-import com.github.triangle.PortableField._
 import com.github.scrud._
 import action._
-import com.github.scrud.android.AndroidCrudContext
+import android.view.AndroidConversions
+import com.github.scrud.android.AndroidCommandContext
 import com.github.scrud.EntityName
+import com.github.scrud.copy.{SourceType, RepresentationByType}
+import com.github.scrud.context.CommandContext
 
 /** Represents an operation that a user can initiate. */
 trait AndroidOperation extends Operation {
-  /** Runs the operation, given the uri and the current CrudContext. */
-  def invoke(uri: UriPath, crudContext: CrudContext) {
-    invoke(uri, crudContext.asInstanceOf[AndroidCrudContext].activityContext.asInstanceOf[ActivityWithState])
+  /** Runs the operation, given the uri and the current CommandContext. */
+  def invoke(uri: UriPath, commandContext: CommandContext) {
+    invoke(uri, commandContext.asInstanceOf[AndroidCommandContext].activity)
   }
 
   /** Runs the operation, given the uri and the current state of the application. */
-  def invoke(uri: UriPath, activity: ActivityWithState)
+  def invoke(uri: UriPath, activity: Activity)
 }
 
 object AndroidOperation {
@@ -34,7 +35,7 @@ object AndroidOperation {
 
   //this is a workaround because Robolectric doesn't handle the full constructor
   def constructIntent(action: String, uriPath: UriPath, context: Context, clazz: Class[_]): Intent = {
-    val intent = new Intent(action, uriPath)
+    val intent = new Intent(action, AndroidConversions.toUri(uriPath, context))
     intent.setClass(context, clazz)
     intent
   }
@@ -45,9 +46,9 @@ case class RichIntent(intent: Intent) {
 }
 
 trait StartActivityOperation extends AndroidOperation {
-  def determineIntent(uri: UriPath, activity: ActivityWithState): Intent
+  def determineIntent(uri: UriPath, activity: Activity): Intent
 
-  def invoke(uri: UriPath, activity: ActivityWithState) {
+  def invoke(uri: UriPath, activity: Activity) {
     activity.startActivity(determineIntent(uri, activity))
   }
 }
@@ -57,13 +58,13 @@ trait BaseStartActivityOperation extends StartActivityOperation {
 
   def activityClass: Class[_ <: Activity]
 
-  def determineIntent(uri: UriPath, activity: ActivityWithState): Intent = AndroidOperation.constructIntent(action, uri, activity, activityClass)
+  def determineIntent(uri: UriPath, activity: Activity): Intent = AndroidOperation.constructIntent(action, uri, activity, activityClass)
 }
 
 /** An Operation that starts an Activity using the provided Intent.
   * @param intent the Intent to use to start the Activity.  It is pass-by-name because the SDK's Intent has a "Stub!" error. */
 class StartActivityOperationFromIntent(intent: => Intent) extends StartActivityOperation {
-  def determineIntent(uri: UriPath, activity: ActivityWithState) = intent
+  def determineIntent(uri: UriPath, activity: Activity) = intent
 }
 
 //final to guarantee equality is correct
@@ -78,7 +79,7 @@ trait EntityOperation extends AndroidOperation {
 final case class StartEntityActivityOperation(entityName: EntityName, action: String, activityClass: Class[_ <: Activity])
   extends BaseStartActivityOperation with EntityOperation {
 
-  override def determineIntent(uri: UriPath, activity: ActivityWithState): Intent =
+  override def determineIntent(uri: UriPath, activity: Activity): Intent =
     super.determineIntent(uri.specify(entityName), activity)
 }
 
@@ -86,13 +87,13 @@ final case class StartEntityActivityOperation(entityName: EntityName, action: St
 final case class StartEntityIdActivityOperation(entityName: EntityName, action: String, activityClass: Class[_ <: Activity])
   extends BaseStartActivityOperation with EntityOperation {
 
-  override def determineIntent(uri: UriPath, activity: ActivityWithState) = super.determineIntent(uri.upToOptionalIdOf(entityName), activity)
+  override def determineIntent(uri: UriPath, activity: Activity) = super.determineIntent(uri.specifyLastEntityName(entityName), activity)
 }
 
 trait StartActivityForResultOperation extends StartActivityOperation {
   def viewIdToRespondTo: ViewKey
 
-  override def invoke(uri: UriPath, activity: ActivityWithState) {
+  override def invoke(uri: UriPath, activity: Activity) {
     activity.startActivityForResult(determineIntent(uri, activity), viewIdToRespondTo)
   }
 }
@@ -103,11 +104,3 @@ object StartActivityForResultOperation {
       val viewIdToRespondTo = view.getId
     }
 }
-
-/** The response to a [[com.github.scrud.android.action.StartActivityForResultOperation]].
-  * This is used by [[com.github.scrud.android.CrudActivity]]'s startActivityForResult.
-  */
-case class OperationResponse(viewIdRespondingTo: ViewKey, intent: Intent)
-
-/** An extractor to get the OperationResponse from the items being copied from. */
-object OperationResponseExtractor extends Field(identityField[OperationResponse])

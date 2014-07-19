@@ -2,7 +2,7 @@ package com.github.scrud.android.util
 
 import android.net.Uri
 import android.graphics.drawable.Drawable
-import com.github.scrud.util.Common
+import scala.util.{Failure, Success, Try}
 
 /**
  * Loads Images and caches, including putting them into an ImageView.
@@ -21,11 +21,15 @@ class ImageLoader {
     val firstInSampleSize: Int = calculateSampleSize(imageWidth, imageHeight, imageDisplayWidth, imageDisplayHeight)
     // No use in doing less than 8 pixels of detail.
     val multiplierSeq = powersOfTwo.takeWhile(_ <= imageDisplayWidth / 8)
-    val results: Seq[Either[Drawable, Throwable]] = multiplierSeq.view.map { multiplier =>
+    val results: Seq[Try[Drawable]] = multiplierSeq.view.map { multiplier =>
       val inSampleSize = firstInSampleSize * multiplier
-      Common.evaluateOrIntercept(contentResolver.decodeBitmap(uri, inSampleSize))
+      try {
+        Try(contentResolver.decodeBitmap(uri, inSampleSize))
+      } catch {
+        case e: OutOfMemoryError => Failure(e)
+      }
     }
-    results.find(_.isLeft).map(_.left.get).getOrElse(throw results.head.right.get)
+    results.find(_.isSuccess).fold(results.head.get)(_.get)
   }
 
   def calculateSampleSize(imageWidth: Int, imageHeight: Int, displayWidth: Int, displayHeight: Int): Int = {

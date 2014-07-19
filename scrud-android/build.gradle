@@ -1,0 +1,41 @@
+group = 'com.github.epabst.scrud'
+version = '0.3-alpha8-SNAPSHOT'
+
+apply plugin: 'scala'
+
+repositories {
+    mavenCentral()
+    maven {
+        url "file://$androidSdkDir/extras/android/m2repository/"
+    }
+}
+
+def scalaVersion = '2.10.3'
+
+dependencies {
+    compile "org.scala-lang:scala-library:$scalaVersion"
+    // androidSdkDir must be set (e.g. in ~/.gradle/gradle.properties)
+    compile files("$androidSdkDir/platforms/android-19/android.jar")
+	compile 'com.android.support:appcompat-v7:+'
+//	compile 'com.android.support:support-v4:18.0.0'
+//    compile project(":scrud:scrud-android-res"); // "com.github.epabst.scrud:scrud-android-res:scrud-android-res:0.3-alpha8-SNAPSHOT"
+    compile project(":scrud:scrud-core");
+    testCompile project(path: ":scrud:scrud-core", configuration: 'tests')
+    testRuntime "org.slf4j:slf4j-log4j12:1.6.1"
+    testRuntime "log4j:log4j:1.2.17"
+    testCompile "org.mockito:mockito-core:1.8.5"
+    testCompile "junit:junit:4.8.2"
+    testCompile "com.novocode:junit-interface:0.4" // Required to make sbt run junit tests
+    testCompile "org.robolectric:robolectric:2.3"
+    testCompile "org.scalatest:scalatest_2.10.0-RC5:2.0.M5-B1"
+    //todo eliminate easymock as a dependency
+    testCompile "org.easymock:easymock:2.5.2"
+
+    // todo don't include when running simple unit tests since slf4j-jdk14 should be used then.
+//    runtime "org.slf4j:slf4j-android:1.6.1-RC1"
+}
+
+tasks.withType(Test) {
+    scanForTestClasses = false
+    include "**/*Spec.class"
+}

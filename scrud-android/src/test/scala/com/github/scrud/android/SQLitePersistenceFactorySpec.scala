@@ -1,101 +1,62 @@
 package com.github.scrud.android
 
+import _root_.android.content.Intent
 import _root_.android.provider.BaseColumns
-import _root_.android.app.Activity
 import _root_.android.database.{Cursor, DataSetObserver}
-import _root_.android.widget.ListView
-import action.ContextWithState
-import com.github.scrud
-import com.github.scrud.state._
 import com.github.scrud.persistence._
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.scalatest.matchers.MustMatchers
-import com.github.triangle._
-import com.github.scrud.android.persistence.CursorField._
-import persistence.{EntityTypePersistedInfo, CursorStream}
-import PortableField._
-import res.R
+import persistence.CursorStream
 import scala.collection._
-import org.mockito.Mockito
-import Mockito._
-import scrud.util.{MutableListenerSet, CrudMockitoSugar}
 import com.github.scrud._
+import com.github.scrud.types.TitleQT
+import com.github.scrud.copy.types.{MapStorage, Default}
+import com.github.scrud.platform.representation.{EditUI, DetailUI}
+import com.github.scrud.copy.SourceType
+import org.robolectric.annotation.Config
+import org.robolectric.Robolectric
+import com.github.scrud.android.action.AndroidOperation._
+import org.mockito.Mockito._
 import com.github.scrud.EntityName
+import scala.Some
+import com.github.scrud.android.persistence.EntityTypePersistedInfo
 
 /** A test for [[com.github.scrud.android.SQLitePersistenceFactorySpec]].
   * @author Eric Pabst (epabst@gmail.com)
   */
 @RunWith(classOf[CustomRobolectricTestRunner])
-class SQLitePersistenceFactorySpec extends MustMatchers with CrudMockitoSugar with Logging {
-  protected val logTag = getClass.getSimpleName
-
-  val runningOnRealAndroid: Boolean = try {
-    debug("Seeing if running on Real Android...")
-    Class.forName("com.xtremelabs.robolectric.RobolectricTestRunner")
-    warn("NOT running on Real Android.")
-    false
-  } catch {
-    case _: Throwable => {
-      info("Running on Real Android.")
-      true
-    }
-  }
-
-  val androidPlatformDriver = new AndroidPlatformDriver(classOf[R])
-
-  object TestEntity extends EntityName("Test")
-
-  object TestEntityType extends EntityType(TestEntity, androidPlatformDriver) {
-    val valueFields = List(persisted[Int]("age") + default(21))
-  }
-
-  object TestCrudType extends CrudType(TestEntityType, SQLitePersistenceFactory)
-
-  object TestApplication extends CrudApplication(androidPlatformDriver) {
-    val name = "Test Application"
-
-    val allCrudTypes = List(TestCrudType)
-
-    val dataVersion = 1
-  }
-  val application = TestApplication
-  val listenerSet = mock[MutableListenerSet[DataListener]]
-  when(listenerSet.listeners).thenReturn(Set.empty[DataListener])
-
+@Config(manifest = "target/generated/AndroidManifest.xml")
+class SQLitePersistenceFactorySpec extends ScrudRobolectricSpecBase {
   @Test
   def shouldUseCorrectColumnNamesForFindAll() {
-    val crudContext = mock[AndroidCrudContext]
-    stub(crudContext.application).toReturn(application)
-
-    val entityTypePersistedInfo = EntityTypePersistedInfo(TestEntityType)
+    val entityTypePersistedInfo = EntityTypePersistedInfo(new EntityTypeForTesting {
+      field("unpersisted", TitleQT, Seq(EditUI, DetailUI, Default("hello")))
+    })
     entityTypePersistedInfo.queryFieldNames must contain(BaseColumns._ID)
     entityTypePersistedInfo.queryFieldNames must contain("age")
+    entityTypePersistedInfo.queryFieldNames must not(contain("unpersisted"))
   }
 
   @Test
   def shouldCloseCursorsWhenClosing() {
-    val crudContext = mock[AndroidCrudContext]
-    stub(crudContext.activityState).toReturn(new State {})
-    stub(crudContext.applicationState).toReturn(new State {})
-    stub(crudContext.application).toReturn(application)
+    val commandContext = Robolectric.buildActivity(classOf[CrudActivityForRobolectric]).get().commandContext
     val persistenceFactory = SQLitePersistenceFactory
-
     val cursors = mutable.Buffer[Cursor]()
-    val database = new GeneratedDatabaseSetup(crudContext, persistenceFactory).getWritableDatabase
-    val thinPersistence = new SQLiteThinEntityPersistence(TestEntityType, database, crudContext)
-    val persistence = new CrudPersistenceUsingThin(TestEntityType, thinPersistence, crudContext, listenerSet) {
+    val database = new GeneratedDatabaseSetup(commandContext, persistenceFactory).getWritableDatabase
+    val listenerSet = persistenceFactory.listenerSet(EntityTypeForTesting, commandContext.sharedContext)
+    val thinPersistence = new SQLiteCrudPersistence(EntityTypeForTesting, database, commandContext,
+      listenerSet)
+    val sharedContext = commandContext.sharedContext
+    val persistence = new CrudPersistenceUsingThin(EntityTypeForTesting, thinPersistence, sharedContext, listenerSet) {
       override def findAll(uri: UriPath) = {
         val result = super.findAll(uri)
-        val CursorStream(cursor, _) = result
+        val CursorStream(cursor, _, _) = result
         cursors += cursor
         result
       }
     }
-    val writable = persistenceFactory.newWritable()
     //UseDefaults is provided here in the item list for the sake of PortableField.adjustment[SQLiteCriteria] fields
-    TestEntityType.copy(PortableField.UseDefaults, writable)
-    val id = persistence.save(None, writable)
+    val id = commandContext.save(EntityForTesting, None, SourceType.none, SourceType.none)
     val uri = persistence.toUri(id)
     persistence.find(uri)
     persistence.findAll(UriPath.EMPTY)
@@ -107,34 +68,35 @@ class SQLitePersistenceFactorySpec extends MustMatchers with CrudMockitoSugar wi
   }
 
   @Test
-  def shouldRefreshCursorWhenDeletingAndSaving() {
-    val activity = new MyCrudActivity(application) {
-      override lazy val applicationState = new State {}
-      override val getAdapterView: ListView = new ListView(this)
-    }
+  def shouldRefreshCursorWhenSavingAndDeleting() {
+    val activityController = Robolectric.buildActivity(classOf[CrudActivityForRobolectric]).
+      withIntent(new Intent(ListActionName))
+    val activity = activityController.create().get()
     val observer = mock[DataSetObserver]
+    val commandContext = activity.commandContext
 
-    val crudContext = new AndroidCrudContext(activity, application)
-    activity.setListAdapterUsingUri(crudContext, activity)
-    val listAdapter = activity.getAdapterView.getAdapter
-    listAdapter.getCount must be (0)
+    activityController.start()
+    activity.listAdapter.getCount must be (0)
+    activity.listAdapter.registerDataSetObserver(observer)
+    verify(observer, never()).onChanged()
 
-    val writable = SQLitePersistenceFactory.newWritable()
-    TestEntityType.copy(PortableField.UseDefaults, writable)
-    val id = crudContext.withEntityPersistence(TestEntityType) { _.save(None, writable) }
-    //it must have refreshed the listAdapter
-    listAdapter.getCount must be (if (runningOnRealAndroid) 1 else 0)
-
-    TestEntityType.copy(Map("age" -> 50), writable)
-    listAdapter.registerDataSetObserver(observer)
-    crudContext.withEntityPersistence(TestEntityType) { _.save(Some(id), writable) }
+    val id = commandContext.save(EntityForTesting, None, MapStorage, new MapStorage(EntityTypeForTesting.name -> Some("Gilbert")))
+    commandContext.waitUntilIdle()
     //it must have refreshed the listAdapter (notified the observer)
-    listAdapter.unregisterDataSetObserver(observer)
-    listAdapter.getCount must be (if (runningOnRealAndroid) 1 else 0)
+    activity.listAdapter.getCount must be (1)
+    verify(observer, times(1)).onChanged()
 
-    crudContext.withEntityPersistence(TestEntityType) { _.delete(TestEntityType.toUri(id)) }
+    commandContext.save(EntityForTesting, Some(id), MapStorage, new MapStorage(EntityTypeForTesting.name -> Some("Patricia")))
+    commandContext.waitUntilIdle()
+    //it must have refreshed the listAdapter (notified the observer)
+    verify(observer, times(2)).onChanged()
+    activity.listAdapter.getCount must be (1)
+
+    commandContext.delete(EntityForTesting.toUri(id)) must be (1)
+    commandContext.waitUntilIdle()
+    verify(observer, times(3)).onChanged()
     //it must have refreshed the listAdapter
-    listAdapter.getCount must be (0)
+    activity.listAdapter.getCount must be (0)
   }
 
   @Test
@@ -147,8 +109,4 @@ class SQLitePersistenceFactorySpec extends MustMatchers with CrudMockitoSugar wi
   def tableNameMustNotBeReservedWord(name: String) {
     SQLitePersistenceFactory.toTableName(EntityName(name)) must be (name + "0")
   }
-}
-
-class MyContextWithVars extends Activity with ContextWithState{
-  val applicationState = new State {}
 }

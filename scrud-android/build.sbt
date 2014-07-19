@@ -10,10 +10,14 @@ AndroidKeys.platformName in AndroidKeys.Android := "android-10"
 
 resolvers += "Local Maven Repository" at "file://"+Path.userHome.absolutePath+"/.m2/repository"
 
+libraryDependencies += "com.github.epabst.quality" % "annotations-for-quality" % "1.0-SNAPSHOT"
+
 libraryDependencies += "com.github.epabst.scrud" % "scrud-android-res" % General.scrudVersion artifacts(
   Artifact("scrud-android-res"), Artifact("scrud-android-res", "apklib", "apklib"))
 
 libraryDependencies in Runtime += "org.slf4j" % "slf4j-jdk14" % "1.6.1" % "test"
+
+libraryDependencies += "com.google.android" % "support-v4" % "r6"
 
 libraryDependencies += "org.slf4j" % "slf4j-android" % "1.6.1-RC1"
 
@@ -24,7 +28,10 @@ libraryDependencies += "org.mockito" % "mockito-core" % "1.8.5" % "test"
 
 libraryDependencies += "junit" % "junit" % "4.8.2" % "test"
 
-libraryDependencies += "com.pivotallabs" % "robolectric" % "1.1" % "test"
+// Required to make sbt run junit tests
+libraryDependencies += "com.novocode" % "junit-interface" % "0.4" % "test"
+
+libraryDependencies += "com.pivotallabs" % "robolectric" % "2.3" % "test"
 
 libraryDependencies += "org.scalatest" %% "scalatest" % "1.8" % "test"
 
