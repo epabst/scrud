@@ -28,8 +28,6 @@ dependencies {
     testCompile "com.novocode:junit-interface:0.4" // Required to make sbt run junit tests
     testCompile "org.robolectric:robolectric:2.3"
     testCompile "org.scalatest:scalatest_2.10.0-RC5:2.0.M5-B1"
-    //todo eliminate easymock as a dependency
-    testCompile "org.easymock:easymock:2.5.2"
 
     // todo don't include when running simple unit tests since slf4j-jdk14 should be used then.
 //    runtime "org.slf4j:slf4j-android:1.6.1-RC1"

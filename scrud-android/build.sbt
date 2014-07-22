@@ -34,6 +34,3 @@ libraryDependencies += "com.novocode" % "junit-interface" % "0.4" % "test"
 libraryDependencies += "com.pivotallabs" % "robolectric" % "2.3" % "test"
 
 libraryDependencies += "org.scalatest" %% "scalatest" % "1.8" % "test"
-
-//todo eliminate easymock as a dependency
-libraryDependencies += "org.easymock" % "easymock" % "2.5.2" % "test"

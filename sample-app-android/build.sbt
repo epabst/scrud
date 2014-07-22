@@ -28,6 +28,3 @@ fullClasspath in Test ~= { classpath => classpath.filter { entry => !entry.data.
 libraryDependencies += "org.mockito" % "mockito-core" % "1.8.5" % "test"
 
 libraryDependencies += "junit" % "junit" % "4.8.2" % "test"
-
-//todo eliminate easymock as a dependency
-libraryDependencies += "org.easymock" % "easymock" % "2.5.2" % "test"
