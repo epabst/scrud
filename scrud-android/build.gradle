@@ -1,12 +1,52 @@
-group = 'com.github.epabst.scrud'
-version = '0.3-alpha8-SNAPSHOT'
+buildscript {
+    repositories {
+        mavenCentral()
+    }
 
-apply plugin: 'scala'
+    dependencies {
+        classpath 'com.android.tools.build:gradle:0.11.+'
+    }
+}
 
-repositories {
-    mavenCentral()
-    maven {
-        url "file://$androidSdkDir/extras/android/m2repository/"
+apply plugin: 'android-library'
+apply plugin: 'android-scala'
+
+sourceSets {
+    testLocal {
+        java.srcDir file('src/test/java')
+        resources.srcDir file('src/test/resources')
+    }
+}
+
+
+task localTest(type: Test, dependsOn: assemble) {
+    testClassesDir = sourceSets.testLocal.output.classesDir
+
+    android.sourceSets.main.java.srcDirs.each { dir ->
+        def buildDir = dir.getAbsolutePath().split('/')
+        buildDir =  (buildDir[0..(buildDir.length - 4)] + ['build', 'classes', 'debug']).join('/')
+
+        sourceSets.testLocal.compileClasspath += files(buildDir)
+        sourceSets.testLocal.runtimeClasspath += files(buildDir)
+    }
+
+    classpath = sourceSets.testLocal.runtimeClasspath
+}
+
+check.dependsOn localTest
+
+android {
+    compileSdkVersion 19
+    buildToolsVersion "19.1"
+
+    lintOptions {
+        disable 'InvalidPackage'
+    }
+    defaultConfig {
+        minSdkVersion 15
+        targetSdkVersion 19
+        versionCode 1
+        versionName "1.0"
     }
 }
 
@@ -14,20 +54,17 @@ def scalaVersion = '2.10.3'
 
 dependencies {
     compile "org.scala-lang:scala-library:$scalaVersion"
-    // androidSdkDir must be set (e.g. in ~/.gradle/gradle.properties)
-    compile files("$androidSdkDir/platforms/android-19/android.jar")
+    compile "org.scala-lang:scala-reflect:$scalaVersion"
 	compile 'com.android.support:appcompat-v7:+'
-//	compile 'com.android.support:support-v4:18.0.0'
-//    compile project(":scrud:scrud-android-res"); // "com.github.epabst.scrud:scrud-android-res:scrud-android-res:0.3-alpha8-SNAPSHOT"
     compile project(":scrud:scrud-core");
-    testCompile project(path: ":scrud:scrud-core", configuration: 'tests')
-    testRuntime "org.slf4j:slf4j-log4j12:1.6.1"
-    testRuntime "log4j:log4j:1.2.17"
-    testCompile "org.mockito:mockito-core:1.8.5"
-    testCompile "junit:junit:4.8.2"
-    testCompile "com.novocode:junit-interface:0.4" // Required to make sbt run junit tests
-    testCompile "org.robolectric:robolectric:2.3"
-    testCompile "org.scalatest:scalatest_2.10.0-RC5:2.0.M5-B1"
+//    testLocalCompile project(path: ":scrud:scrud-core", configuration: 'tests')
+    testLocalRuntime "org.slf4j:slf4j-log4j12:1.6.1"
+    testLocalRuntime "log4j:log4j:1.2.17"
+    testLocalCompile "org.mockito:mockito-core:1.8.5"
+    testLocalCompile "junit:junit:4.8.2"
+    testLocalCompile "com.novocode:junit-interface:0.4" // Required to make sbt run junit tests
+    testLocalCompile "org.robolectric:robolectric:2.3"
+    testLocalCompile "org.scalatest:scalatest_2.10.0-RC5:2.0.M5-B1"
 
     // todo don't include when running simple unit tests since slf4j-jdk14 should be used then.
 //    runtime "org.slf4j:slf4j-android:1.6.1-RC1"

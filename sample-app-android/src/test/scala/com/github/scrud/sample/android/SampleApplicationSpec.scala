@@ -1,4 +1,4 @@
-package com.github.scrud.android.sample
+package com.github.scrud.sample.android
 
 import org.scalatest.FunSpec
 import org.scalatest.matchers.MustMatchers

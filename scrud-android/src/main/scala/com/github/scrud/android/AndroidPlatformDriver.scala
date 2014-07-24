@@ -28,8 +28,12 @@ import java.net.URI
  * @param rClass classOf[R] from the application's package
  * @param activityClass classOf[CrudActivity] or a custom subclass for the application
  */
-class AndroidPlatformDriver(rClass: Class[_], val activityClass: Class[_ <: CrudActivity] = classOf[CrudActivity])
+class AndroidPlatformDriver(rClass: Class[_], val activityClass: Class[_ <: CrudActivity])
     extends PlatformDriver {
+  def this(rClass: Class[_]) {
+    this(rClass, classOf[CrudActivity])
+  }
+
   lazy val localDatabasePersistenceFactory = new SQLitePersistenceFactory
 
   private lazy val deleteItemStringKey = getStringKey("delete_item")

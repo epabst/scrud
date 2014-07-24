@@ -1,4 +1,4 @@
-package com.github.scrud.android.sample
+package com.github.scrud.sample.android
 
 import com.github.scrud.android.generate.CrudUIGenerator
 import com.github.scrud.android.AndroidPlatformDriver

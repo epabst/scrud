@@ -1,6 +1,7 @@
-include ':annotations-for-quality', ':scrud:scrud-core', ':scrud:sample-app-core', ':scrud:scrud-android'
+include ':annotations-for-quality', ':scrud:scrud-core', ':scrud:sample-app-core', ':scrud:scrud-android', ':scrud:sample-app-android'
 
 project(':scrud:sample-app-core').projectDir = new File('../scrud/sample-app-core')
+project(':scrud:sample-app-android').projectDir = new File('../scrud/sample-app-android')
 project(':scrud:scrud-core').projectDir = new File('../scrud/scrud-core')
 project(':scrud:scrud-android').projectDir = new File('../scrud/scrud-android')
 project(':annotations-for-quality').projectDir = new File('../annotations-for-quality')

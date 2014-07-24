@@ -1,1 +1,22 @@
+group = 'com.github.epabst.scrud'
+version = '0.4-alpha-SNAPSHOT'
+
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
+buildscript {
+    repositories {
+        mavenCentral()
+        maven {
+            url "http://saturday06.github.io/gradle-android-scala-plugin/repository/snapshot"
+        }
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:0.11.1'
+        classpath 'jp.leafytree.gradle:gradle-android-scala-plugin:1.0-SNAPSHOT'
+    }
+}
+
+allprojects {
+    repositories {
+        mavenCentral()
+    }
+}
