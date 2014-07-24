@@ -11,11 +11,11 @@ import com.github.scrud.copy.{ExtensibleAdaptableField, CopyContext}
 import com.github.scrud.UriPath
 import com.github.scrud.types.ImageQT
 import com.github.scrud.platform.representation.{EditUI, SelectUI}
-import com.netaporter
 import org.robolectric.annotation.Config
 import org.robolectric.Robolectric
 import com.github.scrud.android.action.AndroidOperation._
 import scala.Some
+import java.net.URI
 
 /**
  * A behavior specification for [[com.github.scrud.android.view.CapturedImageStorageField]].
@@ -45,7 +45,7 @@ class CapturedImageStorageFieldSpec extends ScrudRobolectricSpecBase {
   def capturedImageViewMustGetImageUriFromOperationResponseEvenIfImageIsAlreadySet() {
     val commandContext = Robolectric.buildActivity(classOf[CrudActivityForRobolectric]).
       withIntent(new Intent(UpdateActionName)).get().commandContext
-    val uri = Uri.parse("file://foo/bar.jpg")
+    val uri = URI.create("file://foo/bar.jpg")
     val intent = mock[Intent]
     stub(intent.getData).toReturn(uri)
 
@@ -55,7 +55,7 @@ class CapturedImageStorageFieldSpec extends ScrudRobolectricSpecBase {
     val copyContext: CopyContext = new CopyContext(UriPath.EMPTY, commandContext)
 
     val viewRef = platformDriver.toViewRef("edit_", entityType.imageField.fieldName)
-    val adaptableField: ExtensibleAdaptableField[netaporter.uri.Uri] = entityType.imageField.toAdaptableField
+    val adaptableField: ExtensibleAdaptableField[URI] = entityType.imageField.toAdaptableField
     adaptableField.findSourceField(ActivityResult(viewRef)).get.findValue(intent, copyContext) must be (Some(uri))
   }
 }

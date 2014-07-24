@@ -2,7 +2,7 @@ package com.github.scrud
 
 import com.github.scrud.platform.PlatformTypes._
 import com.github.scrud.platform.IdFormat
-import com.netaporter.uri.Uri
+import java.net.URI
 
 /** A convenience wrapper for UriPath.
   * It helps in that UriPath.EMPTY is null when running unit tests, and helps prepare for multi-platform support.
@@ -86,8 +86,8 @@ object UriPath {
     throw new IllegalArgumentException("an EntityName must be specified in the URI but uri=" + uri)
   }
 
-  //todo delete once UriPath is replaced by Uri
-  implicit def uriPathToUri(uriPath: UriPath): Uri = throw new UnsupportedOperationException("todo implement")
-  //todo delete once UriPath is replaced by Uri
-  implicit def uriToUriPath(uriPath: Uri): UriPath = throw new UnsupportedOperationException("todo implement")
+  //todo delete once UriPath is replaced by URI
+  implicit def uriPathToUri(uriPath: UriPath): URI = throw new UnsupportedOperationException("todo implement")
+  //todo delete once UriPath is replaced by URI
+  implicit def uriToUriPath(uriPath: URI): UriPath = throw new UnsupportedOperationException("todo implement")
 }

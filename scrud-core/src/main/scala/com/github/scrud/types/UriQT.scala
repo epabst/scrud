@@ -1,6 +1,6 @@
 package com.github.scrud.types
 
-import com.netaporter.uri.Uri
+import java.net.URI
 import scala.util.Try
 
 /**
@@ -9,13 +9,13 @@ import scala.util.Try
  *         Date: 3/13/14
  *         Time: 11:42 PM
  */
-class UriQT extends StringConvertibleQT[Uri] {
-  def convertFromString(string: String) = Try(Uri.parse(string))
+class UriQT extends StringConvertibleQT[URI] {
+  def convertFromString(string: String) = Try(URI.create(string))
 
   /** Convert the value to a String for editing. */
-  def convertToString(value: Uri) = value.toString()
+  def convertToString(value: URI) = value.toString
 
-  def convertToDisplayString(value: Uri) = convertToString(value)
+  def convertToDisplayString(value: URI) = convertToString(value)
 }
 
 object UriQT extends UriQT

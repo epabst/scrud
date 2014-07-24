@@ -6,7 +6,7 @@ import com.github.scrud.EntityType
 import com.github.scrud.types.QualifiedType
 import com.github.scrud.copy._
 import com.github.scrud.util.{Logging, Name}
-import com.netaporter.uri.Uri
+import java.net.URI
 import scala.util.Try
 import com.github.scrud.platform.PlatformTypes._
 import com.github.scrud.FieldName
@@ -33,7 +33,7 @@ trait PlatformDriver extends Logging {
   /** This should only be used as a last resort.  Most logging should use ApplicationName's logging. */
   override protected val logTag: String = "scrud." + getClass.getSimpleName
 
-  def tryBinaryResource(resourceName: Name): Try[Uri]
+  def tryBinaryResource(resourceName: Name): Try[URI]
 
   def localDatabasePersistenceFactory: PersistenceFactory
 

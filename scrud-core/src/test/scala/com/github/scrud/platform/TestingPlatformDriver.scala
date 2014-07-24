@@ -7,7 +7,7 @@ import com.github.scrud.{FieldName, EntityName}
 import com.github.scrud.action.ActionKey
 import com.github.scrud.action.PlatformCommand
 import com.github.scrud.util.Name
-import com.netaporter.uri.Uri
+import java.net.URI
 import scala.util.{Try, Success}
 import com.github.scrud.platform.PlatformTypes.{ImgKey, SKey}
 import com.github.scrud.copy.{AdaptableFieldWithRepresentations, Representation}
@@ -20,7 +20,7 @@ import com.github.scrud.platform.representation.PersistenceRange
  *         Time: 1:27 PM
  */
 class TestingPlatformDriver extends PlatformDriver {
-  override def tryBinaryResource(resourceName: Name) = Success(Uri.parse("image:" + resourceName.toCamelCase))
+  override def tryBinaryResource(resourceName: Name) = Success(URI.create("image:" + resourceName.toCamelCase))
 
   override def tryStringKey(stringName: String): Try[SKey] = Success(stringName.hashCode)
 

@@ -20,7 +20,7 @@ import com.github.scrud.android.EntityTypeForTesting
 import org.robolectric.annotation.Config
 import com.github.scrud.EntityName
 import org.robolectric.Robolectric
-import com.netaporter.uri.Uri
+import java.net.URI
 import com.github.scrud.android.persistence.EntityTypeMapWithBackupForTesting
 
 /** A test for [[com.github.scrud.android.backup.CrudBackupAgent]].
@@ -51,8 +51,8 @@ class CrudBackupAgentSpec extends MustMatchers with CrudMockitoSugar {
       val commandContext = activity.commandContext
       commandContext.save(entityTypeA.entityName, Some(100L), MapStorage, new MapStorage(entityTypeA.name -> Some("Joe"), entityTypeA.age -> Some(30)))
       commandContext.save(entityTypeA.entityName, Some(101L), MapStorage, new MapStorage(entityTypeA.name -> Some("Mary"), entityTypeA.age -> Some(28)))
-      commandContext.save(entityTypeB.entityName, Some(101L), MapStorage, new MapStorage(entityTypeB.name -> Some("Susan"), entityTypeB.url -> Some(Uri.parse("/artist"))))
-      commandContext.save(entityTypeB.entityName, Some(104L), MapStorage, new MapStorage(entityTypeB.name -> Some("Bob"), entityTypeB.url -> Some(Uri.parse("/seaman"))))
+      commandContext.save(entityTypeB.entityName, Some(101L), MapStorage, new MapStorage(entityTypeB.name -> Some("Susan"), entityTypeB.url -> Some(URI.create("/artist"))))
+      commandContext.save(entityTypeB.entityName, Some(104L), MapStorage, new MapStorage(entityTypeB.name -> Some("Bob"), entityTypeB.url -> Some(URI.create("/seaman"))))
       val state0 = null
 
       val backupTarget = mock[BackupTarget]

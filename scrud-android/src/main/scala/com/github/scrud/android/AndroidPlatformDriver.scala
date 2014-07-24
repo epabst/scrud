@@ -18,7 +18,7 @@ import scala.util.Try
 import android.R
 import com.github.scrud.util.Name
 import android.provider.BaseColumns
-import com.netaporter.uri.Uri
+import java.net.URI
 
 /**
  * A PlatformDriver for the Android platform.
@@ -106,14 +106,14 @@ class AndroidPlatformDriver(rClass: Class[_], val activityClass: Class[_ <: Crud
     }
   }
 
-  def tryBinaryResource(resourceName: Name): Try[Uri] = Try {
+  def tryBinaryResource(resourceName: Name): Try[URI] = Try {
     val stringName: String = resourceName.toSnakeCase
     val resourceId = findResourceIdWithName(rStringClasses, stringName).getOrElse {
       rStringClasses.foreach(rStringClass => logError("Contents of " + rStringClass + " are " + rStringClass.getFields.mkString(", ")))
       throw new IllegalStateException("R.string." + stringName + " not found.  You may want to run the CrudUIGenerator.generateLayouts." +
         rStringClasses.mkString("(string classes: ", ",", ")"))
     }
-    Uri.parse("android.resource://" + rClass.getPackage.getName + "/" + resourceId)
+    URI.create("android.resource://" + rClass.getPackage.getName + "/" + resourceId)
   }
 
   def tryImageKey(imageName: Name): Try[ImgKey] = Try {

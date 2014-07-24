@@ -14,7 +14,6 @@ dependencies {
     compile "org.scala-lang:scala-library:$scalaVersion"
     compile "org.slf4j:slf4j-api:1.6.1"
     compile 'commons-codec:commons-codec:1.9'
-    compile "com.netaporter:scala-uri_$scalaMajorVersion:0.4.1"
     compile project(":annotations-for-quality"); //"com.github.epabst.quality:annotations-for-quality:1.0-SNAPSHOT"
     testRuntime "org.slf4j:slf4j-log4j12:1.6.1"
     testRuntime "log4j:log4j:1.2.16"
