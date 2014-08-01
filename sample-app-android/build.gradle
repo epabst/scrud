@@ -42,8 +42,28 @@ android {
     }
 }
 
+configurations {
+    generateUI
+}
+
 dependencies {
     compile project(":scrud:scrud-android")
     compile project(":scrud:sample-app-core")
     compile fileTree(dir: 'libs', include: ['*.jar'])
+
+    generateUI project(":scrud:scrud-android")
+    generateUI files("../scrud-android/build/intermediates/bundles/release/classes.jar")
+    generateUI files("${System.getenv("ANDROID_HOME")}/platforms/${android.compileSdkVersion}/android.jar")
+    generateUI project(":scrud:sample-app-core")
+    generateUI "org.slf4j:slf4j-log4j12:1.6.1"
 }
+
+task(generateUI, type: JavaExec) {
+    description 'Generates any missing res files and an AndroidManifest.xml.'
+    classpath = configurations.generateUI
+    main = 'com.github.scrud.android.generate.CrudUIGenerator';
+    args = ['com.github.scrud.sample.SampleEntityNavigation'];
+    workingDir = 'src/main'
+}
+
+preBuild.dependsOn(generateUI)
