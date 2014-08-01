@@ -60,10 +60,9 @@ class CrudUIGenerator(val workingDir: Directory, overwrite: Boolean) extends Log
     val activityNames = Seq(findAndroidPlatformDriverFor(entityTypeMap).map(_.activityClass).getOrElse(classOf[CrudActivity]).getName)
     <manifest xmlns:android="http://schemas.android.com/apk/res/android"
               package={applicationPackageName}>
-      <application android:label="@string/app_name" android:icon="@drawable/icon"
+      <application android:label="@string/app_name" android:icon="@drawable/ic_launcher"
                    android:name={androidApplicationPackageName + "." + androidApplicationClassSimpleName}
                    android:theme="@android:style/Theme.NoTitleBar"
-                   android:debuggable="true"
                    android:backupAgent={backupAgentClassName} android:restoreAnyVersion="true">
         <meta-data android:name="com.google.android.backup.api_key"
                    android:value="TODO: get a backup key from http://code.google.com/android/backup/signup.html and put it here."/>
