@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout 
+android:orientation="vertical" android:layout_width="fill_parent" android:layout_height="fill_parent" xmlns:android="http://schemas.android.com/apk/res/android">
+  <ListView android:id="@+id/author_list" android:layout_width="fill_parent" android:layout_height="wrap_content" android:layout_weight="1.0"/>
+  <Button android:id="@+id/add_author_command" android:text="@string/add_author" android:layout_width="fill_parent" android:layout_height="wrap_content" android:drawableLeft="@android:drawable/ic_input_add"/>
+</LinearLayout>

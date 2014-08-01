@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout 
+android:orientation="vertical" android:layout_width="fill_parent" android:layout_height="fill_parent" xmlns:android="http://schemas.android.com/apk/res/android">
+  <ListView android:id="@+id/book_list" android:layout_width="fill_parent" android:layout_height="wrap_content" android:layout_weight="1.0"/>
+  <Button android:id="@+id/add_book_command" android:text="@string/add_book" android:layout_width="fill_parent" android:layout_height="wrap_content" android:drawableLeft="@android:drawable/ic_input_add"/>
+</LinearLayout>
