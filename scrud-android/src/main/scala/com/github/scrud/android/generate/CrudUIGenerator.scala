@@ -3,13 +3,14 @@ package com.github.scrud.android.generate
 import collection.immutable.List
 import xml._
 import com.github.scrud.android.view.AndroidConversions
-import com.github.scrud.{EntityName, EntityType}
+import com.github.scrud.{EntityNavigation, EntityName, EntityType}
 import com.github.scrud.util.{Logging, Common}
-import com.github.scrud.android.{CrudAndroidApplicationLike, AndroidPlatformDriver, CrudAndroidApplication}
+import com.github.scrud.android.{CrudAndroidApplicationLike, CrudActivity, AndroidPlatformDriver, CrudAndroidApplication}
 import com.github.scrud.android.backup.CrudBackupAgent
 import scala.reflect.io.{File, Directory}
 import com.github.scrud.platform.representation.{EditUI, SelectUI, SummaryUI, DetailUI}
 import com.github.scrud.persistence.EntityTypeMap
+import com.github.scrud.platform._
 
 /** A UI Generator for a CrudTypes.
   * @author Eric Pabst (epabst@gmail.com)
@@ -50,15 +51,20 @@ class CrudUIGenerator(val workingDir: Directory, overwrite: Boolean) extends Log
     if (!classOf[CrudAndroidApplication].isAssignableFrom(androidApplicationClass)) {
       throw new IllegalArgumentException(androidApplicationClass + " does not extend CrudAndroidApplication")
     }
-    val applicationPackageName = androidApplicationClass.getPackage.getName
-    val activityNames = Seq(androidPlatformDriverFor(entityTypeMap).activityClass.getName)
+    generateAndroidManifest(entityTypeMap, androidApplicationClass.getPackage.getName, androidApplicationClass.getSimpleName, backupAgentClass.getName)
+  }
+
+  def generateAndroidManifest(entityTypeMap: EntityTypeMap, androidApplicationPackageName: String, androidApplicationClassSimpleName: String,
+                              backupAgentClassName: String): Elem = {
+    val applicationPackageName = androidApplicationPackageName
+    val activityNames = Seq(findAndroidPlatformDriverFor(entityTypeMap).map(_.activityClass).getOrElse(classOf[CrudActivity]).getName)
     <manifest xmlns:android="http://schemas.android.com/apk/res/android"
               package={applicationPackageName}>
       <application android:label="@string/app_name" android:icon="@drawable/icon"
-                   android:name={androidApplicationClass.getName}
+                   android:name={androidApplicationPackageName + "." + androidApplicationClassSimpleName}
                    android:theme="@android:style/Theme.NoTitleBar"
                    android:debuggable="true"
-                   android:backupAgent={backupAgentClass.getName} android:restoreAnyVersion="true">
+                   android:backupAgent={backupAgentClassName} android:restoreAnyVersion="true">
         <meta-data android:name="com.google.android.backup.api_key"
                    android:value="TODO: get a backup key from http://code.google.com/android/backup/signup.html and put it here."/>
         <activity android:name={activityNames.head} android:label="@string/app_name">
@@ -68,7 +74,7 @@ class CrudUIGenerator(val workingDir: Directory, overwrite: Boolean) extends Log
           </intent-filter>
         </activity>
         {activityNames.tail.map { name => <activity android:name={name} android:label="@string/app_name"/>}}
-        <provider android:authorities={AndroidConversions.authorityFor(androidApplicationClass)}
+        <provider android:authorities={AndroidConversions.authorityFor(androidApplicationPackageName)}
                   android:name="com.github.scrud.android.persistence.LocalCrudContentProvider"
                   android:exported="false"
                   android:grantUriPermissions="false"
@@ -79,8 +85,11 @@ class CrudUIGenerator(val workingDir: Directory, overwrite: Boolean) extends Log
     </manifest>
   }
 
-  private def androidPlatformDriverFor(entityTypeMap: EntityTypeMap): AndroidPlatformDriver = {
-    entityTypeMap.platformDriver.asInstanceOf[AndroidPlatformDriver]
+  private def findAndroidPlatformDriverFor(entityTypeMap: EntityTypeMap): Option[AndroidPlatformDriver] = {
+    entityTypeMap.platformDriver match {
+     case androidPlatformDriver: AndroidPlatformDriver => Some(androidPlatformDriver)
+     case _ => None
+    }
   }
 
   def generateValueStrings(entityInfo: EntityTypeViewInfo): NodeSeq = {
@@ -113,6 +122,12 @@ class CrudUIGenerator(val workingDir: Directory, overwrite: Boolean) extends Log
   def generateLayouts(entityTypeMap: EntityTypeMap,
                       androidApplicationClass: Class[_ <: CrudAndroidApplicationLike],
                       backupAgentClass: Class[_ <: CrudBackupAgent]) {
+    generateLayouts(entityTypeMap, androidApplicationClass.getPackage.getName, androidApplicationClass.getSimpleName, backupAgentClass.getName)
+  }
+
+  def generateLayouts(entityTypeMap: EntityTypeMap,
+                      androidApplicationPackageName: String, androidApplicationClassSimpleName: String,
+                      backupAgentClassName: String) {
     val entityTypeInfos = entityTypeMap.allEntityTypes.map(EntityTypeViewInfo(_, entityTypeMap))
     val pickedEntityTypes: Seq[EntityType] = for {
       entityType <- entityTypeMap.allEntityTypes
@@ -127,7 +142,8 @@ class CrudUIGenerator(val workingDir: Directory, overwrite: Boolean) extends Log
       val childViewInfos = entityTypeMap.downstreamEntityTypes(entityInfo.entityType).map(EntityTypeViewInfo(_, entityTypeMap))
       generateLayouts(entityInfo, childViewInfos, pickedEntityTypes)
     })
-    writeXmlToFile((workingDir / "AndroidManifest.xml").toFile, generateAndroidManifest(entityTypeMap, androidApplicationClass, backupAgentClass))
+    writeXmlToFile((workingDir / "AndroidManifest.xml").toFile, generateAndroidManifest(entityTypeMap,
+      androidApplicationPackageName, androidApplicationClassSimpleName, backupAgentClassName))
     writeXmlToFile((workingDir / "res" / "values" / "strings.xml").toFile, generateValueStrings(entityTypeMap))
   }
 
@@ -270,4 +286,11 @@ class CrudUIGenerator(val workingDir: Directory, overwrite: Boolean) extends Log
   }
 }
 
-object CrudUIGenerator extends CrudUIGenerator(overwrite = false)
+object CrudUIGenerator extends CrudUIGenerator(overwrite = false) {
+  def main(args: Array[String]) {
+    val entityNavigationClassName = args(0)
+    val constructor = Class.forName(entityNavigationClassName).getConstructor(classOf[PlatformDriver])
+    val entityNavigation: EntityNavigation = constructor.newInstance(StubPlatformDriver).asInstanceOf[EntityNavigation]
+    generateLayouts(entityNavigation.entityTypeMap, entityNavigation.getClass.getPackage.getName + ".android", "Android" + entityNavigation.applicationName.toTitleCase, classOf[CrudBackupAgent].getName)
+  }
+}
