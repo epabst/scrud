@@ -10,11 +10,9 @@ import com.github.scrud.copy.TargetType
  */
 
 case class TargetedEntityTypeViewInfo(entityTypeViewInfo: EntityTypeViewInfo, targetType: TargetType, fieldPrefix: String = "") {
-  import entityTypeViewInfo._
-
   lazy val targetedFieldInfos: List[TargetedFieldInfo[Nothing]] = {
     for {
-      entityFieldInfo <- entityFieldInfos
+      entityFieldInfo <- entityTypeViewInfo.entityFieldInfos
       targetedFieldInfo <- entityFieldInfo.findTargetedFieldInfo(targetType, fieldPrefix)
     } yield targetedFieldInfo
   }

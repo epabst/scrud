@@ -25,12 +25,19 @@ class TargetedEntityTypeViewInfoSpec extends FunSpec with MustMatchers with Mock
 
   private val entityTypeMap = EntityTypeMapForTesting(Set[EntityType](EntityTypeForTesting, SelfReferencingEntityType))
 
-  describe("displayableViewIdFieldInfos") {
+  describe("viewIdFieldInfos") {
     it("must not have an infinite loop for a self-referencing EntityType") {
       val info = EntityTypeViewInfo(SelfReferencingEntityType, entityTypeMap)
       val displayableInfo = TargetedEntityTypeViewInfo(info, DetailUI)
       val fieldInfos = displayableInfo.viewIdFieldInfos
       fieldInfos.size must be <= 10
+    }
+
+    it("must use implied target types for DisplayUI representations") {
+      val entityType = new EntityTypeForTesting(platformDriver = CrudUIGeneratorForTesting.platformDriver)
+      val info = EntityTypeViewInfo(entityType, entityTypeMap)
+      val displayableInfo = TargetedEntityTypeViewInfo(info, SummaryUI)
+      displayableInfo.viewIdFieldInfos.map(_.field) must be (Seq(entityType.name, entityType.age))
     }
   }
 }

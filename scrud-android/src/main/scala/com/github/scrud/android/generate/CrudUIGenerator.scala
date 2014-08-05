@@ -5,12 +5,14 @@ import xml._
 import com.github.scrud.android.view.AndroidConversions
 import com.github.scrud.{EntityNavigation, EntityName, EntityType}
 import com.github.scrud.util.{Logging, Common}
-import com.github.scrud.android.{CrudAndroidApplicationLike, CrudActivity, AndroidPlatformDriver, CrudAndroidApplication}
+import com.github.scrud.android._
 import com.github.scrud.android.backup.CrudBackupAgent
 import scala.reflect.io.{File, Directory}
 import com.github.scrud.platform.representation.{EditUI, SelectUI, SummaryUI, DetailUI}
 import com.github.scrud.persistence.EntityTypeMap
 import com.github.scrud.platform._
+import com.github.scrud.EntityName
+import scala.xml.NamespaceBinding
 
 /** A UI Generator for a CrudTypes.
   * @author Eric Pabst (epabst@gmail.com)
@@ -283,13 +285,24 @@ class CrudUIGenerator(val workingDir: Directory, overwrite: Boolean) extends Log
     }
     if (!editInfo.isEmpty) writeLayoutFile(layoutPrefix + "_entry", entryLayout(editInfo.viewIdFieldInfos))
   }
+
+  protected[generate] val platformDriver: PlatformDriver = {
+    // passing in getClass since there might not be an R class generated yet for the application.
+    // It shouldn't actually be used anyway.
+    new AndroidPlatformDriver(getClass)
+  }
+
+  def instantiateEntityNavigation(entityNavigationClassName: String): EntityNavigation = {
+    val constructor = Class.forName(entityNavigationClassName).getConstructor(classOf[PlatformDriver])
+    constructor.newInstance(platformDriver).asInstanceOf[EntityNavigation]
+  }
 }
 
 object CrudUIGenerator extends CrudUIGenerator(overwrite = false) {
   def main(args: Array[String]) {
     val entityNavigationClassName = args(0)
-    val constructor = Class.forName(entityNavigationClassName).getConstructor(classOf[PlatformDriver])
-    val entityNavigation: EntityNavigation = constructor.newInstance(StubPlatformDriver).asInstanceOf[EntityNavigation]
-    generateLayouts(entityNavigation.entityTypeMap, entityNavigation.getClass.getPackage.getName + ".android", "Android" + entityNavigation.applicationName.toTitleCase, classOf[CrudBackupAgent].getName)
+    val entityNavigation: EntityNavigation = instantiateEntityNavigation(entityNavigationClassName)
+    generateLayouts(entityNavigation.entityTypeMap, entityNavigation.getClass.getPackage.getName + ".android",
+      "Android" + entityNavigation.applicationName.toTitleCase, classOf[CrudBackupAgent].getName)
   }
 }
