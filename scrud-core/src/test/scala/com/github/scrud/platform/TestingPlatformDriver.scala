@@ -1,6 +1,6 @@
 package com.github.scrud.platform
 
-import com.github.scrud.persistence.{PersistenceRangeAdaptableField, ListBufferPersistenceFactoryForTesting}
+import com.github.scrud.persistence.{PersistenceFactory, PersistenceRangeAdaptableField, ListBufferPersistenceFactoryForTesting}
 import com.github.scrud.types.QualifiedType
 import com.github.scrud.{FieldName, EntityName}
 import com.github.scrud.copy.{AdaptableFieldWithRepresentations, Representation}
@@ -13,7 +13,7 @@ import com.github.scrud.platform.representation.PersistenceRange
  *         Time: 1:27 PM
  */
 class TestingPlatformDriver extends StubPlatformDriver {
-  override val localDatabasePersistenceFactory = ListBufferPersistenceFactoryForTesting
+  override val localDatabasePersistenceFactory: PersistenceFactory = ListBufferPersistenceFactoryForTesting
 
   private object PersistenceFieldFactory extends AdaptableFieldFactory {
     override def adapt[V](entityName: EntityName, fieldName: FieldName, qualifiedType: QualifiedType[V],
@@ -26,7 +26,7 @@ class TestingPlatformDriver extends StubPlatformDriver {
     }
   }
 
-  override val platformSpecificFieldFactories = Seq(UniversalMapStorageAdaptableFieldFactory, PersistenceFieldFactory)
+  override val platformSpecificFieldFactories: Seq[AdaptableFieldFactory] = Seq(UniversalMapStorageAdaptableFieldFactory, PersistenceFieldFactory)
 }
 
 object TestingPlatformDriver extends TestingPlatformDriver
