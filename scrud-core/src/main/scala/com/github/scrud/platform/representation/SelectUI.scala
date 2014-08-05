@@ -1,7 +1,5 @@
 package com.github.scrud.platform.representation
 
-import com.github.scrud.copy.StorageType
-
 /**
  * A TargetType for the UI for identifying an entity instance such as when selecting or showing a reference to it.
  * See [[com.github.scrud.platform.representation.DetailUI]].
@@ -9,7 +7,5 @@ import com.github.scrud.copy.StorageType
  *         Date: 12/11/13
  *         Time: 9:16 AM
  */
-//todo rename to IdentifyUI
-object SelectUI extends DisplayUI with StorageType {
-  override def impliedTargetTypes: Seq[DisplayUI] = SummaryUI.targetTypes
-}
+@deprecated("use DisplayUI(FieldLevel.Identity)", since = "2014-08-04")
+object SelectUI extends DisplayUI(FieldLevel.Identity)

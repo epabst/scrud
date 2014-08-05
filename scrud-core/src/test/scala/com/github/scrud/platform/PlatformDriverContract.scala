@@ -51,7 +51,7 @@ abstract class PlatformDriverContract extends FunSpec with MustMatchers {
     describe("findTargetField") {  
       it("must support the basic SourceTypes") {
         val platformDriver = makePlatformDriver()
-        val representations = Seq[Representation[Nothing]](MapStorage, Persistence(1), XmlFormat, JsonFormat, EditUI, SelectUI, SummaryUI, DetailUI)
+        val representations = Seq[Representation[Nothing]](MapStorage, Persistence(1), XmlFormat, JsonFormat, EditUI, DisplayUI(FieldLevel.Identity), DisplayUI(FieldLevel.Summary), DisplayUI(FieldLevel.Detail))
         val field = platformDriver.field(EntityName("Foo"), FieldName("foo"), TitleQT, representations)
         for (targetType <- representations.collect { case t: TargetType => t }) {
           withClue(targetType) {

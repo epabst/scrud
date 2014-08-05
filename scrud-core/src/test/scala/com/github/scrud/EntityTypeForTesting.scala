@@ -12,8 +12,8 @@ import com.github.scrud.copy.types.{Validation, MapStorage}
  *         Time: 3:52 PM
  */
 class EntityTypeForTesting(entityName: EntityName = EntityName("MyEntity")) extends EntityType(entityName, TestingPlatformDriver) {
-  val name = field("name", TitleQT, Seq(MapStorage, Persistence(1), EditUI, SelectUI, Query, Validation.requiredString, LoadingIndicator("...")))
-  val birthDate = field("birthDate", DateWithoutTimeQT, Seq(MapStorage, Persistence(1), EditUI, SelectUI, Query))
+  val name = field("name", TitleQT, Seq(MapStorage, Persistence(1), EditUI, DisplayUI(FieldLevel.Identity), Query, Validation.requiredString, LoadingIndicator("...")))
+  val birthDate = field("birthDate", DateWithoutTimeQT, Seq(MapStorage, Persistence(1), EditUI, DisplayUI(FieldLevel.Identity), Query))
 }
 
 object EntityTypeForTesting extends EntityTypeForTesting(EntityName("MyEntity"))

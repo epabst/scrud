@@ -4,7 +4,7 @@ import org.scalatest.{MustMatchers, FunSpec}
 import com.github.scrud.{EntityType, EntityTypeForTesting}
 import com.github.scrud.types.{TitleQT, NaturalIntQT}
 import com.github.scrud.copy.types.MapStorage
-import com.github.scrud.platform.representation.DetailUI
+import com.github.scrud.platform.representation.{DisplayUI, FieldLevel}
 import java.util.{Date, Calendar, GregorianCalendar}
 import com.github.scrud.context.CommandContextForTesting
 import com.github.scrud.persistence.{PersistenceFactory, ListBufferPersistenceFactoryForTesting, EntityTypeMapForTesting}
@@ -29,13 +29,13 @@ class DerivedSpec extends FunSpec with MustMatchers {
           Some (todayCalendar.get(Calendar.YEAR) - birthDateCalendar.get(Calendar.YEAR))
         case _ => None
       }
-      val AgeInYears = field("ageInYears", NaturalIntQT, Seq(MapStorage, DetailUI, derivedAge))
+      val AgeInYears = field("ageInYears", NaturalIntQT, Seq(MapStorage, DisplayUI(FieldLevel.Detail), derivedAge))
 
       val derivedNickname = Derived(name, AgeInYears) {
         case (Some(name), Some(age)) => Some(name + age)
         case _ => None
       }
-      val Nickname = field("nickname", TitleQT, Seq(MapStorage, DetailUI, derivedNickname))
+      val Nickname = field("nickname", TitleQT, Seq(MapStorage, DisplayUI(FieldLevel.Detail), derivedNickname))
       val Nickname2 = field("nickname2", TitleQT, Seq(Derived(name, AgeInYears, Nickname) {
         case (Some(name), Some(age), Some(nickname)) => Some(name + age + nickname)
         case _ => None

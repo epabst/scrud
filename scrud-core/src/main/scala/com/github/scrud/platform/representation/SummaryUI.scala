@@ -7,6 +7,5 @@ package com.github.scrud.platform.representation
  *         Date: 12/11/13
  *         Time: 9:16 AM
  */
-object SummaryUI extends DisplayUI {
-  override def impliedTargetTypes: Seq[DisplayUI] = DetailUI.targetTypes
-}
+@deprecated("use DisplayUI(FieldLevel.Summary)", since = "2014-08-04")
+object SummaryUI extends DisplayUI(FieldLevel.Summary)
