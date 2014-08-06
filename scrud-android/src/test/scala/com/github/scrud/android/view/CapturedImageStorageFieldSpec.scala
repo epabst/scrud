@@ -45,7 +45,7 @@ class CapturedImageStorageFieldSpec extends ScrudRobolectricSpecBase {
   def capturedImageViewMustGetImageUriFromOperationResponseEvenIfImageIsAlreadySet() {
     val commandContext = Robolectric.buildActivity(classOf[CrudActivityForRobolectric]).
       withIntent(new Intent(UpdateActionName)).get().commandContext
-    val uri = URI.create("file://foo/bar.jpg")
+    val uri = Uri.parse("file://foo/bar.jpg")
     val intent = mock[Intent]
     stub(intent.getData).toReturn(uri)
 
